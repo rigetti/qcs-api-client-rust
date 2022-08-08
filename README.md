@@ -2,7 +2,7 @@
 
 This project generates two Rust clients—one for each OpenAPI schema (public and internal). New schemas are updated automatically when the [qcs-api-docs] repo is updated.
 
-Clients should be regenerated manually using `make regenerate` and committed with an appropriate [Angular-style conventional commit message](https://conventionalcommits.org/) for the *code changes* (which may be breaking even if the schema changes were not).
+Regenerate clients manually by running `make regenerate` from within a Python 3.9+ virtual environment. Commit regenerated code with an appropriate [Angular-style conventional commit message](https://conventionalcommits.org/) for the *code changes* (which may be breaking even if the schema changes were not).
 
 ## The Public Code
 
