@@ -13,6 +13,7 @@ include:
   - template: "Workflows/MergeRequest-Pipelines.gitlab-ci.yml"
 
 .install-knope: &install-knope
+  - apt update && apt install -y wget git
   - wget https://github.com/knope-dev/knope/releases/download/$KNOPE_VERSION/knope-x86_64-unknown-linux-musl-$KNOPE_VERSION.tgz
   - tar -xvf knope-x86_64-unknown-linux-musl-$KNOPE_VERSION.tgz
   - cp knope-x86_64-unknown-linux-musl-$KNOPE_VERSION/knope .
@@ -20,12 +21,26 @@ include:
   - rm -rf knope-x86_64-unknown-linux-musl-$KNOPE_VERSION
   - rm knope-x86_64-unknown-linux-musl-$KNOPE_VERSION.tgz
 
+.git_setup: &git_setup
+  - ': ${QCS_GITLAB_DEPLOY_KEY:?Must provide \$QCS_GITLAB_DEPLOY_KEY}'
+  - git config --global user.email "$GITLAB_USER_EMAIL"
+  - git config --global user.name  "$GITLAB_USER_NAME"
+  - eval $(ssh-agent -s)
+  - chmod 0600 $QCS_GITLAB_DEPLOY_KEY
+  - ssh-add $QCS_GITLAB_DEPLOY_KEY
+  - mkdir -p ~/.ssh
+  - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+  - git remote set-url --push origin "git@gitlab.com:$CI_PROJECT_PATH.git"
+  - git remote -v
+
 # We only publish tagged releases to PyPI
 Release:
   stage: publish
   script:
     - *install-knope
-    - knope release
+    - *git_setup
+    - git checkout $CI_COMMIT_BRANCH  # Have to be on branch to push back
+    - ./knope release
   rules:
     - if: $CI_COMMIT_TAG
       when: never

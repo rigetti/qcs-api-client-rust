@@ -11,11 +11,15 @@ type = "PrepareRelease"
 [[workflows.steps]]
 type = "Command"
 command = "git add internal/Cargo.toml public/Cargo.toml public/CHANGELOG.md"
-variables = { "$version" = "Version" }
 
 [[workflows.steps]]
 type = "Command"
 command = "git commit -m \"chore: prepare release $version\" && git push"
+variables = { "$version" = "Version" }
+
+[[workflows.steps]]
+type = "Command"
+command = "git tag v$version && git push --tags"
 variables = { "$version" = "Version" }
 
 [[workflows.steps]]
