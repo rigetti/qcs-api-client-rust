@@ -1,0 +1,34 @@
+default:
+  image: debian:stable
+  tags:
+    - ec2-docker
+
+stages:
+  - regenerate
+  - publish
+
+include:
+  # Run all tasks on merge requests rather than branches
+  # See https://docs.gitlab.com/ee/ci/yaml/README.html#workflowrules-templates
+  - template: "Workflows/MergeRequest-Pipelines.gitlab-ci.yml"
+
+.install-knope: &install-knope
+  - wget https://github.com/knope-dev/knope/releases/download/$KNOPE_VERSION/knope-x86_64-unknown-linux-musl-$KNOPE_VERSION.tgz
+  - tar -xvf knope-x86_64-unknown-linux-musl-$KNOPE_VERSION.tgz
+  - cp knope-x86_64-unknown-linux-musl-$KNOPE_VERSION/knope .
+  - chmod +x knope
+  - rm -rf knope-x86_64-unknown-linux-musl-$KNOPE_VERSION
+  - rm knope-x86_64-unknown-linux-musl-$KNOPE_VERSION.tgz
+
+# We only publish tagged releases to PyPI
+Release:
+  stage: publish
+  script:
+    - *install-knope
+    - knope release
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+      # We cut new releases manually to avoid unnecessary versions & releases from immaterial changes
+      when: manual

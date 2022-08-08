@@ -1,0 +1,25 @@
+[[packages]]
+versioned_files = ["internal/Cargo.toml", "public/Cargo.toml"]
+
+[[workflows]]
+name = "release"
+
+[[workflows.steps]]
+type = "PrepareRelease"
+
+[[workflows.steps]]
+type = "Command"
+command = "git add internal/Cargo.toml public/Cargo.toml && git commit -m \"chore: prepare release $version\" [skip ci] && git push"
+variables = { "$version" = "Version" }
+
+[[workflows.steps]]
+type = "Command"
+command = "./scripts/commit-public-repo-update.sh \"chore: prepare release $version\""
+variables = { "$version" = "Version" }
+
+[[workflows.steps]]
+type = "Release"
+
+[github]
+owner = "rigetti"
+repo = "qcs-api-client-rust"
