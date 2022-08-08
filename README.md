@@ -1,12 +1,8 @@
 # Rust OpenAPI Client Generator
 
-This project generates two Rust clients—one for each OpenAPI schema (public and internal). New clients are generated automatically when the [qcs-api-docs] repo is updated.
+This project generates two Rust clients—one for each OpenAPI schema (public and internal). New schemas are updated automatically when the [qcs-api-docs] repo is updated.
 
-To generate manually:
-
-```
-make regenerate
-```
+Clients should be regenerated manually using `make regenerate` and committed with an appropriate [Angular-style conventional commit message](https://conventionalcommits.org/) for the *code changes* (which may be breaking even if the schema changes were not).
 
 ## The Public Code
 
