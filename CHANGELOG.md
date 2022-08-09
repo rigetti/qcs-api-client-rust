@@ -1,3 +1,9 @@
+## 0.2.1
+
+### Fixes
+
+- Crate repo metadata
+
 ## 0.2.0
 
 ### Breaking Changes
