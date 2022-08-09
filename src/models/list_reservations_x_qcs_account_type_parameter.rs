@@ -9,32 +9,10 @@
  */
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
-pub struct ClientApplication {
-    #[serde(rename = "detailsUri", skip_serializing_if = "Option::is_none")]
-    pub details_uri: Option<String>,
-    /// Semantic version
-    #[serde(rename = "latestVersion")]
-    pub latest_version: String,
-    #[serde(rename = "links", skip_serializing_if = "Option::is_none")]
-    pub links: Option<Vec<crate::models::ClientApplicationsDownloadLink>>,
-    /// Semantic version
-    #[serde(rename = "minimumVersion", skip_serializing_if = "Option::is_none")]
-    pub minimum_version: Option<String>,
-    #[serde(rename = "name")]
-    pub name: String,
-    #[serde(rename = "supported")]
-    pub supported: bool,
-}
+pub struct ListReservationsXQcsAccountTypeParameter {}
 
-impl ClientApplication {
-    pub fn new(latest_version: String, name: String, supported: bool) -> ClientApplication {
-        ClientApplication {
-            details_uri: None,
-            latest_version,
-            links: None,
-            minimum_version: None,
-            name,
-            supported,
-        }
+impl ListReservationsXQcsAccountTypeParameter {
+    pub fn new() -> ListReservationsXQcsAccountTypeParameter {
+        ListReservationsXQcsAccountTypeParameter {}
     }
 }
