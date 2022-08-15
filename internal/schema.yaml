@@ -2587,6 +2587,53 @@ paths:
         - account
       x-internal: true
   "/v1/internal/products/{product}/billingPrices":
+    get:
+      description: |
+        List billing prices for the requested product.
+
+        Available filter fields include:
+
+        * `active` - boolean
+        * `type` - string
+      operationId: InternalListProductBillingPrices
+      parameters:
+        - description: The QCS product of which to list the prices.
+          in: path
+          name: product
+          required: true
+          schema:
+            $ref: "#/components/schemas/Product"
+        - description: If set to true, use the product that is explicitly marked as a
+            product for testing. This is helpful for isolating test data within
+            the production environment.
+          in: query
+          name: useTestProduct
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/filterParam"
+        - $ref: "#/components/parameters/pageSizeParam"
+        - $ref: "#/components/parameters/pageTokenParam"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalListProductBillingPricesResponse"
+          description: Request completed successfully.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Not authorized to list `BillingPrice`.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
     post:
       operationId: InternalCreateProductBillingPrice
       parameters:
@@ -7131,6 +7178,18 @@ components:
       required:
         - groups
       type: object
+    InternalListProductBillingPricesResponse:
+      properties:
+        prices:
+          items:
+            $ref: "#/components/schemas/BillingPrice"
+          type: array
+        nextPageToken:
+          type: string
+      required:
+        - prices
+      type: object
+      x-internal: true
     ListReservationsResponse:
       properties:
         nextPageToken:
