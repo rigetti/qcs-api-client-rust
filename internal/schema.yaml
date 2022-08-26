@@ -3847,6 +3847,61 @@ paths:
       tags:
         - account
       x-internal: true
+  /v1/integrations/trueq:compileQuil:
+    post:
+      description: Compile Quil using TrueQ library through quiltq.
+      operationId: CompileQuil
+      parameters:
+        - description: Either the client's user ID or the name of a group on behalf of
+            which the client wishes to submit the compilation request.
+          in: header
+          name: x-qcs-account-id
+          required: false
+          schema:
+            description: Either the client's user ID or the name of a group on behalf of
+              which the client wishes to submit the compilation request.
+            title: X-Qcs-Account-Id
+            type: string
+        - description: Indicates whether the compilation request should be made on behalf
+            of the authenticated user or a group.
+          in: header
+          name: x-qcs-account-type
+          required: false
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/AccountType"
+            description: Indicates whether the compilation request should be made on behalf
+              of the authenticated user or a group.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompileQuilRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompileQuilResponse"
+          description: Successful Response
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Not Found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
+      summary: Compile Quil
+      tags:
+        - translation
   "/v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings":
     get:
       description: >-
@@ -7604,6 +7659,86 @@ components:
         - detuning
       title: Capture
       type: object
+    CompileQuilRequest:
+      properties:
+        isa:
+          allOf:
+            - $ref: "#/components/schemas/CompilerISA"
+          description: The ISA against which this program will execute
+          title: A pyQuil Compiler ISA
+        numRandomizations:
+          description: The number of randomized program parameter sets to produce
+          title: Number of Randomizations
+          type: integer
+        passes:
+          description: A list of compiler meta-passes to perform
+          items:
+            $ref: "#/components/schemas/MetaPass"
+          title: Passes
+          type: array
+        program:
+          description: The Program to compile. Note, parametric programs are not currently
+            supported.
+          title: Quil
+          type: string
+      required:
+        - program
+        - isa
+        - numRandomizations
+        - passes
+      title: CompileQuilRequest
+      type: object
+    CompileQuilResponse:
+      properties:
+        nativeQuilMetadata:
+          allOf:
+            - $ref: "#/components/schemas/NativeQuilMetadata"
+          description: The native Quil metadata for the compilation.
+          title: Native Quil Metadata
+        program:
+          description: The compiled program
+          title: Program
+          type: string
+        readoutBasis:
+          description: The readout basis for the results. This will be a tensor with the
+            final axis length being equal to two; the first value is the real
+            part and the second value is the imaginary part. The client is
+            responsible for coalescing these values to a single complex number
+            as required.
+          items: {}
+          title: Readout Basis
+          type: array
+        twirlingParameters:
+          description: The twirling parameters for the program
+          items:
+            additionalProperties:
+              items:
+                type: number
+              type: array
+            type: object
+          title: Twirling Parameters
+          type: array
+      required:
+        - program
+        - twirlingParameters
+        - readoutBasis
+        - nativeQuilMetadata
+      title: CompileQuilResponse
+      type: object
+    CompilerISA:
+      properties:
+        1Q:
+          additionalProperties:
+            $ref: "#/components/schemas/Qubit"
+          title: 1Q
+          type: object
+        2Q:
+          additionalProperties:
+            $ref: "#/components/schemas/Edge"
+          title: 2Q
+          type: object
+      title: CompilerISA
+      type: object
     ControlSettings:
       description: >-
         All "physical" converter and signal chain settings per "channel".
@@ -7914,6 +8049,39 @@ components:
         - direction
       title: FrameSettings
       type: object
+    GateInfo:
+      properties:
+        arguments:
+          items:
+            anyOf:
+              - type: integer
+              - type: string
+          title: Arguments
+          type: array
+        duration:
+          title: Duration
+          type: number
+        fidelity:
+          title: Fidelity
+          type: number
+        operator:
+          title: Operator
+          type: string
+        operator_type:
+          default: gate
+          enum:
+            - gate
+          title: Operator Type
+          type: string
+        parameters:
+          items:
+            anyOf:
+              - type: number
+              - type: string
+          title: Parameters
+          type: array
+      title: GateInfo
+      type: object
     GateSettings:
       description: Information needed to schedule a gate from Quil.
       properties:
@@ -8053,6 +8221,59 @@ components:
         - alpha
         - second_order_hrm_coeff
       title: HermiteGaussianWaveform
+      type: object
+    MeasureInfo:
+      properties:
+        duration:
+          title: Duration
+          type: number
+        fidelity:
+          title: Fidelity
+          type: number
+        operator:
+          title: Operator
+          type: string
+        operator_type:
+          default: measure
+          enum:
+            - measure
+          title: Operator Type
+          type: string
+        qubit:
+          anyOf:
+            - type: integer
+            - type: string
+          title: Qubit
+        target:
+          anyOf:
+            - type: integer
+            - type: string
+          title: Target
+      title: MeasureInfo
+      type: object
+    MetaPass:
+      description: A compiler meta-pass to perform.
+      enum:
+        - address
+        - swap
+        - native
+        - rc_local
+        - rc_global
+        - readout_symmetrization
+      title: MetaPass
+      type: string
+    NativeQuilMetadata:
+      properties:
+        finalRewiring:
+          description: A list mapping logical to physical qubits. Indices represent
+            logical qubits; list values indicate physical qubits.
+          items:
+            type: integer
+          title: Final Rewiring
+          type: array
+      required:
+        - finalRewiring
+      title: NativeQuilMetadata
       type: object
     ParameterAref:
       description: A parametric expression.
@@ -8217,6 +8438,26 @@ components:
         - readouts
         - amplifiers
       title: QPUSettings
+      type: object
+    Qubit:
+      properties:
+        dead:
+          default: false
+          title: Dead
+          type: boolean
+        gates:
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/GateInfo"
+              - $ref: "#/components/schemas/MeasureInfo"
+          title: Gates
+          type: array
+        id:
+          title: Id
+          type: integer
+      required:
+        - id
+      title: Qubit
       type: object
     QubitSettings:
       description: Information related to a specific qubit.
