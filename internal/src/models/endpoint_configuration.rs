@@ -10,7 +10,7 @@
 
 /// EndpointConfiguration : Only for use internally. Includes extra information about an endpoint which should be stored alongside its parameters, but not provided by the user within those parameters.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EndpointConfiguration {
     #[serde(
         rename = "componentParameters",

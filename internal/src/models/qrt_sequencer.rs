@@ -10,7 +10,7 @@
 
 /// QrtSequencer : Configuration for a single readout transmit (QRT) sequencer.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QrtSequencer {
     #[serde(rename = "_type")]
     pub _type: String,

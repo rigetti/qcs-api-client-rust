@@ -10,7 +10,7 @@
 
 /// ActiveReset : Active reset instruction.  A repeated sequence of a measurement block and a feedback block conditional on the outcome of a specific measurement bit.  Regardless of the measurement outcomes the total duration of the control sequence is [attempts x ( measurement_duration + feedback_duration)].  The total measurement_duration must be chosen to allow for enough time after any Capture commands for the measurement bit to propagate back to the gate cards that are actuating the feedback.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ActiveReset {
     #[serde(rename = "_type")]
     pub _type: String,

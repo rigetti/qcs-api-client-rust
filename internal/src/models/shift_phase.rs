@@ -10,7 +10,7 @@
 
 /// ShiftPhase : Shift the phase of a frame by a relative value at a specific time.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ShiftPhase {
     #[serde(rename = "_type")]
     pub _type: String,

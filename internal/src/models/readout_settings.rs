@@ -10,7 +10,7 @@
 
 /// ReadoutSettings : All information needed to perform readout for a single qubit.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ReadoutSettings {
     #[serde(rename = "_type")]
     pub _type: String,

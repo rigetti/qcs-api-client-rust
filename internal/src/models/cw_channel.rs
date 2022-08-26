@@ -10,7 +10,7 @@
 
 /// CwChannel : Configuration for a single CW Generator Channel.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct CwChannel {
     #[serde(rename = "_type")]
     pub _type: String,

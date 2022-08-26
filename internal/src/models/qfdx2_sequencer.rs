@@ -10,7 +10,7 @@
 
 /// Qfdx2Sequencer : Configuration for a single QFDx2 Sequencer.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Qfdx2Sequencer {
     #[serde(rename = "_type")]
     pub _type: String,

@@ -10,7 +10,7 @@
 
 /// AccountBillingCustomerCreateRequest : If `id` is present, this will set the billing customer id to the requested account if the billing customer exists and has not been assigned to any other QCS account. Otherwise, it will create a new billing customer. In either case, it will ensure the billing customer has the appropriate metadata. Because QCS does not support updating billing customer data, `email` should only be set when `id` is not set.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AccountBillingCustomerCreateRequest {
     #[serde(rename = "email", skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,

@@ -10,7 +10,7 @@
 
 /// EngagementPolicyOptions : Options for configuration of the selected engagement policy
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EngagementPolicyOptions {
     /// Alias names for the requested quantum processor for use in the engagement process. Engagements requested for any of these alternate IDs will be evaluated and granted against the primary quantum processor.
     #[serde(

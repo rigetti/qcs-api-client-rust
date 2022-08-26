@@ -10,7 +10,7 @@
 
 /// InternalCreateEndpointParameters : The complete static, serializable definition of an endpoint's desired state
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalCreateEndpointParameters {
     #[serde(
         rename = "componentParameters",

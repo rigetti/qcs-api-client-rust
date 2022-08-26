@@ -10,7 +10,7 @@
 
 /// BillingInvoiceAllOf : A finalized invoice for the current invoice period.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingInvoiceAllOf {
     #[serde(rename = "id")]
     pub id: String,

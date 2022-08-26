@@ -10,7 +10,7 @@
 
 /// ParameterExpression : A parametric expression.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ParameterExpression {
     #[serde(rename = "_type")]
     pub _type: String,

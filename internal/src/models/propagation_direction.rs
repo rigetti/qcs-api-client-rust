@@ -21,12 +21,12 @@ pub enum PropagationDirection {
     Rx,
 }
 
-impl ToString for PropagationDirection {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for PropagationDirection {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Tx => String::from("tx"),
-            Self::Trx => String::from("trx"),
-            Self::Rx => String::from("rx"),
+            Self::Tx => write!(f, "tx"),
+            Self::Trx => write!(f, "trx"),
+            Self::Rx => write!(f, "rx"),
         }
     }
 }

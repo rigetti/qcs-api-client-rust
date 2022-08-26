@@ -23,13 +23,13 @@ pub enum LegacyEdgeType {
     XY,
 }
 
-impl ToString for LegacyEdgeType {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for LegacyEdgeType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::CPHASE => String::from("CPHASE"),
-            Self::CZ => String::from("CZ"),
-            Self::ISWAP => String::from("ISWAP"),
-            Self::XY => String::from("XY"),
+            Self::CPHASE => write!(f, "CPHASE"),
+            Self::CZ => write!(f, "CZ"),
+            Self::ISWAP => write!(f, "ISWAP"),
+            Self::XY => write!(f, "XY"),
         }
     }
 }

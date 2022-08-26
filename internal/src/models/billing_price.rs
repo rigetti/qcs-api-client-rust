@@ -10,7 +10,7 @@
 
 /// BillingPrice : The price schedule for a particular service applied to an invoice line item.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingPrice {
     /// Whether the price can be used for new purchases.
     #[serde(rename = "active", skip_serializing_if = "Option::is_none")]

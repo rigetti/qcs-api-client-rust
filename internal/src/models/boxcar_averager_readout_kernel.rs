@@ -10,10 +10,10 @@
 
 /// BoxcarAveragerReadoutKernel : Readout kernel that is a constant, with a normalization condition.  The normalization rescales the values such that the kernel integrates to 1, ie. makes the scale equal to 1/duration. This is useful for preserving information about the amplitude of the readout pulse that is demodulated, however this message puts the normalization on the sequencer where it suffers from discretization error and actually goes to zero amplitude at a duration of >16 microseconds.  See also https://gitlab.com/rigetti/qcs/pidgin/-/issues/328.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BoxcarAveragerReadoutKernel {
     #[serde(rename = "_type", skip_serializing_if = "Option::is_none")]
-    pub _type: Option<String>,
+    pub _type: Option<Type>,
     #[serde(rename = "bias")]
     pub bias: f32,
     #[serde(rename = "detuning")]
@@ -47,5 +47,18 @@ impl BoxcarAveragerReadoutKernel {
             phase,
             scale,
         }
+    }
+}
+
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum Type {
+    #[serde(rename = "BoxcarAveragerKernel")]
+    BoxcarAveragerKernel,
+}
+
+impl Default for Type {
+    fn default() -> Type {
+        Self::BoxcarAveragerKernel
     }
 }

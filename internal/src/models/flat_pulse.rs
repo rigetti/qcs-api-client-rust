@@ -10,7 +10,7 @@
 
 /// FlatPulse : Play a pulse with a constant complex amplitude.  This pulse is not derived from a waveform and admits the imposition of a scale, phase, and detuning.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct FlatPulse {
     #[serde(rename = "_type")]
     pub _type: String,

@@ -10,21 +10,21 @@
 
 /// LegacyInstructionSetArchitecture : The instruction set architecture defining native operations on qubits.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LegacyInstructionSetArchitecture {
     /// The set of all 1Q operations, keyed by their node identifier.
     #[serde(rename = "1Q")]
-    pub var_1_q: serde_json::Value,
+    pub var_1_q: ::std::collections::HashMap<String, crate::models::LegacyNodeDescriptor>,
     /// The set of all 2Q operations, keyed by their edge identifier.
     #[serde(rename = "2Q")]
-    pub var_2_q: serde_json::Value,
+    pub var_2_q: ::std::collections::HashMap<String, crate::models::LegacyEdgeDescriptor>,
 }
 
 impl LegacyInstructionSetArchitecture {
     /// The instruction set architecture defining native operations on qubits.
     pub fn new(
-        var_1_q: serde_json::Value,
-        var_2_q: serde_json::Value,
+        var_1_q: ::std::collections::HashMap<String, crate::models::LegacyNodeDescriptor>,
+        var_2_q: ::std::collections::HashMap<String, crate::models::LegacyEdgeDescriptor>,
     ) -> LegacyInstructionSetArchitecture {
         LegacyInstructionSetArchitecture { var_1_q, var_2_q }
     }

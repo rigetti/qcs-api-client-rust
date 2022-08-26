@@ -10,7 +10,7 @@
 
 /// HermiteGaussianWaveform : Hermite-gaussian shaped pulse.  Reference: Effects of arbitrary laser or NMR pulse shapes on population inversion and coherence Warren S. Warren. 81, (1984). DOI: 10.1063/1.447644
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct HermiteGaussianWaveform {
     #[serde(rename = "_type")]
     pub _type: String,

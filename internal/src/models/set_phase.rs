@@ -10,7 +10,7 @@
 
 /// SetPhase : Set the phase of a frame to a specific value at a specific time.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SetPhase {
     #[serde(rename = "_type")]
     pub _type: String,

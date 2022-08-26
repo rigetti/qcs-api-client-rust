@@ -21,12 +21,12 @@ pub enum TemplateName {
     ControllerMigration,
 }
 
-impl ToString for TemplateName {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for TemplateName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Production => String::from("production"),
-            Self::Integration => String::from("integration"),
-            Self::ControllerMigration => String::from("controllerMigration"),
+            Self::Production => write!(f, "production"),
+            Self::Integration => write!(f, "integration"),
+            Self::ControllerMigration => write!(f, "controllerMigration"),
         }
     }
 }

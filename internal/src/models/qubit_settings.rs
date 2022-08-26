@@ -10,7 +10,7 @@
 
 /// QubitSettings : Information related to a specific qubit.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QubitSettings {
     #[serde(rename = "_type")]
     pub _type: String,

@@ -10,7 +10,7 @@
 
 /// BillingCustomer : A representation of a QCS's account billing customer. Note, `balance` does not account for the upcoming invoice.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingCustomer {
     #[serde(rename = "email")]
     pub email: String,

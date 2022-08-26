@@ -10,7 +10,7 @@
 
 /// EndpointAddresses : Addresses at which this endpoint is reachable over the network
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EndpointAddresses {
     #[serde(rename = "grpc", skip_serializing_if = "Option::is_none")]
     pub grpc: Option<String>,

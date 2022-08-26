@@ -10,7 +10,7 @@
 
 /// Instrument : Instrument configuration.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Instrument {
     #[serde(rename = "_type")]
     pub _type: String,

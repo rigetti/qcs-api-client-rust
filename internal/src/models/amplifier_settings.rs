@@ -10,7 +10,7 @@
 
 /// AmplifierSettings : All information needed to operate an parametric amplifier.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AmplifierSettings {
     #[serde(rename = "_type")]
     pub _type: String,

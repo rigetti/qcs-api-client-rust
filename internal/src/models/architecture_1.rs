@@ -10,7 +10,7 @@
 
 /// Architecture1 : The architecture of the quantum processor.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Architecture1 {
     /// A list of all computational edges in the instruction set architecture.
     #[serde(rename = "edges")]

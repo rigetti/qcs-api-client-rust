@@ -10,7 +10,7 @@
 
 /// LegacyLattice : The legacy model of a lattice, as stored in Forest DB and served by Forest Server.  Note: The schema served by Forest Server differs in that it parents the model to a node under a \"lattice\" key.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LegacyLattice {
     /// The name of the device.
     #[serde(rename = "device_name")]

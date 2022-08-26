@@ -10,7 +10,7 @@
 
 /// ControlSettings : All \"physical\" converter and signal chain settings per \"channel\".  It can also carry wf_alignment for now until some future point where we split out sequencers.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ControlSettings {
     #[serde(rename = "_type")]
     pub _type: String,

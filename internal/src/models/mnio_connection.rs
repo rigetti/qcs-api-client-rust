@@ -10,7 +10,7 @@
 
 /// MnioConnection : Description of one side of an MNIO connection between two Tsunamis.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct MnioConnection {
     #[serde(rename = "_type")]
     pub _type: String,

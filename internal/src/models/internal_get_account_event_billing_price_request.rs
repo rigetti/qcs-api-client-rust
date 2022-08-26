@@ -10,7 +10,7 @@
 
 /// InternalGetAccountEventBillingPriceRequest : Property `quantumProcessorId` is currently required for all `product`s, however in the future there may be `product`s that do not require a `quantumProcessorId`.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalGetAccountEventBillingPriceRequest {
     #[serde(rename = "product")]
     pub product: crate::models::Product,

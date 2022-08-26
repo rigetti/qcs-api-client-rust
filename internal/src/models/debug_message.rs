@@ -10,7 +10,7 @@
 
 /// DebugMessage : Emit a specified debug message.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct DebugMessage {
     #[serde(rename = "_type")]
     pub _type: String,

@@ -10,7 +10,7 @@
 
 /// QdoFastFluxChannel : Configuration for a single QDO Fast Flux Channel.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QdoFastFluxChannel {
     #[serde(rename = "_type")]
     pub _type: String,

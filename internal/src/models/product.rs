@@ -19,12 +19,12 @@ pub enum Product {
     QpuJobTime,
 }
 
-impl ToString for Product {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for Product {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::ReservationCreation => String::from("reservationCreation"),
-            Self::QpuJobCompletion => String::from("qpuJobCompletion"),
-            Self::QpuJobTime => String::from("qpuJobTime"),
+            Self::ReservationCreation => write!(f, "reservationCreation"),
+            Self::QpuJobCompletion => write!(f, "qpuJobCompletion"),
+            Self::QpuJobTime => write!(f, "qpuJobTime"),
         }
     }
 }

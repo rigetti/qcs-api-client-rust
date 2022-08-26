@@ -10,7 +10,7 @@
 
 /// RigettiDomainModelModelsScheduleIrInstructionParametersParameterSpec : Specification of a dynamic parameter type and array-length.      Caution: the `_type` property was removed from this model but can still be accessed via `.additional_properties`
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct RigettiDomainModelModelsScheduleIrInstructionParametersParameterSpec {
     #[serde(rename = "length", skip_serializing_if = "Option::is_none")]
     pub length: Option<i32>,

@@ -10,7 +10,7 @@
 
 /// AccountBillingCustomerUpdateRequest : The billing customer represented by `id` must exist and not be assigned to any other QCS account. The server will ensure the billing customer has the appropriate metadata.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AccountBillingCustomerUpdateRequest {
     #[serde(rename = "id")]
     pub id: String,

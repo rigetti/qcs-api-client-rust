@@ -10,7 +10,7 @@
 
 /// InternalCreateProductBillingPriceRequest : Defines a new price to be created in our billing vendor. Note, creating `BillingPrice` does _not_ assign the resulting `BillingPrice` to an `EventBillingPrice`.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalCreateProductBillingPriceRequest {
     #[serde(rename = "billingScheme", skip_serializing_if = "Option::is_none")]
     pub billing_scheme: Option<crate::models::BillingPriceScheme>,

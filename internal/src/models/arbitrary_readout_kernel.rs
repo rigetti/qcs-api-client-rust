@@ -10,10 +10,10 @@
 
 /// ArbitraryReadoutKernel : Readout kernel defined by arbitrary IQ values.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ArbitraryReadoutKernel {
     #[serde(rename = "_type", skip_serializing_if = "Option::is_none")]
-    pub _type: Option<String>,
+    pub _type: Option<Type>,
     #[serde(rename = "bias")]
     pub bias: f32,
     #[serde(rename = "frame")]
@@ -31,5 +31,18 @@ impl ArbitraryReadoutKernel {
             frame,
             iqs,
         }
+    }
+}
+
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum Type {
+    #[serde(rename = "FilterKernel")]
+    FilterKernel,
+}
+
+impl Default for Type {
+    fn default() -> Type {
+        Self::FilterKernel
     }
 }

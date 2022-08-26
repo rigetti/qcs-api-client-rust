@@ -10,7 +10,7 @@
 
 /// UsiCardSequencer : Configuration for the card which interfaces with the USI Target on the USRP.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct UsiCardSequencer {
     #[serde(rename = "_type")]
     pub _type: String,

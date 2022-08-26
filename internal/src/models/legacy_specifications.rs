@@ -10,19 +10,22 @@
 
 /// LegacySpecifications : The specifications of a deployed quantum processor.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LegacySpecifications {
     /// The set of all 1Q specifications, keyed by their node identifier.
     #[serde(rename = "1Q")]
-    pub var_1_q: serde_json::Value,
+    pub var_1_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
     /// The set of all 2Q specifications, keyed by their node identifier.
     #[serde(rename = "2Q")]
-    pub var_2_q: serde_json::Value,
+    pub var_2_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
 }
 
 impl LegacySpecifications {
     /// The specifications of a deployed quantum processor.
-    pub fn new(var_1_q: serde_json::Value, var_2_q: serde_json::Value) -> LegacySpecifications {
+    pub fn new(
+        var_1_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
+        var_2_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
+    ) -> LegacySpecifications {
         LegacySpecifications { var_1_q, var_2_q }
     }
 }

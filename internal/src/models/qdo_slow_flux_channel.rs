@@ -10,7 +10,7 @@
 
 /// QdoSlowFluxChannel : Configuration for a QDO Slow Flux Channel Channel.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QdoSlowFluxChannel {
     #[serde(rename = "_type")]
     pub _type: String,

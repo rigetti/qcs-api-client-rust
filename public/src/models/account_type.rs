@@ -19,11 +19,11 @@ pub enum AccountType {
     User,
 }
 
-impl ToString for AccountType {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for AccountType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Group => String::from("group"),
-            Self::User => String::from("user"),
+            Self::Group => write!(f, "group"),
+            Self::User => write!(f, "user"),
         }
     }
 }

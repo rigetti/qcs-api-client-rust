@@ -19,11 +19,11 @@ pub enum BillingPriceScheme {
     Tiered,
 }
 
-impl ToString for BillingPriceScheme {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for BillingPriceScheme {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::PerUnit => String::from("per_unit"),
-            Self::Tiered => String::from("tiered"),
+            Self::PerUnit => write!(f, "per_unit"),
+            Self::Tiered => write!(f, "tiered"),
         }
     }
 }

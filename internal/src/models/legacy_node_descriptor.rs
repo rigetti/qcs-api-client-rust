@@ -10,7 +10,7 @@
 
 /// LegacyNodeDescriptor : A single qubit node.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LegacyNodeDescriptor {
     /// Mark the node as dead, preventing its use during compilation, even if 1Q gates exist. If omitted from the model, the interpretation is `dead = False`.
     #[serde(rename = "dead", skip_serializing_if = "Option::is_none")]

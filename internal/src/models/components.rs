@@ -10,7 +10,7 @@
 
 /// Components : The component settings currently applied to this endpoint (including unset and default values)
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Components {
     #[serde(rename = "certificateProxy", skip_serializing_if = "Option::is_none")]
     pub certificate_proxy: Option<Box<crate::models::CertificateProxyComponent>>,

@@ -17,10 +17,10 @@ pub enum LoggingTarget {
     Loki,
 }
 
-impl ToString for LoggingTarget {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for LoggingTarget {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Loki => String::from("loki"),
+            Self::Loki => write!(f, "loki"),
         }
     }
 }

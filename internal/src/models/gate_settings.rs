@@ -10,7 +10,7 @@
 
 /// GateSettings : Information needed to schedule a gate from Quil.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct GateSettings {
     #[serde(rename = "_type")]
     pub _type: String,

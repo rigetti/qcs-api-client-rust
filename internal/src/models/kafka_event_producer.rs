@@ -21,12 +21,12 @@ pub enum KafkaEventProducer {
     Log,
 }
 
-impl ToString for KafkaEventProducer {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for KafkaEventProducer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Live => String::from("live"),
-            Self::Ignore => String::from("ignore"),
-            Self::Log => String::from("log"),
+            Self::Live => write!(f, "live"),
+            Self::Ignore => write!(f, "ignore"),
+            Self::Log => write!(f, "log"),
         }
     }
 }

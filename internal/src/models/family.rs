@@ -21,12 +21,12 @@ pub enum Family {
     Aspen,
 }
 
-impl ToString for Family {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for Family {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::None => String::from("None"),
-            Self::Full => String::from("Full"),
-            Self::Aspen => String::from("Aspen"),
+            Self::None => write!(f, "None"),
+            Self::Full => write!(f, "Full"),
+            Self::Aspen => write!(f, "Aspen"),
         }
     }
 }

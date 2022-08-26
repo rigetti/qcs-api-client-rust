@@ -10,7 +10,7 @@
 
 /// BillingPriceRecurrence : The recurring components of a price such as `interval` and `usageType`.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingPriceRecurrence {
     #[serde(rename = "aggregateUsage", skip_serializing_if = "Option::is_none")]
     pub aggregate_usage: Option<AggregateUsage>,

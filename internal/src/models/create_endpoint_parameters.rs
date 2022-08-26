@@ -10,7 +10,7 @@
 
 /// CreateEndpointParameters : A publicly available set of parameters for defining an endpoint.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct CreateEndpointParameters {
     /// Which datacenters are available for endpoint placement. Defaults to berkeley-775
     #[serde(rename = "datacenters", skip_serializing_if = "Option::is_none")]

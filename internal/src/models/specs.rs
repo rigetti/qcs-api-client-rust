@@ -10,19 +10,22 @@
 
 /// Specs : The specifications of the device lattice.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Specs {
     /// The set of all 1Q specifications, keyed by their node identifier.
     #[serde(rename = "1Q")]
-    pub var_1_q: serde_json::Value,
+    pub var_1_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
     /// The set of all 2Q specifications, keyed by their node identifier.
     #[serde(rename = "2Q")]
-    pub var_2_q: serde_json::Value,
+    pub var_2_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
 }
 
 impl Specs {
     /// The specifications of the device lattice.
-    pub fn new(var_1_q: serde_json::Value, var_2_q: serde_json::Value) -> Specs {
+    pub fn new(
+        var_1_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
+        var_2_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
+    ) -> Specs {
         Specs { var_1_q, var_2_q }
     }
 }

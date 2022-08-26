@@ -10,7 +10,7 @@
 
 /// Operation : An operation, with its sites and site-independent characteristics.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Operation {
     /// The list of site-independent characteristics of this operation.
     #[serde(rename = "characteristics")]

@@ -10,7 +10,7 @@
 
 /// SetScale : Set the scale of a frame to a value at a specific time.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SetScale {
     #[serde(rename = "_type")]
     pub _type: String,

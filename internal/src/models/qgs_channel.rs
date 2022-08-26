@@ -10,7 +10,7 @@
 
 /// QgsChannel : Tsunami QGS Channel.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QgsChannel {
     #[serde(rename = "_type")]
     pub _type: String,

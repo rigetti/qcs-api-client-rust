@@ -10,7 +10,7 @@
 
 /// BillingInvoiceLine : A line item on an invoice representing a particular purchase (such as a reservation) or aggregate usage for the invoice period.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingInvoiceLine {
     #[serde(rename = "amount")]
     pub amount: i32,

@@ -10,7 +10,7 @@
 
 /// InternalEventBillingPrice : Event price. Maps billing account, event, and quantum processor identifier (we refer to this as an event scope) to a price identifier.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalEventBillingPrice {
     /// userId for `accountType` \"user\", group name for `accountType` \"group\".
     #[serde(rename = "accountId", skip_serializing_if = "Option::is_none")]

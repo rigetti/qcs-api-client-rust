@@ -10,7 +10,7 @@
 
 /// SetDefaultEndpointRequest : Request to set the default endpoint for a quantum processor.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SetDefaultEndpointRequest {
     /// The desired Endpoint ID to direct clients to for requests for this quantum processor. If empty, clear the stored default endpoint.
     #[serde(rename = "endpointId", skip_serializing_if = "Option::is_none")]

@@ -19,11 +19,11 @@ pub enum StartupConfigurationSource {
     Blackpine,
 }
 
-impl ToString for StartupConfigurationSource {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for StartupConfigurationSource {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::DeployedRack => String::from("deployedRack"),
-            Self::Blackpine => String::from("blackpine"),
+            Self::DeployedRack => write!(f, "deployedRack"),
+            Self::Blackpine => write!(f, "blackpine"),
         }
     }
 }

@@ -10,7 +10,7 @@
 
 /// Qgsx2Sequencer : Configuration for a single QGSx2 Sequencer.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Qgsx2Sequencer {
     #[serde(rename = "_type")]
     pub _type: String,

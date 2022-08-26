@@ -10,7 +10,7 @@
 
 /// QfdChannel : Configuration for a single QFD Channel.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QfdChannel {
     #[serde(rename = "_type")]
     pub _type: String,

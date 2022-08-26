@@ -10,7 +10,7 @@
 
 /// Parameter : A parameter to an operation.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Parameter {
     /// The name of the parameter, such as the name of a mathematical symbol.
     #[serde(rename = "name")]

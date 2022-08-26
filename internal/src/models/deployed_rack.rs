@@ -10,7 +10,7 @@
 
 /// DeployedRack : Describes the control configuration of a fridge/rack, real or fake.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct DeployedRack {
     #[serde(rename = "_type")]
     pub _type: String,

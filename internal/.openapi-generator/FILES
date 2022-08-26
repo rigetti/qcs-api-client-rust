@@ -14,6 +14,7 @@ src/apis/reservations_api.rs
 src/apis/translation_api.rs
 src/lib.rs
 src/models/a.rs
+src/models/a_py_quil_compiler_isa.rs
 src/models/account_balance.rs
 src/models/account_billing_customer_create_request.rs
 src/models/account_billing_customer_update_request.rs
@@ -26,6 +27,7 @@ src/models/arbitrary_readout_kernel.rs
 src/models/arbitrary_waveform.rs
 src/models/architecture.rs
 src/models/architecture_1.rs
+src/models/arguments_inner.rs
 src/models/auth_email_password_reset_token_request.rs
 src/models/auth_reset_password_request.rs
 src/models/auth_reset_password_with_token_request.rs
@@ -53,6 +55,9 @@ src/models/check_client_application_response.rs
 src/models/checksum_description.rs
 src/models/client_application.rs
 src/models/client_applications_download_link.rs
+src/models/compile_quil_request.rs
+src/models/compile_quil_response.rs
+src/models/compiler_isa.rs
 src/models/component_options.rs
 src/models/component_parameters.rs
 src/models/components.rs
@@ -91,7 +96,9 @@ src/models/flat_pulse.rs
 src/models/flat_readout_kernel.rs
 src/models/flat_waveform.rs
 src/models/frame_settings.rs
+src/models/gate_info.rs
 src/models/gate_settings.rs
+src/models/gates_inner.rs
 src/models/gaussian_waveform.rs
 src/models/get_quilt_calibrations_response.rs
 src/models/group.rs
@@ -113,6 +120,7 @@ src/models/internal_get_account_event_billing_price_request.rs
 src/models/internal_list_endpoints_response.rs
 src/models/internal_list_legacy_lattices_response.rs
 src/models/internal_list_legacy_quantum_processors_response.rs
+src/models/internal_list_product_billing_prices_response.rs
 src/models/internal_list_users_response.rs
 src/models/internal_metered_usage_record.rs
 src/models/internal_put_legacy_deployed_rack_request.rs
@@ -146,8 +154,11 @@ src/models/list_groups_response.rs
 src/models/list_quantum_processors_response.rs
 src/models/list_reservations_response.rs
 src/models/logging_target.rs
+src/models/measure_info.rs
+src/models/meta_pass.rs
 src/models/mnio_connection.rs
 src/models/mod.rs
+src/models/native_quil_metadata.rs
 src/models/node.rs
 src/models/nomad_job_datacenters.rs
 src/models/operation.rs
@@ -158,6 +169,7 @@ src/models/parameter_aref.rs
 src/models/parameter_expression.rs
 src/models/parameter_operator.rs
 src/models/parameter_type.rs
+src/models/parameters_inner.rs
 src/models/phase.rs
 src/models/product.rs
 src/models/propagation_direction.rs
@@ -180,6 +192,8 @@ src/models/qrt_channel.rs
 src/models/qrt_sequencer.rs
 src/models/qrtx2_sequencer.rs
 src/models/quantum_processor.rs
+src/models/qubit.rs
+src/models/qubit_1.rs
 src/models/qubit_settings.rs
 src/models/rack_meta.rs
 src/models/readout_classifier.rs
@@ -201,6 +215,7 @@ src/models/soft_delete_info.rs
 src/models/specs.rs
 src/models/startup_configuration_source.rs
 src/models/swap_phases.rs
+src/models/target.rs
 src/models/template_name.rs
 src/models/translate_native_quil_to_encrypted_binary_request.rs
 src/models/translate_native_quil_to_encrypted_binary_response.rs

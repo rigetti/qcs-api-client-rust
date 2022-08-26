@@ -10,7 +10,7 @@
 
 /// SlowFluxSettings : All information needed to control a slow flux setting on a qubit or amplifier.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SlowFluxSettings {
     #[serde(rename = "_type")]
     pub _type: String,

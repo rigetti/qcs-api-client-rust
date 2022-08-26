@@ -10,7 +10,7 @@
 
 /// BillingInvoice : A finalized billing invoice.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingInvoice {
     #[serde(rename = "periodEnd")]
     pub period_end: String,

@@ -10,7 +10,7 @@
 
 /// InstructionSetArchitecture : The native instruction set architecture of a quantum processor, annotated with characteristics.  The operations described by the `instructions` field are named by their QUIL instruction name, while the operation described by the `benchmarks` field are named by their benchmark routine and are a future extension point that will be populated in future iterations.  The characteristics that annotate both instructions and benchmarks assist the user to generate the best native QUIL program for a desired task, and so are provided as part of the native ISA.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InstructionSetArchitecture {
     #[serde(rename = "architecture")]
     pub architecture: Box<crate::models::Architecture1>,

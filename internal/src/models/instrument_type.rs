@@ -37,20 +37,20 @@ pub enum InstrumentType {
     YokogawaGS200,
 }
 
-impl ToString for InstrumentType {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for InstrumentType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::FridgeThermometer => String::from("FridgeThermometer"),
-            Self::KeysightPNA => String::from("KeysightPNA"),
-            Self::MiniCircuitsSwitch => String::from("MiniCircuitsSwitch"),
-            Self::SignalCore => String::from("SignalCore"),
-            Self::SP6TSwitch => String::from("SP6TSwitch"),
-            Self::Tsunami => String::from("Tsunami"),
-            Self::USITarget => String::from("USITarget"),
-            Self::USRP => String::from("USRP"),
-            Self::YokoServer => String::from("YokoServer"),
-            Self::YokoShim => String::from("YokoShim"),
-            Self::YokogawaGS200 => String::from("Yokogawa_GS200"),
+            Self::FridgeThermometer => write!(f, "FridgeThermometer"),
+            Self::KeysightPNA => write!(f, "KeysightPNA"),
+            Self::MiniCircuitsSwitch => write!(f, "MiniCircuitsSwitch"),
+            Self::SignalCore => write!(f, "SignalCore"),
+            Self::SP6TSwitch => write!(f, "SP6TSwitch"),
+            Self::Tsunami => write!(f, "Tsunami"),
+            Self::USITarget => write!(f, "USITarget"),
+            Self::USRP => write!(f, "USRP"),
+            Self::YokoServer => write!(f, "YokoServer"),
+            Self::YokoShim => write!(f, "YokoShim"),
+            Self::YokogawaGS200 => write!(f, "Yokogawa_GS200"),
         }
     }
 }

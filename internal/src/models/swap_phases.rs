@@ -10,7 +10,7 @@
 
 /// SwapPhases : Swap the phases of two tx-frames at a specific time.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SwapPhases {
     #[serde(rename = "_type")]
     pub _type: String,

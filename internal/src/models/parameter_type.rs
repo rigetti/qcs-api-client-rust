@@ -19,11 +19,11 @@ pub enum ParameterType {
     FLOAT,
 }
 
-impl ToString for ParameterType {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for ParameterType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::INTEGER => String::from("INTEGER"),
-            Self::FLOAT => String::from("FLOAT"),
+            Self::INTEGER => write!(f, "INTEGER"),
+            Self::FLOAT => write!(f, "FLOAT"),
         }
     }
 }

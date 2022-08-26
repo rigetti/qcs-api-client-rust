@@ -10,7 +10,7 @@
 
 /// AccountBalance : Balance of QCS account in billing system. Note, a negative balance signifies that the account has QCS credits to spend. A positive account balance signifies that the account has no additional QCS credits to spend. The QCS UI may display these quantities in absolute or negative value and provide a clear meaning to the significance.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AccountBalance {
     /// The balance in cents USD.
     #[serde(rename = "balance")]

@@ -23,14 +23,14 @@ pub enum BillingInvoiceStatus {
     Void,
 }
 
-impl ToString for BillingInvoiceStatus {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for BillingInvoiceStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Draft => String::from("draft"),
-            Self::Open => String::from("open"),
-            Self::Paid => String::from("paid"),
-            Self::Uncollectible => String::from("uncollectible"),
-            Self::Void => String::from("void"),
+            Self::Draft => write!(f, "draft"),
+            Self::Open => write!(f, "open"),
+            Self::Paid => write!(f, "paid"),
+            Self::Uncollectible => write!(f, "uncollectible"),
+            Self::Void => write!(f, "void"),
         }
     }
 }

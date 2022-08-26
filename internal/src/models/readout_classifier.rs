@@ -10,7 +10,7 @@
 
 /// ReadoutClassifier : All the information needed to perform readout classification for a single qubit.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ReadoutClassifier {
     #[serde(rename = "_type")]
     pub _type: String,

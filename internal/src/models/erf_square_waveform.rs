@@ -10,7 +10,7 @@
 
 /// ErfSquareWaveform : Pulse with a flat top and rounded shoulders given by error functions.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ErfSquareWaveform {
     #[serde(rename = "_type")]
     pub _type: String,

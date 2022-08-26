@@ -10,7 +10,7 @@
 
 /// BillingProduct : A QCS service product. This may represent one time (such as reservations) or metered services.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingProduct {
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,

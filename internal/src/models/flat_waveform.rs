@@ -10,7 +10,7 @@
 
 /// FlatWaveform : Flat pulse.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct FlatWaveform {
     #[serde(rename = "_type")]
     pub _type: String,

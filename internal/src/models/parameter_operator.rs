@@ -21,12 +21,12 @@ pub enum ParameterOperator {
     Star,
 }
 
-impl ToString for ParameterOperator {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for ParameterOperator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Plus => String::from("+"),
-            Self::Minus => String::from("-"),
-            Self::Star => String::from("*"),
+            Self::Plus => write!(f, "+"),
+            Self::Minus => write!(f, "-"),
+            Self::Star => write!(f, "*"),
         }
     }
 }

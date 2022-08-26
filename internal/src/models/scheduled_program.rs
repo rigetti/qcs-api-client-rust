@@ -10,10 +10,10 @@
 
 /// ScheduledProgram : Scheduled program made of ScheduledInstructions.  The ScheduledInstructions contain references to the waveforms, readout kernels, and parameters.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ScheduledProgram {
     #[serde(rename = "_type", skip_serializing_if = "Option::is_none")]
-    pub _type: Option<String>,
+    pub _type: Option<Type>,
     #[serde(rename = "filters", skip_serializing_if = "Option::is_none")]
     pub filters: Option<::std::collections::HashMap<String, crate::models::Filters>>,
     #[serde(rename = "parameters", skip_serializing_if = "Option::is_none")]
@@ -42,5 +42,18 @@ impl ScheduledProgram {
             scheduled_instructions: None,
             waveforms: None,
         }
+    }
+}
+
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum Type {
+    #[serde(rename = "Program")]
+    Program,
+}
+
+impl Default for Type {
+    fn default() -> Type {
+        Self::Program
     }
 }

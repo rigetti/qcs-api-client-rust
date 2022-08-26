@@ -115,6 +115,7 @@ Class | Method | HTTP request | Description
 *DefaultApi* | [**get_health**](docs/DefaultApi.md#get_health) | **GET** / | 
 *DefaultApi* | [**health_check**](docs/DefaultApi.md#health_check) | **GET** /v1/ | Health Check
 *DefaultApi* | [**internal_create_product_billing_price**](docs/DefaultApi.md#internal_create_product_billing_price) | **POST** /v1/internal/products/{product}/billingPrices | 
+*DefaultApi* | [**internal_list_product_billing_prices**](docs/DefaultApi.md#internal_list_product_billing_prices) | **GET** /v1/internal/products/{product}/billingPrices | 
 *DefaultApi* | [**internal_update_group_billing_customer**](docs/DefaultApi.md#internal_update_group_billing_customer) | **PATCH** /v1/internal/groups/{groupName}/billingCustomer | 
 *DefaultApi* | [**internal_update_product_billing_price**](docs/DefaultApi.md#internal_update_product_billing_price) | **PATCH** /v1/internal/billingPrices/{billingPriceId} | 
 *DefaultApi* | [**internal_update_user_billing_customer**](docs/DefaultApi.md#internal_update_user_billing_customer) | **PATCH** /v1/internal/users/{userId}/billingCustomer | 
@@ -186,6 +187,7 @@ Class | Method | HTTP request | Description
 *ReservationsApi* | [**list_group_reservations**](docs/ReservationsApi.md#list_group_reservations) | **GET** /v1/groups/{groupName}/reservations | List Group Reservations
 *ReservationsApi* | [**list_reservations**](docs/ReservationsApi.md#list_reservations) | **GET** /v1/reservations | List Reservations
 *TranslationApi* | [**build_qpu_settings**](docs/TranslationApi.md#build_qpu_settings) | **POST** /v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings:build | Build Qpu Settings
+*TranslationApi* | [**compile_quil**](docs/TranslationApi.md#compile_quil) | **POST** /v1/integrations/trueq:compileQuil | Compile Quil
 *TranslationApi* | [**get_qpu_settings**](docs/TranslationApi.md#get_qpu_settings) | **GET** /v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings | Get Qpu Settings
 *TranslationApi* | [**get_quilt_calibrations**](docs/TranslationApi.md#get_quilt_calibrations) | **GET** /v1/quantumProcessors/{quantumProcessorId}/quiltCalibrations | Get Quilt Calibrations
 *TranslationApi* | [**put_qpu_settings**](docs/TranslationApi.md#put_qpu_settings) | **PUT** /v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings | Put Qpu Settings
@@ -195,6 +197,7 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [A](docs/A.md)
+ - [APyQuilCompilerIsa](docs/APyQuilCompilerIsa.md)
  - [AccountBalance](docs/AccountBalance.md)
  - [AccountBillingCustomerCreateRequest](docs/AccountBillingCustomerCreateRequest.md)
  - [AccountBillingCustomerUpdateRequest](docs/AccountBillingCustomerUpdateRequest.md)
@@ -207,6 +210,7 @@ Class | Method | HTTP request | Description
  - [ArbitraryWaveform](docs/ArbitraryWaveform.md)
  - [Architecture](docs/Architecture.md)
  - [Architecture1](docs/Architecture1.md)
+ - [ArgumentsInner](docs/ArgumentsInner.md)
  - [AuthEmailPasswordResetTokenRequest](docs/AuthEmailPasswordResetTokenRequest.md)
  - [AuthResetPasswordRequest](docs/AuthResetPasswordRequest.md)
  - [AuthResetPasswordWithTokenRequest](docs/AuthResetPasswordWithTokenRequest.md)
@@ -234,6 +238,9 @@ Class | Method | HTTP request | Description
  - [ChecksumDescription](docs/ChecksumDescription.md)
  - [ClientApplication](docs/ClientApplication.md)
  - [ClientApplicationsDownloadLink](docs/ClientApplicationsDownloadLink.md)
+ - [CompileQuilRequest](docs/CompileQuilRequest.md)
+ - [CompileQuilResponse](docs/CompileQuilResponse.md)
+ - [CompilerIsa](docs/CompilerIsa.md)
  - [ComponentOptions](docs/ComponentOptions.md)
  - [ComponentParameters](docs/ComponentParameters.md)
  - [Components](docs/Components.md)
@@ -272,7 +279,9 @@ Class | Method | HTTP request | Description
  - [FlatReadoutKernel](docs/FlatReadoutKernel.md)
  - [FlatWaveform](docs/FlatWaveform.md)
  - [FrameSettings](docs/FrameSettings.md)
+ - [GateInfo](docs/GateInfo.md)
  - [GateSettings](docs/GateSettings.md)
+ - [GatesInner](docs/GatesInner.md)
  - [GaussianWaveform](docs/GaussianWaveform.md)
  - [GetQuiltCalibrationsResponse](docs/GetQuiltCalibrationsResponse.md)
  - [Group](docs/Group.md)
@@ -294,6 +303,7 @@ Class | Method | HTTP request | Description
  - [InternalListEndpointsResponse](docs/InternalListEndpointsResponse.md)
  - [InternalListLegacyLatticesResponse](docs/InternalListLegacyLatticesResponse.md)
  - [InternalListLegacyQuantumProcessorsResponse](docs/InternalListLegacyQuantumProcessorsResponse.md)
+ - [InternalListProductBillingPricesResponse](docs/InternalListProductBillingPricesResponse.md)
  - [InternalListUsersResponse](docs/InternalListUsersResponse.md)
  - [InternalMeteredUsageRecord](docs/InternalMeteredUsageRecord.md)
  - [InternalPutLegacyDeployedRackRequest](docs/InternalPutLegacyDeployedRackRequest.md)
@@ -327,7 +337,10 @@ Class | Method | HTTP request | Description
  - [ListQuantumProcessorsResponse](docs/ListQuantumProcessorsResponse.md)
  - [ListReservationsResponse](docs/ListReservationsResponse.md)
  - [LoggingTarget](docs/LoggingTarget.md)
+ - [MeasureInfo](docs/MeasureInfo.md)
+ - [MetaPass](docs/MetaPass.md)
  - [MnioConnection](docs/MnioConnection.md)
+ - [NativeQuilMetadata](docs/NativeQuilMetadata.md)
  - [Node](docs/Node.md)
  - [NomadJobDatacenters](docs/NomadJobDatacenters.md)
  - [Operation](docs/Operation.md)
@@ -338,6 +351,7 @@ Class | Method | HTTP request | Description
  - [ParameterExpression](docs/ParameterExpression.md)
  - [ParameterOperator](docs/ParameterOperator.md)
  - [ParameterType](docs/ParameterType.md)
+ - [ParametersInner](docs/ParametersInner.md)
  - [Phase](docs/Phase.md)
  - [Product](docs/Product.md)
  - [PropagationDirection](docs/PropagationDirection.md)
@@ -360,6 +374,8 @@ Class | Method | HTTP request | Description
  - [QrtSequencer](docs/QrtSequencer.md)
  - [Qrtx2Sequencer](docs/Qrtx2Sequencer.md)
  - [QuantumProcessor](docs/QuantumProcessor.md)
+ - [Qubit](docs/Qubit.md)
+ - [Qubit1](docs/Qubit1.md)
  - [QubitSettings](docs/QubitSettings.md)
  - [RackMeta](docs/RackMeta.md)
  - [ReadoutClassifier](docs/ReadoutClassifier.md)
@@ -381,6 +397,7 @@ Class | Method | HTTP request | Description
  - [Specs](docs/Specs.md)
  - [StartupConfigurationSource](docs/StartupConfigurationSource.md)
  - [SwapPhases](docs/SwapPhases.md)
+ - [Target](docs/Target.md)
  - [TemplateName](docs/TemplateName.md)
  - [TranslateNativeQuilToEncryptedBinaryRequest](docs/TranslateNativeQuilToEncryptedBinaryRequest.md)
  - [TranslateNativeQuilToEncryptedBinaryResponse](docs/TranslateNativeQuilToEncryptedBinaryResponse.md)

@@ -19,11 +19,11 @@ pub enum BillingPriceTiersMode {
     Volume,
 }
 
-impl ToString for BillingPriceTiersMode {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for BillingPriceTiersMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Graduated => String::from("graduated"),
-            Self::Volume => String::from("volume"),
+            Self::Graduated => write!(f, "graduated"),
+            Self::Volume => write!(f, "volume"),
         }
     }
 }

@@ -10,7 +10,7 @@
 
 /// GaussianWaveform : Gaussian shaped waveform envelope defined for a specific frame.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct GaussianWaveform {
     #[serde(rename = "_type")]
     pub _type: String,

@@ -10,7 +10,7 @@
 
 /// SoftDeleteInfo : Metadata for resources that are soft deleted.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SoftDeleteInfo {
     #[serde(rename = "deleterId")]
     pub deleter_id: String,

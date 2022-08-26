@@ -19,11 +19,11 @@ pub enum ExecutionBackend {
     _Virtual,
 }
 
-impl ToString for ExecutionBackend {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for ExecutionBackend {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Live => String::from("live"),
-            Self::_Virtual => String::from("virtual"),
+            Self::Live => write!(f, "live"),
+            Self::_Virtual => write!(f, "virtual"),
         }
     }
 }

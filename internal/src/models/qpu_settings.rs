@@ -10,7 +10,7 @@
 
 /// QpuSettings : New QPU Settings to publish
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QpuSettings {
     #[serde(rename = "_type")]
     pub _type: String,

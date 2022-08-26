@@ -10,7 +10,7 @@
 
 /// ComponentOptions : The component options that will be applied as defaults to an endpoint constructed from this template
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ComponentOptions {
     #[serde(rename = "certificateProxy", skip_serializing_if = "Option::is_none")]
     pub certificate_proxy: Option<Box<crate::models::CertificateProxyComponent>>,

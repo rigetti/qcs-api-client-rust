@@ -10,7 +10,7 @@
 
 /// LegacyEdgeDescriptor : An edge between two qubits.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LegacyEdgeDescriptor {
     /// Mark the edge as dead, preventing its use during compilation, even if 2Q gates exist. If omitted from the model, the interpretation is `dead = False`.
     #[serde(rename = "dead", skip_serializing_if = "Option::is_none")]

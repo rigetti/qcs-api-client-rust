@@ -10,7 +10,7 @@
 
 /// EndpointTemplate : An EndpointTemplate is used to apply a set of default values to an endpoint on construction or update.  Note that there is no difference between using a template by name and using its component parameters directly; the template exists for user convenience.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EndpointTemplate {
     #[serde(rename = "componentParameters")]
     pub component_parameters: Box<crate::models::ComponentOptions>,

@@ -10,7 +10,7 @@
 
 /// EndpointDeployment : The live, deployed configuration of an endpoint
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EndpointDeployment {
     /// The network address(es) of each component
     #[serde(rename = "componentAddresses")]

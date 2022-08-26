@@ -21,12 +21,12 @@ pub enum NomadJobDatacenters {
     OxfordInstruments,
 }
 
-impl ToString for NomadJobDatacenters {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for NomadJobDatacenters {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Berkeley775 => String::from("berkeley-775"),
-            Self::FremontFab => String::from("fremont-fab"),
-            Self::OxfordInstruments => String::from("oxford-instruments"),
+            Self::Berkeley775 => write!(f, "berkeley-775"),
+            Self::FremontFab => write!(f, "fremont-fab"),
+            Self::OxfordInstruments => write!(f, "oxford-instruments"),
         }
     }
 }

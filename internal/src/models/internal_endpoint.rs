@@ -10,7 +10,7 @@
 
 /// InternalEndpoint : An extension of the public Endpoint class which includes information for internal use.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalEndpoint {
     /// Network address at which the endpoint is locally reachable
     #[serde(rename = "address")]

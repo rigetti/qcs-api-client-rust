@@ -10,7 +10,7 @@
 
 /// Qpu : Information about the topology of the device in relation to its control interfaces.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Qpu {
     #[serde(rename = "_type")]
     pub _type: String,

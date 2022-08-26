@@ -10,7 +10,7 @@
 
 /// InternalMeteredUsageRecord : This represents a usage record that has successfully been submitted to the QCS billing provider. (ie Stripe). The current system does not persist these records to the database, but are returned here for the purpose of logging and debugging.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalMeteredUsageRecord {
     #[serde(rename = "accountId")]
     pub account_id: String,

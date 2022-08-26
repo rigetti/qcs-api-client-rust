@@ -10,7 +10,7 @@
 
 /// Pulse : Play a pulse at a specific time on a specific frame.  The pulse is derived from a waveform and admits the imposition of a scale, phase, and detuning.
 
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Pulse {
     #[serde(rename = "_type")]
     pub _type: String,
