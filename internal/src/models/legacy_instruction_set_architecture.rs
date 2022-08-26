@@ -12,10 +12,10 @@
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LegacyInstructionSetArchitecture {
-    /// The set of all 1Q operations, keyed by their node identifier.
+    /// The set of all 1Q operations, keyed by their node identifier.  Property keys must have the format: \\d+
     #[serde(rename = "1Q")]
     pub var_1_q: ::std::collections::HashMap<String, crate::models::LegacyNodeDescriptor>,
-    /// The set of all 2Q operations, keyed by their edge identifier.
+    /// The set of all 2Q operations, keyed by their edge identifier.  Property keys must have the format: \\d+-\\d+
     #[serde(rename = "2Q")]
     pub var_2_q: ::std::collections::HashMap<String, crate::models::LegacyEdgeDescriptor>,
 }

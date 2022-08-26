@@ -50,28 +50,54 @@ def title_conflicting_type_properties(obj, parent=None):
         title_conflicting_type_properties(v, obj)
 
 def openapi_compat_3_0(obj, ref=[]):
+    """
+    Replaces OpenAPI features not compatible with v3.0 with a best-effort compatible alternative.
+    See https://swagger.io/docs/specification/data-models/keywords/#unsupported
+    """
+
     if not isinstance(obj, dict):
         return
 
+    # A const is the same as a 1-member enum
     if "const" in obj:
         obj["enum"] = [obj["const"]]
         del obj["const"]
 
+    # Our usage of pattern properties can be simulated with `additionalProperties`,
+    # when a single pattern is the only option. We cannot simulate enforcement of
+    # the property key names, so a note is added to the description.
+    # Multiple patterns cannot be simulated - in that case an error will be raised.
+    #
+    ### Before
+    # patternProperties:
+    #   \d+:
+    #     $ref: "#/components/schemas/LegacyNodeDescriptor"
+    #
+    ### After
+    # additionalProperies:
+    #   $ref: "#/components/schemas/LegacyNodeDescriptor"
     if "patternProperties" in obj:
         if "additionalProperties" in obj:
-            raise Exception(
+            raise ValueError(
                 f"For {'.'.join(ref)}, cannot reconcile both 'patternProperties' and 'additionalProperties'"
             )
-        values = [v for v in obj["patternProperties"].values()]
-        if len(values) == 0:
-            raise Exception(
-                f"For {'.'.join(ref)}, empty 'patternProperties'" 
+        props = list(obj["patternProperties"].items())
+        numProps = len(props)
+        if numProps == 0:
+            raise ValueError(
+                f"For {'.'.join(ref)}, empty 'patternProperties'"
             )
-        if len(values) > 1:
-            raise Exception(
-                f"For {'.'.join(ref)}, cannot reconcile more than one 'patternProperties' (found {len(values)})" 
+        if numProps > 1:
+            raise ValueError(
+                f"For {'.'.join(ref)}, cannot reconcile more than one 'patternProperties' (found {numProps})"
             )
-        obj["additionalProperties"] = values[0]
+        k, v = props[0]
+        obj["additionalProperties"] = v
+        obj["description"] = (
+            obj.get("description", "")
+            + f"\n\nProperty keys must have the format: {k}"
+        ).strip()
+
         del obj["patternProperties"]
 
     for k, v in obj.items():
