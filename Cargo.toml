@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "qcs-api-client-common",
     "qcs-api-client-grpc",
     "qcs-api-client-grpc-internal",
     "qcs-api-client-openapi/internal",
