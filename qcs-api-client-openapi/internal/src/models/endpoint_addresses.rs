@@ -9,6 +9,7 @@
  */
 
 /// EndpointAddresses : Addresses at which this endpoint is reachable over the network
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EndpointAddresses {

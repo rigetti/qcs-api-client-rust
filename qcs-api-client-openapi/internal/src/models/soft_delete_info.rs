@@ -9,6 +9,7 @@
  */
 
 /// SoftDeleteInfo : Metadata for resources that are soft deleted.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SoftDeleteInfo {

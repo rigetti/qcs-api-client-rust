@@ -9,6 +9,7 @@
  */
 
 /// BoxcarAveragerReadoutKernel : Readout kernel that is a constant, with a normalization condition.  The normalization rescales the values such that the kernel integrates to 1, ie. makes the scale equal to 1/duration. This is useful for preserving information about the amplitude of the readout pulse that is demodulated, however this message puts the normalization on the sequencer where it suffers from discretization error and actually goes to zero amplitude at a duration of >16 microseconds.  See also https://gitlab.com/rigetti/qcs/pidgin/-/issues/328.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BoxcarAveragerReadoutKernel {

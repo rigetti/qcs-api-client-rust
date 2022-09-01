@@ -9,6 +9,7 @@
  */
 
 /// SetDefaultEndpointRequest : Request to set the default endpoint for a quantum processor.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SetDefaultEndpointRequest {

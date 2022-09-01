@@ -9,6 +9,7 @@
  */
 
 /// DeployedRack : Describes the control configuration of a fridge/rack, real or fake.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct DeployedRack {

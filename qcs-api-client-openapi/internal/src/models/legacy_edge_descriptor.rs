@@ -9,6 +9,7 @@
  */
 
 /// LegacyEdgeDescriptor : An edge between two qubits.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LegacyEdgeDescriptor {

@@ -9,6 +9,7 @@
  */
 
 /// BillingInvoiceAllOf : A finalized invoice for the current invoice period.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingInvoiceAllOf {

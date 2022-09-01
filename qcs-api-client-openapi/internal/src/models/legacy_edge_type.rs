@@ -9,6 +9,7 @@
  */
 
 /// LegacyEdgeType : Edge type identifier; defines the type of 2Q gate operation for which the edge exists.
+use serde::{Deserialize, Serialize};
 
 /// Edge type identifier; defines the type of 2Q gate operation for which the edge exists.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]

@@ -9,6 +9,7 @@
  */
 
 /// EndpointDeployment : The live, deployed configuration of an endpoint
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EndpointDeployment {

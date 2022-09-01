@@ -9,6 +9,7 @@
  */
 
 /// InternalCreateProductBillingPriceRequest : Defines a new price to be created in our billing vendor. Note, creating `BillingPrice` does _not_ assign the resulting `BillingPrice` to an `EventBillingPrice`.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalCreateProductBillingPriceRequest {

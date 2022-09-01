@@ -9,6 +9,7 @@
  */
 
 /// EndpointTemplate : An EndpointTemplate is used to apply a set of default values to an endpoint on construction or update.  Note that there is no difference between using a template by name and using its component parameters directly; the template exists for user convenience.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EndpointTemplate {

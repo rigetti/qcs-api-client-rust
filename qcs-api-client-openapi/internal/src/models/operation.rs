@@ -9,6 +9,7 @@
  */
 
 /// Operation : An operation, with its sites and site-independent characteristics.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Operation {

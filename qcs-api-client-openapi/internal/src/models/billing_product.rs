@@ -9,6 +9,7 @@
  */
 
 /// BillingProduct : A QCS service product. This may represent one time (such as reservations) or metered services.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingProduct {

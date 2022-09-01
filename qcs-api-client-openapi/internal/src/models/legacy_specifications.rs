@@ -9,6 +9,7 @@
  */
 
 /// LegacySpecifications : The specifications of a deployed quantum processor.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LegacySpecifications {

@@ -9,6 +9,7 @@
  */
 
 /// EndpointConfiguration : Only for use internally. Includes extra information about an endpoint which should be stored alongside its parameters, but not provided by the user within those parameters.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EndpointConfiguration {

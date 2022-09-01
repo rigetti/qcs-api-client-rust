@@ -5,6 +5,8 @@
 /// {{{classname}}} : {{{description}}}
 {{/description}}
 
+use serde::{Serialize, Deserialize};
+
 {{^oneOf.isEmpty}}
 {{>oneof}}
 {{/oneOf.isEmpty}}

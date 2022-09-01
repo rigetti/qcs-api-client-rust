@@ -9,6 +9,7 @@
  */
 
 /// GateSettings : Information needed to schedule a gate from Quil.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct GateSettings {

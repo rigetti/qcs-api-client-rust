@@ -9,6 +9,7 @@
  */
 
 /// ErfSquareWaveform : Pulse with a flat top and rounded shoulders given by error functions.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ErfSquareWaveform {

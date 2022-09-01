@@ -9,6 +9,7 @@
  */
 
 /// Endpoint : An Endpoint is the entry point for remote access to a QuantumProcessor.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Endpoint {

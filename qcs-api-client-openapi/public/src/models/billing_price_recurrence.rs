@@ -9,6 +9,7 @@
  */
 
 /// BillingPriceRecurrence : The recurring components of a price such as `interval` and `usageType`.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingPriceRecurrence {

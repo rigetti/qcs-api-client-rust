@@ -9,6 +9,7 @@
  */
 
 /// AccountType : There are two types of accounts within QCS: user (representing a single user in Okta) and group (representing one or more users in Okta).
+use serde::{Deserialize, Serialize};
 
 /// There are two types of accounts within QCS: user (representing a single user in Okta) and group (representing one or more users in Okta).
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]

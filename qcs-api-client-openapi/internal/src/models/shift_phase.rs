@@ -9,6 +9,7 @@
  */
 
 /// ShiftPhase : Shift the phase of a frame by a relative value at a specific time.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ShiftPhase {

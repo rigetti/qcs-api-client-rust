@@ -9,6 +9,7 @@
  */
 
 /// LegacyNodeDescriptor : A single qubit node.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LegacyNodeDescriptor {

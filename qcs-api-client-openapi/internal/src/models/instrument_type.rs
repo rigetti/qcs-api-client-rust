@@ -9,6 +9,7 @@
  */
 
 /// InstrumentType : Enum for types of Instrument.
+use serde::{Deserialize, Serialize};
 
 /// Enum for types of Instrument.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]

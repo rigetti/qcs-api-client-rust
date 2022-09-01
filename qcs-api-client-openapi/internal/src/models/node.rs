@@ -9,6 +9,7 @@
  */
 
 /// Node : A logical node in the quantum processor's architecture.  The existence of a node in the ISA `Architecture` does not necessarily mean that a given 1Q operation will be available on the node. This information is conveyed by the presence of the specific `node_id` in instances of `Instruction`.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Node {

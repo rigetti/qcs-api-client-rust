@@ -9,6 +9,7 @@
  */
 
 /// SwapPhases : Swap the phases of two tx-frames at a specific time.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SwapPhases {

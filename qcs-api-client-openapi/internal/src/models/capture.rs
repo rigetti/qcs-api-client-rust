@@ -9,6 +9,7 @@
  */
 
 /// Capture : Specify an acquisition on an rx-frame as well as the readout kernels to apply.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Capture {

@@ -1,0 +1,33 @@
+{{>partial_header}}
+
+use reqwest;
+
+#[derive(Debug, Clone)]
+pub struct Configuration {
+    pub base_path: String,
+    pub client: reqwest::Client,
+    pub qcs_config: crate::common::ClientConfiguration,
+}
+
+pub type BasicAuth = (String, Option<String>);
+
+#[derive(Debug, Clone)]
+pub struct ApiKey {
+    pub prefix: Option<String>,
+    pub key: String,
+}
+
+impl Configuration {
+    pub async fn new() -> Result<Configuration, crate::common::configuration::LoadError> {
+        let qcs_config = crate::common::ClientConfiguration::load().await?;
+        let client = request::Client::builder()
+            .user_agent("QCS OpenAPI Client (Rust)/{{{version}}}")
+            .build()
+            .expect("failed to create HTTP client");
+        Ok(Configuration {
+            base_path: "{{{basePath}}}".to_owned(),
+            qcs_config,
+            client,
+        })
+    }
+}

@@ -9,6 +9,7 @@
  */
 
 /// EngagementPolicyOptions : Options for configuration of the selected engagement policy
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EngagementPolicyOptions {

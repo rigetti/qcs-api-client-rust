@@ -15,10 +15,7 @@ pub struct Configuration {
     pub base_path: String,
     pub user_agent: Option<String>,
     pub client: reqwest::Client,
-    pub basic_auth: Option<BasicAuth>,
-    pub oauth_access_token: Option<String>,
-    pub bearer_access_token: Option<String>,
-    pub api_key: Option<ApiKey>,
+    pub qcs_config: crate::common::ClientConfiguration,
     // TODO: take an oauth2 token source, similar to the go one
 }
 
@@ -31,21 +28,13 @@ pub struct ApiKey {
 }
 
 impl Configuration {
-    pub fn new() -> Configuration {
-        Configuration::default()
-    }
-}
-
-impl Default for Configuration {
-    fn default() -> Self {
-        Configuration {
+    pub async fn new() -> Result<Configuration, crate::common::configuration::LoadError> {
+        let qcs_config = crate::common::ClientConfiguration::load().await?;
+        Ok(Configuration {
             base_path: "https://api.qcs.rigetti.com".to_owned(),
             user_agent: Some("OpenAPI-Generator/2020-07-31/rust".to_owned()),
-            client: reqwest::Client::new(),
-            basic_auth: None,
-            oauth_access_token: None,
-            bearer_access_token: None,
-            api_key: None,
-        }
+            qcs_config,
+            client: reqwest::Client::default(),
+        })
     }
 }

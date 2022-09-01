@@ -9,6 +9,7 @@
  */
 
 /// StartupConfigurationSource : Where to pull the service's startup configuration from.
+use serde::{Deserialize, Serialize};
 
 /// Where to pull the service's startup configuration from.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]

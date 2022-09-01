@@ -35,10 +35,13 @@ pub const DEFAULT_QVM_URL: &str = "http://127.0.0.1:5000";
 /// Default URL to access `quilc`.
 pub const DEFAULT_QUILC_URL: &str = "tcp://127.0.0.1:5555";
 
+/// A single type containing an access token and an associated refresh token.
 #[derive(Clone, Debug, Default)]
-struct Tokens {
-    bearer_access_token: Option<String>,
-    refresh_token: Option<String>,
+pub struct Tokens {
+    /// The `Bearer` token to include in the `Authorization` header.
+    pub bearer_access_token: Option<String>,
+    /// The token used to refresh the access token.
+    pub refresh_token: Option<String>,
 }
 
 /// All the config data that's parsed from config sources
@@ -133,7 +136,9 @@ pub enum LoadError {
 
 impl ClientConfiguration {
     /// Attempt to load config files from ~/.qcs and create a Configuration object
-    /// for use with qcs-api.
+    /// for use with the QCS API.
+    ///
+    /// See <https://docs.rigetti.com/qcs/references/qcs-client-configuration> for details.
     ///
     /// # Errors
     ///
@@ -143,6 +148,15 @@ impl ClientConfiguration {
         Self::new(settings, secrets)
     }
 
+    /// Manually set access and refresh tokens
+    ///
+    /// Most users do not want to use this. Instead, use [`Configuration::load()`], which uses your
+    /// QCS configuration.
+    pub async fn set_tokens(&mut self, tokens: Tokens) {
+        let mut lock = self.tokens.lock().await;
+        *lock = tokens;
+    }
+
     fn validate_bearer_access_token(lock: &mut MutexGuard<Tokens>) -> Result<String, RefreshError> {
         match &lock.bearer_access_token {
             None => Err(RefreshError::NoRefreshToken),
@@ -150,7 +164,6 @@ impl ClientConfiguration {
                 let dummy_key = DecodingKey::from_secret(&[]);
                 let mut validation = Validation::new(Algorithm::RS256);
                 validation.validate_exp = true;
-                validation.validate_nbf = true;
                 validation.leeway = 0;
                 validation.insecure_disable_signature_validation();
                 decode::<toml::Value>(token, &dummy_key, &validation)
@@ -173,7 +186,7 @@ impl ClientConfiguration {
         }
     }
 
-    /// Refresh the `access_token` and return the new token if successful.
+    /// Refresh the authentication tokens and return the new access token if successful.
     ///
     /// # Errors
     ///
@@ -198,6 +211,7 @@ impl ClientConfiguration {
                 "QCS API Client (Rust)/{}",
                 env!("CARGO_PKG_VERSION")
             ))
+            .timeout(std::time::Duration::from_secs(10))
             .build()?
             .post(token_url)
             .form(&data)

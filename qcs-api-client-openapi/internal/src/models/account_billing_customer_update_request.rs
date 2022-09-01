@@ -9,6 +9,7 @@
  */
 
 /// AccountBillingCustomerUpdateRequest : The billing customer represented by `id` must exist and not be assigned to any other QCS account. The server will ensure the billing customer has the appropriate metadata.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AccountBillingCustomerUpdateRequest {

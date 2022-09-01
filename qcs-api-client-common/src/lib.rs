@@ -53,3 +53,6 @@ while_true
 
 pub mod configuration;
 pub use configuration::ClientConfiguration;
+
+#[cfg(feature = "grpc")]
+pub mod grpc;

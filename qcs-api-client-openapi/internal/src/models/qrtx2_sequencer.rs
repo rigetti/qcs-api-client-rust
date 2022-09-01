@@ -9,6 +9,7 @@
  */
 
 /// Qrtx2Sequencer : Configuration for a dual readout transmit (QRTx2) sequencer.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Qrtx2Sequencer {

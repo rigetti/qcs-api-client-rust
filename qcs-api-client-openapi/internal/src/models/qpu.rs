@@ -9,6 +9,7 @@
  */
 
 /// Qpu : Information about the topology of the device in relation to its control interfaces.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Qpu {

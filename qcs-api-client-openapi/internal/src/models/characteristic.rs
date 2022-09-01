@@ -9,6 +9,7 @@
  */
 
 /// Characteristic : A measured characteristic of an operation.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Characteristic {

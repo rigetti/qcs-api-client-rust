@@ -9,6 +9,7 @@
  */
 
 /// QdoSlowFluxChannel : Configuration for a QDO Slow Flux Channel Channel.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QdoSlowFluxChannel {

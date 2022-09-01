@@ -9,6 +9,7 @@
  */
 
 /// SlowFluxSettings : All information needed to control a slow flux setting on a qubit or amplifier.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SlowFluxSettings {

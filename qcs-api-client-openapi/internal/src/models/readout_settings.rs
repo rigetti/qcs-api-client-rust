@@ -9,6 +9,7 @@
  */
 
 /// ReadoutSettings : All information needed to perform readout for a single qubit.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ReadoutSettings {

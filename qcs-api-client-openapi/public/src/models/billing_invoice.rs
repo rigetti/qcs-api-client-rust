@@ -9,6 +9,7 @@
  */
 
 /// BillingInvoice : A finalized billing invoice.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingInvoice {

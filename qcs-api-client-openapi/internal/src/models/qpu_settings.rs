@@ -9,6 +9,7 @@
  */
 
 /// QpuSettings : New QPU Settings to publish
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QpuSettings {

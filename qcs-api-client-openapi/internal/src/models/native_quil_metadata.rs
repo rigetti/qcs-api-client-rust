@@ -9,6 +9,7 @@
  */
 
 /// NativeQuilMetadata : The native Quil metadata for the compilation.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct NativeQuilMetadata {

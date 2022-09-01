@@ -9,6 +9,7 @@
  */
 
 /// InternalGetAccountEventBillingPriceRequest : Property `quantumProcessorId` is currently required for all `product`s, however in the future there may be `product`s that do not require a `quantumProcessorId`.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalGetAccountEventBillingPriceRequest {

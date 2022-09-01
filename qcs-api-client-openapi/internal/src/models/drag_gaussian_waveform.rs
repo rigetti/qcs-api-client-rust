@@ -9,6 +9,7 @@
  */
 
 /// DragGaussianWaveform : Gaussian-like waveform used for transmons to correct for the transmon's anharmonicity.  DRAG === Derivative Removal by Adiabatic Gate.  Reference: Motzoi, et al, Simple Pulses for Elimination of Leakage in Weakly Nonlinear Qubits. DOI: 10.1103/PhysRevLett.103.110501
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct DragGaussianWaveform {

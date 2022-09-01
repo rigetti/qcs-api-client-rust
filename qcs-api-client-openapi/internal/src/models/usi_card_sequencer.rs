@@ -9,6 +9,7 @@
  */
 
 /// UsiCardSequencer : Configuration for the card which interfaces with the USI Target on the USRP.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct UsiCardSequencer {

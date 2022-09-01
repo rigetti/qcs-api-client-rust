@@ -9,6 +9,7 @@
  */
 
 /// MnioConnection : Description of one side of an MNIO connection between two Tsunamis.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct MnioConnection {

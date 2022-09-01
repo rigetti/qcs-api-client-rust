@@ -9,6 +9,7 @@
  */
 
 /// InternalEndpoint : An extension of the public Endpoint class which includes information for internal use.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalEndpoint {

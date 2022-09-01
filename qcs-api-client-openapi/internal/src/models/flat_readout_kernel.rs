@@ -9,6 +9,7 @@
  */
 
 /// FlatReadoutKernel : Readout kernel that is a constant, with no normalization condition applied.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct FlatReadoutKernel {

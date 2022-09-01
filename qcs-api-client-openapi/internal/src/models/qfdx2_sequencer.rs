@@ -9,6 +9,7 @@
  */
 
 /// Qfdx2Sequencer : Configuration for a single QFDx2 Sequencer.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Qfdx2Sequencer {

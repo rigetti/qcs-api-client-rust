@@ -9,6 +9,7 @@
  */
 
 /// QgsSequencer : Configuration for a single QGS Sequencer.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QgsSequencer {

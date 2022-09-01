@@ -9,6 +9,7 @@
  */
 
 /// MetaPass : A compiler meta-pass to perform.
+use serde::{Deserialize, Serialize};
 
 /// A compiler meta-pass to perform.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]

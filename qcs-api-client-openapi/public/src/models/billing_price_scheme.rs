@@ -9,6 +9,7 @@
  */
 
 /// BillingPriceScheme : Describes how to compute the price per period. Either `per_unit` or `tiered`. `per_unit` indicates that the fixed amount (specified in `unitAmount` or `unitAmountDecimal`) will be charged per unit in `quantity` (for prices with `usageType=licensed`), or per unit of total usage (for prices with `usageType=metered`). `tiered` indicates that the unit pricing will be computed using a tiering strategy as defined using the `tiers` and `tiersMode` attributes.
+use serde::{Deserialize, Serialize};
 
 /// Describes how to compute the price per period. Either `per_unit` or `tiered`. `per_unit` indicates that the fixed amount (specified in `unitAmount` or `unitAmountDecimal`) will be charged per unit in `quantity` (for prices with `usageType=licensed`), or per unit of total usage (for prices with `usageType=metered`). `tiered` indicates that the unit pricing will be computed using a tiering strategy as defined using the `tiers` and `tiersMode` attributes.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]

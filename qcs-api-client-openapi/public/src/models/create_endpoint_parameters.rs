@@ -9,6 +9,7 @@
  */
 
 /// CreateEndpointParameters : A publicly available set of parameters for defining an endpoint.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct CreateEndpointParameters {

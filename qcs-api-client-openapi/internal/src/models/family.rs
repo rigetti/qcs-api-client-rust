@@ -9,6 +9,7 @@
  */
 
 /// Family : Family identifier.  Value 'None' implies the architecture has no specific layout topology. Value 'Full' implies every node is connected to every other node (a fully-connected architecture). Value 'Aspen' implies the architecture adheres the to the Aspen topology conventions for node numbering and edge connectivity.
+use serde::{Deserialize, Serialize};
 
 /// Family identifier.  Value 'None' implies the architecture has no specific layout topology. Value 'Full' implies every node is connected to every other node (a fully-connected architecture). Value 'Aspen' implies the architecture adheres the to the Aspen topology conventions for node numbering and edge connectivity.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]

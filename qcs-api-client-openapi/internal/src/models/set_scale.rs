@@ -9,6 +9,7 @@
  */
 
 /// SetScale : Set the scale of a frame to a value at a specific time.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SetScale {

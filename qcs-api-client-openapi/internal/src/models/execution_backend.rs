@@ -9,6 +9,7 @@
  */
 
 /// ExecutionBackend : The controller's relationship to hardware controls.
+use serde::{Deserialize, Serialize};
 
 /// The controller's relationship to hardware controls.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]

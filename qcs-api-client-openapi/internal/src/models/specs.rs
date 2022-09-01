@@ -9,6 +9,7 @@
  */
 
 /// Specs : The specifications of the device lattice.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Specs {

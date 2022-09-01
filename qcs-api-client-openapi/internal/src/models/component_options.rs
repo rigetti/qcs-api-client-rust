@@ -9,6 +9,7 @@
  */
 
 /// ComponentOptions : The component options that will be applied as defaults to an endpoint constructed from this template
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ComponentOptions {

@@ -9,6 +9,7 @@
  */
 
 /// ReadoutClassifier : All the information needed to perform readout classification for a single qubit.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ReadoutClassifier {

@@ -9,6 +9,7 @@
  */
 
 /// BillingCustomer : A representation of a QCS's account billing customer. Note, `balance` does not account for the upcoming invoice.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingCustomer {

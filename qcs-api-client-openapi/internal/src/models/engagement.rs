@@ -9,6 +9,7 @@
  */
 
 /// Engagement : An engagement is the authorization of a user to execute work on a Quantum Processor Endpoint.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Engagement {

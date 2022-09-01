@@ -9,6 +9,7 @@
  */
 
 /// SetFrequency : Set the frequency of a frame to a specific value at a specific time.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SetFrequency {

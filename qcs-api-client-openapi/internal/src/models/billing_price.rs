@@ -9,6 +9,7 @@
  */
 
 /// BillingPrice : The price schedule for a particular service applied to an invoice line item.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingPrice {

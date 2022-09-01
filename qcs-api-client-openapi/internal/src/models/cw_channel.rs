@@ -9,6 +9,7 @@
  */
 
 /// CwChannel : Configuration for a single CW Generator Channel.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct CwChannel {

@@ -9,6 +9,7 @@
  */
 
 /// ShiftFrequency : Shift the frequency of a frame by a specific amount at a specific time.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ShiftFrequency {

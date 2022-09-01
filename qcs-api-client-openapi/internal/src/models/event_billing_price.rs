@@ -9,6 +9,7 @@
  */
 
 /// EventBillingPrice : Event price. Maps billing account, event, and quantum processor identifier (we refer to this as an event scope) to a price identifier.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EventBillingPrice {

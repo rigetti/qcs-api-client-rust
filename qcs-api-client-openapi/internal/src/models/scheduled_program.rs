@@ -9,6 +9,7 @@
  */
 
 /// ScheduledProgram : Scheduled program made of ScheduledInstructions.  The ScheduledInstructions contain references to the waveforms, readout kernels, and parameters.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ScheduledProgram {

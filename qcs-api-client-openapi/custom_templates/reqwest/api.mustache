@@ -1,9 +1,9 @@
 {{>partial_header}}
 
-use reqwest;
-
+use serde::{Serialize, Deserialize};
 use crate::apis::ResponseContent;
 use super::{Error, configuration};
+use reqwest::StatusCode;
 
 {{#operations}}
 {{#operation}}
@@ -73,14 +73,8 @@ pub enum {{{operationIdCamelCase}}}Error {
 
 {{#operations}}
 {{#operation}}
-{{#description}}
-/// {{{.}}}
-{{/description}}
-{{#notes}}
-/// {{{.}}}
-{{/notes}}
 {{#vendorExtensions.x-group-parameters}}
-pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: &configuration::Configuration{{#allParams}}{{#-first}}, params: {{{operationIdCamelCase}}}Params{{/-first}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
+{{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}_inner(configuration: &configuration::Configuration{{#allParams}}{{#-first}}, params: {{{operationIdCamelCase}}}Params{{/-first}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
     let local_var_configuration = configuration;
 
     // unbox the parameters
@@ -90,7 +84,7 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
 
 {{/vendorExtensions.x-group-parameters}}
 {{^vendorExtensions.x-group-parameters}}
-pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: &configuration::Configuration, {{#allParams}}{{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}{{#isPathParam}}crate::models::{{/isPathParam}}{{#isBodyParam}}crate::models::{{/isBodyParam}}{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
+{{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}_inner(configuration: &configuration::Configuration, {{#allParams}}{{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}{{#isPathParam}}crate::models::{{/isPathParam}}{{#isBodyParam}}crate::models::{{/isBodyParam}}{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
     let local_var_configuration = configuration;
 {{/vendorExtensions.x-group-parameters}}
 
@@ -149,32 +143,7 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
     {{/authMethods}}
     {{/hasAuthMethods}}
     {{#hasAuthMethods}}
-    {{#withAWSV4Signature}}
-    if let Some(ref local_var_aws_v4_key) = local_var_configuration.aws_v4_key {
-        let local_var_new_headers = match local_var_aws_v4_key.sign(
-	    &local_var_uri_str,
-	    "{{{httpMethod}}}",
-	    {{#hasBodyParam}}
-	    {{#bodyParams}}
-	    &serde_json::to_string(&{{{paramName}}}).expect("param should serialize to string"),
-	    {{/bodyParams}}
-	    {{/hasBodyParam}}
-	    {{^hasBodyParam}}
-	    &"",
-	    {{/hasBodyParam}}
-	    ) {
-	      Ok(new_headers) => new_headers,
-	      Err(err) => return Err(Error::AWSV4SignatureError(err)),
-	    };
-	for (local_var_name, local_var_value) in local_var_new_headers.iter() {
-	    local_var_req_builder = local_var_req_builder.header(local_var_name.as_str(), local_var_value.as_str());
-	}
-    }
-    {{/withAWSV4Signature}}
     {{/hasAuthMethods}}
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder = local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
     {{#hasHeaderParams}}
     {{#headerParams}}
     {{#required}}
@@ -195,39 +164,11 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
     {{/required}}
     {{/headerParams}}
     {{/hasHeaderParams}}
-    {{#hasAuthMethods}}
-    {{#authMethods}}
-    {{#isApiKey}}
-    {{#isKeyInHeader}}
-    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
-        let local_var_key = local_var_apikey.key.clone();
-        let local_var_value = match local_var_apikey.prefix {
-            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
-            None => local_var_key,
-        };
-        local_var_req_builder = local_var_req_builder.header("{{{keyParamName}}}", local_var_value);
-    };
-    {{/isKeyInHeader}}
-    {{/isApiKey}}
-    {{#isBasic}}
-    {{#isBasicBasic}}
-    if let Some(ref local_var_auth_conf) = local_var_configuration.basic_auth {
-        local_var_req_builder = local_var_req_builder.basic_auth(local_var_auth_conf.0.to_owned(), local_var_auth_conf.1.to_owned());
-    };
-    {{/isBasicBasic}}
-    {{#isBasicBearer}}
-    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
-        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
-    };
-    {{/isBasicBearer}}
-    {{/isBasic}}
-    {{#isOAuth}}
-    if let Some(ref local_var_token) = local_var_configuration.oauth_access_token {
-        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
-    };
-    {{/isOAuth}}
-    {{/authMethods}}
-    {{/hasAuthMethods}}
+
+    // Use QCS Bearer token
+    let token = configuration.qcs_config.get_bearer_access_token().await?;
+    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+
     {{#isMultipart}}
     {{#hasFormParams}}
     let mut local_var_form = reqwest::multipart::Form::new();
@@ -331,6 +272,7 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
     let {{^supportAsync}}mut {{/supportAsync}}local_var_resp = local_var_client.execute(local_var_req){{#supportAsync}}.await{{/supportAsync}}?;
 
     let local_var_status = local_var_resp.status();
+
     let local_var_content = local_var_resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
@@ -354,5 +296,36 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
     }
 }
 
+{{#description}}
+/// {{{.}}}
+{{/description}}
+{{#notes}}
+/// {{{.}}}
+{{/notes}}
+{{#vendorExtensions.x-group-parameters}}
+pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: &configuration::Configuration{{#allParams}}{{#-first}}, params: {{{operationIdCamelCase}}}Params{{/-first}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
+    match {{{operationId}}}_inner(configuration{{#allParams}}{{#-first}}, params.clone(){{/-first}}{{/allParams}}, true){{#supportAsync}}.await{{/supportAsync}} {
+{{/vendorExtensions.x-group-parameters}}
+{{^vendorExtensions.x-group-parameters}}
+pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: &configuration::Configuration, {{#allParams}}{{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}{{#isPathParam}}crate::models::{{/isPathParam}}{{#isBodyParam}}crate::models::{{/isBodyParam}}{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
+    match {{{operationId}}}_inner(configuration, {{#allParams}}{{{paramName}}}.clone(), {{/allParams}}){{#supportAsync}}.await{{/supportAsync}} {
+{{/vendorExtensions.x-group-parameters}}
+        Ok(result) => Ok(result),
+        Err(err) => {
+            match err.status_code() {
+                Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
+                    configuration.qcs_config.refresh().await?;
+                    {{#vendorExtensions.x-group-parameters}}
+                    {{{operationId}}}_inner(configuration{{#allParams}}{{#-first}}, params{{/-first}}{{/allParams}}){{#supportAsync}}.await{{/supportAsync}}
+                    {{/vendorExtensions.x-group-parameters}}
+                    {{^vendorExtensions.x-group-parameters}}
+                    {{{operationId}}}_inner(configuration{{#allParams}}, {{{paramName}}}{{/allParams}}){{#supportAsync}}.await{{/supportAsync}}
+                    {{/vendorExtensions.x-group-parameters}}
+                }
+                _ => Err(err),
+            }
+        }
+    }
+}
 {{/operation}}
 {{/operations}}

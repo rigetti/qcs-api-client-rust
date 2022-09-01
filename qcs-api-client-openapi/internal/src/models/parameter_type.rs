@@ -9,6 +9,7 @@
  */
 
 /// ParameterType : Allowed operators for ParameterExpression.
+use serde::{Deserialize, Serialize};
 
 /// Allowed operators for ParameterExpression.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]

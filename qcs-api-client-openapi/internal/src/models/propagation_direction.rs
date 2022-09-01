@@ -9,6 +9,7 @@
  */
 
 /// PropagationDirection : Direction of signal propagation.  Note that we sometimes sort by PropagationDirection, and in that case the ordering is given by the ``_order_`` defined here. Note also that the order of definition of entries must agree with ``_order_``.
+use serde::{Deserialize, Serialize};
 
 /// Direction of signal propagation.  Note that we sometimes sort by PropagationDirection, and in that case the ordering is given by the ``_order_`` defined here. Note also that the order of definition of entries must agree with ``_order_``.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]

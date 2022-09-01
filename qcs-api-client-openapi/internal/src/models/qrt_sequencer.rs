@@ -9,6 +9,7 @@
  */
 
 /// QrtSequencer : Configuration for a single readout transmit (QRT) sequencer.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QrtSequencer {

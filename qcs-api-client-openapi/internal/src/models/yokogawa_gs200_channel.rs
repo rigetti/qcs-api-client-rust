@@ -9,6 +9,7 @@
  */
 
 /// YokogawaGs200Channel : Base class for settings (mutable properties) on a YokogawaGS200Channel.  Note that there are no settings; the purpose of this is to ensure that the channel is positively identified as the correct type.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct YokogawaGs200Channel {

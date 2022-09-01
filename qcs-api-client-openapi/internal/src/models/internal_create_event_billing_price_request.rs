@@ -9,6 +9,7 @@
  */
 
 /// InternalCreateEventBillingPriceRequest : Create an event price record. This maps billing account, event, and quantum processor identifier to a Stripe [price](https://stripe.com/docs/api/prices/object) identifier. Consumers of the `EventBillingPrice` will use the Stripe price identifer to create a Stripe [invoice item](https://stripe.com/docs/api/invoiceitems) or [subscription item](https://stripe.com/docs/api/subscription_items). The content of the Stripe price object is opaque to QCS services by design. Note, that the request must set `quantumProcessorId` if it sets account parameters.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalCreateEventBillingPriceRequest {

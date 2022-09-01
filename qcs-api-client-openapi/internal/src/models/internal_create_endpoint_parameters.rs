@@ -9,6 +9,7 @@
  */
 
 /// InternalCreateEndpointParameters : The complete static, serializable definition of an endpoint's desired state
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalCreateEndpointParameters {

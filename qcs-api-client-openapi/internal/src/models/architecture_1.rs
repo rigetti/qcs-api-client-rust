@@ -9,6 +9,7 @@
  */
 
 /// Architecture1 : The architecture of the quantum processor.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Architecture1 {

@@ -9,6 +9,7 @@
  */
 
 /// InternalUpdateEventBillingPriceRequest : Update an `EventBillingPrice`. Note, `account`, `product`, and `quantumProcessorId` are immutable; clients may _only_ update `billingPriceId` for the given scope. In the case where the client intends to change the scope for a given `billingPriceId`, the client may delete the existing `EventBillingPrice` and subsequently create the intended record through `InternalCreateEventBillingPrice`. Note, `billingPriceId` is not a unique field and several different EventBillingPrice scopes may refer to it.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalUpdateEventBillingPriceRequest {

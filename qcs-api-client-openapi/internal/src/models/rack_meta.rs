@@ -9,6 +9,7 @@
  */
 
 /// RackMeta : Meta information about a rack configuration.  This is a legacy artifact from the original days of storing the rack data within the willow DB. Shane Caldwell believes this to be unused within current systems.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct RackMeta {

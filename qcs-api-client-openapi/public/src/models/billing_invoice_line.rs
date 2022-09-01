@@ -9,6 +9,7 @@
  */
 
 /// BillingInvoiceLine : A line item on an invoice representing a particular purchase (such as a reservation) or aggregate usage for the invoice period.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BillingInvoiceLine {

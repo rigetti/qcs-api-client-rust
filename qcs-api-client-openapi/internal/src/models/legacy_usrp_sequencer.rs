@@ -9,6 +9,7 @@
  */
 
 /// LegacyUsrpSequencer : Configuration for a Legacy USRP Sequencer.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LegacyUsrpSequencer {

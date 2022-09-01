@@ -9,6 +9,7 @@
  */
 
 /// FlatPulse : Play a pulse with a constant complex amplitude.  This pulse is not derived from a waveform and admits the imposition of a scale, phase, and detuning.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct FlatPulse {

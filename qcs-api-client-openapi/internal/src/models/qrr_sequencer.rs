@@ -9,6 +9,7 @@
  */
 
 /// QrrSequencer : Configuration for a single readout receive (QRR) sequencer.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QrrSequencer {

@@ -9,6 +9,7 @@
  */
 
 /// AmplifierSettings : All information needed to operate an parametric amplifier.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AmplifierSettings {

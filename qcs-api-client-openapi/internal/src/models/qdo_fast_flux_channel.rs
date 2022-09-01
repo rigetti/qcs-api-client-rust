@@ -9,6 +9,7 @@
  */
 
 /// QdoFastFluxChannel : Configuration for a single QDO Fast Flux Channel.
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QdoFastFluxChannel {
