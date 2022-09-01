@@ -1,0 +1,29 @@
+syntax = "proto3";
+package models.controller;
+option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/controller";
+
+// Complex64 is a 64-bit complex value with float32 real and imaginary parts
+message Complex64 {
+    optional float real = 1;
+    optional float imaginary = 2;
+}
+
+// ReadoutValues are data readout values that have been read out from the quantum processor
+// and optionally processed by a readout transformation pipeline.
+message ReadoutValues {
+    oneof values {
+        .models.controller.IntegerReadoutValues integer_values = 1;
+        .models.controller.Complex64ReadoutValues complex_values = 2;
+    }
+}
+
+// IntegerReadoutValues are integer arrays emitted by a readout receiver or transformation pipeline.
+// These may include (but are not limited to) qudit values or raw ADC capture data.
+message IntegerReadoutValues {
+    repeated int32 values = 1;
+}
+
+// Complex64ReadoutValues are arrays of complex numbers emitted by a readout receiver or transformation pipeline.
+message Complex64ReadoutValues {
+    repeated .models.controller.Complex64 values = 1;
+}

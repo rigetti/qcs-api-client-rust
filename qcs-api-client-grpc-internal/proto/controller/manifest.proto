@@ -1,0 +1,50 @@
+syntax = "proto3";
+package models.controller;
+option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/controller";
+
+// A TsunamiCardType is the physical variant of a Tsunami card.
+enum TsunamiCardType {
+    UNKNOWN_TSUNAMI_CARD_TYPE = 0;
+    QDO = 1;
+    QFD = 2;
+    QFDx2 = 3;
+    QGS = 4;
+    QGSx2 = 5;
+    QRRx2 = 6;
+    QRTx2HI = 7;
+    QRTx2LO = 8;
+    VALON = 9;
+}
+
+// A RackManifest represents the physical configuration of an entire rack.
+// "Physical configuration" denotes characteristics of the equipment
+// which cannot be changed at runtime by QCS systems or services.
+message RackManifest {
+
+    // All instruments present in the rack, keyed by instrument name - an opaque string identifier
+    map<string, .models.controller.InstrumentManifest> instruments = 1;
+}
+
+// An InstrumentManifest represents the physical configuration of a single instrument.
+message InstrumentManifest {
+    optional string address = 1;
+    oneof instrument {
+        .models.controller.TsunamiInstrumentManifest tsunami = 2;
+        .models.controller.YokogawaGS200Manifest yokogawa_gs200 = 3;
+    }
+}
+
+// A TsunamiInstrumentManifest represents the physical configuration of a single Tsunami instrument
+message TsunamiInstrumentManifest {
+    map<uint32, .models.controller.TsunamiCard> cards = 1;
+}
+
+// A YokogawaGS200Manifest represents the physical configuration of a single Yokogawa GS200 instrument
+message YokogawaGS200Manifest {
+}
+
+// A TsunamiCard represents the physical configuration and characteristics of a single card mounted
+// in a Tsunami chassis.
+message TsunamiCard {
+    optional .models.controller.TsunamiCardType card_type = 1;
+}

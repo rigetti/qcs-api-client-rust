@@ -1,0 +1,45 @@
+syntax = "proto3";
+package services.translation;
+option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/translation";
+import "controller/job.proto";
+message TranslateQuilToSignedControllerJobRequest {
+    optional string quantum_processor_id = 1;
+    optional string quil_program = 2;
+    oneof num_shots {
+        uint32 num_shots_value = 3;
+    }
+}
+message TranslateQuilToSignedControllerJobResponse {
+    optional .models.controller.SignedControllerJob job = 1;
+}
+message TranslateQuilToEncryptedControllerJobRequest {
+    optional string quantum_processor_id = 1;
+    optional string quil_program = 2;
+    oneof num_shots {
+        uint32 num_shots_value = 3;
+    }
+}
+message TranslateQuilToEncryptedControllerJobResponse {
+    optional .models.controller.EncryptedControllerJob job = 1;
+}
+message HealthCheckRequest {
+    optional string service = 1;
+}
+message HealthCheckResponse {
+    optional .services.translation.HealthCheckResponse.ServingStatus status = 1;
+    enum ServingStatus {
+        UNKNOWN = 0;
+        SERVING = 1;
+        NOT_SERVING = 2;
+    }
+}
+
+service Translation {
+
+    rpc TranslateQuilToSignedControllerJob(.services.translation.TranslateQuilToSignedControllerJobRequest) returns (.services.translation.TranslateQuilToSignedControllerJobResponse);
+
+    rpc TranslateQuilToEncryptedControllerJob(.services.translation.TranslateQuilToEncryptedControllerJobRequest) returns (.services.translation.TranslateQuilToEncryptedControllerJobResponse) {
+    }
+
+    rpc Check(.services.translation.HealthCheckRequest) returns (.services.translation.HealthCheckResponse);
+}

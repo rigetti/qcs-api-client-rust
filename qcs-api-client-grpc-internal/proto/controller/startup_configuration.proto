@@ -1,0 +1,27 @@
+syntax = "proto3";
+package models.controller;
+option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/controller";
+
+// Contains the information necessary for the service to start up and connect to its instruments.
+message ControllerServiceStartupConfiguration {
+
+    // All instruments accessible to this controller service, keyed on opaque instrument name.
+    // This instrument name matches that under ControllerJobData.state
+    // and ControllerJobData.program for jobs run on this ControllerService instance.
+    map<string, .models.controller.InstrumentStartupConfiguration> instruments = 1;
+}
+
+// Minimal but sufficient information needed to bootstrap a connection to an instrument.
+message InstrumentStartupConfiguration {
+
+    // Network or device address for the instrument
+    optional string address = 1;
+
+    // The instrument hardware variant
+    optional .models.controller.InstrumentStartupConfiguration.InstrumentType instrument_type = 2;
+    enum InstrumentType {
+        UNKNOWN_INSTRUMENT = 0;
+        TSUNAMI = 1;
+        YOKOGAWA_GS200 = 2;
+    }
+}

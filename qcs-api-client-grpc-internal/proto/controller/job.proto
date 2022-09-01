@@ -1,0 +1,219 @@
+syntax = "proto3";
+package models.controller;
+option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/controller";
+import "controller/readout.proto";
+import "controller/state.proto";
+import "google/protobuf/duration.proto";
+
+// A ControllerJob is the result of compiling and packaging a higher-level program 
+// to run on a quantum processor. It may be parametric, allowing it to be modified
+// just prior to execution using externally-supplied parameter values and other configuration.
+message ControllerJob {
+
+    // The settings to apply to and maintain on the controller throughout execution
+    optional .models.controller.ControllerState state = 1;
+
+    // The processing pipeline to transform raw results prior to return to the
+    // user
+    optional .models.controller.ReadoutPipeline pipeline = 2;
+
+    // Programs to be loaded and run, keyed on instrument name
+    // (as in `models.controller.ControllerServiceStartupConfiguration` and
+    // `state`)
+    map<string, .models.controller.InstrumentProgram> programs = 3;
+
+    // Metadata describing the job data itself or the inputs used to build it
+    optional .models.controller.JobMetadata metadata = 5;
+}
+
+// SignedControllerJob includes the configuration necessary to execute an instance of
+// the contained job on control hardware alongside a signature attesting to the
+// authenticity of the contained job.
+message SignedControllerJob {
+
+    // The job to be executed
+    optional .models.controller.ControllerJob job = 1;
+
+    // Signature used to assert integrity (i.e. that it was translated by a
+    // Rigetti-trusted entity). This signature is computed on the
+    // protobuf-serialized bytes of the contained `data`.
+    optional .models.controller.JobSignature signature = 2;
+
+    reserved 3;
+    reserved "memory_values";}
+
+// An EncryptedControllerJob includes the configuration necessary to execute an instance of
+// the contained job data on control hardware in encrypted format.
+message EncryptedControllerJob {
+
+    // Encrypted form of ControllerJob.
+    optional bytes job = 1;
+
+    // Information about the means by which `inner` was encrypted.
+    optional .models.controller.JobEncryption encryption = 2;
+
+    reserved 3;
+    reserved "memory_values";}
+
+// Information about the means by which a ControllerJob was encrypted.
+message JobEncryption {
+
+    // Opaque identifier for the key to use in decryption
+    optional string key_id = 1;
+
+    // If relevant, the nonce to use in decryption
+    optional bytes nonce = 2;
+}
+message JobExecutionConfiguration {
+
+    // Memory values to be patched into the program by the Controller Service prior to execution.
+    // The string key is used to match the name of the memory region as defined in the
+    // InstrumentProgram. The type of the DataValue must match the defined type of the region.
+    map<string, .models.controller.DataValue> memory_values = 3;
+}
+
+// Metadata about a ControllerJob which cannot be derived from the job itself easily (or at all).
+message JobMetadata {
+
+    // How long (in wall-clock time) the job is expected to take in execution
+    // after triggered. If unset, job execution time cannot be predetermined.
+    optional .google.protobuf.Duration duration = 1;
+
+    // The quantum processor ID for which this job was compiled
+    optional string quantum_processor_id = 2;
+}
+
+// The JobSignature is used to assert integrity of a ControllerJob
+// (i.e. that it was translated by a Rigetti-trusted entity).
+message JobSignature {
+
+    // Identifier for the key used to compute the signature;
+    // implementation-specific
+    optional string key_id = 1;
+
+    // The signature itself
+    optional bytes value = 2;
+}
+
+// This data is used to patch values into a pre-compiled binary prior to
+// execution, and to retrieve data from memory following execution.
+message MemoryRegion {
+
+    // The type of data expected for patch values
+    optional .models.controller.MemoryRegion.DataType data_type = 1;
+
+    // The count of elements within the region
+    optional uint32 length = 2;
+
+    // The byte offset of the value within sequencer shared memory. This is used
+    // for both patching of memory prior to execution, and retrieval of the memory
+    // following execution.
+    optional uint32 memory_offset = 3;
+
+    // The different types of data available for patching
+    enum DataType {
+        UNKNOWN_DATATYPE = 0;
+
+        // Raw binary data; length is in bytes
+        BINARY = 1;
+
+        // 64-bit signed integer
+        INTEGER = 2;
+
+        // 64-bit signed floating-point number
+        REAL = 3;
+    }
+}
+
+// The value of the data to insert into memory corresponding to a MemoryRegion.
+message DataValue {
+    oneof value {
+
+        // Binary value, corresponding to both BIT and OCTET data types in Quil.
+        .models.controller.BinaryDataValue binary = 101;
+
+        // Signed integer value, corresponding to INTEGER in Quil.
+        .models.controller.IntegerDataValue integer = 102;
+
+        // Real number value, corresponding to REAL in Quil.
+        .models.controller.RealDataValue real = 103;
+    }
+}
+
+// Binary value, corresponding to both BIT and OCTET data types in Quil.
+message BinaryDataValue {
+    optional bytes data = 1;
+}
+
+// Signed integer value, corresponding to INTEGER in Quil.
+message IntegerDataValue {
+    repeated int64 data = 1;
+}
+
+// Real number value, corresponding to REAL in Quil.
+message RealDataValue {
+    repeated double data = 1;
+}
+message InstrumentProgram {
+    oneof program {
+        .models.controller.TsunamiInstrumentProgram tsunami = 101;
+    }
+}
+message TsunamiInstrumentProgram {
+
+    // Mapping by card slot to the program intended for the card.
+    map<uint32, .models.controller.TsunamiCardProgram> card_programs = 1;
+}
+message TsunamiCardProgram {
+
+    // Mapping of sequencer ID to the program intended for the sequencer.
+    map<uint32, .models.controller.TsunamiSequencerProgram> sequencer_programs = 1;
+}
+message TsunamiSequencerProgram {
+
+    // The instructions to be executed by the sequencer processor.
+    optional bytes instructions = 1;
+
+    // The MemoryMap maps user-specified memory region names to the specification
+    // used to:
+    //
+    //   (a) patch them into the scheduled program binary prior to execution; and
+    //   (b) read out their values following execution.
+    //
+    // These string keys are matched against the string keys in
+    // ControllerJob.memory_values for memory patching prior to execution.
+    map<string, .models.controller.MemoryRegion> memory_map = 2;
+}
+
+// A ControllerJobExecutionResult includes the result data from a single
+// execution of a ControllerJob.
+message ControllerJobExecutionResult {
+
+    // The contents of each memory region, keyed on region name
+    map<string, .models.controller.DataValue> memory_values = 1;
+
+    // The contents of readout data published by the readout transformation
+    // pipeline, keyed on the node ID of the publishing readout transformation
+    // node.
+    map<string, .models.controller.ReadoutValues> readout_values = 2;
+    optional .models.controller.ControllerJobExecutionResult.Status status = 3;
+
+    // Optional message providing context to the result's status.
+    optional string status_message = 4;
+
+    // Duration (µs) job held exclusive access to control hardware.
+    optional uint64 execution_duration_microseconds = 5;
+    enum Status {
+        UNKNOWN = 0;
+        SUCCESS = 1;
+
+        // Failure state caused by an error in the service.
+        SERVICE_FAILURE = 2;
+
+        // Failure state caused by user.
+        USER_FAILURE = 3;
+
+        // Job was cancelled by user before execution completed.
+        USER_CANCELLATION = 4;
+    }
+}

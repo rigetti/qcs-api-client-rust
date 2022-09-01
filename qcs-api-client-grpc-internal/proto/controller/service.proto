@@ -1,0 +1,133 @@
+syntax = "proto3";
+package services.controller;
+option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/controller";
+import "controller/job.proto";
+import "controller/manifest.proto";
+
+// A request to execute multiple ControllerJobs as if they were sent as separate requests.
+// Note that the job execution IDs will be returned in the same order as the requests,
+// but execution itself may occur out of that order depending on executor configuration.
+message BatchExecuteControllerJobsRequest {
+    repeated .services.controller.ExecuteControllerJobRequest requests = 1;
+}
+message BatchExecuteControllerJobsResponse {
+    repeated .services.controller.ExecuteControllerJobResponse responses = 1;
+}
+
+// A request to execute a given ControllerJob on a specific target with one or more configurations.
+// Note that a request to execute a job with zero configurations will result in an error.
+message ExecuteControllerJobRequest {
+
+    // One or more configurations against which to execute the provided job.
+    //
+    // The response will include one `job_execution_id` for each entry in this list,
+    // each corresponding to its configuration in the same order.
+    repeated .models.controller.JobExecutionConfiguration execution_configurations = 3;
+    oneof job {
+        .models.controller.EncryptedControllerJob encrypted = 201;
+        .models.controller.SignedControllerJob signed = 202;
+    }
+    oneof target {
+        // Required by the gateway to forward requests to the correct execution host.
+
+        string quantum_processor_id = 101;
+        string endpoint_id = 102;
+    }
+}
+message ExecuteControllerJobResponse {
+
+    // One execution ID per input JobExecutionConfiguration, in the same order as the input.
+    repeated string job_execution_ids = 1;
+}
+message GetControllerJobResultsRequest {
+
+    // Which Controller Job execution to query for results
+    optional string job_execution_id = 1;
+    oneof target {
+        // Required by the gateway to forward requests to the correct execution host.
+
+        string quantum_processor_id = 101;
+        string endpoint_id = 102;
+    }
+}
+message GetControllerJobResultsResponse {
+    optional .models.controller.ControllerJobExecutionResult result = 1;
+}
+
+// Cancel all given jobs that have yet to begin executing.
+// This endpoint is *not* atomic, and will attempt to cancel every job even
+// when some jobs cannot be canceled. A job can be canceled only if it
+// has not yet started executing.
+//
+// Success response indicates only that the request was received. Cancellation
+// is not guaranteed, as it is based on job state at time of cancellation, and is
+// completed on a best-effort basis.
+message CancelControllerJobsRequest {
+    repeated string job_ids = 1;
+    oneof target {
+        // Required by ConServ gateway to forward requests to the correct rackhost.
+
+        string quantum_processor_id = 101;
+        string endpoint_id = 102;
+    }
+}
+message CancelControllerJobsResponse {
+}
+message GetControllerJobStatusRequest {
+    optional string job_id = 1;
+    oneof target {
+        // Required by ConServ gateway to forward requests to the correct rackhost.
+
+        string quantum_processor_id = 101;
+        string endpoint_id = 102;
+    }
+}
+message GetControllerJobStatusResponse {
+    optional .services.controller.GetControllerJobStatusResponse.Status status = 1;
+    enum Status {
+        UNKNOWN = 0;
+        QUEUED = 1;
+        RUNNING = 2;
+        SUCCEEDED = 3;
+        FAILED = 4;
+        CANCELED = 5;
+    }
+}
+message GetRackManifestRequest {
+}
+message GetRackManifestResponse {
+    optional .models.controller.RackManifest manifest = 1;
+}
+message HealthCheckRequest {
+    optional string service = 1;
+}
+message HealthCheckResponse {
+    optional .services.controller.HealthCheckResponse.ServingStatus status = 1;
+    enum ServingStatus {
+        UNKNOWN = 0;
+        SERVING = 1;
+        NOT_SERVING = 2;
+    }
+}
+
+service Controller {
+
+    rpc ExecuteControllerJob(.services.controller.ExecuteControllerJobRequest) returns (.services.controller.ExecuteControllerJobResponse) {
+    }
+
+    rpc BatchExecuteControllerJobs(.services.controller.BatchExecuteControllerJobsRequest) returns (.services.controller.BatchExecuteControllerJobsResponse) {
+    }
+
+    rpc GetControllerJobResults(.services.controller.GetControllerJobResultsRequest) returns (.services.controller.GetControllerJobResultsResponse) {
+    }
+
+    rpc CancelControllerJobs(.services.controller.CancelControllerJobsRequest) returns (.services.controller.CancelControllerJobsResponse) {
+    }
+
+    rpc GetRackManifest(.services.controller.GetRackManifestRequest) returns (.services.controller.GetRackManifestResponse);
+
+    rpc Check(.services.controller.HealthCheckRequest) returns (.services.controller.HealthCheckResponse);
+
+    rpc GetControllerJobStatus(.services.controller.GetControllerJobStatusRequest) returns (.services.controller.GetControllerJobStatusResponse) {
+    }
+}

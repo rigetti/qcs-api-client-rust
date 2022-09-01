@@ -1,0 +1,20 @@
+syntax = "proto3";
+package services.translation;
+option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/translation";
+import "controller/job.proto";
+message TranslateQuilToEncryptedControllerJobRequest {
+    optional string quantum_processor_id = 1;
+    optional string quil_program = 2;
+    oneof num_shots {
+        uint32 num_shots_value = 3;
+    }
+}
+message TranslateQuilToEncryptedControllerJobResponse {
+    optional .models.controller.EncryptedControllerJob job = 1;
+}
+
+service Translation {
+
+    rpc TranslateQuilToEncryptedControllerJob(.services.translation.TranslateQuilToEncryptedControllerJobRequest) returns (.services.translation.TranslateQuilToEncryptedControllerJobResponse) {
+    }
+}
