@@ -2,7 +2,5 @@
 members = [
     "qcs-api-client-common",
     "qcs-api-client-grpc",
-    "qcs-api-client-grpc-internal",
-    "qcs-api-client-openapi/internal",
-    "qcs-api-client-openapi/public",
+    "qcs-api-client-openapi",
 ]

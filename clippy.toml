@@ -1,5 +1,0 @@
-doc-valid-idents = [
-    "..", # Append this list to Clippy's defaults.
-    "OpenAPI",
-    "gRPC",
-]
