@@ -13,10 +13,8 @@ use reqwest;
 #[derive(Debug, Clone)]
 pub struct Configuration {
     pub base_path: String,
-    pub user_agent: Option<String>,
     pub client: reqwest::Client,
     pub qcs_config: crate::common::ClientConfiguration,
-    // TODO: take an oauth2 token source, similar to the go one
 }
 
 pub type BasicAuth = (String, Option<String>);
@@ -28,13 +26,21 @@ pub struct ApiKey {
 }
 
 impl Configuration {
-    pub async fn new() -> Result<Configuration, crate::common::configuration::LoadError> {
-        let qcs_config = crate::common::ClientConfiguration::load().await?;
-        Ok(Configuration {
+    pub async fn new() -> Result<Self, crate::common::configuration::LoadError> {
+        crate::common::ClientConfiguration::load()
+            .await
+            .map(Self::with_qcs_config)
+    }
+
+    pub fn with_qcs_config(qcs_config: crate::common::ClientConfiguration) -> Configuration {
+        let client = reqwest::Client::builder()
+            .user_agent("QCS OpenAPI Client (Rust)/2020-07-31")
+            .build()
+            .expect("failed to create HTTP client");
+        Self {
             base_path: "https://api.qcs.rigetti.com".to_owned(),
-            user_agent: Some("OpenAPI-Generator/2020-07-31/rust".to_owned()),
             qcs_config,
-            client: reqwest::Client::default(),
-        })
+            client,
+        }
     }
 }

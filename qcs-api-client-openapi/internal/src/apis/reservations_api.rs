@@ -106,10 +106,6 @@ async fn create_reservation_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
     if let Some(local_var_param_value) = x_qcs_account_id {
         local_var_req_builder =
             local_var_req_builder.header("x-qcs-account-id", local_var_param_value.to_string());
@@ -193,11 +189,6 @@ async fn delete_reservation_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
-
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -272,10 +263,6 @@ async fn find_available_reservations_inner(
     local_var_req_builder =
         local_var_req_builder.query(&[("startTimeFrom", &start_time_from.to_string())]);
     local_var_req_builder = local_var_req_builder.query(&[("duration", &duration.to_string())]);
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -357,10 +344,6 @@ async fn internal_create_reservation_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
     if let Some(local_var_param_value) = x_qcs_account_id {
         local_var_req_builder =
             local_var_req_builder.header("x-qcs-account-id", local_var_param_value.to_string());
@@ -468,10 +451,6 @@ async fn internal_find_available_reservations_inner(
             local_var_req_builder.query(&[("epoch", &local_var_str.to_string())]);
     }
     local_var_req_builder = local_var_req_builder.query(&[("duration", &duration.to_string())]);
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -580,10 +559,6 @@ async fn internal_list_reservations_inner(
         local_var_req_builder =
             local_var_req_builder.query(&[("showDeleted", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -688,10 +663,6 @@ async fn list_group_reservations_inner(
         local_var_req_builder =
             local_var_req_builder.query(&[("showDeleted", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -795,10 +766,6 @@ async fn list_reservations_inner(
     if let Some(ref local_var_str) = show_deleted {
         local_var_req_builder =
             local_var_req_builder.query(&[("showDeleted", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
     if let Some(local_var_param_value) = x_qcs_account_id {
         local_var_req_builder =

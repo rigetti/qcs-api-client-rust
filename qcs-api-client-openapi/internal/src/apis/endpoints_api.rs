@@ -153,11 +153,6 @@ async fn create_endpoint_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
-
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -217,11 +212,6 @@ async fn delete_endpoint_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
-
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -278,11 +268,6 @@ async fn get_default_endpoint_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
-
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -341,11 +326,6 @@ async fn get_endpoint_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
-
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -401,11 +381,6 @@ async fn internal_create_endpoint_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
-
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -469,11 +444,6 @@ async fn internal_delete_endpoint_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
-
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -531,11 +501,6 @@ async fn internal_get_default_endpoint_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
-
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -592,11 +557,6 @@ async fn internal_get_endpoint_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
-
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -668,10 +628,6 @@ async fn internal_list_endpoints_inner(
         local_var_req_builder =
             local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -739,11 +695,6 @@ async fn internal_set_default_endpoint_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
-
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -817,11 +768,6 @@ async fn internal_update_endpoint_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
-
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -888,11 +834,6 @@ async fn list_endpoint_templates_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
-
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -958,10 +899,6 @@ async fn list_endpoints_inner(
     if let Some(ref local_var_str) = page_token {
         local_var_req_builder =
             local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
     // Use QCS Bearer token
@@ -1030,11 +967,6 @@ async fn restart_endpoint_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
-
-    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;

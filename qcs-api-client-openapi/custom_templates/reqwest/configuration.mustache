@@ -18,16 +18,21 @@ pub struct ApiKey {
 }
 
 impl Configuration {
-    pub async fn new() -> Result<Configuration, crate::common::configuration::LoadError> {
-        let qcs_config = crate::common::ClientConfiguration::load().await?;
-        let client = request::Client::builder()
+    pub async fn new() -> Result<Self, crate::common::configuration::LoadError> {
+        crate::common::ClientConfiguration::load()
+            .await
+            .map(Self::with_qcs_config)
+    }
+
+    pub fn with_qcs_config(qcs_config: crate::common::ClientConfiguration) -> Configuration {
+        let client = reqwest::Client::builder()
             .user_agent("QCS OpenAPI Client (Rust)/{{{version}}}")
             .build()
             .expect("failed to create HTTP client");
-        Ok(Configuration {
+        Self {
             base_path: "{{{basePath}}}".to_owned(),
             qcs_config,
             client,
-        })
+        }
     }
 }
