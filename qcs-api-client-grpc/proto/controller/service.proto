@@ -7,8 +7,10 @@ import "controller/job.proto";
 // Note that the job execution IDs will be returned in the same order as the requests,
 // but execution itself may occur out of that order depending on executor configuration.
 message BatchExecuteControllerJobsRequest {
+    repeated .services.controller.ExecuteControllerJobRequest requests = 1;
 }
 message BatchExecuteControllerJobsResponse {
+    repeated .services.controller.ExecuteControllerJobResponse responses = 1;
 }
 
 // A request to execute a given ControllerJob on a specific target with one or more configurations.
