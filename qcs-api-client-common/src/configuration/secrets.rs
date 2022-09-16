@@ -1,9 +1,3 @@
-use std::collections::HashMap;
-
-use serde::{Deserialize, Serialize};
-
-use crate::configuration::LoadError;
-
 // Copyright 2022 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +11,12 @@ use crate::configuration::LoadError;
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+use std::collections::HashMap;
+
+use serde::{Deserialize, Serialize};
+
+use crate::configuration::LoadError;
 
 use super::path::path_from_env_or_home;
 
