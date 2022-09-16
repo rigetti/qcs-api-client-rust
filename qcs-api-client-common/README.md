@@ -5,8 +5,8 @@
 [![crates.io recent downloads](https://img.shields.io/crates/dr/qcs-api-client-common)][crates.io]
 [![docs.rs badge](https://img.shields.io/docsrs/qcs-api-client-common)][docs.rs]
 
-- [crates.io][crates.io]
-- [docs.rs][docs.rs]
+- [crates.io]
+- [docs.rs]
 
 This crate serves as a common implementation detail for other `qcs-api-client` crates:
 
