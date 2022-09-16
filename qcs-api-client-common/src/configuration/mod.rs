@@ -164,7 +164,7 @@ impl ClientConfiguration {
 
     /// Manually set access and refresh tokens
     ///
-    /// Most users do not want to use this. Instead, use [`Configuration::load()`], which uses your
+    /// Most users do not want to use this. Instead, use [`ClientConfiguration::load()`], which uses your
     /// QCS configuration.
     pub async fn set_tokens(&mut self, tokens: Tokens) {
         let mut lock = self.tokens.lock().await;

@@ -110,13 +110,13 @@ impl RefreshLayer {
     ///
     /// # Errors
     ///
-    /// Will fail with error if loading the [`Configuration`] fails.
+    /// Will fail with error if loading the [`ClientConfiguration`] fails.
     pub async fn new() -> Result<Self, Error> {
         let config = ClientConfiguration::load().await?;
         Ok(Self::with_config(config))
     }
 
-    /// Create a [`RefreshLayer`] from an existing [`Configuration`].
+    /// Create a [`RefreshLayer`] from an existing [`ClientConfiguration`].
     #[must_use]
     pub const fn with_config(config: ClientConfiguration) -> Self {
         Self { config }
