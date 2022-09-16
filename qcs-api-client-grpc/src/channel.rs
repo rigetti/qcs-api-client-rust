@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! gRPC Common Code
-
-use crate::configuration::{ClientConfiguration, LoadError, RefreshError};
+use crate::client_configuration::{ClientConfiguration, LoadError, RefreshError};
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -24,12 +22,9 @@ use tonic::codegen::http::{Request, Response, StatusCode};
 use tonic::transport::{Channel, Uri, Error as TransportError};
 use tonic::Status;
 use tower::{Layer, ServiceBuilder};
-
-pub use tonic;
 use tonic::body::BoxBody;
 use tonic::codegen::Body;
 use tonic::codegen::http::uri::InvalidUri;
-pub use tower;
 
 /// Errors that may occur when using gRPC.
 #[derive(Debug, thiserror::Error)]
@@ -198,13 +193,13 @@ async fn make_request(
 }
 
 impl<> GrpcService<BoxBody> for RefreshService<Channel>
-where
-    Channel: GrpcService<BoxBody, Error = TransportError> + Clone + Send + 'static,
-    <Channel as GrpcService<BoxBody>>::Future: Send,
+    where
+        Channel: GrpcService<BoxBody, Error=TransportError> + Clone + Send + 'static,
+        <Channel as GrpcService<BoxBody>>::Future: Send,
 {
     type ResponseBody = <Channel as GrpcService<BoxBody>>::ResponseBody;
     type Error = Error;
-    type Future = Pin<Box<dyn Future<Output = Result<Response<Self::ResponseBody>, Self::Error>>>>;
+    type Future = Pin<Box<dyn Future<Output=Result<Response<Self::ResponseBody>, Self::Error>>>>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.service.poll_ready(cx).map_err(Error::from)

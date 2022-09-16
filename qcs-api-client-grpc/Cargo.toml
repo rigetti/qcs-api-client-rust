@@ -13,12 +13,15 @@ description = "gRPC client for the QCS API"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-qcs-api-client-common = { path = "../qcs-api-client-common", features = ["grpc"] }
+http-body = "0.4.5"
 pbjson = "0.4.0"
+pbjson-types = "0.4.0"
 prost = "0.11.0"
+qcs-api-client-common = { path = "../qcs-api-client-common" }
 serde = "1.0"
 tonic = "0.8.0"
-pbjson-types = "0.4.0"
+tower = "0.4"
+thiserror = "1.0.32"
 
 [build-dependencies]
 tonic-build = "0.8.0"
