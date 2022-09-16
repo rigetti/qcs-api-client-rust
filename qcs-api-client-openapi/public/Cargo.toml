@@ -5,7 +5,8 @@ version = "0.2.1"
 edition = "2021"
 license = "Apache-2.0"
 repository = "https://github.com/rigetti/qcs-api-client-rust"
-keywords = ["API", "QCS", "Rigetti"]
+homepage = "https://github.com/rigetti/qcs-api-client-rust"
+keywords = ["API", "QCS", "Rigetti", "quantum"]
 categories = ["api-bindings"]
 
 [dependencies]
