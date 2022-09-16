@@ -47,11 +47,7 @@ impl Architecture {
     ) -> Architecture {
         Architecture {
             edges,
-            family: if let Some(x) = family {
-                Some(Box::new(x))
-            } else {
-                None
-            },
+            family: family.map(Box::new),
             nodes,
         }
     }

@@ -9,5 +9,13 @@ FILE="$1"
 TEMP_FILE="$1.tmp"
 HEADER="$ROOT/license_header"
 
-cat "$HEADER" "$FILE" > "$TEMP_FILE"
-mv "$TEMP_FILE" "$FILE"
+HEADER_LINES="$(wc -l < "$HEADER")"
+
+if [ "$(cat "$HEADER")" = "$(head -n"$HEADER_LINES" "$FILE")" ]; then
+    echo "license header already in $FILE"
+else
+    echo "inserting license header into $FILE"
+    cat "$HEADER" "$FILE" > "$TEMP_FILE"
+    mv "$TEMP_FILE" "$FILE"
+fi
+

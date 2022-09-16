@@ -170,11 +170,11 @@ impl Default for Channels {
 }
 
 impl Channels {
-    pub fn is_cwchannel(&self) -> bool {
+    pub fn is_cw_channel(&self) -> bool {
         matches!(self, Self::CwChannel(_))
     }
 
-    pub fn as_cwchannel(&self) -> Option<&CwChannel> {
+    pub fn as_cw_channel(&self) -> Option<&CwChannel> {
         if let Self::CwChannel(inner) = self {
             Some(inner)
         } else {
@@ -182,18 +182,18 @@ impl Channels {
         }
     }
 
-    pub fn into_cwchannel(self) -> Result<CwChannel, Self> {
+    pub fn into_cw_channel(self) -> Result<CwChannel, Self> {
         if let Self::CwChannel(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_legacyusrpsequencer(&self) -> bool {
+    pub fn is_legacy_usrp_sequencer(&self) -> bool {
         matches!(self, Self::LegacyUsrpSequencer(_))
     }
 
-    pub fn as_legacyusrpsequencer(&self) -> Option<&LegacyUsrpSequencer> {
+    pub fn as_legacy_usrp_sequencer(&self) -> Option<&LegacyUsrpSequencer> {
         if let Self::LegacyUsrpSequencer(inner) = self {
             Some(inner)
         } else {
@@ -201,18 +201,18 @@ impl Channels {
         }
     }
 
-    pub fn into_legacyusrpsequencer(self) -> Result<LegacyUsrpSequencer, Self> {
+    pub fn into_legacy_usrp_sequencer(self) -> Result<LegacyUsrpSequencer, Self> {
         if let Self::LegacyUsrpSequencer(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qdofastfluxchannel(&self) -> bool {
+    pub fn is_qdo_fast_flux_channel(&self) -> bool {
         matches!(self, Self::QdoFastFluxChannel(_))
     }
 
-    pub fn as_qdofastfluxchannel(&self) -> Option<&QdoFastFluxChannel> {
+    pub fn as_qdo_fast_flux_channel(&self) -> Option<&QdoFastFluxChannel> {
         if let Self::QdoFastFluxChannel(inner) = self {
             Some(inner)
         } else {
@@ -220,18 +220,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qdofastfluxchannel(self) -> Result<QdoFastFluxChannel, Self> {
+    pub fn into_qdo_fast_flux_channel(self) -> Result<QdoFastFluxChannel, Self> {
         if let Self::QdoFastFluxChannel(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qdosequencer(&self) -> bool {
+    pub fn is_qdo_sequencer(&self) -> bool {
         matches!(self, Self::QdoSequencer(_))
     }
 
-    pub fn as_qdosequencer(&self) -> Option<&QdoSequencer> {
+    pub fn as_qdo_sequencer(&self) -> Option<&QdoSequencer> {
         if let Self::QdoSequencer(inner) = self {
             Some(inner)
         } else {
@@ -239,18 +239,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qdosequencer(self) -> Result<QdoSequencer, Self> {
+    pub fn into_qdo_sequencer(self) -> Result<QdoSequencer, Self> {
         if let Self::QdoSequencer(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qdoslowfluxchannel(&self) -> bool {
+    pub fn is_qdo_slow_flux_channel(&self) -> bool {
         matches!(self, Self::QdoSlowFluxChannel(_))
     }
 
-    pub fn as_qdoslowfluxchannel(&self) -> Option<&QdoSlowFluxChannel> {
+    pub fn as_qdo_slow_flux_channel(&self) -> Option<&QdoSlowFluxChannel> {
         if let Self::QdoSlowFluxChannel(inner) = self {
             Some(inner)
         } else {
@@ -258,18 +258,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qdoslowfluxchannel(self) -> Result<QdoSlowFluxChannel, Self> {
+    pub fn into_qdo_slow_flux_channel(self) -> Result<QdoSlowFluxChannel, Self> {
         if let Self::QdoSlowFluxChannel(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qfdchannel(&self) -> bool {
+    pub fn is_qfd_channel(&self) -> bool {
         matches!(self, Self::QfdChannel(_))
     }
 
-    pub fn as_qfdchannel(&self) -> Option<&QfdChannel> {
+    pub fn as_qfd_channel(&self) -> Option<&QfdChannel> {
         if let Self::QfdChannel(inner) = self {
             Some(inner)
         } else {
@@ -277,18 +277,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qfdchannel(self) -> Result<QfdChannel, Self> {
+    pub fn into_qfd_channel(self) -> Result<QfdChannel, Self> {
         if let Self::QfdChannel(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qfdsequencer(&self) -> bool {
+    pub fn is_qfd_sequencer(&self) -> bool {
         matches!(self, Self::QfdSequencer(_))
     }
 
-    pub fn as_qfdsequencer(&self) -> Option<&QfdSequencer> {
+    pub fn as_qfd_sequencer(&self) -> Option<&QfdSequencer> {
         if let Self::QfdSequencer(inner) = self {
             Some(inner)
         } else {
@@ -296,18 +296,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qfdsequencer(self) -> Result<QfdSequencer, Self> {
+    pub fn into_qfd_sequencer(self) -> Result<QfdSequencer, Self> {
         if let Self::QfdSequencer(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qfdx2sequencer(&self) -> bool {
+    pub fn is_qfdx2_sequencer(&self) -> bool {
         matches!(self, Self::Qfdx2Sequencer(_))
     }
 
-    pub fn as_qfdx2sequencer(&self) -> Option<&Qfdx2Sequencer> {
+    pub fn as_qfdx2_sequencer(&self) -> Option<&Qfdx2Sequencer> {
         if let Self::Qfdx2Sequencer(inner) = self {
             Some(inner)
         } else {
@@ -315,18 +315,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qfdx2sequencer(self) -> Result<Qfdx2Sequencer, Self> {
+    pub fn into_qfdx2_sequencer(self) -> Result<Qfdx2Sequencer, Self> {
         if let Self::Qfdx2Sequencer(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qgschannel(&self) -> bool {
+    pub fn is_qgs_channel(&self) -> bool {
         matches!(self, Self::QgsChannel(_))
     }
 
-    pub fn as_qgschannel(&self) -> Option<&QgsChannel> {
+    pub fn as_qgs_channel(&self) -> Option<&QgsChannel> {
         if let Self::QgsChannel(inner) = self {
             Some(inner)
         } else {
@@ -334,18 +334,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qgschannel(self) -> Result<QgsChannel, Self> {
+    pub fn into_qgs_channel(self) -> Result<QgsChannel, Self> {
         if let Self::QgsChannel(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qgssequencer(&self) -> bool {
+    pub fn is_qgs_sequencer(&self) -> bool {
         matches!(self, Self::QgsSequencer(_))
     }
 
-    pub fn as_qgssequencer(&self) -> Option<&QgsSequencer> {
+    pub fn as_qgs_sequencer(&self) -> Option<&QgsSequencer> {
         if let Self::QgsSequencer(inner) = self {
             Some(inner)
         } else {
@@ -353,18 +353,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qgssequencer(self) -> Result<QgsSequencer, Self> {
+    pub fn into_qgs_sequencer(self) -> Result<QgsSequencer, Self> {
         if let Self::QgsSequencer(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qgsx2sequencer(&self) -> bool {
+    pub fn is_qgsx2_sequencer(&self) -> bool {
         matches!(self, Self::Qgsx2Sequencer(_))
     }
 
-    pub fn as_qgsx2sequencer(&self) -> Option<&Qgsx2Sequencer> {
+    pub fn as_qgsx2_sequencer(&self) -> Option<&Qgsx2Sequencer> {
         if let Self::Qgsx2Sequencer(inner) = self {
             Some(inner)
         } else {
@@ -372,18 +372,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qgsx2sequencer(self) -> Result<Qgsx2Sequencer, Self> {
+    pub fn into_qgsx2_sequencer(self) -> Result<Qgsx2Sequencer, Self> {
         if let Self::Qgsx2Sequencer(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qrrchannel(&self) -> bool {
+    pub fn is_qrr_channel(&self) -> bool {
         matches!(self, Self::QrrChannel(_))
     }
 
-    pub fn as_qrrchannel(&self) -> Option<&QrrChannel> {
+    pub fn as_qrr_channel(&self) -> Option<&QrrChannel> {
         if let Self::QrrChannel(inner) = self {
             Some(inner)
         } else {
@@ -391,18 +391,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qrrchannel(self) -> Result<QrrChannel, Self> {
+    pub fn into_qrr_channel(self) -> Result<QrrChannel, Self> {
         if let Self::QrrChannel(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qrrsequencer(&self) -> bool {
+    pub fn is_qrr_sequencer(&self) -> bool {
         matches!(self, Self::QrrSequencer(_))
     }
 
-    pub fn as_qrrsequencer(&self) -> Option<&QrrSequencer> {
+    pub fn as_qrr_sequencer(&self) -> Option<&QrrSequencer> {
         if let Self::QrrSequencer(inner) = self {
             Some(inner)
         } else {
@@ -410,18 +410,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qrrsequencer(self) -> Result<QrrSequencer, Self> {
+    pub fn into_qrr_sequencer(self) -> Result<QrrSequencer, Self> {
         if let Self::QrrSequencer(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qrtchannel(&self) -> bool {
+    pub fn is_qrt_channel(&self) -> bool {
         matches!(self, Self::QrtChannel(_))
     }
 
-    pub fn as_qrtchannel(&self) -> Option<&QrtChannel> {
+    pub fn as_qrt_channel(&self) -> Option<&QrtChannel> {
         if let Self::QrtChannel(inner) = self {
             Some(inner)
         } else {
@@ -429,18 +429,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qrtchannel(self) -> Result<QrtChannel, Self> {
+    pub fn into_qrt_channel(self) -> Result<QrtChannel, Self> {
         if let Self::QrtChannel(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qrtsequencer(&self) -> bool {
+    pub fn is_qrt_sequencer(&self) -> bool {
         matches!(self, Self::QrtSequencer(_))
     }
 
-    pub fn as_qrtsequencer(&self) -> Option<&QrtSequencer> {
+    pub fn as_qrt_sequencer(&self) -> Option<&QrtSequencer> {
         if let Self::QrtSequencer(inner) = self {
             Some(inner)
         } else {
@@ -448,18 +448,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qrtsequencer(self) -> Result<QrtSequencer, Self> {
+    pub fn into_qrt_sequencer(self) -> Result<QrtSequencer, Self> {
         if let Self::QrtSequencer(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_qrtx2sequencer(&self) -> bool {
+    pub fn is_qrtx2_sequencer(&self) -> bool {
         matches!(self, Self::Qrtx2Sequencer(_))
     }
 
-    pub fn as_qrtx2sequencer(&self) -> Option<&Qrtx2Sequencer> {
+    pub fn as_qrtx2_sequencer(&self) -> Option<&Qrtx2Sequencer> {
         if let Self::Qrtx2Sequencer(inner) = self {
             Some(inner)
         } else {
@@ -467,18 +467,18 @@ impl Channels {
         }
     }
 
-    pub fn into_qrtx2sequencer(self) -> Result<Qrtx2Sequencer, Self> {
+    pub fn into_qrtx2_sequencer(self) -> Result<Qrtx2Sequencer, Self> {
         if let Self::Qrtx2Sequencer(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_usicardsequencer(&self) -> bool {
+    pub fn is_usi_card_sequencer(&self) -> bool {
         matches!(self, Self::UsiCardSequencer(_))
     }
 
-    pub fn as_usicardsequencer(&self) -> Option<&UsiCardSequencer> {
+    pub fn as_usi_card_sequencer(&self) -> Option<&UsiCardSequencer> {
         if let Self::UsiCardSequencer(inner) = self {
             Some(inner)
         } else {
@@ -486,18 +486,18 @@ impl Channels {
         }
     }
 
-    pub fn into_usicardsequencer(self) -> Result<UsiCardSequencer, Self> {
+    pub fn into_usi_card_sequencer(self) -> Result<UsiCardSequencer, Self> {
         if let Self::UsiCardSequencer(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_usitargetsequencer(&self) -> bool {
+    pub fn is_usi_target_sequencer(&self) -> bool {
         matches!(self, Self::UsiTargetSequencer(_))
     }
 
-    pub fn as_usitargetsequencer(&self) -> Option<&UsiTargetSequencer> {
+    pub fn as_usi_target_sequencer(&self) -> Option<&UsiTargetSequencer> {
         if let Self::UsiTargetSequencer(inner) = self {
             Some(inner)
         } else {
@@ -505,18 +505,18 @@ impl Channels {
         }
     }
 
-    pub fn into_usitargetsequencer(self) -> Result<UsiTargetSequencer, Self> {
+    pub fn into_usi_target_sequencer(self) -> Result<UsiTargetSequencer, Self> {
         if let Self::UsiTargetSequencer(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_yokogawags200channel(&self) -> bool {
+    pub fn is_yokogawa_gs200_channel(&self) -> bool {
         matches!(self, Self::YokogawaGs200Channel(_))
     }
 
-    pub fn as_yokogawags200channel(&self) -> Option<&YokogawaGs200Channel> {
+    pub fn as_yokogawa_gs200_channel(&self) -> Option<&YokogawaGs200Channel> {
         if let Self::YokogawaGs200Channel(inner) = self {
             Some(inner)
         } else {
@@ -524,18 +524,18 @@ impl Channels {
         }
     }
 
-    pub fn into_yokogawags200channel(self) -> Result<YokogawaGs200Channel, Self> {
+    pub fn into_yokogawa_gs200_channel(self) -> Result<YokogawaGs200Channel, Self> {
         if let Self::YokogawaGs200Channel(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_serdejsonvalue(&self) -> bool {
+    pub fn is_serde_json_value(&self) -> bool {
         matches!(self, Self::SerdeJsonValue(_))
     }
 
-    pub fn as_serdejsonvalue(&self) -> Option<&serde_json::Value> {
+    pub fn as_serde_json_value(&self) -> Option<&serde_json::Value> {
         if let Self::SerdeJsonValue(inner) = self {
             Some(inner)
         } else {
@@ -543,7 +543,7 @@ impl Channels {
         }
     }
 
-    pub fn into_serdejsonvalue(self) -> Result<serde_json::Value, Self> {
+    pub fn into_serde_json_value(self) -> Result<serde_json::Value, Self> {
         if let Self::SerdeJsonValue(inner) = self {
             Ok(inner)
         } else {

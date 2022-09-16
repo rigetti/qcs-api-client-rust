@@ -45,11 +45,11 @@ impl Default for GatesInner {
 }
 
 impl GatesInner {
-    pub fn is_gateinfo(&self) -> bool {
+    pub fn is_gate_info(&self) -> bool {
         matches!(self, Self::GateInfo(_))
     }
 
-    pub fn as_gateinfo(&self) -> Option<&GateInfo> {
+    pub fn as_gate_info(&self) -> Option<&GateInfo> {
         if let Self::GateInfo(inner) = self {
             Some(inner)
         } else {
@@ -57,18 +57,18 @@ impl GatesInner {
         }
     }
 
-    pub fn into_gateinfo(self) -> Result<GateInfo, Self> {
+    pub fn into_gate_info(self) -> Result<GateInfo, Self> {
         if let Self::GateInfo(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_measureinfo(&self) -> bool {
+    pub fn is_measure_info(&self) -> bool {
         matches!(self, Self::MeasureInfo(_))
     }
 
-    pub fn as_measureinfo(&self) -> Option<&MeasureInfo> {
+    pub fn as_measure_info(&self) -> Option<&MeasureInfo> {
         if let Self::MeasureInfo(inner) = self {
             Some(inner)
         } else {
@@ -76,7 +76,7 @@ impl GatesInner {
         }
     }
 
-    pub fn into_measureinfo(self) -> Result<MeasureInfo, Self> {
+    pub fn into_measure_info(self) -> Result<MeasureInfo, Self> {
         if let Self::MeasureInfo(inner) = self {
             Ok(inner)
         } else {

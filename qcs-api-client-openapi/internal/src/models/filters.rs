@@ -52,11 +52,11 @@ impl Default for Filters {
 }
 
 impl Filters {
-    pub fn is_arbitraryreadoutkernel(&self) -> bool {
+    pub fn is_arbitrary_readout_kernel(&self) -> bool {
         matches!(self, Self::ArbitraryReadoutKernel(_))
     }
 
-    pub fn as_arbitraryreadoutkernel(&self) -> Option<&ArbitraryReadoutKernel> {
+    pub fn as_arbitrary_readout_kernel(&self) -> Option<&ArbitraryReadoutKernel> {
         if let Self::ArbitraryReadoutKernel(inner) = self {
             Some(inner)
         } else {
@@ -64,18 +64,18 @@ impl Filters {
         }
     }
 
-    pub fn into_arbitraryreadoutkernel(self) -> Result<ArbitraryReadoutKernel, Self> {
+    pub fn into_arbitrary_readout_kernel(self) -> Result<ArbitraryReadoutKernel, Self> {
         if let Self::ArbitraryReadoutKernel(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_boxcaraveragerreadoutkernel(&self) -> bool {
+    pub fn is_boxcar_averager_readout_kernel(&self) -> bool {
         matches!(self, Self::BoxcarAveragerReadoutKernel(_))
     }
 
-    pub fn as_boxcaraveragerreadoutkernel(&self) -> Option<&BoxcarAveragerReadoutKernel> {
+    pub fn as_boxcar_averager_readout_kernel(&self) -> Option<&BoxcarAveragerReadoutKernel> {
         if let Self::BoxcarAveragerReadoutKernel(inner) = self {
             Some(inner)
         } else {
@@ -83,18 +83,18 @@ impl Filters {
         }
     }
 
-    pub fn into_boxcaraveragerreadoutkernel(self) -> Result<BoxcarAveragerReadoutKernel, Self> {
+    pub fn into_boxcar_averager_readout_kernel(self) -> Result<BoxcarAveragerReadoutKernel, Self> {
         if let Self::BoxcarAveragerReadoutKernel(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_flatreadoutkernel(&self) -> bool {
+    pub fn is_flat_readout_kernel(&self) -> bool {
         matches!(self, Self::FlatReadoutKernel(_))
     }
 
-    pub fn as_flatreadoutkernel(&self) -> Option<&FlatReadoutKernel> {
+    pub fn as_flat_readout_kernel(&self) -> Option<&FlatReadoutKernel> {
         if let Self::FlatReadoutKernel(inner) = self {
             Some(inner)
         } else {
@@ -102,7 +102,7 @@ impl Filters {
         }
     }
 
-    pub fn into_flatreadoutkernel(self) -> Result<FlatReadoutKernel, Self> {
+    pub fn into_flat_readout_kernel(self) -> Result<FlatReadoutKernel, Self> {
         if let Self::FlatReadoutKernel(inner) = self {
             Ok(inner)
         } else {

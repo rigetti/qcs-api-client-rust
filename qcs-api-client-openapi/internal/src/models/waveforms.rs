@@ -73,11 +73,11 @@ impl Default for Waveforms {
 }
 
 impl Waveforms {
-    pub fn is_arbitrarywaveform(&self) -> bool {
+    pub fn is_arbitrary_waveform(&self) -> bool {
         matches!(self, Self::ArbitraryWaveform(_))
     }
 
-    pub fn as_arbitrarywaveform(&self) -> Option<&ArbitraryWaveform> {
+    pub fn as_arbitrary_waveform(&self) -> Option<&ArbitraryWaveform> {
         if let Self::ArbitraryWaveform(inner) = self {
             Some(inner)
         } else {
@@ -85,18 +85,18 @@ impl Waveforms {
         }
     }
 
-    pub fn into_arbitrarywaveform(self) -> Result<ArbitraryWaveform, Self> {
+    pub fn into_arbitrary_waveform(self) -> Result<ArbitraryWaveform, Self> {
         if let Self::ArbitraryWaveform(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_draggaussianwaveform(&self) -> bool {
+    pub fn is_drag_gaussian_waveform(&self) -> bool {
         matches!(self, Self::DragGaussianWaveform(_))
     }
 
-    pub fn as_draggaussianwaveform(&self) -> Option<&DragGaussianWaveform> {
+    pub fn as_drag_gaussian_waveform(&self) -> Option<&DragGaussianWaveform> {
         if let Self::DragGaussianWaveform(inner) = self {
             Some(inner)
         } else {
@@ -104,18 +104,18 @@ impl Waveforms {
         }
     }
 
-    pub fn into_draggaussianwaveform(self) -> Result<DragGaussianWaveform, Self> {
+    pub fn into_drag_gaussian_waveform(self) -> Result<DragGaussianWaveform, Self> {
         if let Self::DragGaussianWaveform(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_erfsquarewaveform(&self) -> bool {
+    pub fn is_erf_square_waveform(&self) -> bool {
         matches!(self, Self::ErfSquareWaveform(_))
     }
 
-    pub fn as_erfsquarewaveform(&self) -> Option<&ErfSquareWaveform> {
+    pub fn as_erf_square_waveform(&self) -> Option<&ErfSquareWaveform> {
         if let Self::ErfSquareWaveform(inner) = self {
             Some(inner)
         } else {
@@ -123,18 +123,18 @@ impl Waveforms {
         }
     }
 
-    pub fn into_erfsquarewaveform(self) -> Result<ErfSquareWaveform, Self> {
+    pub fn into_erf_square_waveform(self) -> Result<ErfSquareWaveform, Self> {
         if let Self::ErfSquareWaveform(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_flatwaveform(&self) -> bool {
+    pub fn is_flat_waveform(&self) -> bool {
         matches!(self, Self::FlatWaveform(_))
     }
 
-    pub fn as_flatwaveform(&self) -> Option<&FlatWaveform> {
+    pub fn as_flat_waveform(&self) -> Option<&FlatWaveform> {
         if let Self::FlatWaveform(inner) = self {
             Some(inner)
         } else {
@@ -142,18 +142,18 @@ impl Waveforms {
         }
     }
 
-    pub fn into_flatwaveform(self) -> Result<FlatWaveform, Self> {
+    pub fn into_flat_waveform(self) -> Result<FlatWaveform, Self> {
         if let Self::FlatWaveform(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_gaussianwaveform(&self) -> bool {
+    pub fn is_gaussian_waveform(&self) -> bool {
         matches!(self, Self::GaussianWaveform(_))
     }
 
-    pub fn as_gaussianwaveform(&self) -> Option<&GaussianWaveform> {
+    pub fn as_gaussian_waveform(&self) -> Option<&GaussianWaveform> {
         if let Self::GaussianWaveform(inner) = self {
             Some(inner)
         } else {
@@ -161,18 +161,18 @@ impl Waveforms {
         }
     }
 
-    pub fn into_gaussianwaveform(self) -> Result<GaussianWaveform, Self> {
+    pub fn into_gaussian_waveform(self) -> Result<GaussianWaveform, Self> {
         if let Self::GaussianWaveform(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_hermitegaussianwaveform(&self) -> bool {
+    pub fn is_hermite_gaussian_waveform(&self) -> bool {
         matches!(self, Self::HermiteGaussianWaveform(_))
     }
 
-    pub fn as_hermitegaussianwaveform(&self) -> Option<&HermiteGaussianWaveform> {
+    pub fn as_hermite_gaussian_waveform(&self) -> Option<&HermiteGaussianWaveform> {
         if let Self::HermiteGaussianWaveform(inner) = self {
             Some(inner)
         } else {
@@ -180,7 +180,7 @@ impl Waveforms {
         }
     }
 
-    pub fn into_hermitegaussianwaveform(self) -> Result<HermiteGaussianWaveform, Self> {
+    pub fn into_hermite_gaussian_waveform(self) -> Result<HermiteGaussianWaveform, Self> {
         if let Self::HermiteGaussianWaveform(inner) = self {
             Ok(inner)
         } else {

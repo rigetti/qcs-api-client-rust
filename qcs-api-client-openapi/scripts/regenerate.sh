@@ -17,6 +17,9 @@ for VARIANT in public internal; do
 
     if [ "$VARIANT" = "public" ]; then
         find "$ROOT_PATH/$VARIANT/src" -type f -name "*.rs" -execdir bash "$ROOT_PATH/scripts/insert_license_header.sh" "{}" \;
+    elif [ "$VARIANT" = "internal" ]; then
+        # Use Vim EX mode to edit the file, avoiding cross-platform issues with `sed -i`
+        find "$ROOT_PATH/$VARIANT/src" -type f -name "*.rs" -execdir ex '+%s/qcs_api_client_openapi/qcs_api_client_openapi_internal/g' -scwq "{}" \;
     fi
 
     pushd "$ROOT_PATH/$VARIANT"

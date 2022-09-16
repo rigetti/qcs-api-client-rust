@@ -18,14 +18,14 @@ use crate::models::{{{this}}};
 #[serde(untagged, deny_unknown_fields)]
 pub enum {{{classname}}} {
 {{#oneOf}}
-{{#lambda.titlecase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.titlecase}}({{{this}}}),
+{{#lambda.pascalcase}}{{{this}}}{{/lambda.pascalcase}}({{{this}}}),
 {{/oneOf}}
 }
 
 {{#oneOf}}
 impl From<{{{this}}}> for {{{classname}}} {
     fn from(variant: {{{this}}}) -> Self {
-        Self::{{#lambda.titlecase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.titlecase}}(variant)
+        Self::{{#lambda.pascalcase}}{{{this}}}{{/lambda.pascalcase}}(variant)
     }
 }
 {{/oneOf}}
@@ -34,7 +34,7 @@ impl Default for {{{classname}}} {
     fn default() -> Self {
         {{#oneOf}}
         {{#-first}}
-        Self::{{#lambda.titlecase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.titlecase}}({{{this}}}::default())
+        Self::{{#lambda.pascalcase}}{{{this}}}{{/lambda.pascalcase}}({{{this}}}::default())
         {{/-first}}
         {{/oneOf}}
     }
@@ -42,13 +42,13 @@ impl Default for {{{classname}}} {
 
 impl {{{classname}}} {
 {{#oneOf}}
-    pub fn is_{{#lambda.lowercase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.lowercase}}(&self) -> bool {
-        matches!(self, Self::{{#lambda.titlecase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.titlecase}}(_))
+    pub fn is_{{#lambda.snakecase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.snakecase}}(&self) -> bool {
+        matches!(self, Self::{{#lambda.pascalcase}}{{{this}}}{{/lambda.pascalcase}}(_))
     }
 
-    pub fn as_{{#lambda.lowercase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.lowercase}}(&self) -> Option<&{{{this}}}> {
+    pub fn as_{{#lambda.snakecase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.snakecase}}(&self) -> Option<&{{{this}}}> {
         if let
-        Self::{{#lambda.titlecase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.titlecase}}(inner) =
+        Self::{{#lambda.pascalcase}}{{{this}}}{{/lambda.pascalcase}}(inner) =
         self {
             Some(inner)
         } else {
@@ -56,10 +56,10 @@ impl {{{classname}}} {
         }
     }
 
-    pub fn into_{{#lambda.lowercase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.lowercase}}(self) ->
+    pub fn into_{{#lambda.snakecase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.snakecase}}(self) ->
     Result<{{{this}}}, Self> {
         if let
-        Self::{{#lambda.titlecase}}{{#lambda.camelcase}}{{{this}}}{{/lambda.camelcase}}{{/lambda.titlecase}}(inner) =
+        Self::{{#lambda.pascalcase}}{{{this}}}{{/lambda.pascalcase}}(inner) =
         self {
             Ok(inner)
         } else {

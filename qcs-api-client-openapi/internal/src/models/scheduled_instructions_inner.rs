@@ -108,11 +108,11 @@ impl Default for ScheduledInstructionsInner {
 }
 
 impl ScheduledInstructionsInner {
-    pub fn is_activereset(&self) -> bool {
+    pub fn is_active_reset(&self) -> bool {
         matches!(self, Self::ActiveReset(_))
     }
 
-    pub fn as_activereset(&self) -> Option<&ActiveReset> {
+    pub fn as_active_reset(&self) -> Option<&ActiveReset> {
         if let Self::ActiveReset(inner) = self {
             Some(inner)
         } else {
@@ -120,7 +120,7 @@ impl ScheduledInstructionsInner {
         }
     }
 
-    pub fn into_activereset(self) -> Result<ActiveReset, Self> {
+    pub fn into_active_reset(self) -> Result<ActiveReset, Self> {
         if let Self::ActiveReset(inner) = self {
             Ok(inner)
         } else {
@@ -146,11 +146,11 @@ impl ScheduledInstructionsInner {
             Err(self)
         }
     }
-    pub fn is_debugmessage(&self) -> bool {
+    pub fn is_debug_message(&self) -> bool {
         matches!(self, Self::DebugMessage(_))
     }
 
-    pub fn as_debugmessage(&self) -> Option<&DebugMessage> {
+    pub fn as_debug_message(&self) -> Option<&DebugMessage> {
         if let Self::DebugMessage(inner) = self {
             Some(inner)
         } else {
@@ -158,18 +158,18 @@ impl ScheduledInstructionsInner {
         }
     }
 
-    pub fn into_debugmessage(self) -> Result<DebugMessage, Self> {
+    pub fn into_debug_message(self) -> Result<DebugMessage, Self> {
         if let Self::DebugMessage(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_flatpulse(&self) -> bool {
+    pub fn is_flat_pulse(&self) -> bool {
         matches!(self, Self::FlatPulse(_))
     }
 
-    pub fn as_flatpulse(&self) -> Option<&FlatPulse> {
+    pub fn as_flat_pulse(&self) -> Option<&FlatPulse> {
         if let Self::FlatPulse(inner) = self {
             Some(inner)
         } else {
@@ -177,7 +177,7 @@ impl ScheduledInstructionsInner {
         }
     }
 
-    pub fn into_flatpulse(self) -> Result<FlatPulse, Self> {
+    pub fn into_flat_pulse(self) -> Result<FlatPulse, Self> {
         if let Self::FlatPulse(inner) = self {
             Ok(inner)
         } else {
@@ -203,11 +203,11 @@ impl ScheduledInstructionsInner {
             Err(self)
         }
     }
-    pub fn is_setfrequency(&self) -> bool {
+    pub fn is_set_frequency(&self) -> bool {
         matches!(self, Self::SetFrequency(_))
     }
 
-    pub fn as_setfrequency(&self) -> Option<&SetFrequency> {
+    pub fn as_set_frequency(&self) -> Option<&SetFrequency> {
         if let Self::SetFrequency(inner) = self {
             Some(inner)
         } else {
@@ -215,18 +215,18 @@ impl ScheduledInstructionsInner {
         }
     }
 
-    pub fn into_setfrequency(self) -> Result<SetFrequency, Self> {
+    pub fn into_set_frequency(self) -> Result<SetFrequency, Self> {
         if let Self::SetFrequency(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_setphase(&self) -> bool {
+    pub fn is_set_phase(&self) -> bool {
         matches!(self, Self::SetPhase(_))
     }
 
-    pub fn as_setphase(&self) -> Option<&SetPhase> {
+    pub fn as_set_phase(&self) -> Option<&SetPhase> {
         if let Self::SetPhase(inner) = self {
             Some(inner)
         } else {
@@ -234,18 +234,18 @@ impl ScheduledInstructionsInner {
         }
     }
 
-    pub fn into_setphase(self) -> Result<SetPhase, Self> {
+    pub fn into_set_phase(self) -> Result<SetPhase, Self> {
         if let Self::SetPhase(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_setscale(&self) -> bool {
+    pub fn is_set_scale(&self) -> bool {
         matches!(self, Self::SetScale(_))
     }
 
-    pub fn as_setscale(&self) -> Option<&SetScale> {
+    pub fn as_set_scale(&self) -> Option<&SetScale> {
         if let Self::SetScale(inner) = self {
             Some(inner)
         } else {
@@ -253,18 +253,18 @@ impl ScheduledInstructionsInner {
         }
     }
 
-    pub fn into_setscale(self) -> Result<SetScale, Self> {
+    pub fn into_set_scale(self) -> Result<SetScale, Self> {
         if let Self::SetScale(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_shiftfrequency(&self) -> bool {
+    pub fn is_shift_frequency(&self) -> bool {
         matches!(self, Self::ShiftFrequency(_))
     }
 
-    pub fn as_shiftfrequency(&self) -> Option<&ShiftFrequency> {
+    pub fn as_shift_frequency(&self) -> Option<&ShiftFrequency> {
         if let Self::ShiftFrequency(inner) = self {
             Some(inner)
         } else {
@@ -272,18 +272,18 @@ impl ScheduledInstructionsInner {
         }
     }
 
-    pub fn into_shiftfrequency(self) -> Result<ShiftFrequency, Self> {
+    pub fn into_shift_frequency(self) -> Result<ShiftFrequency, Self> {
         if let Self::ShiftFrequency(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_shiftphase(&self) -> bool {
+    pub fn is_shift_phase(&self) -> bool {
         matches!(self, Self::ShiftPhase(_))
     }
 
-    pub fn as_shiftphase(&self) -> Option<&ShiftPhase> {
+    pub fn as_shift_phase(&self) -> Option<&ShiftPhase> {
         if let Self::ShiftPhase(inner) = self {
             Some(inner)
         } else {
@@ -291,18 +291,18 @@ impl ScheduledInstructionsInner {
         }
     }
 
-    pub fn into_shiftphase(self) -> Result<ShiftPhase, Self> {
+    pub fn into_shift_phase(self) -> Result<ShiftPhase, Self> {
         if let Self::ShiftPhase(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_swapphases(&self) -> bool {
+    pub fn is_swap_phases(&self) -> bool {
         matches!(self, Self::SwapPhases(_))
     }
 
-    pub fn as_swapphases(&self) -> Option<&SwapPhases> {
+    pub fn as_swap_phases(&self) -> Option<&SwapPhases> {
         if let Self::SwapPhases(inner) = self {
             Some(inner)
         } else {
@@ -310,7 +310,7 @@ impl ScheduledInstructionsInner {
         }
     }
 
-    pub fn into_swapphases(self) -> Result<SwapPhases, Self> {
+    pub fn into_swap_phases(self) -> Result<SwapPhases, Self> {
         if let Self::SwapPhases(inner) = self {
             Ok(inner)
         } else {

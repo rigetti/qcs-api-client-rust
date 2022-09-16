@@ -19,11 +19,7 @@ pub struct InternalPutQuantumProcessorRequest {
 impl InternalPutQuantumProcessorRequest {
     pub fn new(quantum_processor: Option<serde_json::Value>) -> InternalPutQuantumProcessorRequest {
         InternalPutQuantumProcessorRequest {
-            quantum_processor: if let Some(x) = quantum_processor {
-                Some(Box::new(x))
-            } else {
-                None
-            },
+            quantum_processor: quantum_processor.map(Box::new),
         }
     }
 }

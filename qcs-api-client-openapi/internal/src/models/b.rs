@@ -51,11 +51,11 @@ impl Default for B {
 }
 
 impl B {
-    pub fn is_parameteraref(&self) -> bool {
+    pub fn is_parameter_aref(&self) -> bool {
         matches!(self, Self::ParameterAref(_))
     }
 
-    pub fn as_parameteraref(&self) -> Option<&ParameterAref> {
+    pub fn as_parameter_aref(&self) -> Option<&ParameterAref> {
         if let Self::ParameterAref(inner) = self {
             Some(inner)
         } else {
@@ -63,18 +63,18 @@ impl B {
         }
     }
 
-    pub fn into_parameteraref(self) -> Result<ParameterAref, Self> {
+    pub fn into_parameter_aref(self) -> Result<ParameterAref, Self> {
         if let Self::ParameterAref(inner) = self {
             Ok(inner)
         } else {
             Err(self)
         }
     }
-    pub fn is_parameterexpression(&self) -> bool {
+    pub fn is_parameter_expression(&self) -> bool {
         matches!(self, Self::ParameterExpression(_))
     }
 
-    pub fn as_parameterexpression(&self) -> Option<&ParameterExpression> {
+    pub fn as_parameter_expression(&self) -> Option<&ParameterExpression> {
         if let Self::ParameterExpression(inner) = self {
             Some(inner)
         } else {
@@ -82,7 +82,7 @@ impl B {
         }
     }
 
-    pub fn into_parameterexpression(self) -> Result<ParameterExpression, Self> {
+    pub fn into_parameter_expression(self) -> Result<ParameterExpression, Self> {
         if let Self::ParameterExpression(inner) = self {
             Ok(inner)
         } else {

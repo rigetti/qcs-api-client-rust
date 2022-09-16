@@ -928,7 +928,7 @@ pub async fn internal_create_group_billing_customer(
 async fn internal_create_group_metered_usage_record_inner(
     configuration: &configuration::Configuration,
     group_name: &str,
-    X_QCS_IDEMPOTENCY_KEY: &str,
+    x_qcs_idempotency_key: &str,
     internal_create_metered_usage_record_request: crate::models::InternalCreateMeteredUsageRecordRequest,
 ) -> Result<
     crate::models::InternalMeteredUsageRecord,
@@ -947,7 +947,7 @@ async fn internal_create_group_metered_usage_record_inner(
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
     local_var_req_builder =
-        local_var_req_builder.header("X-QCS-IDEMPOTENCY-KEY", X_QCS_IDEMPOTENCY_KEY.to_string());
+        local_var_req_builder.header("X-QCS-IDEMPOTENCY-KEY", x_qcs_idempotency_key.to_string());
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -981,7 +981,7 @@ async fn internal_create_group_metered_usage_record_inner(
 pub async fn internal_create_group_metered_usage_record(
     configuration: &configuration::Configuration,
     group_name: &str,
-    X_QCS_IDEMPOTENCY_KEY: &str,
+    x_qcs_idempotency_key: &str,
     internal_create_metered_usage_record_request: crate::models::InternalCreateMeteredUsageRecordRequest,
 ) -> Result<
     crate::models::InternalMeteredUsageRecord,
@@ -990,7 +990,7 @@ pub async fn internal_create_group_metered_usage_record(
     match internal_create_group_metered_usage_record_inner(
         configuration,
         group_name.clone(),
-        X_QCS_IDEMPOTENCY_KEY.clone(),
+        x_qcs_idempotency_key.clone(),
         internal_create_metered_usage_record_request.clone(),
     )
     .await
@@ -1002,7 +1002,7 @@ pub async fn internal_create_group_metered_usage_record(
                 internal_create_group_metered_usage_record_inner(
                     configuration,
                     group_name,
-                    X_QCS_IDEMPOTENCY_KEY,
+                    x_qcs_idempotency_key,
                     internal_create_metered_usage_record_request,
                 )
                 .await
