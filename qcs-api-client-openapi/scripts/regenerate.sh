@@ -25,6 +25,6 @@ for VARIANT in public internal; do
     pushd "$ROOT_PATH/$VARIANT"
     rm schema-patched.yaml
     cargo fmt
-    cargo check
+    cargo clippy
     popd
 done
