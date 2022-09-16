@@ -14,6 +14,10 @@ credentials from a user's QCS config and keeping authentication tokens refreshed
 - [`get_channel`][get_channel]: create a `Channel` to the given gRPC endpoint with QCS authentication automatically set up.
 - [`wrap_channel`][wrap_channel]: wrap an existing `Channel` with QCS authentication.
 
+## Quick Start
+
+See [docs.rs] for a quick start guide.
+
 [crates.io]: https://crates.io/crates/qcs-api-client-grpc
 [docs.rs]: https://docs.rs/qcs-api-client-grpc
 [get_channel]: https://docs.rs/qcs-api-client-grpc/latest/qcs_api_client_grpc/fn.get_channel.html
