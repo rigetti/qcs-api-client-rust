@@ -14,9 +14,16 @@
 //! # }
 //! ```
 
+{{! Structs may contain floating point numbers, which makes deriving Eq impossible }}
+{{! Because we can't conditionally derive Eq in mustache, we don't derive it at all }}
 #![allow(clippy::derive_partial_eq_without_eq)]
+{{! Both of these lints are allowed for the same reason: it's easier to have unnecessary }}
+{{! clones than it is to determine whether a clone is necessary. }}
+{{! clone_double_ref triggers when cloning a reference to a reference, which returns a reference. }}
 #![allow(clippy::clone_double_ref)]
+{{! clone_on_copy triggers when cloning a type that is Copy -- that is, does not need cloning }}
 #![allow(clippy::clone_on_copy)]
+{{! Functions have as many arguments as the associated request has parameters }}
 #![allow(clippy::too_many_arguments)]
 
 {{#hyper}}
