@@ -21,7 +21,17 @@ include:
   - rm -rf knope-x86_64-unknown-linux-musl-$KNOPE_VERSION
   - rm knope-x86_64-unknown-linux-musl-$KNOPE_VERSION.tgz
 
-.git_setup: &git_setup
+.install_protoc: &install-protoc
+  - apt-get update -y
+  - apt install -y zip
+  - export PROTO_VERSION=3.18.0
+  - export PROTOC_ZIP=protoc-$PROTO_VERSION-linux-x86_64.zip
+  - curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v$PROTO_VERSION/$PROTOC_ZIP
+  - unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
+  - unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
+  - rm -f $PROTOC_ZIP
+
+.git_setup: &git-setup
   - ': ${QCS_GITLAB_DEPLOY_KEY:?Must provide \$QCS_GITLAB_DEPLOY_KEY}'
   - git config --global user.email "$GITLAB_USER_EMAIL"
   - git config --global user.name  "$GITLAB_USER_NAME"
@@ -33,28 +43,22 @@ include:
   - git remote set-url --push origin "git@gitlab.com:$CI_PROJECT_PATH.git"
   - git remote -v
 
-Check Public:
+Check:
   stage: test
   image: rust:latest
   script:
+    - *install-protoc
     - cargo --version
-    - cargo check --manifest-path qcs-api-client-openapi/public/Cargo.toml
+    - rustup component add clippy
+    - cargo clippy
 
-Check Internal:
-    stage: test
-    image: rust:latest
-    script:
-        - cargo --version
-        - cargo check --manifest-path qcs-api-client-openapi/internal/Cargo.toml
-
-# We only publish tagged releases to PyPI
 Release:
   stage: publish
+  variables:
+    GIT_DEPTH: 0
   script:
     - *install-knope
-    - *git_setup
-    - git checkout $CI_COMMIT_BRANCH  # Have to be on branch to push back
-    - cd qcs-api-client-openapi
+    - *git-setup
     - ./knope release
   rules:
     - if: $CI_COMMIT_TAG

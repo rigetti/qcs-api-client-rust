@@ -11,6 +11,20 @@ The following crates are mirrored to GitHub and published to [crates.io](https:/
 As such, all changes to these crates are subject to the
 [Open Source Contribution Policy](https://rigetti.atlassian.net/wiki/spaces/SWE/pages/2645327874/Open-Source+Contribution+Policy#Changes).
 
+### Commit hygiene
+
+We use semantic versioning with [angular style](https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#-commit-message-guidelines) commit messages.
+In particular, we have the following scopes:
+- `grpc`: applies to both the internal and public grpc crates
+- `grpc-public`: applies to only the public grpc crate
+- `grpc-internal`: applies to only the private grpc crate
+- `openapi`: applies to both the internal and public openapi crates
+- `openapi-public`: applies to only the public openapi crate
+- `openapi-internal`: applies to only the private openapi crate
+
+The scope is important as `knope` uses it to determine which crate's version needs bumping. If you include no scope,
+or the wrong scope, you might version bump the wrong crate.
+
 ## OpenAPI
 
 ### Regenerate Files on Template Changes

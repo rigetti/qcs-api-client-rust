@@ -1,0 +1,58 @@
+[packages.common]
+versioned_files = ["qcs-api-client-common/Cargo.toml"]
+changelog = "qcs-api-client-common/CHANGELOG.md"
+scopes = ["common"]
+
+[packages.grpc]
+versioned_files = ["qcs-api-client-grpc/Cargo.toml"]
+changelog = "qcs-api-client-grpc/CHANGELOG.md"
+scopes = ["grpc", "grpc-public"]
+
+[packages.grpc-internal]
+versioned_files = ["qcs-api-client-grpc-internal/Cargo.toml"]
+changelog = "qcs-api-client-grpc-internal/CHANGELOG.md"
+scopes = ["grpc", "grpc-internal"]
+
+[packages.openapi]
+versioned_files = ["qcs-api-client-openapi/public/Cargo.toml"]
+changelog = "qcs-api-client-openapi/public/CHANGELOG.md"
+scopes = ["openapi", "openapi-public"]
+
+[packages.openapi-internal]
+versioned_files = ["qcs-api-client-openapi/internal/Cargo.toml"]
+changelog = "qcs-api-client-openapi/internal/CHANGELOG.md"
+scopes = ["openapi", "openapi-internal"]
+
+[[workflows]]
+name = "release"
+
+[[workflows.steps]]
+type = "PrepareRelease"
+
+[[workflows.steps]]
+type = "Command"
+command = """
+COMMON_VERSION=$(cargo metadata --format-version 1 --no-deps | jq '.packages[] | select(.name=="qcs-api-client-common") | .version' -r)
+# Specifying the @VERSION here is required for cargo upgrade to ignore the `path` field for the package.
+cargo upgrade --package qcs-api-client-common@$COMMON_VERSION -i allow --recursive false 
+git add qcs-api-client-grpc/Cargo.toml qcs-api-client-grpc-internal/Cargo.toml qcs-api-client-openapi/public/Cargo.toml qcs-api-client-openapi/internal/Cargo.toml
+"""
+
+[[workflows.steps]]
+type = "Command"
+command = "cargo update -w"
+
+[[workflows.steps]]
+type = "Command"
+command = "git add Cargo.lock && git commit -m \"chore: prepare new release(s)\""
+
+[[workflows.steps]]
+type = "Command"
+command = "./scripts/commit-public-repo-update.sh \"chore: prepare new release(s)\""
+
+[[workflows.steps]]
+type = "Release"
+
+[[workflows.steps]]
+type = "Command"
+command = "git push && git push --tags"
