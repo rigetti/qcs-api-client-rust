@@ -45,15 +45,15 @@ include:
 
 Check:
   stage: test
-  image: rust:latest
+  image: 216842466810.dkr.ecr.us-west-1.amazonaws.com/qcs-rust-ci:latest
   script:
     - *install-protoc
     - cargo --version
-    - rustup component add clippy
     - cargo clippy
 
 Release:
   stage: publish
+  image: 216842466810.dkr.ecr.us-west-1.amazonaws.com/qcs-rust-ci:latest
   variables:
     GIT_DEPTH: 0
   script:
