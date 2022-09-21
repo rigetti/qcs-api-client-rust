@@ -50,7 +50,7 @@ command = "git add Cargo.lock && git commit -m \"chore: prepare new release(s)\"
 type = "Command"
 command = """
 # These are the _unpushed_ tags, i.e., the tags knope has just created, for the public repos.
-TAGS=$(git show-ref --tags | grep -v -F "$(git ls-remote --tags origin | grep -v '\^{}' | cut -f 2)" | cut -d" " -f 2 | sed 's%refs/tags/%%g') | egrep '(common/|grpc/|openapi/)'
+TAGS=$(git show-ref --tags | grep -v -F "$(git ls-remote --tags origin | grep -v '\\^{}' | cut -f 2)" | cut -d" " -f 2 | sed 's%refs/tags/%%g') | egrep '(common/|grpc/|openapi/)'
 # This replaces newlines (from above) with spaces.
 TAGS="${TAGS//$'\n'/ }"
 ./scripts/commit-public-repo-update.sh \"chore: prepare new release(s)\" "$TAGS"
