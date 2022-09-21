@@ -3,6 +3,11 @@
 set -euo pipefail
 
 COMMIT_MESSAGE="${1:?"Must specify a commit message"}"
+TAGS="${@:2}"
+if [ ${#TAGS} -eq 0 ]; then
+  echo "Must specify the tags to add and push"
+  exit 1
+fi
 WORKDIR="$(mktemp -d)"
 
 if [[ ! "$WORKDIR" || ! -d "$WORKDIR" ]]; then
@@ -66,3 +71,9 @@ git status
 
 git commit -m "$COMMIT_MESSAGE"
 git push
+
+echo "Adding tags: $TAGS"
+for t in $TAGS; do
+  git tag $t
+done
+git push --tags
