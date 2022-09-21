@@ -57,6 +57,7 @@ Release:
   variables:
     GIT_DEPTH: 0
   script:
+    - *install-protoc
     - *install-knope
     - *git-setup
     - ./knope release
