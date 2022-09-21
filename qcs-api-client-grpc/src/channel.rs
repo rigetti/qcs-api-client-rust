@@ -199,7 +199,7 @@ impl<> GrpcService<BoxBody> for RefreshService<Channel>
 {
     type ResponseBody = <Channel as GrpcService<BoxBody>>::ResponseBody;
     type Error = Error;
-    type Future = Pin<Box<dyn Future<Output=Result<Response<Self::ResponseBody>, Self::Error>>>>;
+    type Future = Pin<Box<dyn Future<Output=Result<Response<Self::ResponseBody>, Self::Error>> + Send>>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.service.poll_ready(cx).map_err(Error::from)
