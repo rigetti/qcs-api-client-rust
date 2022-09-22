@@ -13,18 +13,18 @@
 // limitations under the License.
 
 use crate::client_configuration::{ClientConfiguration, LoadError, RefreshError};
+use http_body::Full;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use http_body::Full;
+use tonic::body::BoxBody;
 use tonic::client::GrpcService;
+use tonic::codegen::http::uri::InvalidUri;
 use tonic::codegen::http::{Request, Response, StatusCode};
-use tonic::transport::{Channel, Uri, Error as TransportError};
+use tonic::codegen::Body;
+use tonic::transport::{Channel, Error as TransportError, Uri};
 use tonic::Status;
 use tower::{Layer, ServiceBuilder};
-use tonic::body::BoxBody;
-use tonic::codegen::Body;
-use tonic::codegen::http::uri::InvalidUri;
 
 /// Errors that may occur when using gRPC.
 #[derive(Debug, thiserror::Error)]
@@ -61,8 +61,8 @@ pub fn parse_uri(s: &str) -> Result<Uri, Error> {
 pub fn get_channel(uri: Uri) -> Channel {
     Channel::builder(uri)
         .user_agent(concat!(
-        "QCS gRPC Client (Rust)/",
-        env!("CARGO_PKG_VERSION")
+            "QCS gRPC Client (Rust)/",
+            env!("CARGO_PKG_VERSION")
         ))
         .expect("user agent string should be valid")
         .connect_lazy()
@@ -91,7 +91,10 @@ pub fn wrap_channel_with(channel: Channel, config: ClientConfiguration) -> Refre
 ///
 /// See [`Error`]
 pub async fn wrap_channel(channel: Channel) -> Result<RefreshService<Channel>, Error> {
-    Ok(wrap_channel_with(channel, ClientConfiguration::load().await?))
+    Ok(wrap_channel_with(
+        channel,
+        ClientConfiguration::load().await?,
+    ))
 }
 
 /// The [`Layer`] used to apply QCS authentication to all gRPC calls.
@@ -146,8 +149,8 @@ async fn clone_body(body: Request<BoxBody>) -> Result<(BoxBody, BoxBody), CloneB
     while let Some(result) = body.data().await {
         bytes.extend(result.expect("loading request body should not fail here"));
     }
-    let bytes = Full::from(bytes)
-        .map_err(|_| Status::internal("this will never happen from Infallible"));
+    let bytes =
+        Full::from(bytes).map_err(|_| Status::internal("this will never happen from Infallible"));
     Ok((BoxBody::new(bytes.clone()), BoxBody::new(bytes)))
 }
 
@@ -192,21 +195,28 @@ async fn make_request(
     service.call(request).await
 }
 
-impl<> GrpcService<BoxBody> for RefreshService<Channel>
-    where
-        Channel: GrpcService<BoxBody, Error=TransportError> + Clone + Send + 'static,
-        <Channel as GrpcService<BoxBody>>::Future: Send,
+impl GrpcService<BoxBody> for RefreshService<Channel>
+where
+    Channel: GrpcService<BoxBody, Error = TransportError> + Clone + Send + 'static,
+    <Channel as GrpcService<BoxBody>>::Future: Send,
 {
     type ResponseBody = <Channel as GrpcService<BoxBody>>::ResponseBody;
     type Error = Error;
-    type Future = Pin<Box<dyn Future<Output=Result<Response<Self::ResponseBody>, Self::Error>> + Send>>;
+    type Future =
+        Pin<Box<dyn Future<Output = Result<Response<Self::ResponseBody>, Self::Error>> + Send>>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.service.poll_ready(cx).map_err(Error::from)
     }
 
     fn call(&mut self, req: Request<BoxBody>) -> Self::Future {
-        let mut service = self.service.clone();
+        let service = self.service.clone();
+        // It is necessary to replace self.service with the above clone
+        // because the cloned version may not be "ready".
+        //
+        // See this github issue for more context:
+        // https://github.com/tower-rs/tower/issues/547
+        let mut service = std::mem::replace(&mut self.service, service);
         let config = self.config.clone();
         Box::pin(async move {
             let token = config.get_bearer_access_token().await?;
@@ -219,7 +229,7 @@ impl<> GrpcService<BoxBody> for RefreshService<Channel>
                     make_request(&mut service, retry_req, token)
                         .await
                         .map_err(Error::from)
-                },
+                }
                 _ => Ok(resp),
             }
         })
