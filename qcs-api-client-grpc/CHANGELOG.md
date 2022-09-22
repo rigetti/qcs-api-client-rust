@@ -1,3 +1,9 @@
+## 0.2.1
+
+### Fixes
+
+- replace service with cloned service before use
+
 ## 0.2.0
 
 ### Breaking Changes

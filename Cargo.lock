@@ -909,7 +909,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "http-body",
  "pbjson",
@@ -927,7 +927,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc-internal"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "http-body",
  "pbjson",
