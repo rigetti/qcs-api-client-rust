@@ -1,3 +1,9 @@
+## 0.2.2
+
+### Fixes
+
+- install protoc for CI
+
 ## 0.2.1
 
 ### Fixes

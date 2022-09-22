@@ -894,7 +894,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-common"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "dirs",
  "futures",
@@ -909,7 +909,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "http-body",
  "pbjson",
@@ -927,7 +927,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-openapi"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "qcs-api-client-common",
  "reqwest",

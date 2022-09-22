@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: arduino/setup-protoc@v1
+        with:
+          version: '3.18.x'
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
