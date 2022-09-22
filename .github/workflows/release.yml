@@ -1,8 +1,12 @@
 name: Release
 
 on:
-  release:
-    types: [released, prereleased]
+  workflow_displatch:
+  push:
+    tags:
+      - "common/v**"
+      - "grpc/v**"
+      - "openapi/v**"
 
 jobs:
   publish:

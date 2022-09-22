@@ -1,0 +1,29 @@
+[package]
+name = "qcs-api-client-grpc"
+version = "0.2.0"
+edition = "2021"
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/rigetti/qcs-api-client-rust"
+homepage = "https://github.com/rigetti/qcs-api-client-rust"
+categories = ["api-bindings", "authentication"]
+keywords = ["qcs", "quantum", "rigetti", "api"]
+description = "gRPC client for the QCS API"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.2.0" }
+http-body = "0.4.5"
+pbjson = "0.4.0"
+pbjson-types = "0.4.0"
+prost = "0.11.0"
+serde = "1.0"
+tonic = "0.8.0"
+tower = "0.4"
+thiserror = "1.0.32"
+
+[build-dependencies]
+tonic-build = "0.8.0"
+pbjson-build = "0.4.0"
+prost-build = "0.11.1"
