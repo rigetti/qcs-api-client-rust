@@ -1,3 +1,9 @@
+## 0.3.1
+
+### Fixes
+
+- install protoc for CI
+
 ## 0.3.0
 
 ### Breaking Changes
