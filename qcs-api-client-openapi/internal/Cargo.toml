@@ -1,14 +1,14 @@
 [package]
 name = "qcs-api-client-openapi-internal"
 description = "Auto-generated bindings to the QCS OpenAPI"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2021"
 keywords = ["API", "QCS", "Rigetti"]
 categories = ["api-bindings"]
 publish = false
 
 [dependencies]
-qcs-api-client-common = { path = "../../qcs-api-client-common", version = "0.1.0" }
+qcs-api-client-common = { path = "../../qcs-api-client-common", version = "0.2.0" }
 serde = { version = "1.0.140", features = ["derive"] }
 serde_json = "1.0.82"
 url = "2.2.2"

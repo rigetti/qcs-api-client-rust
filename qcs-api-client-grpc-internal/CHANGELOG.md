@@ -1,4 +1,4 @@
-## 0.3.0
+## 0.2.0
 
 ### Breaking Changes
 
@@ -12,29 +12,9 @@
 
 ### Fixes
 
-- clean up generated code, add example to lib.rs docs
+- make Future returned by RefreshService Send
 - update public grpc proto
 - make RefreshService support tonic requests, minor API improvements
 - make schema openapi 3.0 compatible
 - Crate repo metadata
 - Broken generated code via patch_schema.py
-
-## 0.2.1
-
-### Fixes
-
-- Crate repo metadata
-
-## 0.2.0
-
-### Breaking Changes
-
-- Complete regeneration of `qcs-api` crate using the latest schema.
-
-### Fixes
-
-- Broken generated code via patch_schema.py
-
-## 0.1.0
-
-Release from previous repo.
