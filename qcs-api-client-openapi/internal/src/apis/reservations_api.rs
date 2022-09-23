@@ -102,7 +102,10 @@ async fn create_reservation_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/v1/reservations", local_var_configuration.base_path);
+    let local_var_uri_str = format!(
+        "{}/v1/reservations",
+        local_var_configuration.qcs_config.api_url()
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
@@ -183,7 +186,7 @@ async fn delete_reservation_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/reservations/{reservationId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         reservationId = reservation_id
     );
     let mut local_var_req_builder =
@@ -245,7 +248,7 @@ async fn find_available_reservations_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/reservations:findAvailable",
-        local_var_configuration.base_path
+        local_var_configuration.qcs_config.api_url()
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -339,7 +342,7 @@ async fn internal_create_reservation_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/reservations",
-        local_var_configuration.base_path
+        local_var_configuration.qcs_config.api_url()
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
@@ -429,7 +432,7 @@ async fn internal_find_available_reservations_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/reservations:findAvailable",
-        local_var_configuration.base_path
+        local_var_configuration.qcs_config.api_url()
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -534,7 +537,7 @@ async fn internal_list_reservations_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/reservations",
-        local_var_configuration.base_path
+        local_var_configuration.qcs_config.api_url()
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -637,7 +640,7 @@ async fn list_group_reservations_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/groups/{groupName}/reservations",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         groupName = crate::apis::urlencode(group_name)
     );
     let mut local_var_req_builder =
@@ -743,7 +746,10 @@ async fn list_reservations_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/v1/reservations", local_var_configuration.base_path);
+    let local_var_uri_str = format!(
+        "{}/v1/reservations",
+        local_var_configuration.qcs_config.api_url()
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 

@@ -4,7 +4,6 @@ use reqwest;
 
 #[derive(Debug, Clone)]
 pub struct Configuration {
-    pub base_path: String,
     pub client: reqwest::Client,
     pub qcs_config: crate::common::ClientConfiguration,
 }
@@ -30,7 +29,6 @@ impl Configuration {
             .build()
             .expect("failed to create HTTP client");
         Self {
-            base_path: "{{{basePath}}}".to_owned(),
             qcs_config,
             client,
         }

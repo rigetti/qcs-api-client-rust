@@ -180,7 +180,10 @@ async fn add_group_user_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/v1/groups:addUser", local_var_configuration.base_path);
+    let local_var_uri_str = format!(
+        "{}/v1/groups:addUser",
+        local_var_configuration.qcs_config.api_url()
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
@@ -237,7 +240,7 @@ async fn get_group_balance_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/groups/{groupName}/balance",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         groupName = crate::apis::urlencode(group_name)
     );
     let mut local_var_req_builder =
@@ -294,7 +297,7 @@ async fn get_group_billing_customer_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/groups/{groupName}/billingCustomer",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         groupName = crate::apis::urlencode(group_name)
     );
     let mut local_var_req_builder =
@@ -351,7 +354,7 @@ async fn get_group_upcoming_billing_invoice_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/groups/{groupName}/billingInvoices:getUpcoming",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         groupName = crate::apis::urlencode(group_name)
     );
     let mut local_var_req_builder =
@@ -408,7 +411,7 @@ async fn get_user_balance_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/users/{userId}/balance",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         userId = crate::apis::urlencode(user_id)
     );
     let mut local_var_req_builder =
@@ -465,7 +468,7 @@ async fn get_user_billing_customer_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/users/{userId}/billingCustomer",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         userId = crate::apis::urlencode(user_id)
     );
     let mut local_var_req_builder =
@@ -522,7 +525,7 @@ async fn get_user_upcoming_billing_invoice_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/users/{userId}/billingInvoices:getUpcoming",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         userId = crate::apis::urlencode(user_id)
     );
     let mut local_var_req_builder =
@@ -585,7 +588,7 @@ async fn list_group_billing_invoice_lines_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/groups/{groupName}/billingInvoices/{billingInvoiceId}/lines",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         groupName = crate::apis::urlencode(group_name),
         billingInvoiceId = crate::apis::urlencode(billing_invoice_id)
     );
@@ -676,7 +679,7 @@ async fn list_group_billing_invoices_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/groups/{groupName}/billingInvoices",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         groupName = crate::apis::urlencode(group_name)
     );
     let mut local_var_req_builder =
@@ -758,7 +761,7 @@ async fn list_group_upcoming_billing_invoice_lines_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/groups/{groupName}/billingInvoices:listUpcomingLines",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         groupName = crate::apis::urlencode(group_name)
     );
     let mut local_var_req_builder =
@@ -844,7 +847,7 @@ async fn list_group_users_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/groups/{groupName}/users",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         groupName = crate::apis::urlencode(group_name)
     );
     let mut local_var_req_builder =
@@ -925,7 +928,7 @@ async fn list_user_billing_invoice_lines_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/users/{userId}/billingInvoices/{billingInvoiceId}/lines",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         userId = crate::apis::urlencode(user_id),
         billingInvoiceId = crate::apis::urlencode(billing_invoice_id)
     );
@@ -1016,7 +1019,7 @@ async fn list_user_billing_invoices_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/users/{userId}/billingInvoices",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         userId = crate::apis::urlencode(user_id)
     );
     let mut local_var_req_builder =
@@ -1095,7 +1098,7 @@ async fn list_user_groups_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/users/{userId}/groups",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         userId = crate::apis::urlencode(user_id)
     );
     let mut local_var_req_builder =
@@ -1175,7 +1178,7 @@ async fn list_user_upcoming_billing_invoice_lines_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/users/{userId}/billingInvoices:listUpcomingLines",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         userId = crate::apis::urlencode(user_id)
     );
     let mut local_var_req_builder =
@@ -1257,7 +1260,10 @@ async fn remove_group_user_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/v1/groups:removeUser", local_var_configuration.base_path);
+    let local_var_uri_str = format!(
+        "{}/v1/groups:removeUser",
+        local_var_configuration.qcs_config.api_url()
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 

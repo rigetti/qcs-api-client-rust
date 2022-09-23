@@ -163,7 +163,7 @@ async fn get_instruction_set_architecture_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -221,7 +221,7 @@ async fn get_quantum_processor_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/quantumProcessors/{quantumProcessorId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -278,7 +278,7 @@ async fn internal_delete_legacy_deployed_rack_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/legacy/quantumProcessors/{quantumProcessorId}/deployedRack",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -338,7 +338,7 @@ async fn internal_delete_legacy_quantum_processor_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/legacy/quantumProcessors/{quantumProcessorId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -401,7 +401,7 @@ async fn internal_delete_quantum_processor_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/quantumProcessors/{quantumProcessorId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -460,7 +460,7 @@ async fn internal_get_legacy_deployed_rack_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/legacy/quantumProcessors/{quantumProcessorId}/deployedRack",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -531,7 +531,7 @@ async fn internal_get_legacy_lattice_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/legacy/lattices/{quantumProcessorId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -606,7 +606,7 @@ async fn internal_get_legacy_quantum_processor_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/legacy/quantumProcessors/{quantumProcessorId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -685,7 +685,7 @@ async fn internal_list_endpoint_engagements_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/endpoints/{endpointId}/engagements",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         endpointId = crate::apis::urlencode(endpoint_id)
     );
     let mut local_var_req_builder =
@@ -772,7 +772,7 @@ async fn internal_list_legacy_lattices_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/legacy/lattices",
-        local_var_configuration.base_path
+        local_var_configuration.qcs_config.api_url()
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -862,7 +862,7 @@ async fn internal_list_legacy_quantum_processors_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/legacy/quantumProcessors",
-        local_var_configuration.base_path
+        local_var_configuration.qcs_config.api_url()
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -950,7 +950,7 @@ async fn internal_put_legacy_deployed_rack_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/legacy/quantumProcessors/{quantumProcessorId}/deployedRack",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -1022,7 +1022,7 @@ async fn internal_put_legacy_quantum_processor_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/legacy/quantumProcessors/{quantumProcessorId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -1095,7 +1095,7 @@ async fn internal_put_quantum_processor_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/quantumProcessors/{quantumProcessorId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -1168,7 +1168,7 @@ async fn internal_update_legacy_quantum_processor_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/legacy/quantumProcessors/{quantumProcessorId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -1240,7 +1240,10 @@ async fn list_quantum_processors_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/v1/quantumProcessors", local_var_configuration.base_path);
+    let local_var_uri_str = format!(
+        "{}/v1/quantumProcessors",
+        local_var_configuration.qcs_config.api_url()
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 

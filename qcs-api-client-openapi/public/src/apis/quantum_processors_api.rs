@@ -63,7 +63,7 @@ async fn get_instruction_set_architecture_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -121,7 +121,7 @@ async fn get_quantum_processor_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/quantumProcessors/{quantumProcessorId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -177,7 +177,10 @@ async fn list_quantum_processors_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/v1/quantumProcessors", local_var_configuration.base_path);
+    let local_var_uri_str = format!(
+        "{}/v1/quantumProcessors",
+        local_var_configuration.qcs_config.api_url()
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 

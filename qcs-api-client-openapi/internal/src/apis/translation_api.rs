@@ -78,7 +78,7 @@ async fn build_qpu_settings_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings:build",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -137,7 +137,7 @@ async fn compile_quil_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/integrations/trueq:compileQuil",
-        local_var_configuration.base_path
+        local_var_configuration.qcs_config.api_url()
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
@@ -220,7 +220,7 @@ async fn get_qpu_settings_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -289,7 +289,7 @@ async fn get_quilt_calibrations_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/quantumProcessors/{quantumProcessorId}/quiltCalibrations",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -347,7 +347,7 @@ async fn put_qpu_settings_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -422,7 +422,7 @@ async fn translate_native_quil_to_encrypted_binary_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/quantumProcessors/{quantumProcessorId}:translateNativeQuilToEncryptedBinary",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =

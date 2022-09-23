@@ -84,7 +84,7 @@ async fn get_health_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/", local_var_configuration.base_path);
+    let local_var_uri_str = format!("{}/", local_var_configuration.qcs_config.api_url());
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
@@ -135,7 +135,7 @@ async fn health_check_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/v1/", local_var_configuration.base_path);
+    let local_var_uri_str = format!("{}/v1/", local_var_configuration.qcs_config.api_url());
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
@@ -190,7 +190,7 @@ async fn internal_create_product_billing_price_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/products/{product}/billingPrices",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         product = crate::apis::urlencode(product)
     );
     let mut local_var_req_builder =
@@ -268,7 +268,7 @@ async fn internal_list_product_billing_prices_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/products/{product}/billingPrices",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         product = product
     );
     let mut local_var_req_builder =
@@ -369,7 +369,7 @@ async fn internal_update_group_billing_customer_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/groups/{groupName}/billingCustomer",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         groupName = crate::apis::urlencode(group_name)
     );
     let mut local_var_req_builder =
@@ -443,7 +443,7 @@ async fn internal_update_product_billing_price_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/billingPrices/{billingPriceId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         billingPriceId = crate::apis::urlencode(billing_price_id)
     );
     let mut local_var_req_builder =
@@ -517,7 +517,7 @@ async fn internal_update_user_billing_customer_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/users/{userId}/billingCustomer",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         userId = crate::apis::urlencode(user_id)
     );
     let mut local_var_req_builder =

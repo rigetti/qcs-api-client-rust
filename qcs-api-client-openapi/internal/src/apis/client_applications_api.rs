@@ -47,7 +47,7 @@ async fn check_client_application_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/clientApplications:check",
-        local_var_configuration.base_path
+        local_var_configuration.qcs_config.api_url()
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
@@ -108,7 +108,7 @@ async fn get_client_application_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/clientApplications/{clientApplicationName}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         clientApplicationName = crate::apis::urlencode(client_application_name)
     );
     let mut local_var_req_builder =
@@ -164,7 +164,7 @@ async fn list_client_applications_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/clientApplications",
-        local_var_configuration.base_path
+        local_var_configuration.qcs_config.api_url()
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());

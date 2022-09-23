@@ -12,7 +12,6 @@ use reqwest;
 
 #[derive(Debug, Clone)]
 pub struct Configuration {
-    pub base_path: String,
     pub client: reqwest::Client,
     pub qcs_config: crate::common::ClientConfiguration,
 }
@@ -37,10 +36,6 @@ impl Configuration {
             .user_agent("QCS OpenAPI Client (Rust)/2020-07-31")
             .build()
             .expect("failed to create HTTP client");
-        Self {
-            base_path: "https://api.qcs.rigetti.com".to_owned(),
-            qcs_config,
-            client,
-        }
+        Self { qcs_config, client }
     }
 }

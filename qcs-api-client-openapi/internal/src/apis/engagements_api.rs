@@ -43,7 +43,10 @@ async fn create_engagement_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/v1/engagements", local_var_configuration.base_path);
+    let local_var_uri_str = format!(
+        "{}/v1/engagements",
+        local_var_configuration.qcs_config.api_url()
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
@@ -129,7 +132,7 @@ async fn internal_list_endpoint_engagements_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/endpoints/{endpointId}/engagements",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         endpointId = crate::apis::urlencode(endpoint_id)
     );
     let mut local_var_req_builder =

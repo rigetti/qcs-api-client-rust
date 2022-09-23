@@ -149,7 +149,10 @@ async fn create_endpoint_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/v1/endpoints", local_var_configuration.base_path);
+    let local_var_uri_str = format!(
+        "{}/v1/endpoints",
+        local_var_configuration.qcs_config.api_url()
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
@@ -206,7 +209,7 @@ async fn delete_endpoint_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/endpoints/{endpointId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         endpointId = crate::apis::urlencode(endpoint_id)
     );
     let mut local_var_req_builder =
@@ -263,7 +266,7 @@ async fn get_default_endpoint_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -320,7 +323,7 @@ async fn get_endpoint_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/endpoints/{endpointId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         endpointId = crate::apis::urlencode(endpoint_id)
     );
     let mut local_var_req_builder =
@@ -377,7 +380,7 @@ async fn internal_create_endpoint_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/endpoints",
-        local_var_configuration.base_path
+        local_var_configuration.qcs_config.api_url()
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
@@ -438,7 +441,7 @@ async fn internal_delete_endpoint_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/endpoints/{endpointId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         endpointId = crate::apis::urlencode(endpoint_id)
     );
     let mut local_var_req_builder =
@@ -495,7 +498,7 @@ async fn internal_get_default_endpoint_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/quantumProcessors/{quantumProcessorId}/endpoints:getDefault",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -552,7 +555,7 @@ async fn internal_get_endpoint_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/endpoints/{endpointId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         endpointId = crate::apis::urlencode(endpoint_id)
     );
     let mut local_var_req_builder =
@@ -611,7 +614,7 @@ async fn internal_list_endpoints_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/endpoints",
-        local_var_configuration.base_path
+        local_var_configuration.qcs_config.api_url()
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -690,7 +693,7 @@ async fn internal_set_default_endpoint_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/quantumProcessors/{quantumProcessorId}/endpoints:setDefault",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -762,7 +765,7 @@ async fn internal_update_endpoint_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/internal/endpoints/{endpointId}",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         endpointId = crate::apis::urlencode(endpoint_id)
     );
     let mut local_var_req_builder =
@@ -830,7 +833,10 @@ async fn list_endpoint_templates_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/v1/endpointTemplates", local_var_configuration.base_path);
+    let local_var_uri_str = format!(
+        "{}/v1/endpointTemplates",
+        local_var_configuration.qcs_config.api_url()
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
@@ -884,7 +890,10 @@ async fn list_endpoints_inner(
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/v1/endpoints", local_var_configuration.base_path);
+    let local_var_uri_str = format!(
+        "{}/v1/endpoints",
+        local_var_configuration.qcs_config.api_url()
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
@@ -962,7 +971,7 @@ async fn restart_endpoint_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/endpoints/{endpointId}:restart",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         endpointId = crate::apis::urlencode(endpoint_id)
     );
     let mut local_var_req_builder =
