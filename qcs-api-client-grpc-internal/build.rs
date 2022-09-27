@@ -43,7 +43,7 @@ fn main() {
 
     tonic_build::configure()
         .build_client(true)
-        .build_server(false)
+        .build_server(true)
         .compile_with_config(config, &proto_files, &[root])
         .expect("failed to build");
 

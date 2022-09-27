@@ -51,10 +51,9 @@ fn main() {
     );
 
     config.protoc_arg("--experimental_allow_proto3_optional");
-
     tonic_build::configure()
         .build_client(true)
-        .build_server(false)
+        .build_server(std::env::var("CARGO_FEATURE_SERVER").is_ok())
         .compile_with_config(config, &proto_files, &[root])
         .expect("failed to build");
 
