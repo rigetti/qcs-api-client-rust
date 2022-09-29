@@ -44,6 +44,8 @@ mod settings;
 
 /// Default URL to access the QCS API.
 pub const DEFAULT_API_URL: &str = "https://api.qcs.rigetti.com";
+/// Default URL to access the gRPC API.
+pub const DEFAULT_GRPC_API_URL: &str = "https://legacy.grpc.qcs.rigetti.com:443";
 /// Default URL to access QVM.
 pub const DEFAULT_QVM_URL: &str = "http://127.0.0.1:5000";
 /// Default URL to access `quilc`.
@@ -76,6 +78,7 @@ pub struct ClientConfiguration {
     auth_server: AuthServer,
     quilc_url: String,
     qvm_url: String,
+    grpc_api_url: String,
 }
 
 impl ClientConfiguration {
@@ -83,6 +86,12 @@ impl ClientConfiguration {
     #[must_use]
     pub fn api_url(&self) -> &str {
         &self.api_url
+    }
+
+    /// URL to access the gRPC API.
+    #[must_use]
+    pub fn grpc_api_url(&self) -> &str {
+        &self.grpc_api_url
     }
 
     /// URL to access `quilc` over TCP. Defaults to [`DEFAULT_QUILC_URL`].
@@ -268,6 +277,7 @@ impl ClientConfiguration {
             auth_server,
             quilc_url: profile.applications.pyquil.quilc_url,
             qvm_url: profile.applications.pyquil.qvm_url,
+            grpc_api_url: profile.grpc_api_url,
         })
     }
 }
@@ -300,7 +310,8 @@ impl Default for ClientConfiguration {
         Self {
             quilc_url: DEFAULT_QUILC_URL.to_string(),
             qvm_url: DEFAULT_QVM_URL.to_string(),
-            api_url: DEFAULT_API_URL.to_owned(),
+            api_url: DEFAULT_API_URL.to_string(),
+            grpc_api_url: DEFAULT_GRPC_API_URL.to_string(),
             auth_server: AuthServer::default(),
             tokens: Arc::default(),
         }
