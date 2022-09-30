@@ -40,6 +40,7 @@ done;
 
 cp .gitignore "$WORKDIR"
 cp -R .github "$WORKDIR"
+cp README.md "$WORKDIR"
 
 # Note: Everything below here is specifically for $WORKDIR.
 cd "$WORKDIR"
