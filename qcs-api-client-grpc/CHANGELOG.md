@@ -1,3 +1,13 @@
+## 0.2.3
+
+### Features
+
+- include server when building gRPC code
+
+### Fixes
+
+- add top-level README
+
 ## 0.2.2
 
 ### Fixes

@@ -1,3 +1,10 @@
+## 0.3.2
+
+### Fixes
+
+- add top-level README
+- use api_url not base_path
+
 ## 0.3.1
 
 ### Fixes

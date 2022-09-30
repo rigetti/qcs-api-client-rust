@@ -56,7 +56,7 @@ async fn get_quilt_calibrations_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/quantumProcessors/{quantumProcessorId}/quiltCalibrations",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
@@ -117,7 +117,7 @@ async fn translate_native_quil_to_encrypted_binary_inner(
 
     let local_var_uri_str = format!(
         "{}/v1/quantumProcessors/{quantumProcessorId}:translateNativeQuilToEncryptedBinary",
-        local_var_configuration.base_path,
+        local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =

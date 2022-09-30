@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use qcs_api_client_grpc::common::grpc::{get_channel, parse_uri, wrap_channel_with, Error};
-use qcs_api_client_grpc::common::ClientConfiguration;
+use qcs_api_client_common::ClientConfiguration;
+use qcs_api_client_grpc::channel::{get_channel, parse_uri, wrap_channel_with, Error};
 use qcs_api_client_grpc::services::translation::translation_client::TranslationClient;
 
 async fn do_stuff() -> Result<(), Error> {

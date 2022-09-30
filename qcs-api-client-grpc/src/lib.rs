@@ -55,6 +55,10 @@ pub mod models {
         tonic::include_proto!("models.controller");
         tonic::include_proto!("models.controller.serde");
     }
+    pub mod translation {
+        tonic::include_proto!("models.translation");
+        tonic::include_proto!("models.translation.serde");
+    }
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 pub mod services {

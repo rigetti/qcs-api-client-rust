@@ -1,3 +1,9 @@
+## 0.2.2
+
+### Fixes
+
+- add top-level README
+
 ## 0.2.1
 
 ### Fixes

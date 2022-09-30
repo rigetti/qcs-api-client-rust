@@ -19,6 +19,7 @@ fn main() {
         "controller/job.proto",
         "controller/readout.proto",
         "controller/service.proto",
+        "translation/metadata.proto",
         "translation/service.proto",
     ];
 
@@ -51,10 +52,9 @@ fn main() {
     );
 
     config.protoc_arg("--experimental_allow_proto3_optional");
-
     tonic_build::configure()
         .build_client(true)
-        .build_server(false)
+        .build_server(std::env::var("CARGO_FEATURE_SERVER").is_ok())
         .compile_with_config(config, &proto_files, &[root])
         .expect("failed to build");
 
@@ -64,6 +64,11 @@ fn main() {
     pbjson_build::Builder::new()
         .register_descriptors(&descriptor_set)
         .expect("failed to register descriptors")
-        .build(&[".models.controller", ".models.common", ".services"])
+        .build(&[
+            ".models.controller",
+            ".models.common",
+            ".models.translation",
+            ".services",
+        ])
         .expect("failed to build with pbjson");
 }
