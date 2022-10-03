@@ -19,3 +19,4 @@ default-features = false
 features = ["json", "multipart", "rustls-tls"]
 
 [dev-dependencies]
+tokio = { version = "1.20.1", features = ["rt-multi-thread"] }

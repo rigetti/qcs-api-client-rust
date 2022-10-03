@@ -49,6 +49,8 @@ Check:
   script:
     - *install-protoc
     - cargo --version
+    - cargo fmt --check
+    - cargo test
     - cargo clippy
 
 Release:

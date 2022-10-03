@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# This script publishes to GitHub the portions of this repo intended to be open source,
+# namely the source of the three public crates.
+#
+# Usage: ./commit-public-repo-update.sh {GitHub commit message} {space-separated git tags to push}
+
 set -euo pipefail
 
 COMMIT_MESSAGE="${1:?"Must specify a commit message"}"
@@ -56,8 +61,7 @@ members = [
 ]
 EOF
 
-# We use `ex` here because sed is generally incompatible between gnu/linux
-# and macos.
+# We use `ex` here because sed works differently between gnu/linux and macOS.
 ex '+%s/path = "..\/../path = "../g' -scwq qcs-api-client-openapi/Cargo.toml
 
 # This update and check creates a Cargo.lock from the new Cargo.toml and

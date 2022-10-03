@@ -46,7 +46,7 @@
 /// Most users will want to use [`get_channel`], [`get_wrapped_channel`], or [`wrap_channel`].
 pub mod channel;
 
-pub use channel::{get_channel, wrap_channel, get_wrapped_channel};
+pub use channel::{get_channel, get_wrapped_channel, wrap_channel};
 pub use qcs_api_client_common::configuration as client_configuration;
 
 #[allow(clippy::derive_partial_eq_without_eq)]

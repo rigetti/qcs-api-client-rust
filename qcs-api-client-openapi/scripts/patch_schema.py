@@ -33,6 +33,9 @@ def title_conflicting_type_properties(obj, parent=None):
         type: Second,
     }
     ```
+
+    This operator removes the `_type` key to prevent the conflict. This is only necessary for
+    schemas which match `rpcq` type definitions.
     """
 
     if not isinstance(obj, dict):

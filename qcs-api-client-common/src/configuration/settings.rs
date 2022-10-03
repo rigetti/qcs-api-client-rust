@@ -118,12 +118,14 @@ pub(crate) struct AuthServer {
 }
 
 const QCS_DEFAULT_CLIENT_ID_PRODUCTION: &str = "0oa3ykoirzDKpkfzk357";
+const QCS_DEFAULT_AUTH_ISSUER_PRODUCTION: &str =
+    "https://auth.qcs.rigetti.com/oauth2/aus8jcovzG0gW2TUG355";
 
 impl Default for AuthServer {
     fn default() -> Self {
         Self {
             client_id: QCS_DEFAULT_CLIENT_ID_PRODUCTION.to_string(),
-            issuer: "https://auth.qcs.rigetti.com/oauth2/aus8jcovzG0gW2TUG355".to_string(),
+            issuer: QCS_DEFAULT_AUTH_ISSUER_PRODUCTION.to_string(),
         }
     }
 }
