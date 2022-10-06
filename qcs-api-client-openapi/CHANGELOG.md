@@ -1,3 +1,9 @@
+## 0.3.4
+
+### Fixes
+
+- include LICENSE
+
 ## 0.3.3
 
 ### Features
