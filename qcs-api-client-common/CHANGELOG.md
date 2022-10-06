@@ -1,3 +1,9 @@
+## 0.2.3
+
+### Fixes
+
+- include LICENSE
+
 ## 0.2.2
 
 ### Fixes
