@@ -121,11 +121,14 @@ src/models/internal_list_endpoints_response.rs
 src/models/internal_list_legacy_lattices_response.rs
 src/models/internal_list_legacy_quantum_processors_response.rs
 src/models/internal_list_product_billing_prices_response.rs
+src/models/internal_list_quantum_processor_accessor_response.rs
 src/models/internal_list_users_response.rs
 src/models/internal_metered_usage_record.rs
 src/models/internal_put_legacy_deployed_rack_request.rs
 src/models/internal_put_legacy_quantum_processor_request.rs
+src/models/internal_put_quantum_processor_accessor_request.rs
 src/models/internal_put_quantum_processor_request.rs
+src/models/internal_quantum_processor_accessor.rs
 src/models/internal_update_endpoint_parameters.rs
 src/models/internal_update_event_billing_price_request.rs
 src/models/internal_update_legacy_quantum_processor_request.rs
@@ -192,6 +195,8 @@ src/models/qrt_channel.rs
 src/models/qrt_sequencer.rs
 src/models/qrtx2_sequencer.rs
 src/models/quantum_processor.rs
+src/models/quantum_processor_accessor.rs
+src/models/quantum_processor_accessor_type.rs
 src/models/qubit.rs
 src/models/qubit_1.rs
 src/models/qubit_settings.rs

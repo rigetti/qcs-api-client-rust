@@ -45,6 +45,14 @@ pub enum GetQuantumProcessorError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`list_quantum_processor_accessors`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ListQuantumProcessorAccessorsError {
+    Status422(crate::models::ValidationError),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`list_quantum_processors`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -163,6 +171,95 @@ pub async fn get_quantum_processor(
             Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
                 configuration.qcs_config.refresh().await?;
                 get_quantum_processor_inner(configuration, quantum_processor_id).await
+            }
+            _ => Err(err),
+        },
+    }
+}
+async fn list_quantum_processor_accessors_inner(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+    page_size: Option<i32>,
+    page_token: Option<&str>,
+) -> Result<
+    crate::models::ListQuantumProcessorAccessorResponse,
+    Error<ListQuantumProcessorAccessorsError>,
+> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/quantumProcessors/{quantumProcessorId}/access",
+        local_var_configuration.qcs_config.api_url(),
+        quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_token {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
+    }
+
+    // Use QCS Bearer token
+    let token = configuration.qcs_config.get_bearer_access_token().await?;
+    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    let local_var_content = local_var_resp.text().await?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<ListQuantumProcessorAccessorsError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// List all means of accessing a QuantumProcessor available to the user.
+pub async fn list_quantum_processor_accessors(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+    page_size: Option<i32>,
+    page_token: Option<&str>,
+) -> Result<
+    crate::models::ListQuantumProcessorAccessorResponse,
+    Error<ListQuantumProcessorAccessorsError>,
+> {
+    match list_quantum_processor_accessors_inner(
+        configuration,
+        quantum_processor_id.clone(),
+        page_size.clone(),
+        page_token.clone(),
+    )
+    .await
+    {
+        Ok(result) => Ok(result),
+        Err(err) => match err.status_code() {
+            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
+                configuration.qcs_config.refresh().await?;
+                list_quantum_processor_accessors_inner(
+                    configuration,
+                    quantum_processor_id,
+                    page_size,
+                    page_token,
+                )
+                .await
             }
             _ => Err(err),
         },

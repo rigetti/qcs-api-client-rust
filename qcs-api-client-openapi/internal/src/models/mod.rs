@@ -323,6 +323,9 @@ pub use self::internal_list_legacy_quantum_processors_response::InternalListLega
 pub mod internal_list_product_billing_prices_response;
 pub use self::internal_list_product_billing_prices_response::InternalListProductBillingPricesResponse;
 #[allow(non_snake_case)]
+pub mod internal_list_quantum_processor_accessor_response;
+pub use self::internal_list_quantum_processor_accessor_response::InternalListQuantumProcessorAccessorResponse;
+#[allow(non_snake_case)]
 pub mod internal_list_users_response;
 pub use self::internal_list_users_response::InternalListUsersResponse;
 #[allow(non_snake_case)]
@@ -335,8 +338,14 @@ pub use self::internal_put_legacy_deployed_rack_request::InternalPutLegacyDeploy
 pub mod internal_put_legacy_quantum_processor_request;
 pub use self::internal_put_legacy_quantum_processor_request::InternalPutLegacyQuantumProcessorRequest;
 #[allow(non_snake_case)]
+pub mod internal_put_quantum_processor_accessor_request;
+pub use self::internal_put_quantum_processor_accessor_request::InternalPutQuantumProcessorAccessorRequest;
+#[allow(non_snake_case)]
 pub mod internal_put_quantum_processor_request;
 pub use self::internal_put_quantum_processor_request::InternalPutQuantumProcessorRequest;
+#[allow(non_snake_case)]
+pub mod internal_quantum_processor_accessor;
+pub use self::internal_quantum_processor_accessor::InternalQuantumProcessorAccessor;
 #[allow(non_snake_case)]
 pub mod internal_update_endpoint_parameters;
 pub use self::internal_update_endpoint_parameters::InternalUpdateEndpointParameters;
@@ -532,6 +541,12 @@ pub use self::qrtx2_sequencer::Qrtx2Sequencer;
 #[allow(non_snake_case)]
 pub mod quantum_processor;
 pub use self::quantum_processor::QuantumProcessor;
+#[allow(non_snake_case)]
+pub mod quantum_processor_accessor;
+pub use self::quantum_processor_accessor::QuantumProcessorAccessor;
+#[allow(non_snake_case)]
+pub mod quantum_processor_accessor_type;
+pub use self::quantum_processor_accessor_type::QuantumProcessorAccessorType;
 #[allow(non_snake_case)]
 pub mod qubit;
 pub use self::qubit::Qubit;

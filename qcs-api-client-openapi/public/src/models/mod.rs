@@ -160,6 +160,9 @@ pub use self::list_group_users_response::ListGroupUsersResponse;
 pub mod list_groups_response;
 pub use self::list_groups_response::ListGroupsResponse;
 #[allow(non_snake_case)]
+pub mod list_quantum_processor_accessor_response;
+pub use self::list_quantum_processor_accessor_response::ListQuantumProcessorAccessorResponse;
+#[allow(non_snake_case)]
 pub mod list_quantum_processors_response;
 pub use self::list_quantum_processors_response::ListQuantumProcessorsResponse;
 #[allow(non_snake_case)]
@@ -186,6 +189,12 @@ pub use self::parameter_spec::ParameterSpec;
 #[allow(non_snake_case)]
 pub mod quantum_processor;
 pub use self::quantum_processor::QuantumProcessor;
+#[allow(non_snake_case)]
+pub mod quantum_processor_accessor;
+pub use self::quantum_processor_accessor::QuantumProcessorAccessor;
+#[allow(non_snake_case)]
+pub mod quantum_processor_accessor_type;
+pub use self::quantum_processor_accessor_type::QuantumProcessorAccessorType;
 #[allow(non_snake_case)]
 pub mod remove_group_user_request;
 pub use self::remove_group_user_request::RemoveGroupUserRequest;

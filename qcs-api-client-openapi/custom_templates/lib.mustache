@@ -10,7 +10,7 @@
 //! # #[tokio::main]
 //! # async fn main() {
 //! let config = Configuration::new().await.expect("should not fail to load config");
-//! get_health(&config).await.expect("API should be healthy")
+//! get_health(&config).await.expect("API should be healthy");
 //! # }
 //! ```
 

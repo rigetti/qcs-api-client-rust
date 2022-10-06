@@ -61,6 +61,17 @@ pub enum InternalDeleteQuantumProcessorError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`internal_delete_quantum_processor_accessor`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalDeleteQuantumProcessorAccessorError {
+    Status400(crate::models::Error),
+    Status403(crate::models::Error),
+    Status404(crate::models::Error),
+    Status422(crate::models::ValidationError),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`internal_get_default_endpoint`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -126,6 +137,14 @@ pub enum InternalPutLegacyQuantumProcessorError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum InternalPutQuantumProcessorError {
+    Status422(crate::models::ValidationError),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`internal_put_quantum_processor_accessor`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalPutQuantumProcessorAccessorError {
     Status422(crate::models::ValidationError),
     UnknownValue(serde_json::Value),
 }
@@ -460,6 +479,83 @@ pub async fn internal_delete_quantum_processor(
             Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
                 configuration.qcs_config.refresh().await?;
                 internal_delete_quantum_processor_inner(configuration, quantum_processor_id).await
+            }
+            _ => Err(err),
+        },
+    }
+}
+async fn internal_delete_quantum_processor_accessor_inner(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+    accessor_id: &str,
+) -> Result<
+    crate::models::InternalQuantumProcessorAccessor,
+    Error<InternalDeleteQuantumProcessorAccessorError>,
+> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/quantumProcessors/{quantumProcessorId}/access/{accessorId}",
+        local_var_configuration.qcs_config.api_url(),
+        quantumProcessorId = crate::apis::urlencode(quantum_processor_id),
+        accessorId = crate::apis::urlencode(accessor_id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+
+    // Use QCS Bearer token
+    let token = configuration.qcs_config.get_bearer_access_token().await?;
+    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    let local_var_content = local_var_resp.text().await?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<InternalDeleteQuantumProcessorAccessorError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Delete a quantum processor. This operation will ensure no dangling resources exist on the quantum processor.
+pub async fn internal_delete_quantum_processor_accessor(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+    accessor_id: &str,
+) -> Result<
+    crate::models::InternalQuantumProcessorAccessor,
+    Error<InternalDeleteQuantumProcessorAccessorError>,
+> {
+    match internal_delete_quantum_processor_accessor_inner(
+        configuration,
+        quantum_processor_id.clone(),
+        accessor_id.clone(),
+    )
+    .await
+    {
+        Ok(result) => Ok(result),
+        Err(err) => match err.status_code() {
+            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
+                configuration.qcs_config.refresh().await?;
+                internal_delete_quantum_processor_accessor_inner(
+                    configuration,
+                    quantum_processor_id,
+                    accessor_id,
+                )
+                .await
             }
             _ => Err(err),
         },
@@ -1029,6 +1125,85 @@ pub async fn internal_put_quantum_processor(
                     configuration,
                     quantum_processor_id,
                     internal_put_quantum_processor_request,
+                )
+                .await
+            }
+            _ => Err(err),
+        },
+    }
+}
+async fn internal_put_quantum_processor_accessor_inner(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+    internal_put_quantum_processor_accessor_request: crate::models::InternalPutQuantumProcessorAccessorRequest,
+) -> Result<
+    crate::models::InternalQuantumProcessorAccessor,
+    Error<InternalPutQuantumProcessorAccessorError>,
+> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/quantumProcessors/{quantumProcessorId}/access",
+        local_var_configuration.qcs_config.api_url(),
+        quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    // Use QCS Bearer token
+    let token = configuration.qcs_config.get_bearer_access_token().await?;
+    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+
+    local_var_req_builder =
+        local_var_req_builder.json(&internal_put_quantum_processor_accessor_request);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    let local_var_content = local_var_resp.text().await?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<InternalPutQuantumProcessorAccessorError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Add/update a QuantumProcessorAccessor for the target QuantumProcessor.
+pub async fn internal_put_quantum_processor_accessor(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+    internal_put_quantum_processor_accessor_request: crate::models::InternalPutQuantumProcessorAccessorRequest,
+) -> Result<
+    crate::models::InternalQuantumProcessorAccessor,
+    Error<InternalPutQuantumProcessorAccessorError>,
+> {
+    match internal_put_quantum_processor_accessor_inner(
+        configuration,
+        quantum_processor_id.clone(),
+        internal_put_quantum_processor_accessor_request.clone(),
+    )
+    .await
+    {
+        Ok(result) => Ok(result),
+        Err(err) => match err.status_code() {
+            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
+                configuration.qcs_config.refresh().await?;
+                internal_put_quantum_processor_accessor_inner(
+                    configuration,
+                    quantum_processor_id,
+                    internal_put_quantum_processor_accessor_request,
                 )
                 .await
             }
