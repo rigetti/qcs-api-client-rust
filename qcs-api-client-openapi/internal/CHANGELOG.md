@@ -1,3 +1,9 @@
+## 0.3.3
+
+### Features
+
+- Support QPU access calls
+
 ## 0.3.2
 
 ### Fixes

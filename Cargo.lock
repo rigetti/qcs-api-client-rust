@@ -964,7 +964,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-openapi"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "qcs-api-client-common",
  "reqwest",
@@ -976,7 +976,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-openapi-internal"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "qcs-api-client-common",
  "reqwest",
