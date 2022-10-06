@@ -1,7 +1,7 @@
 [package]
 name = "qcs-api-client-openapi"
 description = "Auto-generated bindings to the QCS OpenAPI"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2021"
 license = "Apache-2.0"
 repository = "https://github.com/rigetti/qcs-api-client-rust"
@@ -21,3 +21,4 @@ default-features = false
 features = ["json", "multipart", "rustls-tls"]
 
 [dev-dependencies]
+tokio = { version = "1.20.1", features = ["rt-multi-thread"] }

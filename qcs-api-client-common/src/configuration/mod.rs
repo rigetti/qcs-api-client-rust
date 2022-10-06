@@ -45,7 +45,7 @@ mod settings;
 /// Default URL to access the QCS API.
 pub const DEFAULT_API_URL: &str = "https://api.qcs.rigetti.com";
 /// Default URL to access the gRPC API.
-pub const DEFAULT_GRPC_API_URL: &str = "https://legacy.grpc.qcs.rigetti.com:443";
+pub const DEFAULT_GRPC_API_URL: &str = "https://legacy.grpc.qcs.rigetti.com";
 /// Default URL to access QVM.
 pub const DEFAULT_QVM_URL: &str = "http://127.0.0.1:5000";
 /// Default URL to access `quilc`.
@@ -64,21 +64,26 @@ pub struct Tokens {
 #[derive(Clone, Debug)]
 #[allow(clippy::module_name_repetitions)]
 pub struct ClientConfiguration {
-    // Provides a single, semi-shared access to user credential tokens.
-    //
-    // `Arc` provides a reference-counted pointer, while `Mutex` helps prevent data races.
-    //
-    // This helps reduce excess token refreshes by sharing the (refreshed) tokens between all
-    // clones of the `ClientConfiguration`.
-    //
-    // Note that the tokens are *not* shared when the `ClientConfiguration` is created multiple
-    // times, e.g. through `load()`.
+    /// Provides a single, semi-shared access to user credential tokens.
+    ///
+    /// The use of `Arc` helps reduce excess token refreshes by sharing the
+    /// tokens among all clones of the `ClientConfiguration`.
+    ///
+    /// Note that the tokens are *not* shared when the `ClientConfiguration` is created multiple
+    /// times, e.g. through `load()`.
     tokens: Arc<Mutex<Tokens>>,
+
+    /// Base URL of the QCS JSON HTTP API
     api_url: String,
+
+    /// Information required for the refreshing of authentication tokens
     auth_server: AuthServer,
+
+    /// Base URL of the QCS gRPC API
+    grpc_api_url: String,
+
     quilc_url: String,
     qvm_url: String,
-    grpc_api_url: String,
 }
 
 impl ClientConfiguration {
@@ -94,13 +99,13 @@ impl ClientConfiguration {
         &self.grpc_api_url
     }
 
-    /// URL to access `quilc` over TCP. Defaults to [`DEFAULT_QUILC_URL`].
+    /// URL to access `quilc`. Defaults to [`DEFAULT_QUILC_URL`].
     #[must_use]
     pub fn quilc_url(&self) -> &str {
         &self.quilc_url
     }
 
-    /// URL to access QVM over HTTP. Defaults to [`DEFAULT_QVM_URL`].
+    /// URL to access QVM. Defaults to [`DEFAULT_QVM_URL`].
     #[must_use]
     pub fn qvm_url(&self) -> &str {
         &self.qvm_url
@@ -114,11 +119,13 @@ pub const PROFILE_NAME_VAR: &str = "QCS_PROFILE_NAME";
 #[derive(Debug, thiserror::Error)]
 pub enum RefreshError {
     /// No refresh token to do the refresh with.
-    #[error("No refresh token is in secrets")]
+    #[error("No refresh token is configured within selected QCS credential")]
     NoRefreshToken,
+
     /// Failed to fetch new token.
     #[error("Error fetching new token")]
     FetchError(#[from] reqwest::Error),
+
     /// Error occurred while validating token.
     #[error("Error validating existing token: {0}")]
     ValidationError(#[from] JWTError),
@@ -130,15 +137,18 @@ pub enum LoadError {
     /// Configuration does not contain the expected profile.
     #[error("Expected profile {0} in settings.profiles but it didn't exist")]
     ProfileNotFound(String),
+
     /// Configuration does not contain the expected auth server name.
     #[error("Expected auth server {0} in settings.auth_servers but it didn't exist")]
     AuthServerNotFound(String),
+
     /// Could not determine user home directory.
     #[error("Failed to determine home directory. You can use an explicit path by setting the {env} environment variable")]
     HomeDirError {
         /// An environment variable that indicates the user home directory when set.
         env: String,
     },
+
     /// Failed to open configuration file.
     #[error("Could not open file at {path}: {source}")]
     FileOpenError {
@@ -147,6 +157,7 @@ pub enum LoadError {
         /// The error from trying to open it.
         source: std::io::Error,
     },
+
     /// Failed to parse configuration file as TOML.
     #[error("Could not parse TOML file at {path}: {source}")]
     FileParseError {
@@ -158,7 +169,7 @@ pub enum LoadError {
 }
 
 impl ClientConfiguration {
-    /// Attempt to load config files from ~/.qcs and create a Configuration object
+    /// Attempt to load config files from `~/.qcs` and create a Configuration object
     /// for use with the QCS API.
     ///
     /// See <https://docs.rigetti.com/qcs/references/qcs-client-configuration> for details.

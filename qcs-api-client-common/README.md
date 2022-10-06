@@ -13,7 +13,7 @@ This crate serves as a common implementation detail for other `qcs-api-client` c
 - [`qcs-api-client-grpc`](https://crates.io/crates/qcs-api-client-grpc)
 - [`qcs-api-client-openapi`](https://crates.io/crates/qcs-api-client-openapi)
 
-It currently provides utilities for loading QCS configuration and getting and refreshing tokens.
+It currently provides utilities for loading QCS configuration and managing authentication tokens.
 
 See [`ClientConfiguration`][clientconfig] for more.
 

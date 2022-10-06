@@ -106,6 +106,7 @@ Class | Method | HTTP request | Description
 *EngagementsApi* | [**create_engagement**](docs/EngagementsApi.md#create_engagement) | **POST** /v1/engagements | Create Engagement
 *QuantumProcessorsApi* | [**get_instruction_set_architecture**](docs/QuantumProcessorsApi.md#get_instruction_set_architecture) | **GET** /v1/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture | Get Instruction Set Architecture
 *QuantumProcessorsApi* | [**get_quantum_processor**](docs/QuantumProcessorsApi.md#get_quantum_processor) | **GET** /v1/quantumProcessors/{quantumProcessorId} | Get Quantum Processor
+*QuantumProcessorsApi* | [**list_quantum_processor_accessors**](docs/QuantumProcessorsApi.md#list_quantum_processor_accessors) | **GET** /v1/quantumProcessors/{quantumProcessorId}/access | List Quantum Processor Accessors
 *QuantumProcessorsApi* | [**list_quantum_processors**](docs/QuantumProcessorsApi.md#list_quantum_processors) | **GET** /v1/quantumProcessors | List Quantum Processors
 *ReservationsApi* | [**create_reservation**](docs/ReservationsApi.md#create_reservation) | **POST** /v1/reservations | Create Reservation
 *ReservationsApi* | [**delete_reservation**](docs/ReservationsApi.md#delete_reservation) | **DELETE** /v1/reservations/{reservationId} | Delete Reservation
@@ -167,6 +168,7 @@ Class | Method | HTTP request | Description
  - [ListEndpointsResponse](docs/ListEndpointsResponse.md)
  - [ListGroupUsersResponse](docs/ListGroupUsersResponse.md)
  - [ListGroupsResponse](docs/ListGroupsResponse.md)
+ - [ListQuantumProcessorAccessorResponse](docs/ListQuantumProcessorAccessorResponse.md)
  - [ListQuantumProcessorsResponse](docs/ListQuantumProcessorsResponse.md)
  - [ListReservationsResponse](docs/ListReservationsResponse.md)
  - [Node](docs/Node.md)
@@ -176,6 +178,8 @@ Class | Method | HTTP request | Description
  - [Parameter](docs/Parameter.md)
  - [ParameterSpec](docs/ParameterSpec.md)
  - [QuantumProcessor](docs/QuantumProcessor.md)
+ - [QuantumProcessorAccessor](docs/QuantumProcessorAccessor.md)
+ - [QuantumProcessorAccessorType](docs/QuantumProcessorAccessorType.md)
  - [RemoveGroupUserRequest](docs/RemoveGroupUserRequest.md)
  - [Reservation](docs/Reservation.md)
  - [RestartEndpointRequest](docs/RestartEndpointRequest.md)

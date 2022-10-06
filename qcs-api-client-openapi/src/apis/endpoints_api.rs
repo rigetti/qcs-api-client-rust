@@ -202,7 +202,9 @@ async fn get_default_endpoint_inner(
     quantum_processor_id: &str,
 ) -> Result<crate::models::Endpoint, Error<GetDefaultEndpointError>> {
     let local_var_configuration = configuration;
+
     let local_var_client = &local_var_configuration.client;
+
     let local_var_uri_str = format!(
         "{}/v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault",
         local_var_configuration.qcs_config.api_url(),

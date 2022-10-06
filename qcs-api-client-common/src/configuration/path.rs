@@ -16,6 +16,8 @@ use std::path::PathBuf;
 
 use super::LoadError;
 
+/// Return a [`PathBuf`] from the specified environment variable, if set. Otherwise, return
+/// the expanded path to `~/.qcs/{file_name}`.
 pub(crate) fn path_from_env_or_home(env: &str, file_name: &str) -> Result<PathBuf, LoadError> {
     match std::env::var(env) {
         Ok(path) => Ok(PathBuf::from(path)),
