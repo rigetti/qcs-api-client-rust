@@ -2158,6 +2158,7 @@ components:
           description: Network address at which the endpoint is locally reachable
           title: Address
           type: string
+          nullable: true
         addresses:
           allOf:
             - $ref: "#/components/schemas/EndpointAddresses"

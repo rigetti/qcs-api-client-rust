@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 pub struct InternalEndpoint {
     /// Network address at which the endpoint is locally reachable
     #[serde(rename = "address")]
-    pub address: String,
+    pub address: Option<String>,
     #[serde(rename = "addresses")]
     pub addresses: Box<crate::models::EndpointAddresses>,
     #[serde(rename = "configuration")]
@@ -45,7 +45,7 @@ pub struct InternalEndpoint {
 impl InternalEndpoint {
     /// An extension of the public Endpoint class which includes information for internal use.
     pub fn new(
-        address: String,
+        address: Option<String>,
         addresses: crate::models::EndpointAddresses,
         configuration: crate::models::EndpointConfiguration,
         deployment: crate::models::EndpointDeployment,
