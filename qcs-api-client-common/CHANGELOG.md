@@ -1,3 +1,9 @@
+## 0.2.4
+
+### Fixes
+
+- use rustls rather than openssl-sys
+
 ## 0.2.3
 
 ### Fixes
