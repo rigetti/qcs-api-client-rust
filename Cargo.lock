@@ -800,7 +800,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-common"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "dirs",
  "futures",
