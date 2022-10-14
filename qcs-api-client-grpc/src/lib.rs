@@ -39,6 +39,14 @@
 //!     // Use the client
 //! }
 //! ```
+//!
+//! # Crate features
+//!
+//! * `server`: include the generated server code for both Controller Service
+//!   and Translation Service
+//! * `regen`: regenerate the protobuf code and store it in `./src/gen`
+//!
+//! By default, both features are disabled.
 
 /// This module contains helper code for wrapping a [`Channel`](tonic::transport::Channel) so that QCS credentials are
 /// automatically used and refreshed as necessary.
@@ -52,22 +60,22 @@ pub use qcs_api_client_common::configuration as client_configuration;
 #[allow(clippy::derive_partial_eq_without_eq)]
 pub mod models {
     pub mod controller {
-        tonic::include_proto!("models.controller");
-        tonic::include_proto!("models.controller.serde");
+        include!("gen/models.controller.rs");
+        include!("gen/models.controller.serde.rs");
     }
     pub mod translation {
-        tonic::include_proto!("models.translation");
-        tonic::include_proto!("models.translation.serde");
+        include!("gen/models.translation.rs");
+        include!("gen/models.translation.serde.rs");
     }
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 pub mod services {
     pub mod controller {
-        tonic::include_proto!("services.controller");
-        tonic::include_proto!("services.controller.serde");
+        include!("gen/services.controller.rs");
+        include!("gen/services.controller.serde.rs");
     }
     pub mod translation {
-        tonic::include_proto!("services.translation");
-        tonic::include_proto!("services.translation.serde");
+        include!("gen/services.translation.rs");
+        include!("gen/services.translation.serde.rs");
     }
 }
