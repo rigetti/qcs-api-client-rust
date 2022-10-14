@@ -1,3 +1,9 @@
+## 0.2.5
+
+### Fixes
+
+- version generated protobuf code in crate
+
 ## 0.2.4
 
 ### Fixes
