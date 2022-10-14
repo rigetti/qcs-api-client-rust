@@ -1,3 +1,10 @@
+## 0.3.5
+
+### Fixes
+
+- version generated protobuf code in crate
+- make Endpoint.address nullable and regen
+
 ## 0.3.4
 
 ### Fixes
