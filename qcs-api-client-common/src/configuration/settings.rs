@@ -72,6 +72,7 @@ fn default_auth_servers() -> HashMap<String, AuthServer> {
 pub(crate) struct Profile {
     /// URL of the QCS API to use for all API calls
     pub(crate) api_url: String,
+    #[serde(default = "default_grpc_api_url")]
     pub(crate) grpc_api_url: String,
     pub(crate) auth_server_name: String,
     pub(crate) credentials_name: String,
@@ -89,6 +90,10 @@ impl Default for Profile {
             applications: Applications::default(),
         }
     }
+}
+
+fn default_grpc_api_url() -> String {
+    DEFAULT_GRPC_API_URL.to_string()
 }
 
 #[derive(Deserialize, Debug, Default, PartialEq, Serialize)]
