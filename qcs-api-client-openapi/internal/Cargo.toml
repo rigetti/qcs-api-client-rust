@@ -8,7 +8,7 @@ categories = ["api-bindings"]
 publish = false
 
 [dependencies]
-qcs-api-client-common = { path = "../../qcs-api-client-common", version = "0.2.5" }
+qcs-api-client-common = { path = "../../qcs-api-client-common", version = "0.2.6" }
 serde = { version = "1.0.140", features = ["derive"] }
 serde_json = "1.0.82"
 url = "2.2.2"
