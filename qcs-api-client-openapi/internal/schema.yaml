@@ -8218,6 +8218,7 @@ components:
           description: The ISA against which this program will execute
           title: A pyQuil Compiler ISA
         numRandomizations:
+          default: 0
           description: The number of randomized program parameter sets to produce
           title: Number of Randomizations
           type: integer
@@ -8235,7 +8236,6 @@ components:
       required:
         - program
         - isa
-        - numRandomizations
         - passes
       title: IntegrationsTrueqCompileQuilRequest
       type: object
