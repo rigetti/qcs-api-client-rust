@@ -306,8 +306,7 @@ paths:
         - endpoints
   "/v1/endpoints/{endpointId}":
     delete:
-      description:
-        Delete an endpoint, releasing its resources. This operation is not
+      description: Delete an endpoint, releasing its resources. This operation is not
         reversible.
       operationId: DeleteEndpoint
       parameters:
@@ -433,22 +432,19 @@ paths:
             service to select a default endpoint. Ignored if **endpointId** is set.
       operationId: CreateEngagement
       parameters:
-        - description:
-            Either the client's user ID or the name of a group on behalf of
+        - description: Either the client's user ID or the name of a group on behalf of
             which the client wishes to engage. May be overriden by accountId set
             in body.
           in: header
           name: x-qcs-account-id
           required: false
           schema:
-            description:
-              Either the client's user ID or the name of a group on behalf of
+            description: Either the client's user ID or the name of a group on behalf of
               which the client wishes to engage. May be overriden by accountId
               set in body.
             title: X-Qcs-Account-Id
             type: string
-        - description:
-            Indicates whether the engagement request should be made for the
+        - description: Indicates whether the engagement request should be made for the
             user or on behalf of a group. May be overriden by accountType set in
             body.
           in: header
@@ -457,8 +453,7 @@ paths:
           schema:
             allOf:
               - $ref: "#/components/schemas/AccountType"
-            description:
-              Indicates whether the engagement request should be made for the
+            description: Indicates whether the engagement request should be made for the
               user or on behalf of a group. May be overriden by accountType set
               in body.
       requestBody:
@@ -577,52 +572,6 @@ paths:
       summary: Get Quantum Processor
       tags:
         - quantumProcessors
-  "/v1/quantumProcessors/{quantumProcessorId}/access":
-    get:
-      description:
-        List all means of accessing a QuantumProcessor available to the
-        user.
-      operationId: ListQuantumProcessorAccessors
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
-        - in: query
-          name: pageSize
-          required: false
-          schema:
-            default: 10
-            title: Pagesize
-            type: integer
-        - in: query
-          name: pageToken
-          required: false
-          schema:
-            title: Pagetoken
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListQuantumProcessorAccessorResponse"
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: List Quantum Processor Accessors
-      tags:
-        - quantumProcessors
   "/v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault":
     get:
       description: |-
@@ -700,8 +649,7 @@ paths:
         - quantumProcessors
   /v1/auth:emailPasswordResetToken:
     post:
-      description:
-        Send a password reset link to the provided email address, if that
+      description: Send a password reset link to the provided email address, if that
         email matches a registered user.
       operationId: AuthEmailPasswordResetToken
       requestBody:
@@ -743,8 +691,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            The authenticated user could not be located within our records.
+          description: The authenticated user could not be located within our records.
             Please contact support@rigetti.com if you reach this error.
       security:
         - JWTBearer: []
@@ -755,8 +702,7 @@ paths:
   /v1/auth:resetPassword:
     parameters: []
     post:
-      description:
-        Reset the password using the user's existing password. Note, this
+      description: Reset the password using the user's existing password. Note, this
         is an authenticated route.
       operationId: AuthResetPassword
       requestBody:
@@ -788,8 +734,7 @@ paths:
   /v1/auth:resetPasswordWithToken:
     parameters: []
     post:
-      description:
-        Complete the forgot password flow, resetting the new password in
+      description: Complete the forgot password flow, resetting the new password in
         exchange for an emailed token.
       operationId: AuthResetPasswordWithToken
       requestBody:
@@ -818,8 +763,7 @@ paths:
         - authentication
   /v1/clientApplications:
     get:
-      description:
-        List supported clients of Rigetti system components along with
+      description: List supported clients of Rigetti system components along with
         their latest and minimum supported versions.
       operationId: ListClientApplications
       responses:
@@ -835,8 +779,7 @@ paths:
     parameters: []
   "/v1/clientApplications/{clientApplicationName}":
     get:
-      description:
-        Get details of a specific Rigetti system component along with its
+      description: Get details of a specific Rigetti system component along with its
         latest and minimum supported versions.
       operationId: GetClientApplication
       parameters:
@@ -863,8 +806,7 @@ paths:
         - clientApplications
   /v1/clientApplications:check:
     post:
-      description:
-        Check the requested client application version against the latest
+      description: Check the requested client application version against the latest
         and minimum version.
       operationId: CheckClientApplication
       requestBody:
@@ -1176,8 +1118,7 @@ paths:
         - reservations
   "/v1/groups/{groupName}/users":
     get:
-      description:
-        List users belonging to a group. Note, group membership may take
+      description: List users belonging to a group. Note, group membership may take
         several minutes to update within our identity provider. After adding or
         removing a user to or from a group, please allow up to 60 minutes for
         changes to be reflected.
@@ -1217,8 +1158,7 @@ paths:
         - account
   /v1/groups:addUser:
     post:
-      description:
-        Add a user to a group. Note, group membership may take several
+      description: Add a user to a group. Note, group membership may take several
         minutes to update within our identity provider. After adding a user to a
         group, please allow up to 60 minutes for changes to be reflected.
       operationId: AddGroupUser
@@ -1250,8 +1190,7 @@ paths:
         - account
   /v1/groups:removeUser:
     post:
-      description:
-        Remove a user from a group. Note, group membership may take several
+      description: Remove a user from a group. Note, group membership may take several
         minutes to update within our identity provider. After removing a user
         from a group, please allow up to 60 minutes for changes to be reflected.
       operationId: RemoveGroupUser
@@ -1275,8 +1214,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            Request validation failed, possibly because the user does not
+          description: Request validation failed, possibly because the user does not
             belong to the group.
       security:
         - JWTBearer: []
@@ -1473,8 +1411,7 @@ paths:
           type: integer
   /v1/reservations:findAvailable:
     get:
-      description:
-        List currently available reservations on the requested Rigetti
+      description: List currently available reservations on the requested Rigetti
         quantum computer.
       operationId: FindAvailableReservations
       parameters:
@@ -1525,8 +1462,7 @@ paths:
     parameters: []
   "/v1/users/{idpId}":
     parameters:
-      - description:
-          The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+      - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
           call.
         in: path
         name: idpId
@@ -1538,8 +1474,7 @@ paths:
       description: Retrieve the balance of the requested QCS user account.
       operationId: GetUserBalance
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -1581,8 +1516,7 @@ paths:
       description: Retrieve billing customer for a QCS user account.
       operationId: GetUserBillingCustomer
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -1617,8 +1551,7 @@ paths:
       description: Retrieve billing invoices for a QCS user account.
       operationId: ListUserBillingInvoices
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -1655,8 +1588,7 @@ paths:
       description: Retrieve billing invoice lines for a QCS user account's invoice.
       operationId: ListUserBillingInvoiceLines
       parameters:
-        - description:
-            URL-encoded QCS id of user. May be found as `idpId` in the
+        - description: URL-encoded QCS id of user. May be found as `idpId` in the
             `AuthGetUser` API call.
           in: path
           name: userId
@@ -1699,8 +1631,7 @@ paths:
       description: Retrieve upcoming invoice for QCS user billing customer.
       operationId: GetUserUpcomingBillingInvoice
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -1735,8 +1666,7 @@ paths:
       description: List invoice lines for QCS user billing customer upcoming invoice.
       operationId: ListUserUpcomingBillingInvoiceLines
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -1773,8 +1703,7 @@ paths:
       description: List QCS groups for the requested user
       operationId: ListUserGroups
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -1838,8 +1767,8 @@ paths:
       summary: Get Quilt Calibrations
       tags:
         - translation
-  ? "/v1/quantumProcessors/{quantumProcessorId}:translateNativeQuilToEncryptedBinary"
-  : post:
+  "/v1/quantumProcessors/{quantumProcessorId}:translateNativeQuilToEncryptedBinary":
+    post:
       description: >-
         Compile Rigetti-native Quil code to encrypted binary form, ready for
         execution on a
@@ -2041,8 +1970,7 @@ components:
           title: Node Ids
           type: array
         parameter_values:
-          description:
-            The optional ordered list of parameter values used to generate the
+          description: The optional ordered list of parameter values used to generate the
             characteristic. The order matches the parameters in the enclosing
             operation, and so the lengths of these two lists must match.
           items:
@@ -2068,8 +1996,7 @@ components:
       description: A publicly available set of parameters for defining an endpoint.
       properties:
         datacenters:
-          description:
-            Which datacenters are available for endpoint placement. Defaults to
+          description: Which datacenters are available for endpoint placement. Defaults to
             berkeley-775
           items:
             $ref: "#/components/schemas/NomadJobDatacenters"
@@ -2086,8 +2013,7 @@ components:
     CreateEngagementRequest:
       properties:
         accountId:
-          description:
-            Either the client's user ID or the name of a group on behalf of
+          description: Either the client's user ID or the name of a group on behalf of
             which the client wishes to engage. This value will override any
             values set in the headers.
           title: Account Id
@@ -2095,8 +2021,7 @@ components:
         accountType:
           allOf:
             - $ref: "#/components/schemas/AccountType"
-          description:
-            Indicates whether the engagement request should be made for the
+          description: Indicates whether the engagement request should be made for the
             user or on behalf of a group. This value will override any values
             set in the headers.
           title: Account Type
@@ -2109,8 +2034,7 @@ components:
           title: Quantum Processor ID
           type: string
         tags:
-          description:
-            Tags recorded on QPU requests, which reporting services may later
+          description: Tags recorded on QPU requests, which reporting services may later
             use for querying usage records.
           items:
             type: string
@@ -2136,8 +2060,7 @@ components:
         :math:`(b, a)`.
       properties:
         node_ids:
-          description:
-            The integer ids of the computational nodes at the two ends of the
+          description: The integer ids of the computational nodes at the two ends of the
             edge. Order is not important; an architecture edge is treated as
             undirected.
           items:
@@ -2158,7 +2081,6 @@ components:
           description: Network address at which the endpoint is locally reachable
           title: Address
           type: string
-          nullable: true
         addresses:
           allOf:
             - $ref: "#/components/schemas/EndpointAddresses"
@@ -2177,8 +2099,7 @@ components:
           title: Endpoint ID
           type: string
         mock:
-          description:
-            Whether the endpoint serves simulated or substituted data for
+          description: Whether the endpoint serves simulated or substituted data for
             testing purposes
           title: Mock
           type: boolean
@@ -2230,8 +2151,7 @@ components:
       title: EngagementCredentials
       type: object
     EngagementWithCredentials:
-      description:
-        An engagement is the authorization of a user to execute work on a
+      description: An engagement is the authorization of a user to execute work on a
         Quantum Processor Endpoint.
       properties:
         accountId:
@@ -2241,13 +2161,11 @@ components:
         accountType:
           allOf:
             - $ref: "#/components/schemas/AccountType"
-          description:
-            Indicates whether the grant was made on behalf of a single user or
+          description: Indicates whether the grant was made on behalf of a single user or
             group.
           title: Account Type
         address:
-          description:
-            The network address of the endpoint to which this engagement grants
+          description: The network address of the endpoint to which this engagement grants
             access
           title: Address
           type: string
@@ -2258,8 +2176,7 @@ components:
           title: Endpoint ID
           type: string
         expiresAt:
-          description:
-            Time after which the engagement is no longer valid. Given in
+          description: Time after which the engagement is no longer valid. Given in
             RFC3339 format.
           title: Expiration Time
           type: string
@@ -2269,8 +2186,7 @@ components:
           type: integer
         quantumProcessorIds:
           default: []
-          description:
-            The quantum processors for which this engagement enables access and
+          description: The quantum processors for which this engagement enables access and
             execution
           items:
             type: string
@@ -2341,8 +2257,7 @@ components:
           title: Benchmarks
           type: array
         instructions:
-          description:
-            The list of native QUIL instructions supported by the quantum
+          description: The list of native QUIL instructions supported by the quantum
             processor.
           items:
             $ref: "#/components/schemas/Operation"
@@ -2368,8 +2283,7 @@ components:
           title: Endpoints
           type: array
         nextPageToken:
-          description:
-            Opaque token indicating the start of the next page of results to
+          description: Opaque token indicating the start of the next page of results to
             return; do not decode
           title: Next Page Token
           type: string
@@ -2380,8 +2294,7 @@ components:
     ListQuantumProcessorsResponse:
       properties:
         nextPageToken:
-          description:
-            Opaque token indicating the start of the next page of results to
+          description: Opaque token indicating the start of the next page of results to
             return; do not decode
           title: Next Page Token
           type: string
@@ -2393,24 +2306,6 @@ components:
       required:
         - quantumProcessors
       title: ListQuantumProcessorsResponse
-      type: object
-    ListQuantumProcessorAccessorResponse:
-      properties:
-        accessors:
-          description: Methods of accessing the relevant Quantum Processor
-          items:
-            $ref: "#/components/schemas/QuantumProcessorAccessor"
-          title: Accessors
-          type: array
-        nextPageToken:
-          description:
-            Opaque token indicating the start of the next page of results
-            to return; do not decode
-          title: Next Page Token
-          type: string
-      required:
-        - accessors
-      title: ListQuantumProcessorAccessorResponse
       type: object
     Node:
       additionalProperties: false
@@ -2425,8 +2320,7 @@ components:
         specific `node_id` in instances of `Instruction`.
       properties:
         node_id:
-          description:
-            An integer id assigned to the computational node. The ids may not
+          description: An integer id assigned to the computational node. The ids may not
             be contiguous and will be assigned based on the architecture family.
           minimum: 0
           title: Node Id
@@ -2459,23 +2353,20 @@ components:
           title: Name
           type: string
         node_count:
-          description:
-            The number of nodes that this operation applies to. None if
+          description: The number of nodes that this operation applies to. None if
             unspecified.
           exclusiveMinimum: 0
           title: Node Count
           type: integer
         parameters:
-          description:
-            The list of parameters. Each parameter must be uniquely named. May
+          description: The list of parameters. Each parameter must be uniquely named. May
             be empty.
           items:
             $ref: "#/components/schemas/Parameter"
           title: Parameters
           type: array
         sites:
-          description:
-            The list of sites at which this operation can be applied, together
+          description: The list of sites at which this operation can be applied, together
             with its site-dependent characteristics.
           items:
             $ref: "#/components/schemas/OperationSite"
@@ -2499,8 +2390,7 @@ components:
           title: Characteristics
           type: array
         node_ids:
-          description:
-            The list of architecture node ids for the site. The order of these
+          description: The list of architecture node ids for the site. The order of these
             node ids obey the definition of node symmetry from the enclosing
             operation.
           items:
@@ -2529,8 +2419,7 @@ components:
     QuantumProcessor:
       properties:
         id:
-          description:
-            "Immutable, unique identifier for a quantum processor [example:
+          description: "Immutable, unique identifier for a quantum processor [example:
             Aspen-1]"
           title: ID
           type: string
@@ -2538,39 +2427,6 @@ components:
         - id
       title: QuantumProcessor
       type: object
-    QuantumProcessorAccessor:
-      properties:
-        accessType:
-          allOf:
-            - $ref: "#/components/schemas/QuantumProcessorAccessorType"
-          title: Type
-        live:
-          title: Live
-          type: boolean
-        priority:
-          default: false
-          description:
-            Priority QuantumProcessorAccessors should be used before others
-            of the same AccessType
-          title: Priority
-          type: boolean
-        url:
-          format: uri
-          maxLength: 2083
-          minLength: 1
-          title: URL
-          type: string
-      required:
-        - accessType
-        - url
-        - live
-      title: QuantumProcessorAccessor
-      type: object
-    QuantumProcessorAccessorType:
-      description: An enumeration.
-      enum:
-        - gateway.v1
-      title: QuantumProcessorAccessorType
     RestartEndpointRequest:
       properties:
         componentName:
@@ -2580,8 +2436,7 @@ components:
       title: RestartEndpointRequest
       type: object
     AccountBalance:
-      description:
-        Balance of QCS account in billing system. Note, a negative balance
+      description: Balance of QCS account in billing system. Note, a negative balance
         signifies that the account has QCS credits to spend. A positive account
         balance signifies that the account has no additional QCS credits to
         spend. The QCS UI may display these quantities in absolute or negative
@@ -2690,8 +2545,7 @@ components:
       description: A finalized billing invoice.
       type: object
     BillingInvoiceLine:
-      description:
-        A line item on an invoice representing a particular purchase (such
+      description: A line item on an invoice representing a particular purchase (such
         as a reservation) or aggregate usage for the invoice period.
       properties:
         amount:
@@ -2736,8 +2590,7 @@ components:
         - void
       type: string
     BillingPrice:
-      description:
-        The price schedule for a particular service applied to an invoice
+      description: The price schedule for a particular service applied to an invoice
         line item.
       properties:
         billingScheme:
@@ -2750,15 +2603,13 @@ components:
           description: Whether the price can be used for new purchases.
           type: boolean
         object:
-          description:
-            String representing the object's type. Objects of the same type
+          description: String representing the object's type. Objects of the same type
             share the same value.
           enum:
             - price
           type: string
         priceType:
-          description:
-            One of `one_time` or `recurring` depending on whether the price is
+          description: One of `one_time` or `recurring` depending on whether the price is
             for a one-time purchase or a recurring (subscription) purchase.
           enum:
             - one_time
@@ -2769,8 +2620,7 @@ components:
         recurring:
           $ref: "#/components/schemas/BillingPriceRecurrence"
         tiers:
-          description:
-            Each element represents a pricing tier. This parameter requires
+          description: Each element represents a pricing tier. This parameter requires
             `billingScheme` to be set to `tiered`. See also the documentation
             for `billingScheme`.
           items:
@@ -2817,8 +2667,7 @@ components:
       title: Billing Price Recurrence
       type: object
     BillingPriceScheme:
-      description:
-        Describes how to compute the price per period. Either `per_unit` or
+      description: Describes how to compute the price per period. Either `per_unit` or
         `tiered`. `per_unit` indicates that the fixed amount (specified in
         `unitAmount` or `unitAmountDecimal`) will be charged per unit in
         `quantity` (for prices with `usageType=licensed`), or per unit of total
@@ -2852,8 +2701,7 @@ components:
       title: tier
       type: object
     BillingPriceTiersMode:
-      description:
-        Defines if the tiering price should be `graduated` or `volume`
+      description: Defines if the tiering price should be `graduated` or `volume`
         based. In `volume`-based tiering, the maximum quantity within a period
         determines the per unit price, in `graduated` tiering pricing can
         successively change as the quantity grows.
@@ -2877,15 +2725,13 @@ components:
           maxLength: 5000
           type: string
         object:
-          description:
-            String representing the object's type. Objects of the same type
+          description: String representing the object's type. Objects of the same type
             share the same value.
           enum:
             - product
           type: string
         unitLabel:
-          description:
-            A label that represents units of this product. When set, this will
+          description: A label that represents units of this product. When set, this will
             be included in associated invoice line item descriptions.
           maxLength: 5000
           type: string
@@ -3301,8 +3147,7 @@ components:
           title: Quil
           type: string
         settingsTimestamp:
-          description:
-            ISO8601 timestamp of the latest settings to be used in translation.
+          description: ISO8601 timestamp of the latest settings to be used in translation.
             If omitted, latest settings will be used.
           title: Settings Timestamp
           type: string
@@ -3332,8 +3177,7 @@ components:
           title: Readout Sources
           type: array
         settingsTimestamp:
-          description:
-            ISO8601 timestamp of the settings used to translate the program.
+          description: ISO8601 timestamp of the settings used to translate the program.
             Translation is deterministic; a program translated twice with the
             same settings by the same version of the service will have identical
             output.
@@ -3349,8 +3193,7 @@ components:
       type: http
     JWTBearerOptional:
       bearerFormat: JWT
-      description:
-        Same as `JWTBearer`, but the Authorization header is optionally
+      description: Same as `JWTBearer`, but the Authorization header is optionally
         parsed. Clients will receive a 401 response if an invalid or expired
         token is provided. Otherwise, the server authorizes the request against
         either the valid token claims or an unauthenticated user. In either
@@ -3400,8 +3243,7 @@ components:
       schema:
         type: integer
     pageTokenParam:
-      description:
-        An opaque token that can be appended to a request query to retrieve
+      description: An opaque token that can be appended to a request query to retrieve
         the next page of results. Empty if there are no more results to
         retrieve.
       in: query
@@ -3410,8 +3252,7 @@ components:
       schema:
         type: string
     showDeleted:
-      description:
-        If you wish to include deleted (or cancelled) resources in your
+      description: If you wish to include deleted (or cancelled) resources in your
         response, include `showDeleted=true`.
       in: query
       name: showDeleted

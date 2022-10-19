@@ -329,8 +329,7 @@ paths:
         - endpoints
   "/v1/endpoints/{endpointId}":
     delete:
-      description:
-        Delete an endpoint, releasing its resources. This operation is not
+      description: Delete an endpoint, releasing its resources. This operation is not
         reversible.
       operationId: DeleteEndpoint
       parameters:
@@ -456,22 +455,19 @@ paths:
             service to select a default endpoint. Ignored if **endpointId** is set.
       operationId: CreateEngagement
       parameters:
-        - description:
-            Either the client's user ID or the name of a group on behalf of
+        - description: Either the client's user ID or the name of a group on behalf of
             which the client wishes to engage. May be overriden by accountId set
             in body.
           in: header
           name: x-qcs-account-id
           required: false
           schema:
-            description:
-              Either the client's user ID or the name of a group on behalf of
+            description: Either the client's user ID or the name of a group on behalf of
               which the client wishes to engage. May be overriden by accountId
               set in body.
             title: X-Qcs-Account-Id
             type: string
-        - description:
-            Indicates whether the engagement request should be made for the
+        - description: Indicates whether the engagement request should be made for the
             user or on behalf of a group. May be overriden by accountType set in
             body.
           in: header
@@ -480,8 +476,7 @@ paths:
           schema:
             allOf:
               - $ref: "#/components/schemas/AccountType"
-            description:
-              Indicates whether the engagement request should be made for the
+            description: Indicates whether the engagement request should be made for the
               user or on behalf of a group. May be overriden by accountType set
               in body.
       requestBody:
@@ -619,8 +614,7 @@ paths:
   "/v1/internal/endpoints/{endpointId}":
     delete:
       deprecated: true
-      description:
-        Delete an endpoint, releasing its resources. This operation is not
+      description: Delete an endpoint, releasing its resources. This operation is not
         reversible.
       operationId: InternalDeleteEndpoint
       parameters:
@@ -696,8 +690,7 @@ paths:
         - endpoints
         - internal
     patch:
-      description:
-        Trigger a sync operation on the endpoint, updating it to the latest
+      description: Trigger a sync operation on the endpoint, updating it to the latest
         configuration.
       operationId: InternalUpdateEndpoint
       parameters:
@@ -726,6 +719,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Bad Request
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden
         "404":
           content:
             application/json:
@@ -808,8 +807,7 @@ paths:
           required: false
           schema:
             default: true
-            description:
-              Whether to hide specifications for qubits and edges marked as
+            description: Whether to hide specifications for qubits and edges marked as
               "dead"
             title: Mask Specifications to ISA
             type: boolean
@@ -874,8 +872,7 @@ paths:
           required: false
           schema:
             default: true
-            description:
-              Whether to hide specifications for qubits and edges marked as
+            description: Whether to hide specifications for qubits and edges marked as
               "dead"
             title: Mask Specifications to ISA
             type: boolean
@@ -907,8 +904,7 @@ paths:
   /v1/internal/legacy/quantumProcessors:
     get:
       deprecated: true
-      description:
-        Retrieve all legacy (Forest Server) Quantum Processors available to
+      description: Retrieve all legacy (Forest Server) Quantum Processors available to
         the user.
       operationId: InternalListLegacyQuantumProcessors
       parameters:
@@ -918,8 +914,7 @@ paths:
           required: false
           schema:
             default: true
-            description:
-              Whether to hide specifications for qubits and edges marked as
+            description: Whether to hide specifications for qubits and edges marked as
               "dead"
             title: Mask Specifications to ISA
             type: boolean
@@ -1009,8 +1004,7 @@ paths:
           required: false
           schema:
             default: true
-            description:
-              Whether to hide specifications for qubits and edges marked as
+            description: Whether to hide specifications for qubits and edges marked as
               "dead"
             title: Mask Specifications to ISA
             type: boolean
@@ -1328,149 +1322,6 @@ paths:
       tags:
         - internal
         - quantumProcessors
-  "/v1/internal/quantumProcessors/{quantumProcessorId}/access":
-    get:
-      description:
-        List all means of accessing a QuantumProcessor available to the
-        user.
-      operationId: InternalListQuantumProcessorAccessors
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
-        - in: query
-          name: pageSize
-          required: false
-          schema:
-            default: 10
-            title: Pagesize
-            type: integer
-        - in: query
-          name: pageToken
-          required: false
-          schema:
-            title: Pagetoken
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalListQuantumProcessorAccessorResponse"
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Internal List Quantum Processor Accessors
-      tags:
-        - quantumProcessors
-    put:
-      description: Add/update a QuantumProcessorAccessor for the target QuantumProcessor.
-      operationId: InternalPutQuantumProcessorAccessor
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InternalPutQuantumProcessorAccessorRequest"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalQuantumProcessorAccessor"
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Internal Put Quantum Processor Accessor
-      tags:
-        - internal
-        - quantumProcessors
-  "/v1/internal/quantumProcessors/{quantumProcessorId}/access/{accessorId}":
-    delete:
-      description:
-        "Delete a quantum processor. This operation will ensure no dangling
-        resources exist on
-
-        the quantum processor."
-      operationId: InternalDeleteQuantumProcessorAccessor
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
-        - in: path
-          name: accessorId
-          required: true
-          schema:
-            title: Quantum Processor Accessor ID
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalQuantumProcessorAccessor"
-          description: Successful Response
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Bad Request
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Internal Delete Quantum Processor Accessor
-      tags:
-        - internal
-        - quantumProcessors
   "/v1/internal/quantumProcessors/{quantumProcessorId}/endpoints:getDefault":
     get:
       description: |-
@@ -1710,8 +1561,7 @@ paths:
         - quantumProcessors
   /v1/auth:emailPasswordResetToken:
     post:
-      description:
-        Send a password reset link to the provided email address, if that
+      description: Send a password reset link to the provided email address, if that
         email matches a registered user.
       operationId: AuthEmailPasswordResetToken
       requestBody:
@@ -1753,8 +1603,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            The authenticated user could not be located within our records.
+          description: The authenticated user could not be located within our records.
             Please contact support@rigetti.com if you reach this error.
       security:
         - JWTBearer: []
@@ -1765,8 +1614,7 @@ paths:
   /v1/auth:resetPassword:
     parameters: []
     post:
-      description:
-        Reset the password using the user's existing password. Note, this
+      description: Reset the password using the user's existing password. Note, this
         is an authenticated route.
       operationId: AuthResetPassword
       requestBody:
@@ -1798,8 +1646,7 @@ paths:
   /v1/auth:resetPasswordWithToken:
     parameters: []
     post:
-      description:
-        Complete the forgot password flow, resetting the new password in
+      description: Complete the forgot password flow, resetting the new password in
         exchange for an emailed token.
       operationId: AuthResetPasswordWithToken
       requestBody:
@@ -1828,8 +1675,7 @@ paths:
         - authentication
   /v1/clientApplications:
     get:
-      description:
-        List supported clients of Rigetti system components along with
+      description: List supported clients of Rigetti system components along with
         their latest and minimum supported versions.
       operationId: ListClientApplications
       responses:
@@ -1845,8 +1691,7 @@ paths:
     parameters: []
   "/v1/clientApplications/{clientApplicationName}":
     get:
-      description:
-        Get details of a specific Rigetti system component along with its
+      description: Get details of a specific Rigetti system component along with its
         latest and minimum supported versions.
       operationId: GetClientApplication
       parameters:
@@ -1873,8 +1718,7 @@ paths:
         - clientApplications
   /v1/clientApplications:check:
     post:
-      description:
-        Check the requested client application version against the latest
+      description: Check the requested client application version against the latest
         and minimum version.
       operationId: CheckClientApplication
       requestBody:
@@ -2186,8 +2030,7 @@ paths:
         - reservations
   "/v1/groups/{groupName}/users":
     get:
-      description:
-        List users belonging to a group. Note, group membership may take
+      description: List users belonging to a group. Note, group membership may take
         several minutes to update within our identity provider. After adding or
         removing a user to or from a group, please allow up to 60 minutes for
         changes to be reflected.
@@ -2227,8 +2070,7 @@ paths:
         - account
   /v1/groups:addUser:
     post:
-      description:
-        Add a user to a group. Note, group membership may take several
+      description: Add a user to a group. Note, group membership may take several
         minutes to update within our identity provider. After adding a user to a
         group, please allow up to 60 minutes for changes to be reflected.
       operationId: AddGroupUser
@@ -2260,8 +2102,7 @@ paths:
         - account
   /v1/groups:removeUser:
     post:
-      description:
-        Remove a user from a group. Note, group membership may take several
+      description: Remove a user from a group. Note, group membership may take several
         minutes to update within our identity provider. After removing a user
         from a group, please allow up to 60 minutes for changes to be reflected.
       operationId: RemoveGroupUser
@@ -2285,8 +2126,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            Request validation failed, possibly because the user does not
+          description: Request validation failed, possibly because the user does not
             belong to the group.
       security:
         - JWTBearer: []
@@ -2360,8 +2200,7 @@ paths:
         - account
       x-internal: true
     post:
-      description:
-        Create an event billing price. This will return a 409 response code
+      description: Create an event billing price. This will return a 409 response code
         if an event billing price for the same event, quantum processor, and
         account scope already exists. Otherwise, it will create a new event
         billing price. This will also set the Stripe price in the server cache.
@@ -2449,8 +2288,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            Event billing price is a default configuration that cannot be
+          description: Event billing price is a default configuration that cannot be
             deleted.
       security:
         - JWTBearer: []
@@ -2459,8 +2297,7 @@ paths:
         - account
       x-internal: true
     patch:
-      description:
-        Update an event billing price. This will also set the Stripe price
+      description: Update an event billing price. This will also set the Stripe price
         in the server cache.
       operationId: InternalUpdateEventBillingPrice
       parameters:
@@ -2540,8 +2377,7 @@ paths:
       x-internal: true
   "/v1/internal/groups/{groupName}/billingCustomer":
     patch:
-      description:
-        Update the billing customer assigned to a QCS group account. This
+      description: Update the billing customer assigned to a QCS group account. This
         does not create the customer in Stripe and will validate that the
         billing customer exists and has not been assigned to any other QCS
         account. It will add the appropriate metadata to the existing billing
@@ -2576,8 +2412,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            QCS group does not exist or does not have an assigned billing
+          description: QCS group does not exist or does not have an assigned billing
             customer.
         "409":
           content:
@@ -2590,8 +2425,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            Schema validation error. billing customer may not exist. See
+          description: Schema validation error. billing customer may not exist. See
             response for details.
       security:
         - JWTBearer: []
@@ -2641,16 +2475,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            QCS group already has an assigned billing customer or the billing
+          description: QCS group already has an assigned billing customer or the billing
             customer is already assigned to another QCS account.
         "422":
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            Schema validation error. Billing customer may not exist. See
+          description: Schema validation error. Billing customer may not exist. See
             response for details.
       security:
         - JWTBearer: []
@@ -2659,8 +2491,7 @@ paths:
       x-internal: true
   "/v1/internal/groups/{groupName}/eventBillingPrices:get":
     post:
-      description:
-        Retrieve `EventBillingPrice` for a group for a specific event. If
+      description: Retrieve `EventBillingPrice` for a group for a specific event. If
         no price is configured this operation will return a default
         `EventBillingPrice` for the specified `product`.
       operationId: InternalGetGroupEventBillingPrice
@@ -2695,8 +2526,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            The `EventBillingPrice` does not exist for the specified event.
+          description: The `EventBillingPrice` does not exist for the specified event.
             Because the server guarantees prices for events, the server will
             trigger alerts whenever returning this response.
         "422":
@@ -2779,8 +2609,7 @@ paths:
           required: true
           schema:
             $ref: "#/components/schemas/Product"
-        - description:
-            If set to true, use the product that is explicitly marked as a
+        - description: If set to true, use the product that is explicitly marked as a
             product for testing. This is helpful for isolating test data within
             the production environment.
           in: query
@@ -3019,8 +2848,7 @@ paths:
       x-internal: true
   /v1/internal/reservations:findAvailable:
     get:
-      description:
-        List currently available reservations on the requested Rigetti
+      description: List currently available reservations on the requested Rigetti
         quantum computer.
       operationId: InternalFindAvailableReservations
       parameters:
@@ -3130,15 +2958,13 @@ paths:
     x-internal: true
   "/v1/internal/users/{userId}/billingCustomer":
     patch:
-      description:
-        Update the billing customer assigned to a QCS user account. This
+      description: Update the billing customer assigned to a QCS user account. This
         does not create the customer in Stripe and will validate that the
         billing customer exists and has not been assigned to any other QCS
         account.
       operationId: InternalUpdateUserBillingCustomer
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -3168,8 +2994,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            QCS user does not exist or does not have an assigned billing
+          description: QCS user does not exist or does not have an assigned billing
             customer.
         "409":
           content:
@@ -3182,8 +3007,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            Schema validation error. billing customer may not exist. See
+          description: Schema validation error. billing customer may not exist. See
             response for details.
       security:
         - JWTBearer: []
@@ -3199,8 +3023,7 @@ paths:
         customer.
       operationId: InternalCreateUserBillingCustomer
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -3236,16 +3059,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            QCS user already has an assigned billing customer or the billing
+          description: QCS user already has an assigned billing customer or the billing
             customer is already assigned to another QCS account.
         "422":
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            Schema validation error. Billing customer may not exist. See
+          description: Schema validation error. Billing customer may not exist. See
             response for details.
       security:
         - JWTBearer: []
@@ -3254,14 +3075,12 @@ paths:
       x-internal: true
   "/v1/internal/users/{userId}/eventBillingPrices:get":
     post:
-      description:
-        Retrieve `EventBillingPrice` for a user for a specific event. If no
+      description: Retrieve `EventBillingPrice` for a user for a specific event. If no
         price is configured this operation will return a default
         `EventBillingPrice` for the specified `product`.
       operationId: InternalGetUserEventBillingPrice
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -3292,8 +3111,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description:
-            The `EventBillingPrice` does not exist for the specified event.
+          description: The `EventBillingPrice` does not exist for the specified event.
             Because the server guarantees prices for events, the server will
             trigger alerts whenever returning this response.
         "422":
@@ -3312,8 +3130,7 @@ paths:
       description: Create a metered usage record for the QCS user.
       operationId: InternalCreateUserMeteredUsageRecord
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -3584,8 +3401,7 @@ paths:
           type: integer
   /v1/reservations:findAvailable:
     get:
-      description:
-        List currently available reservations on the requested Rigetti
+      description: List currently available reservations on the requested Rigetti
         quantum computer.
       operationId: FindAvailableReservations
       parameters:
@@ -3670,8 +3486,7 @@ paths:
       x-internal: true
   "/v1/users/{idpId}":
     parameters:
-      - description:
-          The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+      - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
           call.
         in: path
         name: idpId
@@ -3728,8 +3543,7 @@ paths:
       description: Retrieve the balance of the requested QCS user account.
       operationId: GetUserBalance
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -3771,8 +3585,7 @@ paths:
       description: Retrieve billing customer for a QCS user account.
       operationId: GetUserBillingCustomer
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -3807,8 +3620,7 @@ paths:
       description: Retrieve billing invoices for a QCS user account.
       operationId: ListUserBillingInvoices
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -3845,8 +3657,7 @@ paths:
       description: Retrieve billing invoice lines for a QCS user account's invoice.
       operationId: ListUserBillingInvoiceLines
       parameters:
-        - description:
-            URL-encoded QCS id of user. May be found as `idpId` in the
+        - description: URL-encoded QCS id of user. May be found as `idpId` in the
             `AuthGetUser` API call.
           in: path
           name: userId
@@ -3889,8 +3700,7 @@ paths:
       description: Retrieve upcoming invoice for QCS user billing customer.
       operationId: GetUserUpcomingBillingInvoice
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -3925,8 +3735,7 @@ paths:
       description: List invoice lines for QCS user billing customer upcoming invoice.
       operationId: ListUserUpcomingBillingInvoiceLines
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -3963,8 +3772,7 @@ paths:
       description: List QCS groups for the requested user
       operationId: ListUserGroups
       parameters:
-        - description:
-            The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
             call.
           in: path
           name: userId
@@ -3993,8 +3801,7 @@ paths:
         - account
   /v1/users:invite:
     post:
-      description:
-        Invite a new user to the QCS platform. This typically requires
+      description: Invite a new user to the QCS platform. This typically requires
         group administrator privileges.
       operationId: InviteUser
       requestBody:
@@ -4046,25 +3853,22 @@ paths:
       tags:
         - account
       x-internal: true
-  /v1/integrations/trueq:compileQuil:
-    post:
-      description: Compile Quil using TrueQ library through quiltq.
-      operationId: CompileQuil
+  /v1/integrations/trueq/version:
+    get:
+      description: Retrieve the versions of True-Q and Quiltq running on the server.
+      operationId: GetTrueqVersion
       parameters:
-        - description:
-            Either the client's user ID or the name of a group on behalf of
+        - description: Either the client's user ID or the name of a group on behalf of
             which the client wishes to submit the compilation request.
           in: header
           name: x-qcs-account-id
           required: false
           schema:
-            description:
-              Either the client's user ID or the name of a group on behalf of
+            description: Either the client's user ID or the name of a group on behalf of
               which the client wishes to submit the compilation request.
             title: X-Qcs-Account-Id
             type: string
-        - description:
-            Indicates whether the compilation request should be made on behalf
+        - description: Indicates whether the compilation request should be made on behalf
             of the authenticated user or a group.
           in: header
           name: x-qcs-account-type
@@ -4072,28 +3876,15 @@ paths:
           schema:
             allOf:
               - $ref: "#/components/schemas/AccountType"
-            description:
-              Indicates whether the compilation request should be made on behalf
+            description: Indicates whether the compilation request should be made on behalf
               of the authenticated user or a group.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CompileQuilRequest"
-        required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CompileQuilResponse"
+                $ref: "#/components/schemas/IntegrationsTrueqVersionResponse"
           description: Successful Response
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Not Found
         "422":
           content:
             application/json:
@@ -4102,9 +3893,54 @@ paths:
           description: Unprocessable Entity
       security:
         - JWTBearer: []
+      summary: Get Trueq Version
+  /v1/integrations/trueq:compileQuil:
+    post:
+      description: Compile Quil using TrueQ library through quiltq.
+      operationId: CompileQuil
+      parameters:
+        - description: Either the client's user ID or the name of a group on behalf of
+            which the client wishes to submit the compilation request.
+          in: header
+          name: x-qcs-account-id
+          required: false
+          schema:
+            description: Either the client's user ID or the name of a group on behalf of
+              which the client wishes to submit the compilation request.
+            title: X-Qcs-Account-Id
+            type: string
+        - description: Indicates whether the compilation request should be made on behalf
+            of the authenticated user or a group.
+          in: header
+          name: x-qcs-account-type
+          required: false
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/AccountType"
+            description: Indicates whether the compilation request should be made on behalf
+              of the authenticated user or a group.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IntegrationsTrueqCompileQuilRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntegrationsTrueqCompileQuilResponse"
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
       summary: Compile Quil
-      tags:
-        - translation
   "/v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings":
     get:
       description: >-
@@ -4272,8 +4108,8 @@ paths:
       summary: Get Quilt Calibrations
       tags:
         - translation
-  ? "/v1/quantumProcessors/{quantumProcessorId}:translateNativeQuilToEncryptedBinary"
-  : post:
+  "/v1/quantumProcessors/{quantumProcessorId}:translateNativeQuilToEncryptedBinary":
+    post:
       description: >-
         Compile Rigetti-native Quil code to encrypted binary form, ready for
         execution on a
@@ -4478,8 +4314,7 @@ components:
     CertificateProxyComponent:
       properties:
         cpuLimit:
-          description:
-            CPU Allocation, in MHz, required by this component. Whether it is a
+          description: CPU Allocation, in MHz, required by this component. Whether it is a
             hard or soft limit is specified by the component itself. By default,
             it is a soft limit, and components are allowed to burst above when
             there is unused capacity.
@@ -4496,15 +4331,13 @@ components:
           type: string
         gitBranch:
           default: master
-          description:
-            Which branch of the relevant repository to associate with this
+          description: Which branch of the relevant repository to associate with this
             endpoint. May be used for automatic upgrades on updates to the git
             branch.
           title: Git Branch
           type: string
         listenPort:
-          description:
-            The port on which this component will listen for inbound HTTPS
+          description: The port on which this component will listen for inbound HTTPS
             requests
           title: Listen Port
           type: integer
@@ -4539,8 +4372,7 @@ components:
           title: Node Ids
           type: array
         parameter_values:
-          description:
-            The optional ordered list of parameter values used to generate the
+          description: The optional ordered list of parameter values used to generate the
             characteristic. The order matches the parameters in the enclosing
             operation, and so the lengths of these two lists must match.
           items:
@@ -4583,16 +4415,14 @@ components:
           default: virtual
           description: Define the controller's relationship to hardware controls
         commandLineArgs:
-          description:
-            Command line arguments to append to the default values in the
+          description: Command line arguments to append to the default values in the
             controller start command
           items:
             type: string
           title: Command Line Arguments
           type: array
         cpuLimit:
-          description:
-            CPU Allocation, in MHz, required by this component. Whether it is a
+          description: CPU Allocation, in MHz, required by this component. Whether it is a
             hard or soft limit is specified by the component itself. By default,
             it is a soft limit, and components are allowed to burst above when
             there is unused capacity.
@@ -4610,8 +4440,7 @@ components:
           type: boolean
         enforceTls:
           default: true
-          description:
-            Setting to false will disable TLS on connections. Changing this
+          description: Setting to false will disable TLS on connections. Changing this
             value is a breaking change for clients of the endpoint.
           title: Enforce TLS
           type: boolean
@@ -4620,15 +4449,13 @@ components:
           title: Environment
           type: string
         fridgeId:
-          description:
-            Which fridge wiring architecture this Controller Service should
+          description: Which fridge wiring architecture this Controller Service should
             implement
           title: Fridge ID
           type: string
         gitBranch:
           default: master
-          description:
-            Which branch of the relevant repository to associate with this
+          description: Which branch of the relevant repository to associate with this
             endpoint. May be used for automatic upgrades on updates to the git
             branch.
           title: Git Branch
@@ -4636,8 +4463,7 @@ components:
         kafkaEventProducerTypes:
           default:
             - log
-          description:
-            Determines whether events are produced to Kafka, logged to stdout,
+          description: Determines whether events are produced to Kafka, logged to stdout,
             or ignored
           items:
             $ref: "#/components/schemas/KafkaEventProducer"
@@ -4654,6 +4480,13 @@ components:
           description: Memory allocation in MB required by this component.
           title: Memory Soft Limit
           type: integer
+        queuePolicyType:
+          allOf:
+            - $ref: "#/components/schemas/QueuePolicyType"
+          default: reservation
+          description: Strategy used when deciding which jobs take priority and how to
+            execute them (parallel vs. sequential).
+          title: Queue policy
         startupConfigurationSource:
           allOf:
             - $ref: "#/components/schemas/StartupConfigurationSource"
@@ -4663,8 +4496,7 @@ components:
           title: Startup Configuration Source
         visaPassthrough:
           default: false
-          description:
-            Whether to pass through access to USB instruments with host VISA
+          description: Whether to pass through access to USB instruments with host VISA
             configuration
           title: VISA Passthrough
           type: boolean
@@ -4674,8 +4506,7 @@ components:
       description: A publicly available set of parameters for defining an endpoint.
       properties:
         datacenters:
-          description:
-            Which datacenters are available for endpoint placement. Defaults to
+          description: Which datacenters are available for endpoint placement. Defaults to
             berkeley-775
           items:
             $ref: "#/components/schemas/NomadJobDatacenters"
@@ -4692,8 +4523,7 @@ components:
     CreateEngagementRequest:
       properties:
         accountId:
-          description:
-            Either the client's user ID or the name of a group on behalf of
+          description: Either the client's user ID or the name of a group on behalf of
             which the client wishes to engage. This value will override any
             values set in the headers.
           title: Account Id
@@ -4701,8 +4531,7 @@ components:
         accountType:
           allOf:
             - $ref: "#/components/schemas/AccountType"
-          description:
-            Indicates whether the engagement request should be made for the
+          description: Indicates whether the engagement request should be made for the
             user or on behalf of a group. This value will override any values
             set in the headers.
           title: Account Type
@@ -4715,8 +4544,7 @@ components:
           title: Quantum Processor ID
           type: string
         tags:
-          description:
-            Tags recorded on QPU requests, which reporting services may later
+          description: Tags recorded on QPU requests, which reporting services may later
             use for querying usage records.
           items:
             type: string
@@ -4764,8 +4592,7 @@ components:
         :math:`(b, a)`.
       properties:
         node_ids:
-          description:
-            The integer ids of the computational nodes at the two ends of the
+          description: The integer ids of the computational nodes at the two ends of the
             edge. Order is not important; an architecture edge is treated as
             undirected.
           items:
@@ -4786,7 +4613,6 @@ components:
           description: Network address at which the endpoint is locally reachable
           title: Address
           type: string
-          nullable: true
         addresses:
           allOf:
             - $ref: "#/components/schemas/EndpointAddresses"
@@ -4805,8 +4631,7 @@ components:
           title: Endpoint ID
           type: string
         mock:
-          description:
-            Whether the endpoint serves simulated or substituted data for
+          description: Whether the endpoint serves simulated or substituted data for
             testing purposes
           title: Mock
           type: boolean
@@ -4853,14 +4678,12 @@ components:
             (including unset and default values)
           title: Components
         creatorId:
-          description:
-            The Identity Provider ID of the user account which created this
+          description: The Identity Provider ID of the user account which created this
             endpoint
           title: Creator ID
           type: string
         datacenters:
-          description:
-            Which datacenters are available for endpoint placement. Defaults to
+          description: Which datacenters are available for endpoint placement. Defaults to
             all available datacenters for non mock endpoints and berkeley-775
             for mock endpoints.
           items:
@@ -4879,21 +4702,18 @@ components:
           description: Options for configuration of the selected engagement policy
           title: Engagement Policy Options
         fridgeId:
-          description:
-            Identifier for the dilution fridge system to which this endpoint
+          description: Identifier for the dilution fridge system to which this endpoint
             has network access
           title: Fridge ID
           type: string
         liveInstrumentAccess:
           default: false
-          description:
-            Whether these components should have access to live instruments on
+          description: Whether these components should have access to live instruments on
             the corresponding fridge
           title: Live Instrument Access
           type: boolean
         quantumProcessorIds:
-          description:
-            "Public identifiers for quantum processors served by this endpoint.
+          description: "Public identifiers for quantum processors served by this endpoint.
             Note: this is only used for QCS services and authorization and does
             not generally affect jobs run by internally-authorized users."
           items:
@@ -4903,8 +4723,7 @@ components:
         templateName:
           allOf:
             - $ref: "#/components/schemas/TemplateName"
-          description:
-            The name of the template used to apply default values to this
+          description: The name of the template used to apply default values to this
             endpoint
           title: Template Name
       title: EndpointConfiguration
@@ -4954,8 +4773,7 @@ components:
         componentParameters:
           allOf:
             - $ref: "#/components/schemas/ComponentOptions"
-          description:
-            The component options that will be applied as defaults to an
+          description: The component options that will be applied as defaults to an
             endpoint constructed from this template
           title: Component Options
         description:
@@ -4973,8 +4791,7 @@ components:
       title: EndpointTemplate
       type: object
     Engagement:
-      description:
-        An engagement is the authorization of a user to execute work on a
+      description: An engagement is the authorization of a user to execute work on a
         Quantum Processor Endpoint.
       properties:
         accountId:
@@ -4984,13 +4801,11 @@ components:
         accountType:
           allOf:
             - $ref: "#/components/schemas/AccountType"
-          description:
-            Indicates whether the grant was made on behalf of a single user or
+          description: Indicates whether the grant was made on behalf of a single user or
             group.
           title: Account Type
         address:
-          description:
-            The network address of the endpoint to which this engagement grants
+          description: The network address of the endpoint to which this engagement grants
             access
           title: Address
           type: string
@@ -4999,8 +4814,7 @@ components:
           title: Endpoint ID
           type: string
         expiresAt:
-          description:
-            Time after which the engagement is no longer valid. Given in
+          description: Time after which the engagement is no longer valid. Given in
             RFC3339 format.
           title: Expiration Time
           type: string
@@ -5010,8 +4824,7 @@ components:
           type: integer
         quantumProcessorIds:
           default: []
-          description:
-            The quantum processors for which this engagement enables access and
+          description: The quantum processors for which this engagement enables access and
             execution
           items:
             type: string
@@ -5069,8 +4882,7 @@ components:
       properties:
         alternateQuantumProcessorIds:
           default: []
-          description:
-            Alias names for the requested quantum processor for use in the
+          description: Alias names for the requested quantum processor for use in the
             engagement process. Engagements requested for any of these alternate
             IDs will be evaluated and granted against the primary quantum
             processor.
@@ -5093,8 +4905,7 @@ components:
       title: EngagementPolicyOptions
       type: object
     EngagementWithCredentials:
-      description:
-        An engagement is the authorization of a user to execute work on a
+      description: An engagement is the authorization of a user to execute work on a
         Quantum Processor Endpoint.
       properties:
         accountId:
@@ -5104,13 +4915,11 @@ components:
         accountType:
           allOf:
             - $ref: "#/components/schemas/AccountType"
-          description:
-            Indicates whether the grant was made on behalf of a single user or
+          description: Indicates whether the grant was made on behalf of a single user or
             group.
           title: Account Type
         address:
-          description:
-            The network address of the endpoint to which this engagement grants
+          description: The network address of the endpoint to which this engagement grants
             access
           title: Address
           type: string
@@ -5121,8 +4930,7 @@ components:
           title: Endpoint ID
           type: string
         expiresAt:
-          description:
-            Time after which the engagement is no longer valid. Given in
+          description: Time after which the engagement is no longer valid. Given in
             RFC3339 format.
           title: Expiration Time
           type: string
@@ -5132,8 +4940,7 @@ components:
           type: integer
         quantumProcessorIds:
           default: []
-          description:
-            The quantum processors for which this engagement enables access and
+          description: The quantum processors for which this engagement enables access and
             execution
           items:
             type: string
@@ -5211,8 +5018,7 @@ components:
           title: Benchmarks
           type: array
         instructions:
-          description:
-            The list of native QUIL instructions supported by the quantum
+          description: The list of native QUIL instructions supported by the quantum
             processor.
           items:
             $ref: "#/components/schemas/Operation"
@@ -5293,8 +5099,7 @@ components:
     InstrumentMockComponent:
       properties:
         cpuLimit:
-          description:
-            CPU Allocation, in MHz, required by this component. Whether it is a
+          description: CPU Allocation, in MHz, required by this component. Whether it is a
             hard or soft limit is specified by the component itself. By default,
             it is a soft limit, and components are allowed to burst above when
             there is unused capacity.
@@ -5307,8 +5112,7 @@ components:
           type: string
         gitBranch:
           default: master
-          description:
-            Which branch of the relevant repository to associate with this
+          description: Which branch of the relevant repository to associate with this
             endpoint. May be used for automatic upgrades on updates to the git
             branch.
           title: Git Branch
@@ -5318,8 +5122,7 @@ components:
           title: Memory Soft Limit
           type: integer
         rackConfigUrl:
-          description:
-            The URL from which this component will request its DeployedRack
+          description: The URL from which this component will request its DeployedRack
             configuration
           title: Rack Configuration URL
           type: string
@@ -5350,8 +5153,7 @@ components:
             - $ref: "#/components/schemas/ComponentOptions"
           title: Component Parameters
         datacenters:
-          description:
-            Which datacenters are available for endpoint placement. Defaults to
+          description: Which datacenters are available for endpoint placement. Defaults to
             all available datacenters for non mock endpoints and berkeley-775
             for mock endpoints.
           items:
@@ -5370,21 +5172,18 @@ components:
           description: Options for configuration of the selected engagement policy
           title: Engagement Policy Options
         fridgeId:
-          description:
-            Identifier for the dilution fridge system to which this endpoint
+          description: Identifier for the dilution fridge system to which this endpoint
             has network access
           title: Fridge ID
           type: string
         liveInstrumentAccess:
           default: false
-          description:
-            Whether these components should have access to live instruments on
+          description: Whether these components should have access to live instruments on
             the corresponding fridge
           title: Live Instrument Access
           type: boolean
         quantumProcessorIds:
-          description:
-            "Public identifiers for quantum processors served by this endpoint.
+          description: "Public identifiers for quantum processors served by this endpoint.
             Note: this is only used for QCS services and authorization and does
             not generally affect jobs run by internally-authorized users."
           items:
@@ -5394,8 +5193,7 @@ components:
         templateName:
           allOf:
             - $ref: "#/components/schemas/TemplateName"
-          description:
-            The name of the template used to apply default values to this
+          description: The name of the template used to apply default values to this
             endpoint
           title: Template Name
       title: InternalCreateEndpointParameters
@@ -5408,7 +5206,6 @@ components:
           description: Network address at which the endpoint is locally reachable
           title: Address
           type: string
-          nullable: true
         addresses:
           allOf:
             - $ref: "#/components/schemas/EndpointAddresses"
@@ -5431,8 +5228,7 @@ components:
           title: Endpoint ID
           type: string
         mock:
-          description:
-            Whether the endpoint serves simulated or substituted data for
+          description: Whether the endpoint serves simulated or substituted data for
             testing purposes
           title: Mock
           type: boolean
@@ -5460,8 +5256,7 @@ components:
           title: Endpoints
           type: array
         nextPageToken:
-          description:
-            Opaque token indicating the start of the next page of results to
+          description: Opaque token indicating the start of the next page of results to
             return; do not decode
           title: Next Page Token
           type: string
@@ -5499,24 +5294,6 @@ components:
         - legacyQuantumProcessors
       title: InternalListLegacyQuantumProcessorsResponse
       type: object
-    InternalListQuantumProcessorAccessorResponse:
-      properties:
-        accessors:
-          description: Methods of accessing the relevant Quantum Processor
-          items:
-            $ref: "#/components/schemas/InternalQuantumProcessorAccessor"
-          title: Accessors
-          type: array
-        nextPageToken:
-          description:
-            Opaque token indicating the start of the next page of results
-            to return; do not decode
-          title: Next Page Token
-          type: string
-      required:
-        - accessors
-      title: InternalListQuantumProcessorAccessorResponse
-      type: object
     InternalPutLegacyDeployedRackRequest:
       properties:
         legacyDeployedRack:
@@ -5537,16 +5314,6 @@ components:
         - legacyQuantumProcessor
       title: InternalPutLegacyQuantumProcessorRequest
       type: object
-    InternalPutQuantumProcessorAccessorRequest:
-      properties:
-        accessor:
-          allOf:
-            - $ref: "#/components/schemas/InternalQuantumProcessorAccessor"
-          title: Quantum Processor Accessor
-      required:
-        - accessor
-      title: InternalPutQuantumProcessorAccessorRequest
-      type: object
     InternalPutQuantumProcessorRequest:
       properties:
         quantumProcessor:
@@ -5557,37 +5324,6 @@ components:
         - quantumProcessor
       title: InternalPutQuantumProcessorRequest
       type: object
-    InternalQuantumProcessorAccessor:
-      properties:
-        accessType:
-          allOf:
-            - $ref: "#/components/schemas/QuantumProcessorAccessorType"
-          title: Type
-        id:
-          title: ID
-          type: string
-        live:
-          title: Live
-          type: boolean
-        priority:
-          default: false
-          description:
-            Priority QuantumProcessorAccessors should be used before others
-            of the same AccessType
-          title: Priority
-          type: boolean
-        url:
-          format: uri
-          maxLength: 2083
-          minLength: 1
-          title: URL
-          type: string
-      required:
-        - accessType
-        - url
-        - live
-      title: InternalQuantumProcessorAccessor
-      type: object
     InternalUpdateEndpointParameters:
       properties:
         componentParameters:
@@ -5595,8 +5331,7 @@ components:
             - $ref: "#/components/schemas/ComponentOptions"
           title: Component Parameters
         datacenters:
-          description:
-            Which datacenters are available for endpoint placement. Defaults to
+          description: Which datacenters are available for endpoint placement. Defaults to
             all available datacenters for non mock endpoints and berkeley-775
             for mock endpoints.
           items:
@@ -5615,21 +5350,18 @@ components:
           description: Options for configuration of the selected engagement policy
           title: Engagement Policy Options
         fridgeId:
-          description:
-            Identifier for the dilution fridge system to which this endpoint
+          description: Identifier for the dilution fridge system to which this endpoint
             has network access
           title: Fridge ID
           type: string
         liveInstrumentAccess:
           default: false
-          description:
-            Whether these components should have access to live instruments on
+          description: Whether these components should have access to live instruments on
             the corresponding fridge
           title: Live Instrument Access
           type: boolean
         quantumProcessorIds:
-          description:
-            "Public identifiers for quantum processors served by this endpoint.
+          description: "Public identifiers for quantum processors served by this endpoint.
             Note: this is only used for QCS services and authorization and does
             not generally affect jobs run by internally-authorized users."
           items:
@@ -5639,8 +5371,7 @@ components:
         templateName:
           allOf:
             - $ref: "#/components/schemas/TemplateName"
-          description:
-            The name of the template used to apply default values to this
+          description: The name of the template used to apply default values to this
             endpoint
           title: Template Name
       title: InternalUpdateEndpointParameters
@@ -5679,8 +5410,7 @@ components:
       description: An edge between two qubits.
       properties:
         dead:
-          description:
-            Mark the edge as dead, preventing its use during compilation, even
+          description: Mark the edge as dead, preventing its use during compilation, even
             if 2Q gates exist. If omitted from the model, the interpretation is
             `dead = False`.
           title: Dead
@@ -5693,8 +5423,7 @@ components:
           title: Experimental
           type: boolean
         type:
-          description:
-            Define the types of 2Q gates available on this edge, if any are
+          description: Define the types of 2Q gates available on this edge, if any are
             available.
           items:
             $ref: "#/components/schemas/LegacyEdgeType"
@@ -5702,8 +5431,7 @@ components:
       title: LegacyEdgeDescriptor
       type: object
     LegacyEdgeType:
-      description:
-        Edge type identifier; defines the type of 2Q gate operation for
+      description: Edge type identifier; defines the type of 2Q gate operation for
         which the edge exists.
       enum:
         - CPHASE
@@ -5765,8 +5493,7 @@ components:
           title: Noise Model
           type: object
         price_per_minute:
-          description:
-            The price per minute (in credits) for using the lattice as reserved
+          description: The price per minute (in credits) for using the lattice as reserved
             in QCS.
           minimum: 0
           title: Price Per Minute
@@ -5789,8 +5516,7 @@ components:
       description: A single qubit node.
       properties:
         dead:
-          description:
-            Mark the node as dead, preventing its use during compilation, even
+          description: Mark the node as dead, preventing its use during compilation, even
             if 1Q gates exist. If omitted from the model, the interpretation is
             `dead = False`.
           title: Dead
@@ -5903,8 +5629,7 @@ components:
           title: Engagements
           type: array
         nextPageToken:
-          description:
-            Opaque token indicating the start of the next page of results to
+          description: Opaque token indicating the start of the next page of results to
             return; do not decode
           title: Next Page Token
           type: string
@@ -5931,8 +5656,7 @@ components:
           title: Endpoints
           type: array
         nextPageToken:
-          description:
-            Opaque token indicating the start of the next page of results to
+          description: Opaque token indicating the start of the next page of results to
             return; do not decode
           title: Next Page Token
           type: string
@@ -5943,8 +5667,7 @@ components:
     ListQuantumProcessorsResponse:
       properties:
         nextPageToken:
-          description:
-            Opaque token indicating the start of the next page of results to
+          description: Opaque token indicating the start of the next page of results to
             return; do not decode
           title: Next Page Token
           type: string
@@ -5994,8 +5717,7 @@ components:
         specific `node_id` in instances of `Instruction`.
       properties:
         node_id:
-          description:
-            An integer id assigned to the computational node. The ids may not
+          description: An integer id assigned to the computational node. The ids may not
             be contiguous and will be assigned based on the architecture family.
           minimum: 0
           title: Node Id
@@ -6028,23 +5750,20 @@ components:
           title: Name
           type: string
         node_count:
-          description:
-            The number of nodes that this operation applies to. None if
+          description: The number of nodes that this operation applies to. None if
             unspecified.
           exclusiveMinimum: 0
           title: Node Count
           type: integer
         parameters:
-          description:
-            The list of parameters. Each parameter must be uniquely named. May
+          description: The list of parameters. Each parameter must be uniquely named. May
             be empty.
           items:
             $ref: "#/components/schemas/Parameter"
           title: Parameters
           type: array
         sites:
-          description:
-            The list of sites at which this operation can be applied, together
+          description: The list of sites at which this operation can be applied, together
             with its site-dependent characteristics.
           items:
             $ref: "#/components/schemas/OperationSite"
@@ -6068,8 +5787,7 @@ components:
           title: Characteristics
           type: array
         node_ids:
-          description:
-            The list of architecture node ids for the site. The order of these
+          description: The list of architecture node ids for the site. The order of these
             node ids obey the definition of node symmetry from the enclosing
             operation.
           items:
@@ -6085,22 +5803,19 @@ components:
     OrchestratorComponent:
       properties:
         commandLineArgs:
-          description:
-            Command line arguments to append to the default values in the
+          description: Command line arguments to append to the default values in the
             orchestrator start command
           items:
             type: string
           title: Command Line Arguments
           type: array
         controllerServiceEndpoint:
-          description:
-            If present, forward all jobs to a controller rather than handling
+          description: If present, forward all jobs to a controller rather than handling
             them locally
           title: Controller Service Endpoint
           type: string
         cpuLimit:
-          description:
-            CPU Allocation, in MHz, required by this component. Whether it is a
+          description: CPU Allocation, in MHz, required by this component. Whether it is a
             hard or soft limit is specified by the component itself. By default,
             it is a soft limit, and components are allowed to burst above when
             there is unused capacity.
@@ -6122,8 +5837,7 @@ components:
           type: string
         gitBranch:
           default: master
-          description:
-            Which branch of the relevant repository to associate with this
+          description: Which branch of the relevant repository to associate with this
             endpoint. May be used for automatic upgrades on updates to the git
             branch.
           title: Git Branch
@@ -6147,21 +5861,18 @@ components:
           type: integer
         mock:
           default: true
-          description:
-            Whether to start the orchestrator in "mock" mode, where mock
+          description: Whether to start the orchestrator in "mock" mode, where mock
             responses are generated in-process rather than being dispatched to
             control hardware
           title: Mock
           type: boolean
         rackConfigUrl:
-          description:
-            The URL from which this component will request its DeployedRack
+          description: The URL from which this component will request its DeployedRack
             configuration
           title: Rack Configuration URL
           type: string
         timeReferenceInstrument:
-          description:
-            Instrument used as a reference when synchronizing time amongst
+          description: Instrument used as a reference when synchronizing time amongst
             instruments
           title: Time Reference Instrument
           type: string
@@ -6172,8 +5883,7 @@ components:
           type: string
         visaPassthrough:
           default: false
-          description:
-            Whether to pass through access to USB instruments with host VISA
+          description: Whether to pass through access to USB instruments with host VISA
             configuration
           title: VISA Passthrough
           type: boolean
@@ -6409,8 +6119,7 @@ components:
       title: QGSx2Sequencer
       type: object
     QPU:
-      description:
-        Information about the topology of the device in relation to its
+      description: Information about the topology of the device in relation to its
         control interfaces.
       properties:
         _type:
@@ -6558,44 +6267,10 @@ components:
         - sequencer_index
       title: QRTx2Sequencer
       type: object
-    QuantumProcessorAccessor:
-      properties:
-        accessType:
-          allOf:
-            - $ref: "#/components/schemas/QuantumProcessorAccessorType"
-          title: Type
-        live:
-          title: Live
-          type: boolean
-        priority:
-          default: false
-          description:
-            Priority QuantumProcessorAccessors should be used before others
-            of the same AccessType
-          title: Priority
-          type: boolean
-        url:
-          format: uri
-          maxLength: 2083
-          minLength: 1
-          title: URL
-          type: string
-      required:
-        - accessType
-        - url
-        - live
-      title: QuantumProcessorAccessor
-      type: object
-    QuantumProcessorAccessorType:
-      description: An enumeration.
-      enum:
-        - gateway.v1
-      title: QuantumProcessorAccessorType
     QuantumProcessor:
       properties:
         id:
-          description:
-            "Immutable, unique identifier for a quantum processor [example:
+          description: "Immutable, unique identifier for a quantum processor [example:
             Aspen-1]"
           title: ID
           type: string
@@ -6607,6 +6282,14 @@ components:
       properties: {}
       title: QuantumProcessorParameters
       type: object
+    QueuePolicyType:
+      description: Which queue policy to use when prioritizing queued jobs.
+      enum:
+        - reservation
+        - resource
+        - fifo
+      title: QueuePolicyType
+      type: string
     RackMeta:
       description: >-
         Meta information about a rack configuration.
@@ -6645,8 +6328,7 @@ components:
       description: Request to set the default endpoint for a quantum processor.
       properties:
         endpointId:
-          description:
-            The desired Endpoint ID to direct clients to for requests for this
+          description: The desired Endpoint ID to direct clients to for requests for this
             quantum processor. If empty, clear the stored default endpoint.
           title: Endpoint ID
           type: string
@@ -6668,8 +6350,7 @@ components:
       title: TemplateName
       type: string
     USICardSequencer:
-      description:
-        Configuration for the card which interfaces with the USI Target on
+      description: Configuration for the card which interfaces with the USI Target on
         the USRP.
       properties:
         _type:
@@ -6722,8 +6403,7 @@ components:
       title: YokogawaGS200Channel
       type: object
     AccountBalance:
-      description:
-        Balance of QCS account in billing system. Note, a negative balance
+      description: Balance of QCS account in billing system. Note, a negative balance
         signifies that the account has QCS credits to spend. A positive account
         balance signifies that the account has no additional QCS credits to
         spend. The QCS UI may display these quantities in absolute or negative
@@ -6736,8 +6416,7 @@ components:
         - balance
       type: object
     AccountBillingCustomerCreateRequest:
-      description:
-        If `id` is present, this will set the billing customer id to the
+      description: If `id` is present, this will set the billing customer id to the
         requested account if the billing customer exists and has not been
         assigned to any other QCS account. Otherwise, it will create a new
         billing customer. In either case, it will ensure the billing customer
@@ -6751,8 +6430,7 @@ components:
       type: object
       x-internal: true
     AccountBillingCustomerUpdateRequest:
-      description:
-        The billing customer represented by `id` must exist and not be
+      description: The billing customer represented by `id` must exist and not be
         assigned to any other QCS account. The server will ensure the billing
         customer has the appropriate metadata.
       properties:
@@ -6859,8 +6537,7 @@ components:
       description: A finalized billing invoice.
       type: object
     BillingInvoiceLine:
-      description:
-        A line item on an invoice representing a particular purchase (such
+      description: A line item on an invoice representing a particular purchase (such
         as a reservation) or aggregate usage for the invoice period.
       properties:
         amount:
@@ -6905,8 +6582,7 @@ components:
         - void
       type: string
     BillingPrice:
-      description:
-        The price schedule for a particular service applied to an invoice
+      description: The price schedule for a particular service applied to an invoice
         line item.
       properties:
         billingScheme:
@@ -6919,15 +6595,13 @@ components:
           description: Whether the price can be used for new purchases.
           type: boolean
         object:
-          description:
-            String representing the object's type. Objects of the same type
+          description: String representing the object's type. Objects of the same type
             share the same value.
           enum:
             - price
           type: string
         priceType:
-          description:
-            One of `one_time` or `recurring` depending on whether the price is
+          description: One of `one_time` or `recurring` depending on whether the price is
             for a one-time purchase or a recurring (subscription) purchase.
           enum:
             - one_time
@@ -6938,8 +6612,7 @@ components:
         recurring:
           $ref: "#/components/schemas/BillingPriceRecurrence"
         tiers:
-          description:
-            Each element represents a pricing tier. This parameter requires
+          description: Each element represents a pricing tier. This parameter requires
             `billingScheme` to be set to `tiered`. See also the documentation
             for `billingScheme`.
           items:
@@ -6986,8 +6659,7 @@ components:
       title: Billing Price Recurrence
       type: object
     BillingPriceScheme:
-      description:
-        Describes how to compute the price per period. Either `per_unit` or
+      description: Describes how to compute the price per period. Either `per_unit` or
         `tiered`. `per_unit` indicates that the fixed amount (specified in
         `unitAmount` or `unitAmountDecimal`) will be charged per unit in
         `quantity` (for prices with `usageType=licensed`), or per unit of total
@@ -7021,8 +6693,7 @@ components:
       title: tier
       type: object
     BillingPriceTiersMode:
-      description:
-        Defines if the tiering price should be `graduated` or `volume`
+      description: Defines if the tiering price should be `graduated` or `volume`
         based. In `volume`-based tiering, the maximum quantity within a period
         determines the per unit price, in `graduated` tiering pricing can
         successively change as the quantity grows.
@@ -7046,15 +6717,13 @@ components:
           maxLength: 5000
           type: string
         object:
-          description:
-            String representing the object's type. Objects of the same type
+          description: String representing the object's type. Objects of the same type
             share the same value.
           enum:
             - product
           type: string
         unitLabel:
-          description:
-            A label that represents units of this product. When set, this will
+          description: A label that represents units of this product. When set, this will
             be included in associated invoice line item descriptions.
           maxLength: 5000
           type: string
@@ -7200,8 +6869,7 @@ components:
       type: object
       x-internal: true
     EventBillingPrice:
-      description:
-        Event price. Maps billing account, event, and quantum processor
+      description: Event price. Maps billing account, event, and quantum processor
         identifier (we refer to this as an event scope) to a price identifier.
       properties:
         accountId:
@@ -7354,8 +7022,7 @@ components:
         - quantumProcessorId
       x-internal: true
     InternalCreateProductBillingPriceRequest:
-      description:
-        Defines a new price to be created in our billing vendor. Note,
+      description: Defines a new price to be created in our billing vendor. Note,
         creating `BillingPrice` does _not_ assign the resulting `BillingPrice`
         to an `EventBillingPrice`.
       properties:
@@ -7364,8 +7031,7 @@ components:
         recurring:
           $ref: "#/components/schemas/BillingPriceRecurrence"
         tiers:
-          description:
-            Each element represents a pricing tier. This parameter requires
+          description: Each element represents a pricing tier. This parameter requires
             `billingScheme` to be set to `tiered`. See also the documentation
             for `billingScheme`.
           items:
@@ -7379,8 +7045,7 @@ components:
           type: number
           format: double
         useTestProduct:
-          description:
-            If set to true, use a product that is explicitly marked as a
+          description: If set to true, use a product that is explicitly marked as a
             product for testing. This is helpful for isolating test data within
             the production environment.
           type: boolean
@@ -7395,8 +7060,7 @@ components:
             epochSeconds:
               type: integer
             isReschedule:
-              description:
-                If true, the user will receive an email notify them their
+              description: If true, the user will receive an email notify them their
                 reservation was re-scheduled. Otherwise, they will receive the
                 regular confirmation email.
               type: boolean
@@ -7405,22 +7069,19 @@ components:
               type: string
             validateAvailability:
               default: true
-              description:
-                When false, this will create double booked reservations where time
+              description: When false, this will create double booked reservations where time
                 is already reserved.
               type: boolean
             validateOther:
               default: true
-              description:
-                When false, this will not validate maximum reservation duration or
+              description: When false, this will not validate maximum reservation duration or
                 past and maximum future start times.
               type: boolean
           type: object
           x-internal: true
       x-internal: true
     InternalEventBillingPrice:
-      description:
-        Event price. Maps billing account, event, and quantum processor
+      description: Event price. Maps billing account, event, and quantum processor
         identifier (we refer to this as an event scope) to a price identifier.
       properties:
         accountId:
@@ -7478,8 +7139,7 @@ components:
       type: object
       x-internal: true
     InternalMeteredUsageRecord:
-      description:
-        This represents a usage record that has successfully been submitted
+      description: This represents a usage record that has successfully been submitted
         to the QCS billing provider. (ie Stripe). The current system does not
         persist these records to the database, but are returned here for the
         purpose of logging and debugging.
@@ -8053,74 +7713,6 @@ components:
         - detuning
       title: Capture
       type: object
-    CompileQuilRequest:
-      properties:
-        isa:
-          allOf:
-            - $ref: "#/components/schemas/CompilerISA"
-          description: The ISA against which this program will execute
-          title: A pyQuil Compiler ISA
-        numRandomizations:
-          description: The number of randomized program parameter sets to produce
-          title: Number of Randomizations
-          type: integer
-        passes:
-          description: A list of compiler meta-passes to perform
-          items:
-            $ref: "#/components/schemas/MetaPass"
-          title: Passes
-          type: array
-        program:
-          description:
-            The Program to compile. Note, parametric programs are not currently
-            supported.
-          title: Quil
-          type: string
-      required:
-        - program
-        - isa
-        - numRandomizations
-        - passes
-      title: CompileQuilRequest
-      type: object
-    CompileQuilResponse:
-      properties:
-        nativeQuilMetadata:
-          allOf:
-            - $ref: "#/components/schemas/NativeQuilMetadata"
-          description: The native Quil metadata for the compilation.
-          title: Native Quil Metadata
-        program:
-          description: The compiled program
-          title: Program
-          type: string
-        readoutBasis:
-          description:
-            The readout basis for the results. This will be a tensor with the
-            final axis length being equal to two; the first value is the real
-            part and the second value is the imaginary part. The client is
-            responsible for coalescing these values to a single complex number
-            as required.
-          items: {}
-          title: Readout Basis
-          type: array
-        twirlingParameters:
-          description: The twirling parameters for the program
-          items:
-            additionalProperties:
-              items:
-                type: number
-              type: array
-            type: object
-          title: Twirling Parameters
-          type: array
-      required:
-        - program
-        - twirlingParameters
-        - readoutBasis
-        - nativeQuilMetadata
-      title: CompileQuilResponse
-      type: object
     CompilerISA:
       properties:
         1Q:
@@ -8348,8 +7940,7 @@ components:
       title: FlatPulse
       type: object
     FlatReadoutKernel:
-      description:
-        Readout kernel that is a constant, with no normalization condition
+      description: Readout kernel that is a constant, with no normalization condition
         applied.
       properties:
         _type:
@@ -8619,6 +8210,126 @@ components:
         - second_order_hrm_coeff
       title: HermiteGaussianWaveform
       type: object
+    IntegrationsTrueqCompileQuilRequest:
+      properties:
+        isa:
+          allOf:
+            - $ref: "#/components/schemas/CompilerISA"
+          description: The ISA against which this program will execute
+          title: A pyQuil Compiler ISA
+        numRandomizations:
+          description: The number of randomized program parameter sets to produce
+          title: Number of Randomizations
+          type: integer
+        passes:
+          description: A list of compiler meta-passes to perform
+          items:
+            $ref: "#/components/schemas/MetaPass"
+          title: Passes
+          type: array
+        program:
+          description: The Program to compile. Note, parametric programs are not currently
+            supported.
+          title: Quil
+          type: string
+      required:
+        - program
+        - isa
+        - numRandomizations
+        - passes
+      title: IntegrationsTrueqCompileQuilRequest
+      type: object
+    IntegrationsTrueqCompileQuilResponse:
+      properties:
+        nativeQuilMetadata:
+          allOf:
+            - $ref: "#/components/schemas/IntegrationsTrueqNativeQuilMetadata"
+          description: The native Quil metadata for the compilation.
+          title: Native Quil Metadata
+        program:
+          description: The compiled program
+          title: Program
+          type: string
+        readoutBasis:
+          allOf:
+            - $ref: "#/components/schemas/IntegrationsTrueqNDFloatArray"
+          description: The readout basis for the results. This will be an n-dimensional
+            array with the final axis length being equal to two; the first value
+            is the real part and the second value is the imaginary part. The
+            client is responsible for coalescing these values to a single
+            complex number as required.
+          title: Readout Basis
+        twirlingParameters:
+          description: The twirling parameters for the program
+          items:
+            additionalProperties:
+              items:
+                type: number
+              type: array
+            type: object
+          title: Twirling Parameters
+          type: array
+      required:
+        - program
+        - twirlingParameters
+        - readoutBasis
+        - nativeQuilMetadata
+      title: IntegrationsTrueqCompileQuilResponse
+      type: object
+    IntegrationsTrueqNDFloatArray:
+      properties:
+        shape:
+          description: The shape to which the client should reshape values in order to
+            form the intended n-dimensional array.
+          items:
+            type: integer
+          title: Shape
+          type: array
+        values:
+          description: The client should read the elements according to a C-like indexing
+            of elements and shape them into an n-dimensional array of the
+            specified shape. C-like indexing refers to reading elements with the
+            last axis index changing fastest, back to the first axis index
+            changing slowest. For instance, the array [0, 1, 2, 3, 4, 5] with
+            shape [3, 2] would become [[0, 1], [2, 3], [4, 5]]. Also see
+            https://numpy.org/doc/stable/reference/generated/numpy.reshape.html.
+          items:
+            type: number
+          title: N-Dimensional Array of Floats
+          type: array
+      required:
+        - values
+        - shape
+      title: IntegrationsTrueqNDFloatArray
+      type: object
+    IntegrationsTrueqNativeQuilMetadata:
+      properties:
+        finalRewiring:
+          description: A list mapping logical to physical qubits. Indices represent
+            logical qubits; list values indicate physical qubits.
+          items:
+            type: integer
+          title: Final Rewiring
+          type: array
+      required:
+        - finalRewiring
+      title: IntegrationsTrueqNativeQuilMetadata
+      type: object
+    IntegrationsTrueqVersionResponse:
+      properties:
+        quiltq:
+          description: The version of the Quiltq package running on the server.
+          title: Quiltq Version
+          type: string
+        trueq:
+          description: The version of the True-Q package running on the server.
+          title: True-Q Version
+          type: string
+      required:
+        - trueq
+        - quiltq
+      title: IntegrationsTrueqVersionResponse
+      type: object
     MeasureInfo:
       properties:
         duration:
@@ -8659,20 +8370,6 @@ components:
         - readout_symmetrization
       title: MetaPass
       type: string
-    NativeQuilMetadata:
-      properties:
-        finalRewiring:
-          description:
-            A list mapping logical to physical qubits. Indices represent
-            logical qubits; list values indicate physical qubits.
-          items:
-            type: integer
-          title: Final Rewiring
-          type: array
-      required:
-        - finalRewiring
-      title: NativeQuilMetadata
-      type: object
     ParameterAref:
       description: A parametric expression.
       properties:
@@ -8870,8 +8567,7 @@ components:
       title: QubitSettings
       type: object
     ReadoutClassifier:
-      description:
-        All the information needed to perform readout classification for a
+      description: All the information needed to perform readout classification for a
         single qubit.
       properties:
         _type:
@@ -8953,8 +8649,7 @@ components:
           type: object
         parameters:
           additionalProperties:
-            $ref:
-              "#/components/schemas/rigetti_domain_model__models__schedule_ir__instruct\
+            $ref: "#/components/schemas/rigetti_domain_model__models__schedule_ir__instruct\
               ion_parameters__ParameterSpec"
           default: {}
           title: Parameters
@@ -9110,8 +8805,7 @@ components:
       title: ShiftPhase
       type: object
     SlowFluxSettings:
-      description:
-        All information needed to control a slow flux setting on a qubit or
+      description: All information needed to control a slow flux setting on a qubit or
         amplifier.
       properties:
         _type:
@@ -9162,8 +8856,7 @@ components:
           title: Quil
           type: string
         settingsTimestamp:
-          description:
-            ISO8601 timestamp of the latest settings to be used in translation.
+          description: ISO8601 timestamp of the latest settings to be used in translation.
             If omitted, latest settings will be used.
           title: Settings Timestamp
           type: string
@@ -9193,8 +8886,7 @@ components:
           title: Readout Sources
           type: array
         settingsTimestamp:
-          description:
-            ISO8601 timestamp of the settings used to translate the program.
+          description: ISO8601 timestamp of the settings used to translate the program.
             Translation is deterministic; a program translated twice with the
             same settings by the same version of the service will have identical
             output.
@@ -9212,8 +8904,8 @@ components:
           type: integer
       title: ParameterSpec
       type: object
-    ? rigetti_domain_model__models__schedule_ir__instruction_parameters__ParameterSpec
-    : description: Specification of a dynamic parameter type and array-length.
+    rigetti_domain_model__models__schedule_ir__instruction_parameters__ParameterSpec:
+      description: Specification of a dynamic parameter type and array-length.
       properties:
         _type:
           title: " Type"
@@ -9235,8 +8927,7 @@ components:
       type: http
     JWTBearerOptional:
       bearerFormat: JWT
-      description:
-        Same as `JWTBearer`, but the Authorization header is optionally
+      description: Same as `JWTBearer`, but the Authorization header is optionally
         parsed. Clients will receive a 401 response if an invalid or expired
         token is provided. Otherwise, the server authorizes the request against
         either the valid token claims or an unauthenticated user. In either
@@ -9293,8 +8984,7 @@ components:
       schema:
         type: integer
     pageTokenParam:
-      description:
-        An opaque token that can be appended to a request query to retrieve
+      description: An opaque token that can be appended to a request query to retrieve
         the next page of results. Empty if there are no more results to
         retrieve.
       in: query
@@ -9303,8 +8993,7 @@ components:
       schema:
         type: string
     showDeleted:
-      description:
-        If you wish to include deleted (or cancelled) resources in your
+      description: If you wish to include deleted (or cancelled) resources in your
         response, include `showDeleted=true`.
       in: query
       name: showDeleted
