@@ -1,3 +1,9 @@
+## 0.3.6
+
+### Fixes
+
+- make grpc_api_url optional in settings.toml
+
 ## 0.3.5
 
 ### Fixes
