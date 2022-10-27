@@ -51,6 +51,13 @@ pub const DEFAULT_QVM_URL: &str = "http://127.0.0.1:5000";
 /// Default URL to access `quilc`.
 pub const DEFAULT_QUILC_URL: &str = "tcp://127.0.0.1:5555";
 
+/// Setting this environment variable will override the URL used to access quilc.
+pub const QUILC_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_QUILC_URL";
+/// Setting this environment variable will override the URL used to access the QVM.
+pub const QVM_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_QVM_URL";
+/// Setting this environment variable will override the URL used to connect to the GRPC server.
+pub const GRPC_API_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_GRPC_URL";
+
 /// A single type containing an access token and an associated refresh token.
 #[derive(Clone, Debug, Default)]
 pub struct Tokens {
@@ -279,6 +286,11 @@ impl ClientConfiguration {
             _ => (None, None),
         };
 
+        let quilc_url =
+            std::env::var(QUILC_URL_VAR).unwrap_or(profile.applications.pyquil.quilc_url);
+        let qvm_url = std::env::var(QVM_URL_VAR).unwrap_or(profile.applications.pyquil.qvm_url);
+        let grpc_api_url = std::env::var(GRPC_API_URL_VAR).unwrap_or(profile.grpc_api_url);
+
         Ok(Self {
             api_url: profile.api_url,
             tokens: Arc::new(Mutex::new(Tokens {
@@ -286,9 +298,9 @@ impl ClientConfiguration {
                 refresh_token,
             })),
             auth_server,
-            quilc_url: profile.applications.pyquil.quilc_url,
-            qvm_url: profile.applications.pyquil.qvm_url,
-            grpc_api_url: profile.grpc_api_url,
+            quilc_url,
+            qvm_url,
+            grpc_api_url,
         })
     }
 }
@@ -326,5 +338,28 @@ impl Default for ClientConfiguration {
             auth_server: AuthServer::default(),
             tokens: Arc::default(),
         }
+    }
+}
+
+#[cfg(test)]
+mod describe_client_configuration_load {
+    use crate::configuration::*;
+
+    #[tokio::test]
+    async fn it_uses_env_var_overrides() {
+        let quilc_url = "tcp://quilc:5555";
+        let qvm_url = "http://qvm:5000";
+        let grpc_url = "http://grpc:80";
+
+        std::env::set_var(QUILC_URL_VAR, quilc_url);
+        std::env::set_var(QVM_URL_VAR, qvm_url);
+        std::env::set_var(GRPC_API_URL_VAR, grpc_url);
+
+        let config = ClientConfiguration::new(Settings::default(), Secrets::default())
+            .expect("config should load successfully");
+
+        assert_eq!(config.quilc_url, quilc_url);
+        assert_eq!(config.qvm_url, qvm_url);
+        assert_eq!(config.grpc_api_url, grpc_url);
     }
 }
