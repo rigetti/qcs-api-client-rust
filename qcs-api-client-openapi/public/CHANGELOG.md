@@ -1,3 +1,9 @@
+## 0.3.7
+
+### Features
+
+- support loading QVM and quilc URLs from environment variables
+
 ## 0.3.6
 
 ### Fixes
