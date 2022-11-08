@@ -4979,9 +4979,9 @@ components:
 
         every node is connected to every other node (a fully-connected architecture). Value 'Aspen'
 
-        implies the architecture adheres the to the Aspen topology conventions for node numbering
+        implies the architecture adheres the to the Aspen topology conventions for node numbering and
 
-        and edge connectivity.
+        edge connectivity.
       enum:
         - None
         - Full
@@ -5523,7 +5523,7 @@ components:
           type: boolean
         experimental:
           description: Mark the node as experimental, preventing its use during
-            compilation except for experimental  users, even if 1Q gates exist.
+            compilation except for experimental users, even if 1Q gates exist.
             If omitted from the model, the interpretation is `experimental =
             False`.
           title: Experimental
@@ -5917,6 +5917,7 @@ components:
         - trx
         - rx
       title: PropagationDirection
+      type: string
     QDOFastFluxChannel:
       description: Configuration for a single QDO Fast Flux Channel.
       properties:
