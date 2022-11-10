@@ -4330,7 +4330,6 @@ components:
           title: Environment
           type: string
         gitBranch:
-          default: master
           description: Which branch of the relevant repository to associate with this
             endpoint. May be used for automatic upgrades on updates to the git
             branch.
@@ -4454,7 +4453,6 @@ components:
           title: Fridge ID
           type: string
         gitBranch:
-          default: master
           description: Which branch of the relevant repository to associate with this
             endpoint. May be used for automatic upgrades on updates to the git
             branch.
@@ -5111,7 +5109,6 @@ components:
           title: Docker Tag
           type: string
         gitBranch:
-          default: master
           description: Which branch of the relevant repository to associate with this
             endpoint. May be used for automatic upgrades on updates to the git
             branch.
@@ -5836,7 +5833,6 @@ components:
           title: Environment
           type: string
         gitBranch:
-          default: master
           description: Which branch of the relevant repository to associate with this
             endpoint. May be used for automatic upgrades on updates to the git
             branch.
