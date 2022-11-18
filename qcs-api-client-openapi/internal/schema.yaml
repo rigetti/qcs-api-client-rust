@@ -1322,6 +1322,104 @@ paths:
       tags:
         - internal
         - quantumProcessors
+  "/v1/internal/quantumProcessors/{quantumProcessorId}/accessors":
+    put:
+      description: Add/update a QuantumProcessorAccessor for the target QuantumProcessor.
+      operationId: InternalPutQuantumProcessorAccessor
+      parameters:
+        - description: "Public identifier for a quantum processor [example: Aspen-1]"
+          in: path
+          name: quantumProcessorId
+          required: true
+          schema:
+            description: "Public identifier for a quantum processor [example: Aspen-1]"
+            title: Quantum Processor ID
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InternalPutQuantumProcessorAccessorRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuantumProcessorAccessor"
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
+      summary: Internal Put Quantum Processor Accessor
+      tags:
+        - internal
+        - quantumProcessors
+  "/v1/internal/quantumProcessors/{quantumProcessorId}/accessors/{accessorId}":
+    delete:
+      description: >-
+        Delete a quantum processor. This operation will ensure no dangling
+        resources exist on
+
+        the quantum processor.
+      operationId: InternalDeleteQuantumProcessorAccessor
+      parameters:
+        - description: "Public identifier for a quantum processor [example: Aspen-1]"
+          in: path
+          name: quantumProcessorId
+          required: true
+          schema:
+            description: "Public identifier for a quantum processor [example: Aspen-1]"
+            title: Quantum Processor ID
+            type: string
+        - in: path
+          name: accessorId
+          required: true
+          schema:
+            title: Quantum Processor Accessor ID
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuantumProcessorAccessor"
+          description: Successful Response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad Request
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Not Found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
+      summary: Internal Delete Quantum Processor Accessor
+      tags:
+        - internal
+        - quantumProcessors
   "/v1/internal/quantumProcessors/{quantumProcessorId}/endpoints:getDefault":
     get:
       description: |-
@@ -1482,6 +1580,50 @@ paths:
       security:
         - JWTBearer: []
       summary: Get Quantum Processor
+      tags:
+        - quantumProcessors
+  "/v1/quantumProcessors/{quantumProcessorId}/accessors":
+    get:
+      description: List all means of accessing a QuantumProcessor available to the user.
+      operationId: ListQuantumProcessorAccessors
+      parameters:
+        - description: "Public identifier for a quantum processor [example: Aspen-1]"
+          in: path
+          name: quantumProcessorId
+          required: true
+          schema:
+            description: "Public identifier for a quantum processor [example: Aspen-1]"
+            title: Quantum Processor ID
+            type: string
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            default: 10
+            title: Pagesize
+            type: integer
+        - in: query
+          name: pageToken
+          required: false
+          schema:
+            title: Pagetoken
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListQuantumProcessorAccessorsResponse"
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
+      summary: List Quantum Processor Accessors
       tags:
         - quantumProcessors
   "/v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault":
@@ -5311,6 +5453,16 @@ components:
         - legacyQuantumProcessor
       title: InternalPutLegacyQuantumProcessorRequest
       type: object
+    InternalPutQuantumProcessorAccessorRequest:
+      properties:
+        accessor:
+          allOf:
+            - $ref: "#/components/schemas/QuantumProcessorAccessor"
+          title: Quantum Processor Accessor
+      required:
+        - accessor
+      title: InternalPutQuantumProcessorAccessorRequest
+      type: object
     InternalPutQuantumProcessorRequest:
       properties:
         quantumProcessor:
@@ -5660,6 +5812,23 @@ components:
       required:
         - endpoints
       title: ListEndpointsResponse
+      type: object
+    ListQuantumProcessorAccessorsResponse:
+      properties:
+        accessors:
+          description: Methods of accessing the relevant Quantum Processor
+          items:
+            $ref: "#/components/schemas/QuantumProcessorAccessor"
+          title: Accessors
+          type: array
+        nextPageToken:
+          description: Opaque token indicating the start of the next page of results to
+            return; do not decode
+          title: Next Page Token
+          type: string
+      required:
+        - accessors
+      title: ListQuantumProcessorAccessorsResponse
       type: object
     ListQuantumProcessorsResponse:
       properties:
@@ -6275,6 +6444,54 @@ components:
         - id
       title: QuantumProcessor
       type: object
+    QuantumProcessorAccessor:
+      description: Method of accessing an available QPU.
+      properties:
+        accessType:
+          allOf:
+            - $ref: "#/components/schemas/QuantumProcessorAccessorType"
+          description: Type of the accessor. Each accessor type is a different mechanism
+            of accessing a QPU, each with their own benefits and/or drawbacks.
+          title: Type
+        id:
+          description: Unique identifier for the accessor.
+          title: ID
+          type: string
+        live:
+          description: Whether an accessor represents access to a physical, live quantum
+            processor. When false, this accessor provides access instead to a
+            simulated or test QPU.
+          title: Live
+          type: boolean
+        rank:
+          default: 100
+          description: Rank of this accessor against others for the same QPU. If two
+            accessors both serve a client's purposes, that with the lower rank
+            value should be used for access.
+          title: Rank
+          type: integer
+        url:
+          description: Address used to connect to the accessor.
+          format: uri
+          maxLength: 2083
+          minLength: 1
+          title: URL
+          type: string
+      required:
+        - accessType
+        - url
+        - live
+      title: QuantumProcessorAccessor
+      type: object
+    QuantumProcessorAccessorType:
+      description: >-
+        Types of access mechanisms for a QPU. Each accessor type has its own
+        access characteristics, benefits,
+
+        and drawbacks.
+      enum:
+        - gateway.v1
+      title: QuantumProcessorAccessorType
     QuantumProcessorParameters:
       properties: {}
       title: QuantumProcessorParameters
