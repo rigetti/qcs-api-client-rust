@@ -4730,6 +4730,7 @@ components:
       properties:
         address:
           description: Network address at which the endpoint is locally reachable
+          nullable: true
           title: Address
           type: string
         addresses:
@@ -4762,7 +4763,6 @@ components:
           type: array
       required:
         - id
-        - address
         - addresses
         - healthy
         - mock
@@ -5322,6 +5322,7 @@ components:
       properties:
         address:
           description: Network address at which the endpoint is locally reachable
+          nullable: true
           title: Address
           type: string
         addresses:
@@ -5358,7 +5359,6 @@ components:
           type: array
       required:
         - id
-        - address
         - addresses
         - healthy
         - mock
