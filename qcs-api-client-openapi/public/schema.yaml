@@ -317,10 +317,7 @@ paths:
             title: Endpoint ID
             type: string
       responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
+        "204":
           description: Successful Response
         "403":
           content:
@@ -396,10 +393,7 @@ paths:
             schema:
               $ref: "#/components/schemas/RestartEndpointRequest"
       responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
+        "204":
           description: Successful Response
         "403":
           content:

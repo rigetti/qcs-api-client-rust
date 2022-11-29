@@ -340,10 +340,7 @@ paths:
             title: Endpoint ID
             type: string
       responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
+        "204":
           description: Successful Response
         "403":
           content:
@@ -419,10 +416,7 @@ paths:
             schema:
               $ref: "#/components/schemas/RestartEndpointRequest"
       responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
+        "204":
           description: Successful Response
         "403":
           content:
@@ -625,10 +619,7 @@ paths:
             title: Endpoint ID
             type: string
       responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
+        "204":
           description: Successful Response
         "403":
           content:
@@ -1249,10 +1240,7 @@ paths:
             title: Quantum Processor ID
             type: string
       responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
+        "204":
           description: Successful Response
         "400":
           content:
@@ -1383,10 +1371,7 @@ paths:
             title: Quantum Processor Accessor ID
             type: string
       responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
+        "204":
           description: Successful Response
         "400":
           content:
@@ -1483,10 +1468,7 @@ paths:
               $ref: "#/components/schemas/SetDefaultEndpointRequest"
         required: true
       responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
+        "204":
           description: Successful Response
         "404":
           content:
