@@ -3995,7 +3995,7 @@ paths:
   /v1/integrations/trueq/version:
     get:
       description: Retrieve the versions of True-Q and Quiltq running on the server.
-      operationId: GetTrueqVersion
+      operationId: TrueqGetVersion
       parameters:
         - description: Either the client's user ID or the name of a group on behalf of
             which the client wishes to submit the compilation request.
@@ -4032,11 +4032,11 @@ paths:
           description: Unprocessable Entity
       security:
         - JWTBearer: []
-      summary: Get Trueq Version
+      summary: Trueq Get Version
   /v1/integrations/trueq:compileQuil:
     post:
       description: Compile Quil using TrueQ library through quiltq.
-      operationId: CompileQuil
+      operationId: TrueqCompileQuil
       parameters:
         - description: Either the client's user ID or the name of a group on behalf of
             which the client wishes to submit the compilation request.
@@ -4079,7 +4079,7 @@ paths:
           description: Unprocessable Entity
       security:
         - JWTBearer: []
-      summary: Compile Quil
+      summary: Trueq Compile Quil
   "/v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings":
     get:
       description: >-
