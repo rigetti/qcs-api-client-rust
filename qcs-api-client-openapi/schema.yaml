@@ -317,10 +317,7 @@ paths:
             title: Endpoint ID
             type: string
       responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
+        "204":
           description: Successful Response
         "403":
           content:
@@ -396,10 +393,7 @@ paths:
             schema:
               $ref: "#/components/schemas/RestartEndpointRequest"
       responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
+        "204":
           description: Successful Response
         "403":
           content:
@@ -570,6 +564,50 @@ paths:
       security:
         - JWTBearer: []
       summary: Get Quantum Processor
+      tags:
+        - quantumProcessors
+  "/v1/quantumProcessors/{quantumProcessorId}/accessors":
+    get:
+      description: List all means of accessing a QuantumProcessor available to the user.
+      operationId: ListQuantumProcessorAccessors
+      parameters:
+        - description: "Public identifier for a quantum processor [example: Aspen-1]"
+          in: path
+          name: quantumProcessorId
+          required: true
+          schema:
+            description: "Public identifier for a quantum processor [example: Aspen-1]"
+            title: Quantum Processor ID
+            type: string
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            default: 10
+            title: Pagesize
+            type: integer
+        - in: query
+          name: pageToken
+          required: false
+          schema:
+            title: Pagetoken
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListQuantumProcessorAccessorsResponse"
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
+      summary: List Quantum Processor Accessors
       tags:
         - quantumProcessors
   "/v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault":
@@ -2079,6 +2117,7 @@ components:
       properties:
         address:
           description: Network address at which the endpoint is locally reachable
+          nullable: true
           title: Address
           type: string
         addresses:
@@ -2111,7 +2150,6 @@ components:
           type: array
       required:
         - id
-        - address
         - addresses
         - healthy
         - mock
@@ -2218,9 +2256,9 @@ components:
 
         every node is connected to every other node (a fully-connected architecture). Value 'Aspen'
 
-        implies the architecture adheres the to the Aspen topology conventions for node numbering
+        implies the architecture adheres the to the Aspen topology conventions for node numbering and
 
-        and edge connectivity.
+        edge connectivity.
       enum:
         - None
         - Full
@@ -2290,6 +2328,23 @@ components:
       required:
         - endpoints
       title: ListEndpointsResponse
+      type: object
+    ListQuantumProcessorAccessorsResponse:
+      properties:
+        accessors:
+          description: Methods of accessing the relevant Quantum Processor
+          items:
+            $ref: "#/components/schemas/QuantumProcessorAccessor"
+          title: Accessors
+          type: array
+        nextPageToken:
+          description: Opaque token indicating the start of the next page of results to
+            return; do not decode
+          title: Next Page Token
+          type: string
+      required:
+        - accessors
+      title: ListQuantumProcessorAccessorsResponse
       type: object
     ListQuantumProcessorsResponse:
       properties:
@@ -2427,6 +2482,54 @@ components:
         - id
       title: QuantumProcessor
       type: object
+    QuantumProcessorAccessor:
+      description: Method of accessing an available QPU.
+      properties:
+        accessType:
+          allOf:
+            - $ref: "#/components/schemas/QuantumProcessorAccessorType"
+          description: Type of the accessor. Each accessor type is a different mechanism
+            of accessing a QPU, each with their own benefits and/or drawbacks.
+          title: Type
+        id:
+          description: Unique identifier for the accessor.
+          title: ID
+          type: string
+        live:
+          description: Whether an accessor represents access to a physical, live quantum
+            processor. When false, this accessor provides access instead to a
+            simulated or test QPU.
+          title: Live
+          type: boolean
+        rank:
+          default: 100
+          description: Rank of this accessor against others for the same QPU. If two
+            accessors both serve a client's purposes, that with the lower rank
+            value should be used for access.
+          title: Rank
+          type: integer
+        url:
+          description: Address used to connect to the accessor.
+          format: uri
+          maxLength: 2083
+          minLength: 1
+          title: URL
+          type: string
+      required:
+        - accessType
+        - url
+        - live
+      title: QuantumProcessorAccessor
+      type: object
+    QuantumProcessorAccessorType:
+      description: >-
+        Types of access mechanisms for a QPU. Each accessor type has its own
+        access characteristics, benefits,
+
+        and drawbacks.
+      enum:
+        - gateway.v1
+      title: QuantumProcessorAccessorType
     RestartEndpointRequest:
       properties:
         componentName:
