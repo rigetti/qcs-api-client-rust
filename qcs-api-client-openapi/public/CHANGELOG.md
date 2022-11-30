@@ -1,3 +1,9 @@
+## 0.3.8
+
+### Features
+
+- QPU Accessor support
+
 ## 0.3.7
 
 ### Features
