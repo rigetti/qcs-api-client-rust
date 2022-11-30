@@ -12,15 +12,19 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct QuantumProcessorAccessor {
+    /// Type of the accessor. Each accessor type is a different mechanism of accessing a QPU, each with their own benefits and/or drawbacks.
     #[serde(rename = "accessType")]
     pub access_type: Option<Box<crate::models::QuantumProcessorAccessorType>>,
+    /// Unique identifier for the accessor.
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
+    /// Whether an accessor represents access to a physical, live quantum processor. When false, this accessor provides access instead to a simulated or test QPU.
     #[serde(rename = "live")]
     pub live: bool,
-    /// Priority QuantumProcessorAccessors should be used before others of the same AccessType
-    #[serde(rename = "priority", skip_serializing_if = "Option::is_none")]
-    pub priority: Option<bool>,
+    /// Rank of this accessor against others for the same QPU. If two accessors both serve a client's purposes, that with the lower rank value should be used for access.
+    #[serde(rename = "rank", skip_serializing_if = "Option::is_none")]
+    pub rank: Option<i32>,
+    /// Address used to connect to the accessor.
     #[serde(rename = "url")]
     pub url: String,
 }
@@ -35,7 +39,7 @@ impl QuantumProcessorAccessor {
             access_type: access_type.map(Box::new),
             id: None,
             live,
-            priority: None,
+            rank: None,
             url,
         }
     }

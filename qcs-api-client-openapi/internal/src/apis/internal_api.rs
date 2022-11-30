@@ -163,6 +163,7 @@ pub enum InternalSetDefaultEndpointError {
 #[serde(untagged)]
 pub enum InternalUpdateEndpointError {
     Status400(crate::models::Error),
+    Status403(crate::models::Error),
     Status404(crate::models::Error),
     Status422(crate::models::ValidationError),
     UnknownValue(serde_json::Value),
@@ -249,7 +250,7 @@ pub async fn internal_create_endpoint(
 async fn internal_delete_endpoint_inner(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
-) -> Result<serde_json::Value, Error<InternalDeleteEndpointError>> {
+) -> Result<(), Error<InternalDeleteEndpointError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -274,7 +275,7 @@ async fn internal_delete_endpoint_inner(
     let local_var_content = local_var_resp.text().await?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<InternalDeleteEndpointError> =
             serde_json::from_str(&local_var_content).ok();
@@ -291,7 +292,7 @@ async fn internal_delete_endpoint_inner(
 pub async fn internal_delete_endpoint(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
-) -> Result<serde_json::Value, Error<InternalDeleteEndpointError>> {
+) -> Result<(), Error<InternalDeleteEndpointError>> {
     match internal_delete_endpoint_inner(configuration, endpoint_id.clone()).await {
         Ok(result) => Ok(result),
         Err(err) => match err.status_code() {
@@ -429,7 +430,7 @@ pub async fn internal_delete_legacy_quantum_processor(
 async fn internal_delete_quantum_processor_inner(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
-) -> Result<crate::models::QuantumProcessor, Error<InternalDeleteQuantumProcessorError>> {
+) -> Result<(), Error<InternalDeleteQuantumProcessorError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -454,7 +455,7 @@ async fn internal_delete_quantum_processor_inner(
     let local_var_content = local_var_resp.text().await?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<InternalDeleteQuantumProcessorError> =
             serde_json::from_str(&local_var_content).ok();
@@ -471,7 +472,7 @@ async fn internal_delete_quantum_processor_inner(
 pub async fn internal_delete_quantum_processor(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
-) -> Result<crate::models::QuantumProcessor, Error<InternalDeleteQuantumProcessorError>> {
+) -> Result<(), Error<InternalDeleteQuantumProcessorError>> {
     match internal_delete_quantum_processor_inner(configuration, quantum_processor_id.clone()).await
     {
         Ok(result) => Ok(result),
@@ -488,16 +489,13 @@ async fn internal_delete_quantum_processor_accessor_inner(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     accessor_id: &str,
-) -> Result<
-    crate::models::InternalQuantumProcessorAccessor,
-    Error<InternalDeleteQuantumProcessorAccessorError>,
-> {
+) -> Result<(), Error<InternalDeleteQuantumProcessorAccessorError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
-        "{}/v1/internal/quantumProcessors/{quantumProcessorId}/access/{accessorId}",
+        "{}/v1/internal/quantumProcessors/{quantumProcessorId}/accessors/{accessorId}",
         local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id),
         accessorId = crate::apis::urlencode(accessor_id)
@@ -517,7 +515,7 @@ async fn internal_delete_quantum_processor_accessor_inner(
     let local_var_content = local_var_resp.text().await?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<InternalDeleteQuantumProcessorAccessorError> =
             serde_json::from_str(&local_var_content).ok();
@@ -535,10 +533,7 @@ pub async fn internal_delete_quantum_processor_accessor(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     accessor_id: &str,
-) -> Result<
-    crate::models::InternalQuantumProcessorAccessor,
-    Error<InternalDeleteQuantumProcessorAccessorError>,
-> {
+) -> Result<(), Error<InternalDeleteQuantumProcessorAccessorError>> {
     match internal_delete_quantum_processor_accessor_inner(
         configuration,
         quantum_processor_id.clone(),
@@ -1136,16 +1131,14 @@ async fn internal_put_quantum_processor_accessor_inner(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     internal_put_quantum_processor_accessor_request: crate::models::InternalPutQuantumProcessorAccessorRequest,
-) -> Result<
-    crate::models::InternalQuantumProcessorAccessor,
-    Error<InternalPutQuantumProcessorAccessorError>,
-> {
+) -> Result<crate::models::QuantumProcessorAccessor, Error<InternalPutQuantumProcessorAccessorError>>
+{
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
-        "{}/v1/internal/quantumProcessors/{quantumProcessorId}/access",
+        "{}/v1/internal/quantumProcessors/{quantumProcessorId}/accessors",
         local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
@@ -1185,10 +1178,8 @@ pub async fn internal_put_quantum_processor_accessor(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     internal_put_quantum_processor_accessor_request: crate::models::InternalPutQuantumProcessorAccessorRequest,
-) -> Result<
-    crate::models::InternalQuantumProcessorAccessor,
-    Error<InternalPutQuantumProcessorAccessorError>,
-> {
+) -> Result<crate::models::QuantumProcessorAccessor, Error<InternalPutQuantumProcessorAccessorError>>
+{
     match internal_put_quantum_processor_accessor_inner(
         configuration,
         quantum_processor_id.clone(),
@@ -1215,7 +1206,7 @@ async fn internal_set_default_endpoint_inner(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     set_default_endpoint_request: crate::models::SetDefaultEndpointRequest,
-) -> Result<crate::models::InternalEndpoint, Error<InternalSetDefaultEndpointError>> {
+) -> Result<(), Error<InternalSetDefaultEndpointError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -1242,7 +1233,7 @@ async fn internal_set_default_endpoint_inner(
     let local_var_content = local_var_resp.text().await?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<InternalSetDefaultEndpointError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1260,7 +1251,7 @@ pub async fn internal_set_default_endpoint(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     set_default_endpoint_request: crate::models::SetDefaultEndpointRequest,
-) -> Result<crate::models::InternalEndpoint, Error<InternalSetDefaultEndpointError>> {
+) -> Result<(), Error<InternalSetDefaultEndpointError>> {
     match internal_set_default_endpoint_inner(
         configuration,
         quantum_processor_id.clone(),

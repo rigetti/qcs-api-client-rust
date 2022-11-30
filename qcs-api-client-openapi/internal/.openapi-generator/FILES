@@ -14,7 +14,6 @@ src/apis/reservations_api.rs
 src/apis/translation_api.rs
 src/lib.rs
 src/models/a.rs
-src/models/a_py_quil_compiler_isa.rs
 src/models/account_balance.rs
 src/models/account_billing_customer_create_request.rs
 src/models/account_billing_customer_update_request.rs
@@ -55,8 +54,6 @@ src/models/check_client_application_response.rs
 src/models/checksum_description.rs
 src/models/client_application.rs
 src/models/client_applications_download_link.rs
-src/models/compile_quil_request.rs
-src/models/compile_quil_response.rs
 src/models/compiler_isa.rs
 src/models/component_options.rs
 src/models/component_parameters.rs
@@ -121,14 +118,12 @@ src/models/internal_list_endpoints_response.rs
 src/models/internal_list_legacy_lattices_response.rs
 src/models/internal_list_legacy_quantum_processors_response.rs
 src/models/internal_list_product_billing_prices_response.rs
-src/models/internal_list_quantum_processor_accessor_response.rs
 src/models/internal_list_users_response.rs
 src/models/internal_metered_usage_record.rs
 src/models/internal_put_legacy_deployed_rack_request.rs
 src/models/internal_put_legacy_quantum_processor_request.rs
 src/models/internal_put_quantum_processor_accessor_request.rs
 src/models/internal_put_quantum_processor_request.rs
-src/models/internal_quantum_processor_accessor.rs
 src/models/internal_update_endpoint_parameters.rs
 src/models/internal_update_event_billing_price_request.rs
 src/models/internal_update_legacy_quantum_processor_request.rs
@@ -154,6 +149,7 @@ src/models/list_endpoints_response.rs
 src/models/list_event_billing_prices_response.rs
 src/models/list_group_users_response.rs
 src/models/list_groups_response.rs
+src/models/list_quantum_processor_accessors_response.rs
 src/models/list_quantum_processors_response.rs
 src/models/list_reservations_response.rs
 src/models/logging_target.rs
@@ -161,7 +157,6 @@ src/models/measure_info.rs
 src/models/meta_pass.rs
 src/models/mnio_connection.rs
 src/models/mod.rs
-src/models/native_quil_metadata.rs
 src/models/node.rs
 src/models/nomad_job_datacenters.rs
 src/models/operation.rs
@@ -200,6 +195,7 @@ src/models/quantum_processor_accessor_type.rs
 src/models/qubit.rs
 src/models/qubit_1.rs
 src/models/qubit_settings.rs
+src/models/queue_policy_type.rs
 src/models/rack_meta.rs
 src/models/readout_classifier.rs
 src/models/readout_settings.rs

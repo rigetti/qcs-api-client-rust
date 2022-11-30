@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Endpoint {
     /// Network address at which the endpoint is locally reachable
-    #[serde(rename = "address")]
+    #[serde(rename = "address", skip_serializing_if = "Option::is_none")]
     pub address: Option<String>,
     #[serde(rename = "addresses")]
     pub addresses: Box<crate::models::EndpointAddresses>,
@@ -41,14 +41,13 @@ pub struct Endpoint {
 impl Endpoint {
     /// An Endpoint is the entry point for remote access to a QuantumProcessor.
     pub fn new(
-        address: Option<String>,
         addresses: crate::models::EndpointAddresses,
         healthy: bool,
         id: String,
         mock: bool,
     ) -> Endpoint {
         Endpoint {
-            address,
+            address: None,
             addresses: Box::new(addresses),
             datacenter: None,
             healthy,

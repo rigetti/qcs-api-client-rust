@@ -111,6 +111,7 @@ pub enum InternalSetDefaultEndpointError {
 #[serde(untagged)]
 pub enum InternalUpdateEndpointError {
     Status400(crate::models::Error),
+    Status403(crate::models::Error),
     Status404(crate::models::Error),
     Status422(crate::models::ValidationError),
     UnknownValue(serde_json::Value),
@@ -202,7 +203,7 @@ pub async fn create_endpoint(
 async fn delete_endpoint_inner(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
-) -> Result<serde_json::Value, Error<DeleteEndpointError>> {
+) -> Result<(), Error<DeleteEndpointError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -227,7 +228,7 @@ async fn delete_endpoint_inner(
     let local_var_content = local_var_resp.text().await?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<DeleteEndpointError> =
             serde_json::from_str(&local_var_content).ok();
@@ -244,7 +245,7 @@ async fn delete_endpoint_inner(
 pub async fn delete_endpoint(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
-) -> Result<serde_json::Value, Error<DeleteEndpointError>> {
+) -> Result<(), Error<DeleteEndpointError>> {
     match delete_endpoint_inner(configuration, endpoint_id.clone()).await {
         Ok(result) => Ok(result),
         Err(err) => match err.status_code() {
@@ -434,7 +435,7 @@ pub async fn internal_create_endpoint(
 async fn internal_delete_endpoint_inner(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
-) -> Result<serde_json::Value, Error<InternalDeleteEndpointError>> {
+) -> Result<(), Error<InternalDeleteEndpointError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -459,7 +460,7 @@ async fn internal_delete_endpoint_inner(
     let local_var_content = local_var_resp.text().await?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<InternalDeleteEndpointError> =
             serde_json::from_str(&local_var_content).ok();
@@ -476,7 +477,7 @@ async fn internal_delete_endpoint_inner(
 pub async fn internal_delete_endpoint(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
-) -> Result<serde_json::Value, Error<InternalDeleteEndpointError>> {
+) -> Result<(), Error<InternalDeleteEndpointError>> {
     match internal_delete_endpoint_inner(configuration, endpoint_id.clone()).await {
         Ok(result) => Ok(result),
         Err(err) => match err.status_code() {
@@ -686,7 +687,7 @@ async fn internal_set_default_endpoint_inner(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     set_default_endpoint_request: crate::models::SetDefaultEndpointRequest,
-) -> Result<crate::models::InternalEndpoint, Error<InternalSetDefaultEndpointError>> {
+) -> Result<(), Error<InternalSetDefaultEndpointError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -713,7 +714,7 @@ async fn internal_set_default_endpoint_inner(
     let local_var_content = local_var_resp.text().await?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<InternalSetDefaultEndpointError> =
             serde_json::from_str(&local_var_content).ok();
@@ -731,7 +732,7 @@ pub async fn internal_set_default_endpoint(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     set_default_endpoint_request: crate::models::SetDefaultEndpointRequest,
-) -> Result<crate::models::InternalEndpoint, Error<InternalSetDefaultEndpointError>> {
+) -> Result<(), Error<InternalSetDefaultEndpointError>> {
     match internal_set_default_endpoint_inner(
         configuration,
         quantum_processor_id.clone(),
@@ -964,7 +965,7 @@ async fn restart_endpoint_inner(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
     restart_endpoint_request: Option<crate::models::RestartEndpointRequest>,
-) -> Result<serde_json::Value, Error<RestartEndpointError>> {
+) -> Result<(), Error<RestartEndpointError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -991,7 +992,7 @@ async fn restart_endpoint_inner(
     let local_var_content = local_var_resp.text().await?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<RestartEndpointError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1009,7 +1010,7 @@ pub async fn restart_endpoint(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
     restart_endpoint_request: Option<crate::models::RestartEndpointRequest>,
-) -> Result<serde_json::Value, Error<RestartEndpointError>> {
+) -> Result<(), Error<RestartEndpointError>> {
     match restart_endpoint_inner(
         configuration,
         endpoint_id.clone(),

@@ -60,7 +60,7 @@ src/models/list_client_applications_response.rs
 src/models/list_endpoints_response.rs
 src/models/list_group_users_response.rs
 src/models/list_groups_response.rs
-src/models/list_quantum_processor_accessor_response.rs
+src/models/list_quantum_processor_accessors_response.rs
 src/models/list_quantum_processors_response.rs
 src/models/list_reservations_response.rs
 src/models/mod.rs

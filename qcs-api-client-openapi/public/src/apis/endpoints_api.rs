@@ -143,7 +143,7 @@ pub async fn create_endpoint(
 async fn delete_endpoint_inner(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
-) -> Result<serde_json::Value, Error<DeleteEndpointError>> {
+) -> Result<(), Error<DeleteEndpointError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -168,7 +168,7 @@ async fn delete_endpoint_inner(
     let local_var_content = local_var_resp.text().await?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<DeleteEndpointError> =
             serde_json::from_str(&local_var_content).ok();
@@ -185,7 +185,7 @@ async fn delete_endpoint_inner(
 pub async fn delete_endpoint(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
-) -> Result<serde_json::Value, Error<DeleteEndpointError>> {
+) -> Result<(), Error<DeleteEndpointError>> {
     match delete_endpoint_inner(configuration, endpoint_id.clone()).await {
         Ok(result) => Ok(result),
         Err(err) => match err.status_code() {
@@ -395,7 +395,7 @@ async fn restart_endpoint_inner(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
     restart_endpoint_request: Option<crate::models::RestartEndpointRequest>,
-) -> Result<serde_json::Value, Error<RestartEndpointError>> {
+) -> Result<(), Error<RestartEndpointError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -422,7 +422,7 @@ async fn restart_endpoint_inner(
     let local_var_content = local_var_resp.text().await?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<RestartEndpointError> =
             serde_json::from_str(&local_var_content).ok();
@@ -440,7 +440,7 @@ pub async fn restart_endpoint(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
     restart_endpoint_request: Option<crate::models::RestartEndpointRequest>,
-) -> Result<serde_json::Value, Error<RestartEndpointError>> {
+) -> Result<(), Error<RestartEndpointError>> {
     match restart_endpoint_inner(
         configuration,
         endpoint_id.clone(),

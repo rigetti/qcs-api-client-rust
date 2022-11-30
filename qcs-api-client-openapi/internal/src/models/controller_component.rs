@@ -51,6 +51,9 @@ pub struct ControllerComponent {
     /// Memory allocation in MB required by this component.
     #[serde(rename = "memorySoftLimit", skip_serializing_if = "Option::is_none")]
     pub memory_soft_limit: Option<i32>,
+    /// Strategy used when deciding which jobs take priority and how to execute them (parallel vs. sequential).
+    #[serde(rename = "queuePolicyType", skip_serializing_if = "Option::is_none")]
+    pub queue_policy_type: Option<Box<crate::models::QueuePolicyType>>,
     /// Select the data source from which the endpoint's startup configuration should be retrieved
     #[serde(
         rename = "startupConfigurationSource",
@@ -77,6 +80,7 @@ impl ControllerComponent {
             kafka_event_producer_types: None,
             listen_ports: None,
             memory_soft_limit: None,
+            queue_policy_type: None,
             startup_configuration_source: None,
             visa_passthrough: None,
         }

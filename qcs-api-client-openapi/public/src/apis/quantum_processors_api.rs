@@ -182,7 +182,7 @@ async fn list_quantum_processor_accessors_inner(
     page_size: Option<i32>,
     page_token: Option<&str>,
 ) -> Result<
-    crate::models::ListQuantumProcessorAccessorResponse,
+    crate::models::ListQuantumProcessorAccessorsResponse,
     Error<ListQuantumProcessorAccessorsError>,
 > {
     let local_var_configuration = configuration;
@@ -190,7 +190,7 @@ async fn list_quantum_processor_accessors_inner(
     let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
-        "{}/v1/quantumProcessors/{quantumProcessorId}/access",
+        "{}/v1/quantumProcessors/{quantumProcessorId}/accessors",
         local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
@@ -238,7 +238,7 @@ pub async fn list_quantum_processor_accessors(
     page_size: Option<i32>,
     page_token: Option<&str>,
 ) -> Result<
-    crate::models::ListQuantumProcessorAccessorResponse,
+    crate::models::ListQuantumProcessorAccessorsResponse,
     Error<ListQuantumProcessorAccessorsError>,
 > {
     match list_quantum_processor_accessors_inner(

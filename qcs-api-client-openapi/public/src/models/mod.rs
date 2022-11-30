@@ -160,8 +160,8 @@ pub use self::list_group_users_response::ListGroupUsersResponse;
 pub mod list_groups_response;
 pub use self::list_groups_response::ListGroupsResponse;
 #[allow(non_snake_case)]
-pub mod list_quantum_processor_accessor_response;
-pub use self::list_quantum_processor_accessor_response::ListQuantumProcessorAccessorResponse;
+pub mod list_quantum_processor_accessors_response;
+pub use self::list_quantum_processor_accessors_response::ListQuantumProcessorAccessorsResponse;
 #[allow(non_snake_case)]
 pub mod list_quantum_processors_response;
 pub use self::list_quantum_processors_response::ListQuantumProcessorsResponse;

@@ -2,9 +2,6 @@
 pub mod a;
 pub use self::a::A;
 #[allow(non_snake_case)]
-pub mod a_py_quil_compiler_isa;
-pub use self::a_py_quil_compiler_isa::APyQuilCompilerIsa;
-#[allow(non_snake_case)]
 pub mod account_balance;
 pub use self::account_balance::AccountBalance;
 #[allow(non_snake_case)]
@@ -124,12 +121,6 @@ pub use self::client_application::ClientApplication;
 #[allow(non_snake_case)]
 pub mod client_applications_download_link;
 pub use self::client_applications_download_link::ClientApplicationsDownloadLink;
-#[allow(non_snake_case)]
-pub mod compile_quil_request;
-pub use self::compile_quil_request::CompileQuilRequest;
-#[allow(non_snake_case)]
-pub mod compile_quil_response;
-pub use self::compile_quil_response::CompileQuilResponse;
 #[allow(non_snake_case)]
 pub mod compiler_isa;
 pub use self::compiler_isa::CompilerIsa;
@@ -323,9 +314,6 @@ pub use self::internal_list_legacy_quantum_processors_response::InternalListLega
 pub mod internal_list_product_billing_prices_response;
 pub use self::internal_list_product_billing_prices_response::InternalListProductBillingPricesResponse;
 #[allow(non_snake_case)]
-pub mod internal_list_quantum_processor_accessor_response;
-pub use self::internal_list_quantum_processor_accessor_response::InternalListQuantumProcessorAccessorResponse;
-#[allow(non_snake_case)]
 pub mod internal_list_users_response;
 pub use self::internal_list_users_response::InternalListUsersResponse;
 #[allow(non_snake_case)]
@@ -343,9 +331,6 @@ pub use self::internal_put_quantum_processor_accessor_request::InternalPutQuantu
 #[allow(non_snake_case)]
 pub mod internal_put_quantum_processor_request;
 pub use self::internal_put_quantum_processor_request::InternalPutQuantumProcessorRequest;
-#[allow(non_snake_case)]
-pub mod internal_quantum_processor_accessor;
-pub use self::internal_quantum_processor_accessor::InternalQuantumProcessorAccessor;
 #[allow(non_snake_case)]
 pub mod internal_update_endpoint_parameters;
 pub use self::internal_update_endpoint_parameters::InternalUpdateEndpointParameters;
@@ -422,6 +407,9 @@ pub use self::list_group_users_response::ListGroupUsersResponse;
 pub mod list_groups_response;
 pub use self::list_groups_response::ListGroupsResponse;
 #[allow(non_snake_case)]
+pub mod list_quantum_processor_accessors_response;
+pub use self::list_quantum_processor_accessors_response::ListQuantumProcessorAccessorsResponse;
+#[allow(non_snake_case)]
 pub mod list_quantum_processors_response;
 pub use self::list_quantum_processors_response::ListQuantumProcessorsResponse;
 #[allow(non_snake_case)]
@@ -439,9 +427,6 @@ pub use self::meta_pass::MetaPass;
 #[allow(non_snake_case)]
 pub mod mnio_connection;
 pub use self::mnio_connection::MnioConnection;
-#[allow(non_snake_case)]
-pub mod native_quil_metadata;
-pub use self::native_quil_metadata::NativeQuilMetadata;
 #[allow(non_snake_case)]
 pub mod node;
 pub use self::node::Node;
@@ -556,6 +541,9 @@ pub use self::qubit_1::Qubit1;
 #[allow(non_snake_case)]
 pub mod qubit_settings;
 pub use self::qubit_settings::QubitSettings;
+#[allow(non_snake_case)]
+pub mod queue_policy_type;
+pub use self::queue_policy_type::QueuePolicyType;
 #[allow(non_snake_case)]
 pub mod rack_meta;
 pub use self::rack_meta::RackMeta;
