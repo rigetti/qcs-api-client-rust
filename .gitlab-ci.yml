@@ -42,7 +42,7 @@ Release:
   before_script:
     - *install_deps
     - !reference [.setup_git]
-    - git-config-insteadof "${CI_PROJECT_PATH}" "${API_CLIENT_PUSH_TOKEN}"
+    - git_config_insteadof "${CI_PROJECT_PATH}" "${API_CLIENT_PUSH_TOKEN}"
     - !reference [.install_protoc]
     - !reference [.install_knope]
   script:
@@ -63,7 +63,7 @@ Release Dry Run:
   before_script:
     - *install_deps
     - !reference [.setup_git]
-    - git-config-insteadof "${CI_PROJECT_PATH}" "${API_CLIENT_PUSH_TOKEN}"
+    - git_config_insteadof "${CI_PROJECT_PATH}" "${API_CLIENT_PUSH_TOKEN}"
     - !reference [.install_protoc]
     - !reference [.install_knope]
   script:
