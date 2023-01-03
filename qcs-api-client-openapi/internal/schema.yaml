@@ -516,6 +516,44 @@ paths:
       summary: Create Engagement
       tags:
         - engagements
+  /v1/instructionSetArchitectures:
+    get:
+      description: Retrieve all Instruction Set Architectures available to the user.
+      operationId: ListInstructionSetArchitectures
+      parameters:
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            default: 5
+            exclusiveMinimum: 0
+            maximum: 5
+            title: Pagesize
+            type: integer
+        - in: query
+          name: pageToken
+          required: false
+          schema:
+            title: Pagetoken
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListInstructionSetArchitectureResponse"
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
+      summary: List Instruction Set Architectures
+      tags:
+        - quantumProcessors
   /v1/internal/endpoints:
     get:
       description: List all endpoints, optionally filtering by attribute.
@@ -895,8 +933,11 @@ paths:
   /v1/internal/legacy/quantumProcessors:
     get:
       deprecated: true
-      description: Retrieve all legacy (Forest Server) Quantum Processors available to
-        the user.
+      description: >-
+        Retrieve all legacy (Forest Server) Quantum Processors available to the
+        user.
+
+        Translated from InstructionSetArchitecture.
       operationId: InternalListLegacyQuantumProcessors
       parameters:
         - description: Whether to hide specifications for qubits and edges marked as "dead"
@@ -944,7 +985,11 @@ paths:
   "/v1/internal/legacy/quantumProcessors/{quantumProcessorId}":
     delete:
       deprecated: true
-      description: Delete a legacy (Forest Server) Quantum Processor.
+      description: >-
+        Delete a legacy (Forest Server) Quantum Processor.
+
+
+        Deletes the underlying InstructionSetArchitecture from which this is derived.
       operationId: InternalDeleteLegacyQuantumProcessor
       parameters:
         - in: path
@@ -980,7 +1025,10 @@ paths:
         - quantumProcessors
     get:
       deprecated: true
-      description: Retrieve the legacy Forest Server configuration of a quantum processor.
+      description: |-
+        Retrieve the legacy Forest Server configuration of a quantum processor.
+
+        Derived from the stored InstructionSetArchitecture.
       operationId: InternalGetLegacyQuantumProcessor
       parameters:
         - in: path
@@ -1078,6 +1126,19 @@ paths:
           schema:
             title: Quantum Processor ID
             type: string
+        - description: If set, the server will interpret the LegacyDevice as being of the
+            associated architecture layout.If omitted, the server will attempt
+            to deduce this by inspecting LegacyDevice name or qubit numbering.
+          in: query
+          name: architectureFamily
+          required: false
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/Family"
+            description: If set, the server will interpret the LegacyDevice as being of the
+              associated architecture layout.If omitted, the server will attempt
+              to deduce this by inspecting LegacyDevice name or qubit numbering.
+            title: Architecture Family
       requestBody:
         content:
           application/json:
@@ -1488,6 +1549,83 @@ paths:
       tags:
         - endpoints
         - internal
+  "/v1/internal/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture":
+    delete:
+      description: Delete an InstuctionSetArchitecture.
+      operationId: InternalDeleteInstructionSetArchitecture
+      parameters:
+        - in: path
+          name: quantumProcessorId
+          required: true
+          schema:
+            title: Quantum Processor ID
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Not Found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
+      summary: Internal Delete Instruction Set Architecture
+      tags:
+        - internal
+        - quantumProcessors
+    put:
+      description: >-
+        Create or replace the InstructionSetArchitecture of an existing Quantum
+        Processor.
+
+
+        Returns an error if the Quantum Processor does not exist.
+      operationId: InternalPutInstructionSetArchitecture
+      parameters:
+        - description: "Public identifier for a quantum processor [example: Aspen-1]"
+          in: path
+          name: quantumProcessorId
+          required: true
+          schema:
+            description: "Public identifier for a quantum processor [example: Aspen-1]"
+            title: Quantum Processor ID
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutInstructionSetArchitectureRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InstructionSetArchitecture"
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
+      summary: Internal Put Instruction Set Architecture
+      tags:
+        - internal
+        - quantumProcessors
   /v1/quantumProcessors:
     get:
       description: List all QuantumProcessors available to the user.
@@ -3974,6 +4112,94 @@ paths:
       tags:
         - account
       x-internal: true
+  /v1/integrations/trueq/version:
+    get:
+      description: Retrieve the versions of True-Q and Quiltq running on the server.
+      operationId: TrueqGetVersion
+      parameters:
+        - description: Either the client's user ID or the name of a group on behalf of
+            which the client wishes to submit the compilation request.
+          in: header
+          name: x-qcs-account-id
+          required: false
+          schema:
+            description: Either the client's user ID or the name of a group on behalf of
+              which the client wishes to submit the compilation request.
+            title: X-Qcs-Account-Id
+            type: string
+        - description: Indicates whether the compilation request should be made on behalf
+            of the authenticated user or a group.
+          in: header
+          name: x-qcs-account-type
+          required: false
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/AccountType"
+            description: Indicates whether the compilation request should be made on behalf
+              of the authenticated user or a group.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntegrationsTrueqVersionResponse"
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
+      summary: Trueq Get Version
+  /v1/integrations/trueq:compileQuil:
+    post:
+      description: Compile Quil using TrueQ library through quiltq.
+      operationId: TrueqCompileQuil
+      parameters:
+        - description: Either the client's user ID or the name of a group on behalf of
+            which the client wishes to submit the compilation request.
+          in: header
+          name: x-qcs-account-id
+          required: false
+          schema:
+            description: Either the client's user ID or the name of a group on behalf of
+              which the client wishes to submit the compilation request.
+            title: X-Qcs-Account-Id
+            type: string
+        - description: Indicates whether the compilation request should be made on behalf
+            of the authenticated user or a group.
+          in: header
+          name: x-qcs-account-type
+          required: false
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/AccountType"
+            description: Indicates whether the compilation request should be made on behalf
+              of the authenticated user or a group.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IntegrationsTrueqCompileQuilRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntegrationsTrueqCompileQuilResponse"
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
+      summary: Trueq Compile Quil
   "/v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings":
     get:
       description: >-
@@ -4461,8 +4687,8 @@ components:
           title: CPU Limit
           type: integer
         dockerTag:
-          default: latest
-          description: "Which docker tag to pull and start. [Example: v1.0.0]"
+          description: "Which docker tag to pull and start. [Example: v1.0.0] Does not
+            support the `latest` tag."
           title: Docker Tag
           type: string
         enableSentry:
@@ -5006,17 +5232,19 @@ components:
         Family identifier.
 
 
-        Value 'None' implies the architecture has no specific layout topology. Value 'Full' implies
+        Value 'None' implies the architecture has no specific layout topology.
 
-        every node is connected to every other node (a fully-connected architecture). Value 'Aspen'
+        Value 'Full' implies that each node is connected to every other (a fully-connected architecture)
 
-        implies the architecture adheres the to the Aspen topology conventions for node numbering and
 
-        edge connectivity.
+        For other values based on deployed architecture layouts (e.g. `Aspen` and `Ankaa`), refer to
+
+        the architecture classes themselves for more details.
       enum:
         - None
         - Full
         - Aspen
+        - Ankaa
       title: Family
       type: string
     InstructionSetArchitecture:
@@ -5704,6 +5932,21 @@ components:
         - endpoints
       title: ListEndpointsResponse
       type: object
+    ListInstructionSetArchitectureResponse:
+      properties:
+        instructionSetArchitectures:
+          items:
+            $ref: "#/components/schemas/InstructionSetArchitecture"
+          title: Instruction Set Architectures
+          type: array
+        nextPageToken:
+          description: Send an opaque page token returned from a prior request
+          title: Next Page Token
+          type: string
+      required:
+        - instructionSetArchitectures
+      title: ListInstructionSetArchitectureResponse
+      type: object
     ListQuantumProcessorAccessorsResponse:
       properties:
         accessors:
@@ -5974,6 +6217,16 @@ components:
         - rx
       title: PropagationDirection
       type: string
+    PutInstructionSetArchitectureRequest:
+      properties:
+        instructionSetArchitecture:
+          allOf:
+            - $ref: "#/components/schemas/InstructionSetArchitecture"
+          title: Instruction Set Architecture
+      required:
+        - instructionSetArchitecture
+      title: PutInstructionSetArchitectureRequest
+      type: object
     QDOFastFluxChannel:
       description: Configuration for a single QDO Fast Flux Channel.
       properties:
@@ -6449,6 +6702,8 @@ components:
     TemplateName:
       description: An enumeration.
       enum:
+        - production.controller-service.v1
+        - production.lodgepole.v1
         - production
         - integration
         - controllerMigration
@@ -8314,6 +8569,126 @@ components:
         - alpha
         - second_order_hrm_coeff
       title: HermiteGaussianWaveform
+      type: object
+    IntegrationsTrueqCompileQuilRequest:
+      properties:
+        isa:
+          allOf:
+            - $ref: "#/components/schemas/CompilerISA"
+          description: The ISA against which this program will execute
+          title: A pyQuil Compiler ISA
+        numRandomizations:
+          default: 0
+          description: The number of randomized program parameter sets to produce
+          title: Number of Randomizations
+          type: integer
+        passes:
+          description: A list of compiler meta-passes to perform
+          items:
+            $ref: "#/components/schemas/MetaPass"
+          title: Passes
+          type: array
+        program:
+          description: The Program to compile. Note, parametric programs are not currently
+            supported.
+          title: Quil
+          type: string
+      required:
+        - program
+        - isa
+        - passes
+      title: IntegrationsTrueqCompileQuilRequest
+      type: object
+    IntegrationsTrueqCompileQuilResponse:
+      properties:
+        nativeQuilMetadata:
+          allOf:
+            - $ref: "#/components/schemas/IntegrationsTrueqNativeQuilMetadata"
+          description: The native Quil metadata for the compilation.
+          title: Native Quil Metadata
+        program:
+          description: The compiled program
+          title: Program
+          type: string
+        readoutBasis:
+          allOf:
+            - $ref: "#/components/schemas/IntegrationsTrueqNDFloatArray"
+          description: The readout basis for the results. This will be an n-dimensional
+            array with the final axis length being equal to two; the first value
+            is the real part and the second value is the imaginary part. The
+            client is responsible for coalescing these values to a single
+            complex number as required.
+          title: Readout Basis
+        twirlingParameters:
+          description: The twirling parameters for the program
+          items:
+            additionalProperties:
+              items:
+                type: number
+              type: array
+            type: object
+          title: Twirling Parameters
+          type: array
+      required:
+        - program
+        - twirlingParameters
+        - readoutBasis
+        - nativeQuilMetadata
+      title: IntegrationsTrueqCompileQuilResponse
+      type: object
+    IntegrationsTrueqNDFloatArray:
+      properties:
+        shape:
+          description: The shape to which the client should reshape values in order to
+            form the intended n-dimensional array.
+          items:
+            type: integer
+          title: Shape
+          type: array
+        values:
+          description: The client should read the elements according to a C-like indexing
+            of elements and shape them into an n-dimensional array of the
+            specified shape. C-like indexing refers to reading elements with the
+            last axis index changing fastest, back to the first axis index
+            changing slowest. For instance, the array [0, 1, 2, 3, 4, 5] with
+            shape [3, 2] would become [[0, 1], [2, 3], [4, 5]]. Also see
+            https://numpy.org/doc/stable/reference/generated/numpy.reshape.html.
+          items:
+            type: number
+          title: N-Dimensional Array of Floats
+          type: array
+      required:
+        - values
+        - shape
+      title: IntegrationsTrueqNDFloatArray
+      type: object
+    IntegrationsTrueqNativeQuilMetadata:
+      properties:
+        finalRewiring:
+          description: A list mapping logical to physical qubits. Indices represent
+            logical qubits; list values indicate physical qubits.
+          items:
+            type: integer
+          title: Final Rewiring
+          type: array
+      required:
+        - finalRewiring
+      title: IntegrationsTrueqNativeQuilMetadata
+      type: object
+    IntegrationsTrueqVersionResponse:
+      properties:
+        quiltq:
+          description: The version of the Quiltq package running on the server.
+          title: Quiltq Version
+          type: string
+        trueq:
+          description: The version of the True-Q package running on the server.
+          title: True-Q Version
+          type: string
+      required:
+        - trueq
+        - quiltq
+      title: IntegrationsTrueqVersionResponse
       type: object
     MeasureInfo:
       properties:

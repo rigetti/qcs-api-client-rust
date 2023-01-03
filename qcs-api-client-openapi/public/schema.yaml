@@ -2252,17 +2252,19 @@ components:
         Family identifier.
 
 
-        Value 'None' implies the architecture has no specific layout topology. Value 'Full' implies
+        Value 'None' implies the architecture has no specific layout topology.
 
-        every node is connected to every other node (a fully-connected architecture). Value 'Aspen'
+        Value 'Full' implies that each node is connected to every other (a fully-connected architecture)
 
-        implies the architecture adheres the to the Aspen topology conventions for node numbering and
 
-        edge connectivity.
+        For other values based on deployed architecture layouts (e.g. `Aspen` and `Ankaa`), refer to
+
+        the architecture classes themselves for more details.
       enum:
         - None
         - Full
         - Aspen
+        - Ankaa
       title: Family
       type: string
     InstructionSetArchitecture:
