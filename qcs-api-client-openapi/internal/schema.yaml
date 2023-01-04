@@ -4499,7 +4499,7 @@ components:
 
         calculations that are independent of the available operations, and rendering ISA-based
 
-        information. Architecture layouts are defined by the `family`, as follows.
+        information. Architecture layouts are defined by the `family`, as follows:
 
 
         The "Aspen" family of quantum processor indicates a 2D planar grid layout of octagon unit
