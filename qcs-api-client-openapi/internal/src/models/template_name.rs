@@ -14,6 +14,10 @@ use serde::{Deserialize, Serialize};
 /// An enumeration.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum TemplateName {
+    #[serde(rename = "production.controller-service.v1")]
+    ProductionControllerServiceV1,
+    #[serde(rename = "production.lodgepole.v1")]
+    ProductionLodgepoleV1,
     #[serde(rename = "production")]
     Production,
     #[serde(rename = "integration")]
@@ -25,6 +29,8 @@ pub enum TemplateName {
 impl std::fmt::Display for TemplateName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::ProductionControllerServiceV1 => write!(f, "production.controller-service.v1"),
+            Self::ProductionLodgepoleV1 => write!(f, "production.lodgepole.v1"),
             Self::Production => write!(f, "production"),
             Self::Integration => write!(f, "integration"),
             Self::ControllerMigration => write!(f, "controllerMigration"),
@@ -34,6 +40,6 @@ impl std::fmt::Display for TemplateName {
 
 impl Default for TemplateName {
     fn default() -> TemplateName {
-        Self::Production
+        Self::ProductionControllerServiceV1
     }
 }

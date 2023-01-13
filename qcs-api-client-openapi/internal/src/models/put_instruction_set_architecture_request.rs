@@ -11,32 +11,17 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct CompileQuilResponse {
-    #[serde(rename = "nativeQuilMetadata")]
-    pub native_quil_metadata: Box<crate::models::NativeQuilMetadata>,
-    /// The compiled program
-    #[serde(rename = "program")]
-    pub program: String,
-    /// The readout basis for the results. This will be a tensor with the final axis length being equal to two; the first value is the real part and the second value is the imaginary part. The client is responsible for coalescing these values to a single complex number as required.
-    #[serde(rename = "readoutBasis")]
-    pub readout_basis: Vec<serde_json::Value>,
-    /// The twirling parameters for the program
-    #[serde(rename = "twirlingParameters")]
-    pub twirling_parameters: Vec<::std::collections::HashMap<String, Vec<f32>>>,
+pub struct PutInstructionSetArchitectureRequest {
+    #[serde(rename = "instructionSetArchitecture")]
+    pub instruction_set_architecture: Box<crate::models::InstructionSetArchitecture>,
 }
 
-impl CompileQuilResponse {
+impl PutInstructionSetArchitectureRequest {
     pub fn new(
-        native_quil_metadata: crate::models::NativeQuilMetadata,
-        program: String,
-        readout_basis: Vec<serde_json::Value>,
-        twirling_parameters: Vec<::std::collections::HashMap<String, Vec<f32>>>,
-    ) -> CompileQuilResponse {
-        CompileQuilResponse {
-            native_quil_metadata: Box::new(native_quil_metadata),
-            program,
-            readout_basis,
-            twirling_parameters,
+        instruction_set_architecture: crate::models::InstructionSetArchitecture,
+    ) -> PutInstructionSetArchitectureRequest {
+        PutInstructionSetArchitectureRequest {
+            instruction_set_architecture: Box::new(instruction_set_architecture),
         }
     }
 }

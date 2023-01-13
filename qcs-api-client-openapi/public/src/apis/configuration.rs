@@ -40,7 +40,7 @@ pub struct ApiKey {
 
 impl Configuration {
     pub async fn new() -> Result<Self, crate::common::configuration::LoadError> {
-        crate::common::ClientConfiguration::load()
+        crate::common::ClientConfiguration::load_default()
             .await
             .map(Self::with_qcs_config)
     }

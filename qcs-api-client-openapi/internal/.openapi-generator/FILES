@@ -149,6 +149,7 @@ src/models/list_endpoints_response.rs
 src/models/list_event_billing_prices_response.rs
 src/models/list_group_users_response.rs
 src/models/list_groups_response.rs
+src/models/list_instruction_set_architecture_response.rs
 src/models/list_quantum_processor_accessors_response.rs
 src/models/list_quantum_processors_response.rs
 src/models/list_reservations_response.rs
@@ -172,6 +173,7 @@ src/models/phase.rs
 src/models/product.rs
 src/models/propagation_direction.rs
 src/models/pulse.rs
+src/models/put_instruction_set_architecture_request.rs
 src/models/put_qpu_settings_request.rs
 src/models/qdo_fast_flux_channel.rs
 src/models/qdo_sequencer.rs

@@ -137,6 +137,7 @@ Class | Method | HTTP request | Description
 *EngagementsApi* | [**internal_list_endpoint_engagements**](docs/EngagementsApi.md#internal_list_endpoint_engagements) | **GET** /v1/internal/endpoints/{endpointId}/engagements | Internal List Endpoint Engagements
 *InternalApi* | [**internal_create_endpoint**](docs/InternalApi.md#internal_create_endpoint) | **POST** /v1/internal/endpoints | Internal Create Endpoint
 *InternalApi* | [**internal_delete_endpoint**](docs/InternalApi.md#internal_delete_endpoint) | **DELETE** /v1/internal/endpoints/{endpointId} | Delete Endpoint
+*InternalApi* | [**internal_delete_instruction_set_architecture**](docs/InternalApi.md#internal_delete_instruction_set_architecture) | **DELETE** /v1/internal/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture | Internal Delete Instruction Set Architecture
 *InternalApi* | [**internal_delete_legacy_deployed_rack**](docs/InternalApi.md#internal_delete_legacy_deployed_rack) | **DELETE** /v1/internal/legacy/quantumProcessors/{quantumProcessorId}/deployedRack | Internal Delete Legacy Deployed Rack
 *InternalApi* | [**internal_delete_legacy_quantum_processor**](docs/InternalApi.md#internal_delete_legacy_quantum_processor) | **DELETE** /v1/internal/legacy/quantumProcessors/{quantumProcessorId} | Internal Delete Legacy Quantum Processor
 *InternalApi* | [**internal_delete_quantum_processor**](docs/InternalApi.md#internal_delete_quantum_processor) | **DELETE** /v1/internal/quantumProcessors/{quantumProcessorId} | Internal Delete Quantum Processor
@@ -146,6 +147,7 @@ Class | Method | HTTP request | Description
 *InternalApi* | [**internal_get_legacy_deployed_rack**](docs/InternalApi.md#internal_get_legacy_deployed_rack) | **GET** /v1/internal/legacy/quantumProcessors/{quantumProcessorId}/deployedRack | Internal Get Legacy Deployed Rack
 *InternalApi* | [**internal_list_endpoint_engagements**](docs/InternalApi.md#internal_list_endpoint_engagements) | **GET** /v1/internal/endpoints/{endpointId}/engagements | Internal List Endpoint Engagements
 *InternalApi* | [**internal_list_endpoints**](docs/InternalApi.md#internal_list_endpoints) | **GET** /v1/internal/endpoints | List Endpoints
+*InternalApi* | [**internal_put_instruction_set_architecture**](docs/InternalApi.md#internal_put_instruction_set_architecture) | **PUT** /v1/internal/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture | Internal Put Instruction Set Architecture
 *InternalApi* | [**internal_put_legacy_deployed_rack**](docs/InternalApi.md#internal_put_legacy_deployed_rack) | **PUT** /v1/internal/legacy/quantumProcessors/{quantumProcessorId}/deployedRack | Internal Put Legacy Deployed Rack
 *InternalApi* | [**internal_put_legacy_quantum_processor**](docs/InternalApi.md#internal_put_legacy_quantum_processor) | **PUT** /v1/internal/legacy/quantumProcessors/{quantumProcessorId} | Internal Put Legacy Quantum Processor
 *InternalApi* | [**internal_put_quantum_processor**](docs/InternalApi.md#internal_put_quantum_processor) | **PUT** /v1/internal/quantumProcessors/{quantumProcessorId} | Internal Put Quantum Processor
@@ -166,6 +168,7 @@ Class | Method | HTTP request | Description
 *LegacyApi* | [**internal_update_legacy_quantum_processor**](docs/LegacyApi.md#internal_update_legacy_quantum_processor) | **PATCH** /v1/internal/legacy/quantumProcessors/{quantumProcessorId} | Internal Update Legacy Quantum Processor
 *QuantumProcessorsApi* | [**get_instruction_set_architecture**](docs/QuantumProcessorsApi.md#get_instruction_set_architecture) | **GET** /v1/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture | Get Instruction Set Architecture
 *QuantumProcessorsApi* | [**get_quantum_processor**](docs/QuantumProcessorsApi.md#get_quantum_processor) | **GET** /v1/quantumProcessors/{quantumProcessorId} | Get Quantum Processor
+*QuantumProcessorsApi* | [**internal_delete_instruction_set_architecture**](docs/QuantumProcessorsApi.md#internal_delete_instruction_set_architecture) | **DELETE** /v1/internal/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture | Internal Delete Instruction Set Architecture
 *QuantumProcessorsApi* | [**internal_delete_legacy_deployed_rack**](docs/QuantumProcessorsApi.md#internal_delete_legacy_deployed_rack) | **DELETE** /v1/internal/legacy/quantumProcessors/{quantumProcessorId}/deployedRack | Internal Delete Legacy Deployed Rack
 *QuantumProcessorsApi* | [**internal_delete_legacy_quantum_processor**](docs/QuantumProcessorsApi.md#internal_delete_legacy_quantum_processor) | **DELETE** /v1/internal/legacy/quantumProcessors/{quantumProcessorId} | Internal Delete Legacy Quantum Processor
 *QuantumProcessorsApi* | [**internal_delete_quantum_processor**](docs/QuantumProcessorsApi.md#internal_delete_quantum_processor) | **DELETE** /v1/internal/quantumProcessors/{quantumProcessorId} | Internal Delete Quantum Processor
@@ -176,11 +179,13 @@ Class | Method | HTTP request | Description
 *QuantumProcessorsApi* | [**internal_list_endpoint_engagements**](docs/QuantumProcessorsApi.md#internal_list_endpoint_engagements) | **GET** /v1/internal/endpoints/{endpointId}/engagements | Internal List Endpoint Engagements
 *QuantumProcessorsApi* | [**internal_list_legacy_lattices**](docs/QuantumProcessorsApi.md#internal_list_legacy_lattices) | **GET** /v1/internal/legacy/lattices | Internal List Legacy Lattices
 *QuantumProcessorsApi* | [**internal_list_legacy_quantum_processors**](docs/QuantumProcessorsApi.md#internal_list_legacy_quantum_processors) | **GET** /v1/internal/legacy/quantumProcessors | Internal List Legacy Quantum Processors
+*QuantumProcessorsApi* | [**internal_put_instruction_set_architecture**](docs/QuantumProcessorsApi.md#internal_put_instruction_set_architecture) | **PUT** /v1/internal/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture | Internal Put Instruction Set Architecture
 *QuantumProcessorsApi* | [**internal_put_legacy_deployed_rack**](docs/QuantumProcessorsApi.md#internal_put_legacy_deployed_rack) | **PUT** /v1/internal/legacy/quantumProcessors/{quantumProcessorId}/deployedRack | Internal Put Legacy Deployed Rack
 *QuantumProcessorsApi* | [**internal_put_legacy_quantum_processor**](docs/QuantumProcessorsApi.md#internal_put_legacy_quantum_processor) | **PUT** /v1/internal/legacy/quantumProcessors/{quantumProcessorId} | Internal Put Legacy Quantum Processor
 *QuantumProcessorsApi* | [**internal_put_quantum_processor**](docs/QuantumProcessorsApi.md#internal_put_quantum_processor) | **PUT** /v1/internal/quantumProcessors/{quantumProcessorId} | Internal Put Quantum Processor
 *QuantumProcessorsApi* | [**internal_put_quantum_processor_accessor**](docs/QuantumProcessorsApi.md#internal_put_quantum_processor_accessor) | **PUT** /v1/internal/quantumProcessors/{quantumProcessorId}/accessors | Internal Put Quantum Processor Accessor
 *QuantumProcessorsApi* | [**internal_update_legacy_quantum_processor**](docs/QuantumProcessorsApi.md#internal_update_legacy_quantum_processor) | **PATCH** /v1/internal/legacy/quantumProcessors/{quantumProcessorId} | Internal Update Legacy Quantum Processor
+*QuantumProcessorsApi* | [**list_instruction_set_architectures**](docs/QuantumProcessorsApi.md#list_instruction_set_architectures) | **GET** /v1/instructionSetArchitectures | List Instruction Set Architectures
 *QuantumProcessorsApi* | [**list_quantum_processor_accessors**](docs/QuantumProcessorsApi.md#list_quantum_processor_accessors) | **GET** /v1/quantumProcessors/{quantumProcessorId}/accessors | List Quantum Processor Accessors
 *QuantumProcessorsApi* | [**list_quantum_processors**](docs/QuantumProcessorsApi.md#list_quantum_processors) | **GET** /v1/quantumProcessors | List Quantum Processors
 *ReservationsApi* | [**create_reservation**](docs/ReservationsApi.md#create_reservation) | **POST** /v1/reservations | Create Reservation
@@ -336,6 +341,7 @@ Class | Method | HTTP request | Description
  - [ListEventBillingPricesResponse](docs/ListEventBillingPricesResponse.md)
  - [ListGroupUsersResponse](docs/ListGroupUsersResponse.md)
  - [ListGroupsResponse](docs/ListGroupsResponse.md)
+ - [ListInstructionSetArchitectureResponse](docs/ListInstructionSetArchitectureResponse.md)
  - [ListQuantumProcessorAccessorsResponse](docs/ListQuantumProcessorAccessorsResponse.md)
  - [ListQuantumProcessorsResponse](docs/ListQuantumProcessorsResponse.md)
  - [ListReservationsResponse](docs/ListReservationsResponse.md)
@@ -358,6 +364,7 @@ Class | Method | HTTP request | Description
  - [Product](docs/Product.md)
  - [PropagationDirection](docs/PropagationDirection.md)
  - [Pulse](docs/Pulse.md)
+ - [PutInstructionSetArchitectureRequest](docs/PutInstructionSetArchitectureRequest.md)
  - [PutQpuSettingsRequest](docs/PutQpuSettingsRequest.md)
  - [QdoFastFluxChannel](docs/QdoFastFluxChannel.md)
  - [QdoSequencer](docs/QdoSequencer.md)

@@ -407,6 +407,9 @@ pub use self::list_group_users_response::ListGroupUsersResponse;
 pub mod list_groups_response;
 pub use self::list_groups_response::ListGroupsResponse;
 #[allow(non_snake_case)]
+pub mod list_instruction_set_architecture_response;
+pub use self::list_instruction_set_architecture_response::ListInstructionSetArchitectureResponse;
+#[allow(non_snake_case)]
 pub mod list_quantum_processor_accessors_response;
 pub use self::list_quantum_processor_accessors_response::ListQuantumProcessorAccessorsResponse;
 #[allow(non_snake_case)]
@@ -472,6 +475,9 @@ pub use self::propagation_direction::PropagationDirection;
 #[allow(non_snake_case)]
 pub mod pulse;
 pub use self::pulse::Pulse;
+#[allow(non_snake_case)]
+pub mod put_instruction_set_architecture_request;
+pub use self::put_instruction_set_architecture_request::PutInstructionSetArchitectureRequest;
 #[allow(non_snake_case)]
 pub mod put_qpu_settings_request;
 pub use self::put_qpu_settings_request::PutQpuSettingsRequest;

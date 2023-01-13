@@ -33,6 +33,15 @@ pub enum InternalDeleteEndpointError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`internal_delete_instruction_set_architecture`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalDeleteInstructionSetArchitectureError {
+    Status404(crate::models::Error),
+    Status422(crate::models::ValidationError),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`internal_delete_legacy_deployed_rack`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -113,6 +122,14 @@ pub enum InternalListEndpointEngagementsError {
 #[serde(untagged)]
 pub enum InternalListEndpointsError {
     Status422(),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`internal_put_instruction_set_architecture`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalPutInstructionSetArchitectureError {
+    Status422(crate::models::ValidationError),
     UnknownValue(serde_json::Value),
 }
 
@@ -304,6 +321,72 @@ pub async fn internal_delete_endpoint(
         },
     }
 }
+async fn internal_delete_instruction_set_architecture_inner(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+) -> Result<serde_json::Value, Error<InternalDeleteInstructionSetArchitectureError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture",
+        local_var_configuration.qcs_config.api_url(),
+        quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+
+    // Use QCS Bearer token
+    let token = configuration.qcs_config.get_bearer_access_token().await?;
+    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    let local_var_content = local_var_resp.text().await?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<InternalDeleteInstructionSetArchitectureError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Delete an InstuctionSetArchitecture.
+pub async fn internal_delete_instruction_set_architecture(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+) -> Result<serde_json::Value, Error<InternalDeleteInstructionSetArchitectureError>> {
+    match internal_delete_instruction_set_architecture_inner(
+        configuration,
+        quantum_processor_id.clone(),
+    )
+    .await
+    {
+        Ok(result) => Ok(result),
+        Err(err) => match err.status_code() {
+            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
+                configuration.qcs_config.refresh().await?;
+                internal_delete_instruction_set_architecture_inner(
+                    configuration,
+                    quantum_processor_id,
+                )
+                .await
+            }
+            _ => Err(err),
+        },
+    }
+}
 async fn internal_delete_legacy_deployed_rack_inner(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
@@ -405,7 +488,7 @@ async fn internal_delete_legacy_quantum_processor_inner(
     }
 }
 
-/// Delete a legacy (Forest Server) Quantum Processor.
+/// Delete a legacy (Forest Server) Quantum Processor.  Deletes the underlying InstructionSetArchitecture from which this is derived.
 pub async fn internal_delete_legacy_quantum_processor(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
@@ -910,6 +993,84 @@ pub async fn internal_list_endpoints(
         },
     }
 }
+async fn internal_put_instruction_set_architecture_inner(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+    put_instruction_set_architecture_request: crate::models::PutInstructionSetArchitectureRequest,
+) -> Result<
+    crate::models::InstructionSetArchitecture,
+    Error<InternalPutInstructionSetArchitectureError>,
+> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture",
+        local_var_configuration.qcs_config.api_url(),
+        quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    // Use QCS Bearer token
+    let token = configuration.qcs_config.get_bearer_access_token().await?;
+    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+
+    local_var_req_builder = local_var_req_builder.json(&put_instruction_set_architecture_request);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    let local_var_content = local_var_resp.text().await?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<InternalPutInstructionSetArchitectureError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Create or replace the InstructionSetArchitecture of an existing Quantum Processor.  Returns an error if the Quantum Processor does not exist.
+pub async fn internal_put_instruction_set_architecture(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+    put_instruction_set_architecture_request: crate::models::PutInstructionSetArchitectureRequest,
+) -> Result<
+    crate::models::InstructionSetArchitecture,
+    Error<InternalPutInstructionSetArchitectureError>,
+> {
+    match internal_put_instruction_set_architecture_inner(
+        configuration,
+        quantum_processor_id.clone(),
+        put_instruction_set_architecture_request.clone(),
+    )
+    .await
+    {
+        Ok(result) => Ok(result),
+        Err(err) => match err.status_code() {
+            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
+                configuration.qcs_config.refresh().await?;
+                internal_put_instruction_set_architecture_inner(
+                    configuration,
+                    quantum_processor_id,
+                    put_instruction_set_architecture_request,
+                )
+                .await
+            }
+            _ => Err(err),
+        },
+    }
+}
 async fn internal_put_legacy_deployed_rack_inner(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
@@ -986,6 +1147,7 @@ async fn internal_put_legacy_quantum_processor_inner(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     internal_put_legacy_quantum_processor_request: crate::models::InternalPutLegacyQuantumProcessorRequest,
+    architecture_family: Option<crate::models::Family>,
 ) -> Result<crate::models::LegacyQuantumProcessor, Error<InternalPutLegacyQuantumProcessorError>> {
     let local_var_configuration = configuration;
 
@@ -998,6 +1160,11 @@ async fn internal_put_legacy_quantum_processor_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = architecture_family {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("architectureFamily", &local_var_str.to_string())]);
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -1032,11 +1199,13 @@ pub async fn internal_put_legacy_quantum_processor(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     internal_put_legacy_quantum_processor_request: crate::models::InternalPutLegacyQuantumProcessorRequest,
+    architecture_family: Option<crate::models::Family>,
 ) -> Result<crate::models::LegacyQuantumProcessor, Error<InternalPutLegacyQuantumProcessorError>> {
     match internal_put_legacy_quantum_processor_inner(
         configuration,
         quantum_processor_id.clone(),
         internal_put_legacy_quantum_processor_request.clone(),
+        architecture_family.clone(),
     )
     .await
     {
@@ -1048,6 +1217,7 @@ pub async fn internal_put_legacy_quantum_processor(
                     configuration,
                     quantum_processor_id,
                     internal_put_legacy_quantum_processor_request,
+                    architecture_family,
                 )
                 .await
             }

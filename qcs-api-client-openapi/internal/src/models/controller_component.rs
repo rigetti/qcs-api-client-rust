@@ -21,7 +21,7 @@ pub struct ControllerComponent {
     /// CPU Allocation, in MHz, required by this component. Whether it is a hard or soft limit is specified by the component itself. By default, it is a soft limit, and components are allowed to burst above when there is unused capacity.
     #[serde(rename = "cpuLimit", skip_serializing_if = "Option::is_none")]
     pub cpu_limit: Option<i32>,
-    /// Which docker tag to pull and start. [Example: v1.0.0]
+    /// Which docker tag to pull and start. [Example: v1.0.0] Does not support the `latest` tag.
     #[serde(rename = "dockerTag", skip_serializing_if = "Option::is_none")]
     pub docker_tag: Option<String>,
     /// Whether to send errors and data to Sentry

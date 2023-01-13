@@ -93,7 +93,22 @@ pub fn wrap_channel_with(channel: Channel, config: ClientConfiguration) -> Refre
 pub async fn wrap_channel(channel: Channel) -> Result<RefreshService<Channel>, Error> {
     Ok(wrap_channel_with(
         channel,
-        ClientConfiguration::load().await?,
+        ClientConfiguration::load_default().await?,
+    ))
+}
+
+/// Set up the given [`Channel`] with QCS authentication.
+///
+/// # Errors
+///
+/// See [`Error`]
+pub async fn wrap_channel_with_profile(
+    channel: Channel,
+    profile: String,
+) -> Result<RefreshService<Channel>, Error> {
+    Ok(wrap_channel_with(
+        channel,
+        ClientConfiguration::load_profile(profile).await?,
     ))
 }
 
@@ -110,7 +125,12 @@ impl RefreshLayer {
     ///
     /// Will fail with error if loading the [`ClientConfiguration`] fails.
     pub async fn new() -> Result<Self, Error> {
-        let config = ClientConfiguration::load().await?;
+        let config = ClientConfiguration::load_default().await?;
+        Ok(Self::with_config(config))
+    }
+
+    pub async fn with_profile(profile: String) -> Result<Self, Error> {
+        let config = ClientConfiguration::load_profile(profile).await?;
         Ok(Self::with_config(config))
     }
 

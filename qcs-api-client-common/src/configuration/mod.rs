@@ -31,13 +31,15 @@ use jsonwebtoken::{decode, errors::Error as JWTError, Algorithm, DecodingKey, Va
 use serde::{Deserialize, Serialize};
 use tokio::sync::{Mutex, MutexGuard};
 
+pub use builder::{BuildError, ClientConfigurationBuilder};
 use secrets::Secrets;
 pub use secrets::SECRETS_PATH_VAR;
-pub use settings::SETTINGS_PATH_VAR;
-use settings::{AuthServer, Settings};
+use settings::Settings;
+pub use settings::{AuthServer, SETTINGS_PATH_VAR};
 
 use crate::configuration::LoadError::AuthServerNotFound;
 
+mod builder;
 mod path;
 mod secrets;
 mod settings;
@@ -59,7 +61,7 @@ pub const QVM_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_QVM_URL";
 pub const GRPC_API_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_GRPC_URL";
 
 /// A single type containing an access token and an associated refresh token.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Tokens {
     /// The `Bearer` token to include in the `Authorization` header.
     pub bearer_access_token: Option<String>,
@@ -94,6 +96,13 @@ pub struct ClientConfiguration {
 }
 
 impl ClientConfiguration {
+    /// Create a new configuration builder with the given tokens.
+    #[must_use]
+    #[allow(clippy::missing_const_for_fn)]
+    pub fn builder() -> ClientConfigurationBuilder {
+        ClientConfigurationBuilder::default()
+    }
+
     /// URL to access the QCS API. Defaults to [`DEFAULT_API_URL`].
     #[must_use]
     pub fn api_url(&self) -> &str {
@@ -177,28 +186,37 @@ pub enum LoadError {
 
 impl ClientConfiguration {
     /// Attempt to load config files from `~/.qcs` and create a Configuration object
-    /// for use with the QCS API.
+    /// for use with the QCS API using the default profile.
     ///
     /// See <https://docs.rigetti.com/qcs/references/qcs-client-configuration> for details.
     ///
     /// # Errors
     ///
     /// See [`LoadError`].
-    pub async fn load() -> Result<Self, LoadError> {
-        let (settings, secrets) = try_join(settings::load(), secrets::load()).await?;
-        Self::new(settings, secrets)
+    pub async fn load_default() -> Result<Self, LoadError> {
+        Self::load(None).await
     }
 
-    /// Manually set access and refresh tokens
+    /// Attempt to load config files from `~/.qcs` and create a Configuration object
+    /// for use with the QCS API using the specified profile.
     ///
-    /// Most users do not want to use this. Instead, use [`ClientConfiguration::load()`], which uses your
-    /// QCS configuration.
-    pub async fn set_tokens(&mut self, tokens: Tokens) {
-        let mut lock = self.tokens.lock().await;
-        *lock = tokens;
+    /// See <https://docs.rigetti.com/qcs/references/qcs-client-configuration> for details.
+    ///
+    /// # Errors
+    ///
+    /// See [`LoadError`].
+    pub async fn load_profile(profile_name: String) -> Result<Self, LoadError> {
+        Self::load(Some(profile_name)).await
+    }
+
+    #[inline]
+    async fn load(profile_name: Option<String>) -> Result<Self, LoadError> {
+        let (settings, secrets) = try_join(settings::load(), secrets::load()).await?;
+        Self::new(settings, secrets, profile_name)
     }
 
     fn validate_bearer_access_token(lock: &mut MutexGuard<Tokens>) -> Result<String, RefreshError> {
+        #[allow(clippy::option_if_let_else)]
         match &lock.bearer_access_token {
             None => Err(RefreshError::NoRefreshToken),
             Some(token) => {
@@ -245,8 +263,8 @@ impl ClientConfiguration {
             .refresh_token
             .as_deref()
             .ok_or(RefreshError::NoRefreshToken)?;
-        let token_url = format!("{}/v1/token", &self.auth_server.issuer);
-        let data = TokenRequest::new(&self.auth_server.client_id, refresh_token);
+        let token_url = format!("{}/v1/token", &self.auth_server.issuer());
+        let data = TokenRequest::new(self.auth_server.client_id(), refresh_token);
         let resp = reqwest::Client::builder()
             .user_agent(format!(
                 "QCS API Client (Rust)/{}",
@@ -264,13 +282,19 @@ impl ClientConfiguration {
         Ok(response_data.access_token)
     }
 
-    fn new(settings: Settings, mut secrets: Secrets) -> Result<Self, LoadError> {
+    fn new(
+        settings: Settings,
+        mut secrets: Secrets,
+        profile_name: Option<String>,
+    ) -> Result<Self, LoadError> {
         let Settings {
             default_profile_name,
             mut profiles,
             mut auth_servers,
         } = settings;
-        let profile_name = std::env::var(PROFILE_NAME_VAR).unwrap_or(default_profile_name);
+        let profile_name = profile_name
+            .or_else(|| std::env::var(PROFILE_NAME_VAR).ok())
+            .unwrap_or(default_profile_name);
         let profile = profiles
             .remove(&profile_name)
             .ok_or(LoadError::ProfileNotFound(profile_name))?;
@@ -291,16 +315,21 @@ impl ClientConfiguration {
         let qvm_url = std::env::var(QVM_URL_VAR).unwrap_or(profile.applications.pyquil.qvm_url);
         let grpc_api_url = std::env::var(GRPC_API_URL_VAR).unwrap_or(profile.grpc_api_url);
 
-        Ok(Self {
-            api_url: profile.api_url,
-            tokens: Arc::new(Mutex::new(Tokens {
-                bearer_access_token: access_token,
-                refresh_token,
-            })),
-            auth_server,
-            quilc_url,
-            qvm_url,
-            grpc_api_url,
+        let tokens = Tokens {
+            bearer_access_token: access_token,
+            refresh_token,
+        };
+
+        Ok({
+            Self::builder()
+                .set_tokens(tokens)
+                .set_auth_server(auth_server)
+                .set_api_url(profile.api_url)
+                .set_quilc_url(quilc_url)
+                .set_qvm_url(qvm_url)
+                .set_grpc_api_url(grpc_api_url)
+                .build()
+                .expect("curated build process should not fail")
         })
     }
 }
@@ -330,19 +359,15 @@ struct TokenResponse {
 
 impl Default for ClientConfiguration {
     fn default() -> Self {
-        Self {
-            quilc_url: DEFAULT_QUILC_URL.to_string(),
-            qvm_url: DEFAULT_QVM_URL.to_string(),
-            api_url: DEFAULT_API_URL.to_string(),
-            grpc_api_url: DEFAULT_GRPC_API_URL.to_string(),
-            auth_server: AuthServer::default(),
-            tokens: Arc::default(),
-        }
+        Self::builder()
+            .build()
+            .expect("a builder without anything set should build without error")
     }
 }
 
 #[cfg(test)]
 mod describe_client_configuration_load {
+    #[allow(clippy::wildcard_imports)]
     use crate::configuration::*;
 
     #[tokio::test]
@@ -355,11 +380,16 @@ mod describe_client_configuration_load {
         std::env::set_var(QVM_URL_VAR, qvm_url);
         std::env::set_var(GRPC_API_URL_VAR, grpc_url);
 
-        let config = ClientConfiguration::new(Settings::default(), Secrets::default())
+        let config = ClientConfiguration::new(Settings::default(), Secrets::default(), None)
             .expect("config should load successfully");
 
         assert_eq!(config.quilc_url, quilc_url);
         assert_eq!(config.qvm_url, qvm_url);
         assert_eq!(config.grpc_api_url, grpc_url);
+    }
+
+    #[test]
+    fn test_default_does_not_panic() {
+        ClientConfiguration::default();
     }
 }

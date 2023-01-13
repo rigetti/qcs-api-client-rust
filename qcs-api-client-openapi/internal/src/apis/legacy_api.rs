@@ -200,7 +200,7 @@ async fn internal_delete_legacy_quantum_processor_inner(
     }
 }
 
-/// Delete a legacy (Forest Server) Quantum Processor.
+/// Delete a legacy (Forest Server) Quantum Processor.  Deletes the underlying InstructionSetArchitecture from which this is derived.
 pub async fn internal_delete_legacy_quantum_processor(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
@@ -415,7 +415,7 @@ async fn internal_get_legacy_quantum_processor_inner(
     }
 }
 
-/// Retrieve the legacy Forest Server configuration of a quantum processor.
+/// Retrieve the legacy Forest Server configuration of a quantum processor.  Derived from the stored InstructionSetArchitecture.
 pub async fn internal_get_legacy_quantum_processor(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
@@ -589,7 +589,7 @@ async fn internal_list_legacy_quantum_processors_inner(
     }
 }
 
-/// Retrieve all legacy (Forest Server) Quantum Processors available to the user.
+/// Retrieve all legacy (Forest Server) Quantum Processors available to the user. Translated from InstructionSetArchitecture.
 pub async fn internal_list_legacy_quantum_processors(
     configuration: &configuration::Configuration,
     mask_specifications_to_isa: Option<bool>,
@@ -699,6 +699,7 @@ async fn internal_put_legacy_quantum_processor_inner(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     internal_put_legacy_quantum_processor_request: crate::models::InternalPutLegacyQuantumProcessorRequest,
+    architecture_family: Option<crate::models::Family>,
 ) -> Result<crate::models::LegacyQuantumProcessor, Error<InternalPutLegacyQuantumProcessorError>> {
     let local_var_configuration = configuration;
 
@@ -711,6 +712,11 @@ async fn internal_put_legacy_quantum_processor_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = architecture_family {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("architectureFamily", &local_var_str.to_string())]);
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -745,11 +751,13 @@ pub async fn internal_put_legacy_quantum_processor(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
     internal_put_legacy_quantum_processor_request: crate::models::InternalPutLegacyQuantumProcessorRequest,
+    architecture_family: Option<crate::models::Family>,
 ) -> Result<crate::models::LegacyQuantumProcessor, Error<InternalPutLegacyQuantumProcessorError>> {
     match internal_put_legacy_quantum_processor_inner(
         configuration,
         quantum_processor_id.clone(),
         internal_put_legacy_quantum_processor_request.clone(),
+        architecture_family.clone(),
     )
     .await
     {
@@ -761,6 +769,7 @@ pub async fn internal_put_legacy_quantum_processor(
                     configuration,
                     quantum_processor_id,
                     internal_put_legacy_quantum_processor_request,
+                    architecture_family,
                 )
                 .await
             }
