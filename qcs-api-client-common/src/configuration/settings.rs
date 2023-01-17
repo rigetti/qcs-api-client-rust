@@ -116,10 +116,42 @@ impl Default for Pyquil {
     }
 }
 
-#[derive(Clone, Deserialize, Debug, PartialEq, Serialize)]
-pub(crate) struct AuthServer {
-    pub(crate) client_id: String,
-    pub(crate) issuer: String,
+/// Okta authorization server.
+#[derive(Clone, Deserialize, Debug, PartialEq, Eq, Serialize)]
+pub struct AuthServer {
+    /// Okta client id.
+    client_id: String,
+    /// Okta issuer URL.
+    issuer: String,
+}
+
+#[allow(clippy::missing_const_for_fn)]
+impl AuthServer {
+    /// Get the configured Okta client id.
+    #[must_use]
+    pub fn client_id(&self) -> &str {
+        &self.client_id
+    }
+
+    /// Set an Okta client id.
+    #[must_use]
+    pub fn set_client_id(mut self, id: String) -> Self {
+        self.client_id = id;
+        self
+    }
+
+    /// Get the Okta issuer URL.
+    #[must_use]
+    pub fn issuer(&self) -> &str {
+        &self.issuer
+    }
+
+    /// Set an Okta issuer URL.
+    #[must_use]
+    pub fn set_issuer(mut self, issuer: String) -> Self {
+        self.issuer = issuer;
+        self
+    }
 }
 
 const QCS_DEFAULT_CLIENT_ID_PRODUCTION: &str = "0oa3ykoirzDKpkfzk357";

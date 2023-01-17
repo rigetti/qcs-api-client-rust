@@ -1,3 +1,9 @@
+## 0.3.0
+
+### Breaking Changes
+
+- add methods for overriding items set via env
+
 ## 0.2.7
 
 ### Features
