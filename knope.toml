@@ -44,7 +44,9 @@ command = "cargo update -w"
 
 [[workflows.steps]]
 type = "Command"
-command = "git add Cargo.lock && git commit -m \"chore: prepare new release(s)\""
+# git diff --cached --quiet exits with 0 if there are *no* staged changes.
+# So if it exits with any other code, commit the staged changes
+command = "git add Cargo.lock && (git diff --cached --quiet || git commit -m \"chore: prepare new release(s)\")"
 
 [[workflows.steps]]
 type = "Release"
