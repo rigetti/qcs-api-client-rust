@@ -1,4 +1,4 @@
-## 0.4.0
+## 0.5.0
 
 ### Breaking Changes
 
@@ -17,6 +17,7 @@
 
 ### Fixes
 
+- failed ci pipelines due to lack of permissions
 - make grpc_api_url optional in settings.toml
 - version generated protobuf code in crate
 - make Endpoint.address nullable and regen
