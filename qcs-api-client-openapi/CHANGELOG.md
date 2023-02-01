@@ -2,7 +2,34 @@
 
 ### Breaking Changes
 
+- assume `type: number` is `f64` when `format` is unspecified
 - add methods for overriding items set via env
+- Complete regeneration of `qcs-api` crate using the latest schema.
+
+### Features
+
+- QPU Accessor support
+- support loading QVM and quilc URLs from environment variables
+- Support QPU access calls
+- add authentication refresh to clients
+- vend client configuration utilities
+- generate gRPC clients
+
+### Fixes
+
+- make grpc_api_url optional in settings.toml
+- version generated protobuf code in crate
+- make Endpoint.address nullable and regen
+- include LICENSE
+- add top-level README
+- use api_url not base_path
+- install protoc for CI
+- clean up generated code, add example to lib.rs docs
+- update public grpc proto
+- make RefreshService support tonic requests, minor API improvements
+- make schema openapi 3.0 compatible
+- Crate repo metadata
+- Broken generated code via patch_schema.py
 
 ## 0.3.8
 
