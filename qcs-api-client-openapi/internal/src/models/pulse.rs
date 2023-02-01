@@ -16,15 +16,15 @@ pub struct Pulse {
     #[serde(rename = "_type")]
     pub _type: String,
     #[serde(rename = "detuning")]
-    pub detuning: f32,
+    pub detuning: f64,
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "phase")]
     pub phase: Box<crate::models::Phase>,
     #[serde(rename = "scale")]
-    pub scale: f32,
+    pub scale: f64,
     #[serde(rename = "time")]
-    pub time: f32,
+    pub time: f64,
     #[serde(rename = "waveform")]
     pub waveform: String,
 }
@@ -33,11 +33,11 @@ impl Pulse {
     /// Play a pulse at a specific time on a specific frame.  The pulse is derived from a waveform and admits the imposition of a scale, phase, and detuning.
     pub fn new(
         _type: String,
-        detuning: f32,
+        detuning: f64,
         frame: String,
         phase: crate::models::Phase,
-        scale: f32,
-        time: f32,
+        scale: f64,
+        time: f64,
         waveform: String,
     ) -> Pulse {
         Pulse {

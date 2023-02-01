@@ -16,16 +16,16 @@ pub struct ArbitraryReadoutKernel {
     #[serde(rename = "_type", skip_serializing_if = "Option::is_none")]
     pub _type: Option<Type>,
     #[serde(rename = "bias")]
-    pub bias: f32,
+    pub bias: f64,
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "iqs")]
-    pub iqs: Vec<f32>,
+    pub iqs: Vec<f64>,
 }
 
 impl ArbitraryReadoutKernel {
     /// Readout kernel defined by arbitrary IQ values.
-    pub fn new(bias: f32, frame: String, iqs: Vec<f32>) -> ArbitraryReadoutKernel {
+    pub fn new(bias: f64, frame: String, iqs: Vec<f64>) -> ArbitraryReadoutKernel {
         ArbitraryReadoutKernel {
             _type: None,
             bias,

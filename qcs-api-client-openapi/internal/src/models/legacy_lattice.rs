@@ -26,7 +26,7 @@ pub struct LegacyLattice {
     pub noise_model: Option<serde_json::Value>,
     /// The price per minute (in credits) for using the lattice as reserved in QCS.
     #[serde(rename = "price_per_minute")]
-    pub price_per_minute: f32,
+    pub price_per_minute: f64,
     #[serde(rename = "specs")]
     pub specs: Box<crate::models::Specs>,
 }
@@ -37,7 +37,7 @@ impl LegacyLattice {
         device_name: String,
         isa: crate::models::Isa,
         name: String,
-        price_per_minute: f32,
+        price_per_minute: f64,
         specs: crate::models::Specs,
     ) -> LegacyLattice {
         LegacyLattice {

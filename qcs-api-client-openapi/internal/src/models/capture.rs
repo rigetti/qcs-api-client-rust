@@ -16,32 +16,32 @@ pub struct Capture {
     #[serde(rename = "_type")]
     pub _type: String,
     #[serde(rename = "detuning")]
-    pub detuning: f32,
+    pub detuning: f64,
     #[serde(rename = "duration")]
-    pub duration: f32,
+    pub duration: f64,
     #[serde(rename = "filters")]
     pub filters: Vec<String>,
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "phase")]
-    pub phase: f32,
+    pub phase: f64,
     #[serde(rename = "send_to_host")]
     pub send_to_host: bool,
     #[serde(rename = "time")]
-    pub time: f32,
+    pub time: f64,
 }
 
 impl Capture {
     /// Specify an acquisition on an rx-frame as well as the readout kernels to apply.
     pub fn new(
         _type: String,
-        detuning: f32,
-        duration: f32,
+        detuning: f64,
+        duration: f64,
         filters: Vec<String>,
         frame: String,
-        phase: f32,
+        phase: f64,
         send_to_host: bool,
-        time: f32,
+        time: f64,
     ) -> Capture {
         Capture {
             _type,

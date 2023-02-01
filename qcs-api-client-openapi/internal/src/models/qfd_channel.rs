@@ -18,22 +18,22 @@ pub struct QfdChannel {
     #[serde(rename = "channel_index")]
     pub channel_index: i32,
     #[serde(rename = "delay")]
-    pub delay: f32,
+    pub delay: f64,
     #[serde(rename = "direction", skip_serializing_if = "Option::is_none")]
     pub direction: Option<crate::models::PropagationDirection>,
     #[serde(rename = "flux_current", skip_serializing_if = "Option::is_none")]
-    pub flux_current: Option<f32>,
+    pub flux_current: Option<f64>,
     #[serde(rename = "gain", skip_serializing_if = "Option::is_none")]
-    pub gain: Option<f32>,
+    pub gain: Option<f64>,
     #[serde(rename = "nco_frequency", skip_serializing_if = "Option::is_none")]
-    pub nco_frequency: Option<f32>,
+    pub nco_frequency: Option<f64>,
     #[serde(rename = "relay_closed", skip_serializing_if = "Option::is_none")]
     pub relay_closed: Option<bool>,
 }
 
 impl QfdChannel {
     /// Configuration for a single QFD Channel.
-    pub fn new(_type: String, channel_index: i32, delay: f32) -> QfdChannel {
+    pub fn new(_type: String, channel_index: i32, delay: f64) -> QfdChannel {
         QfdChannel {
             _type,
             channel_index,

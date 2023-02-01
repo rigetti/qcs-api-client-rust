@@ -16,35 +16,35 @@ pub struct ErfSquareWaveform {
     #[serde(rename = "_type")]
     pub _type: String,
     #[serde(rename = "detuning")]
-    pub detuning: f32,
+    pub detuning: f64,
     #[serde(rename = "duration")]
-    pub duration: f32,
+    pub duration: f64,
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "pad_left")]
-    pub pad_left: f32,
+    pub pad_left: f64,
     #[serde(rename = "pad_right")]
-    pub pad_right: f32,
+    pub pad_right: f64,
     #[serde(rename = "phase")]
-    pub phase: f32,
+    pub phase: f64,
     #[serde(rename = "risetime")]
-    pub risetime: f32,
+    pub risetime: f64,
     #[serde(rename = "scale")]
-    pub scale: f32,
+    pub scale: f64,
 }
 
 impl ErfSquareWaveform {
     /// Pulse with a flat top and rounded shoulders given by error functions.
     pub fn new(
         _type: String,
-        detuning: f32,
-        duration: f32,
+        detuning: f64,
+        duration: f64,
         frame: String,
-        pad_left: f32,
-        pad_right: f32,
-        phase: f32,
-        risetime: f32,
-        scale: f32,
+        pad_left: f64,
+        pad_right: f64,
+        phase: f64,
+        risetime: f64,
+        scale: f64,
     ) -> ErfSquareWaveform {
         ErfSquareWaveform {
             _type,

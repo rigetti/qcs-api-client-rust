@@ -18,18 +18,18 @@ pub struct QgsChannel {
     #[serde(rename = "channel_index")]
     pub channel_index: i32,
     #[serde(rename = "delay")]
-    pub delay: f32,
+    pub delay: f64,
     #[serde(rename = "direction", skip_serializing_if = "Option::is_none")]
     pub direction: Option<crate::models::PropagationDirection>,
     #[serde(rename = "gain", skip_serializing_if = "Option::is_none")]
-    pub gain: Option<f32>,
+    pub gain: Option<f64>,
     #[serde(rename = "nco_frequency", skip_serializing_if = "Option::is_none")]
-    pub nco_frequency: Option<f32>,
+    pub nco_frequency: Option<f64>,
 }
 
 impl QgsChannel {
     /// Tsunami QGS Channel.
-    pub fn new(_type: String, channel_index: i32, delay: f32) -> QgsChannel {
+    pub fn new(_type: String, channel_index: i32, delay: f64) -> QgsChannel {
         QgsChannel {
             _type,
             channel_index,

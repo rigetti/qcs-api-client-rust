@@ -29,7 +29,7 @@ use serde::{Deserialize, Serialize};
 pub struct Characteristic {
     /// The error in the characteristic value, or None otherwise.
     #[serde(rename = "error", skip_serializing_if = "Option::is_none")]
-    pub error: Option<f32>,
+    pub error: Option<f64>,
     /// The name of the characteristic.
     #[serde(rename = "name")]
     pub name: String,
@@ -38,18 +38,18 @@ pub struct Characteristic {
     pub node_ids: Option<Vec<i32>>,
     /// The optional ordered list of parameter values used to generate the characteristic. The order matches the parameters in the enclosing operation, and so the lengths of these two lists must match.
     #[serde(rename = "parameter_values", skip_serializing_if = "Option::is_none")]
-    pub parameter_values: Option<Vec<f32>>,
+    pub parameter_values: Option<Vec<f64>>,
     /// The date and time at which the characteristic was measured.
     #[serde(rename = "timestamp")]
     pub timestamp: String,
     /// The characteristic value measured.
     #[serde(rename = "value")]
-    pub value: f32,
+    pub value: f64,
 }
 
 impl Characteristic {
     /// A measured characteristic of an operation.
-    pub fn new(name: String, timestamp: String, value: f32) -> Characteristic {
+    pub fn new(name: String, timestamp: String, value: f64) -> Characteristic {
         Characteristic {
             error: None,
             name,

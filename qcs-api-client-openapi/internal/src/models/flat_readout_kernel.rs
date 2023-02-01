@@ -16,28 +16,28 @@ pub struct FlatReadoutKernel {
     #[serde(rename = "_type", skip_serializing_if = "Option::is_none")]
     pub _type: Option<Type>,
     #[serde(rename = "bias")]
-    pub bias: f32,
+    pub bias: f64,
     #[serde(rename = "detuning")]
-    pub detuning: f32,
+    pub detuning: f64,
     #[serde(rename = "duration")]
-    pub duration: f32,
+    pub duration: f64,
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "phase")]
-    pub phase: f32,
+    pub phase: f64,
     #[serde(rename = "scale")]
-    pub scale: f32,
+    pub scale: f64,
 }
 
 impl FlatReadoutKernel {
     /// Readout kernel that is a constant, with no normalization condition applied.
     pub fn new(
-        bias: f32,
-        detuning: f32,
-        duration: f32,
+        bias: f64,
+        detuning: f64,
+        duration: f64,
         frame: String,
-        phase: f32,
-        scale: f32,
+        phase: f64,
+        scale: f64,
     ) -> FlatReadoutKernel {
         FlatReadoutKernel {
             _type: None,

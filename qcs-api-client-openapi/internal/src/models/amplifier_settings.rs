@@ -18,9 +18,9 @@ pub struct AmplifierSettings {
     #[serde(rename = "output")]
     pub output: bool,
     #[serde(rename = "pump_freq")]
-    pub pump_freq: f32,
+    pub pump_freq: f64,
     #[serde(rename = "pump_power")]
-    pub pump_power: f32,
+    pub pump_power: f64,
     #[serde(rename = "qubit_set")]
     pub qubit_set: Vec<i32>,
     #[serde(rename = "slow_flux", skip_serializing_if = "Option::is_none")]
@@ -32,8 +32,8 @@ impl AmplifierSettings {
     pub fn new(
         _type: String,
         output: bool,
-        pump_freq: f32,
-        pump_power: f32,
+        pump_freq: f64,
+        pump_power: f64,
         qubit_set: Vec<i32>,
     ) -> AmplifierSettings {
         AmplifierSettings {

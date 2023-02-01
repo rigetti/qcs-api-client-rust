@@ -144,6 +144,27 @@ def use_oneof_not_anyof(obj):
         use_oneof_not_anyof(v)
 
 
+def numbers_are_double(obj):
+    """
+    Insist that a `type: number` is `format: double` and therefore
+    a 64-bit float whenever it is ambiguous.
+    """
+
+    if isinstance(obj, list):
+        for v in obj:
+            numbers_are_double(v)
+        return
+
+    if not isinstance(obj, dict):
+        return
+
+    if obj.get("type") == "number" and obj.get("format") is None:
+        obj["format"] = "double"
+
+    for _, v in obj.items():
+        numbers_are_double(v)
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print(f"Usage: {sys.argv[0]} <path-to-input-schema>")
@@ -153,6 +174,7 @@ if __name__ == "__main__":
     fix_x_qcs_headers(document)
     title_conflicting_type_properties(document)
     use_oneof_not_anyof(document)
+    numbers_are_double(document)
     openapi_compat_3_0(document)
 
     output_path = Path(input_file_path)

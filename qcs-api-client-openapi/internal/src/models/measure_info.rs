@@ -13,9 +13,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct MeasureInfo {
     #[serde(rename = "duration", skip_serializing_if = "Option::is_none")]
-    pub duration: Option<f32>,
+    pub duration: Option<f64>,
     #[serde(rename = "fidelity", skip_serializing_if = "Option::is_none")]
-    pub fidelity: Option<f32>,
+    pub fidelity: Option<f64>,
     #[serde(rename = "operator", skip_serializing_if = "Option::is_none")]
     pub operator: Option<String>,
     #[serde(rename = "operator_type", skip_serializing_if = "Option::is_none")]

@@ -16,32 +16,32 @@ pub struct GaussianWaveform {
     #[serde(rename = "_type")]
     pub _type: String,
     #[serde(rename = "detuning")]
-    pub detuning: f32,
+    pub detuning: f64,
     #[serde(rename = "duration")]
-    pub duration: f32,
+    pub duration: f64,
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "fwhm")]
-    pub fwhm: f32,
+    pub fwhm: f64,
     #[serde(rename = "phase")]
-    pub phase: f32,
+    pub phase: f64,
     #[serde(rename = "scale")]
-    pub scale: f32,
+    pub scale: f64,
     #[serde(rename = "t0")]
-    pub t0: f32,
+    pub t0: f64,
 }
 
 impl GaussianWaveform {
     /// Gaussian shaped waveform envelope defined for a specific frame.
     pub fn new(
         _type: String,
-        detuning: f32,
-        duration: f32,
+        detuning: f64,
+        duration: f64,
         frame: String,
-        fwhm: f32,
-        phase: f32,
-        scale: f32,
-        t0: f32,
+        fwhm: f64,
+        phase: f64,
+        scale: f64,
+        t0: f64,
     ) -> GaussianWaveform {
         GaussianWaveform {
             _type,

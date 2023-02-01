@@ -15,9 +15,9 @@ pub struct GateInfo {
     #[serde(rename = "arguments", skip_serializing_if = "Option::is_none")]
     pub arguments: Option<Vec<crate::models::ArgumentsInner>>,
     #[serde(rename = "duration", skip_serializing_if = "Option::is_none")]
-    pub duration: Option<f32>,
+    pub duration: Option<f64>,
     #[serde(rename = "fidelity", skip_serializing_if = "Option::is_none")]
-    pub fidelity: Option<f32>,
+    pub fidelity: Option<f64>,
     #[serde(rename = "operator", skip_serializing_if = "Option::is_none")]
     pub operator: Option<String>,
     #[serde(rename = "operator_type", skip_serializing_if = "Option::is_none")]

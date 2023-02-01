@@ -20,17 +20,17 @@ pub struct ActiveReset {
     #[serde(rename = "attempts")]
     pub attempts: i32,
     #[serde(rename = "feedback_duration")]
-    pub feedback_duration: f32,
+    pub feedback_duration: f64,
     #[serde(rename = "feedback_instructions")]
     pub feedback_instructions: Vec<crate::models::FeedbackInstructionsInner>,
     #[serde(rename = "measurement_bit")]
     pub measurement_bit: i32,
     #[serde(rename = "measurement_duration")]
-    pub measurement_duration: f32,
+    pub measurement_duration: f64,
     #[serde(rename = "measurement_instructions")]
     pub measurement_instructions: Vec<crate::models::FeedbackInstructionsInner>,
     #[serde(rename = "time")]
-    pub time: f32,
+    pub time: f64,
 }
 
 impl ActiveReset {
@@ -39,12 +39,12 @@ impl ActiveReset {
         _type: String,
         apply_feedback_when: bool,
         attempts: i32,
-        feedback_duration: f32,
+        feedback_duration: f64,
         feedback_instructions: Vec<crate::models::FeedbackInstructionsInner>,
         measurement_bit: i32,
-        measurement_duration: f32,
+        measurement_duration: f64,
         measurement_instructions: Vec<crate::models::FeedbackInstructionsInner>,
-        time: f32,
+        time: f64,
     ) -> ActiveReset {
         ActiveReset {
             _type,

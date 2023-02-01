@@ -25,7 +25,7 @@ pub struct CwChannel {
     )]
     pub rf_output_frequency: Option<i32>,
     #[serde(rename = "rf_output_power", skip_serializing_if = "Option::is_none")]
-    pub rf_output_power: Option<f32>,
+    pub rf_output_power: Option<f64>,
 }
 
 impl CwChannel {

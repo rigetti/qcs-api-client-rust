@@ -18,14 +18,14 @@ pub struct SetPhase {
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "phase")]
-    pub phase: f32,
+    pub phase: f64,
     #[serde(rename = "time")]
-    pub time: f32,
+    pub time: f64,
 }
 
 impl SetPhase {
     /// Set the phase of a frame to a specific value at a specific time.
-    pub fn new(_type: String, frame: String, phase: f32, time: f32) -> SetPhase {
+    pub fn new(_type: String, frame: String, phase: f64, time: f64) -> SetPhase {
         SetPhase {
             _type,
             frame,

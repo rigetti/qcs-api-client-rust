@@ -20,7 +20,7 @@ pub struct QdoSlowFluxChannel {
     #[serde(rename = "direction", skip_serializing_if = "Option::is_none")]
     pub direction: Option<Box<crate::models::PropagationDirection>>,
     #[serde(rename = "flux_current", skip_serializing_if = "Option::is_none")]
-    pub flux_current: Option<f32>,
+    pub flux_current: Option<f64>,
     #[serde(rename = "relay_closed", skip_serializing_if = "Option::is_none")]
     pub relay_closed: Option<bool>,
 }

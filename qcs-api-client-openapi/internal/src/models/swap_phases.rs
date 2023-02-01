@@ -20,12 +20,12 @@ pub struct SwapPhases {
     #[serde(rename = "frame_b")]
     pub frame_b: String,
     #[serde(rename = "time")]
-    pub time: f32,
+    pub time: f64,
 }
 
 impl SwapPhases {
     /// Swap the phases of two tx-frames at a specific time.
-    pub fn new(_type: String, frame_a: String, frame_b: String, time: f32) -> SwapPhases {
+    pub fn new(_type: String, frame_a: String, frame_b: String, time: f64) -> SwapPhases {
         SwapPhases {
             _type,
             frame_a,

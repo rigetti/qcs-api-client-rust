@@ -16,26 +16,26 @@ pub struct ControlSettings {
     #[serde(rename = "_type")]
     pub _type: String,
     #[serde(rename = "carrier_frequency")]
-    pub carrier_frequency: f32,
+    pub carrier_frequency: f64,
     #[serde(rename = "direction")]
     pub direction: crate::models::PropagationDirection,
     #[serde(rename = "full_scale")]
-    pub full_scale: f32,
+    pub full_scale: f64,
     #[serde(rename = "gain")]
-    pub gain: f32,
+    pub gain: f64,
     #[serde(rename = "sample_rate")]
-    pub sample_rate: f32,
+    pub sample_rate: f64,
 }
 
 impl ControlSettings {
     /// All \"physical\" converter and signal chain settings per \"channel\".  It can also carry wf_alignment for now until some future point where we split out sequencers.
     pub fn new(
         _type: String,
-        carrier_frequency: f32,
+        carrier_frequency: f64,
         direction: crate::models::PropagationDirection,
-        full_scale: f32,
-        gain: f32,
-        sample_rate: f32,
+        full_scale: f64,
+        gain: f64,
+        sample_rate: f64,
     ) -> ControlSettings {
         ControlSettings {
             _type,

@@ -16,16 +16,16 @@ pub struct ShiftFrequency {
     #[serde(rename = "_type")]
     pub _type: String,
     #[serde(rename = "delta")]
-    pub delta: f32,
+    pub delta: f64,
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "time")]
-    pub time: f32,
+    pub time: f64,
 }
 
 impl ShiftFrequency {
     /// Shift the frequency of a frame by a specific amount at a specific time.
-    pub fn new(_type: String, delta: f32, frame: String, time: f32) -> ShiftFrequency {
+    pub fn new(_type: String, delta: f64, frame: String, time: f64) -> ShiftFrequency {
         ShiftFrequency {
             _type,
             delta,

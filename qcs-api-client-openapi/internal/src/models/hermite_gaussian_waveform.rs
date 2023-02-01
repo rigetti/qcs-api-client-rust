@@ -16,41 +16,41 @@ pub struct HermiteGaussianWaveform {
     #[serde(rename = "_type")]
     pub _type: String,
     #[serde(rename = "alpha")]
-    pub alpha: f32,
+    pub alpha: f64,
     #[serde(rename = "anh")]
-    pub anh: f32,
+    pub anh: f64,
     #[serde(rename = "detuning")]
-    pub detuning: f32,
+    pub detuning: f64,
     #[serde(rename = "duration")]
-    pub duration: f32,
+    pub duration: f64,
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "fwhm")]
-    pub fwhm: f32,
+    pub fwhm: f64,
     #[serde(rename = "phase")]
-    pub phase: f32,
+    pub phase: f64,
     #[serde(rename = "scale")]
-    pub scale: f32,
+    pub scale: f64,
     #[serde(rename = "second_order_hrm_coeff")]
-    pub second_order_hrm_coeff: f32,
+    pub second_order_hrm_coeff: f64,
     #[serde(rename = "t0")]
-    pub t0: f32,
+    pub t0: f64,
 }
 
 impl HermiteGaussianWaveform {
     /// Hermite-gaussian shaped pulse.  Reference: Effects of arbitrary laser or NMR pulse shapes on population inversion and coherence Warren S. Warren. 81, (1984). DOI: 10.1063/1.447644
     pub fn new(
         _type: String,
-        alpha: f32,
-        anh: f32,
-        detuning: f32,
-        duration: f32,
+        alpha: f64,
+        anh: f64,
+        detuning: f64,
+        duration: f64,
         frame: String,
-        fwhm: f32,
-        phase: f32,
-        scale: f32,
-        second_order_hrm_coeff: f32,
-        t0: f32,
+        fwhm: f64,
+        phase: f64,
+        scale: f64,
+        second_order_hrm_coeff: f64,
+        t0: f64,
     ) -> HermiteGaussianWaveform {
         HermiteGaussianWaveform {
             _type,

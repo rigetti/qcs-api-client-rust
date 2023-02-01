@@ -18,14 +18,14 @@ pub struct SetFrequency {
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "frequency")]
-    pub frequency: f32,
+    pub frequency: f64,
     #[serde(rename = "time")]
-    pub time: f32,
+    pub time: f64,
 }
 
 impl SetFrequency {
     /// Set the frequency of a frame to a specific value at a specific time.
-    pub fn new(_type: String, frame: String, frequency: f32, time: f32) -> SetFrequency {
+    pub fn new(_type: String, frame: String, frequency: f64, time: f64) -> SetFrequency {
         SetFrequency {
             _type,
             frame,

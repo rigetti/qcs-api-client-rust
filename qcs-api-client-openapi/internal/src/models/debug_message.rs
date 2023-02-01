@@ -20,12 +20,12 @@ pub struct DebugMessage {
     #[serde(rename = "message")]
     pub message: i32,
     #[serde(rename = "time")]
-    pub time: f32,
+    pub time: f64,
 }
 
 impl DebugMessage {
     /// Emit a specified debug message.
-    pub fn new(_type: String, frame: String, message: i32, time: f32) -> DebugMessage {
+    pub fn new(_type: String, frame: String, message: i32, time: f64) -> DebugMessage {
         DebugMessage {
             _type,
             frame,

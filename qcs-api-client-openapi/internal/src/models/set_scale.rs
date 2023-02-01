@@ -18,14 +18,14 @@ pub struct SetScale {
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "scale")]
-    pub scale: f32,
+    pub scale: f64,
     #[serde(rename = "time")]
-    pub time: f32,
+    pub time: f64,
 }
 
 impl SetScale {
     /// Set the scale of a frame to a value at a specific time.
-    pub fn new(_type: String, frame: String, scale: f32, time: f32) -> SetScale {
+    pub fn new(_type: String, frame: String, scale: f64, time: f64) -> SetScale {
         SetScale {
             _type,
             frame,

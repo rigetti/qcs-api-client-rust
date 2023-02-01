@@ -20,12 +20,12 @@ pub struct ShiftPhase {
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "time")]
-    pub time: f32,
+    pub time: f64,
 }
 
 impl ShiftPhase {
     /// Shift the phase of a frame by a relative value at a specific time.
-    pub fn new(_type: String, delta: crate::models::Delta, frame: String, time: f32) -> ShiftPhase {
+    pub fn new(_type: String, delta: crate::models::Delta, frame: String, time: f64) -> ShiftPhase {
         ShiftPhase {
             _type,
             delta: Box::new(delta),

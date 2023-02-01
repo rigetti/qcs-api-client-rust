@@ -18,16 +18,16 @@ pub struct QrrChannel {
     #[serde(rename = "channel_index")]
     pub channel_index: i32,
     #[serde(rename = "delay")]
-    pub delay: f32,
+    pub delay: f64,
     #[serde(rename = "direction", skip_serializing_if = "Option::is_none")]
     pub direction: Option<crate::models::PropagationDirection>,
     #[serde(rename = "gain", skip_serializing_if = "Option::is_none")]
-    pub gain: Option<f32>,
+    pub gain: Option<f64>,
 }
 
 impl QrrChannel {
     /// Tsunami QRR Channel.
-    pub fn new(_type: String, channel_index: i32, delay: f32) -> QrrChannel {
+    pub fn new(_type: String, channel_index: i32, delay: f64) -> QrrChannel {
         QrrChannel {
             _type,
             channel_index,

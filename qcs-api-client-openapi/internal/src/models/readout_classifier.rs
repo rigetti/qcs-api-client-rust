@@ -16,25 +16,25 @@ pub struct ReadoutClassifier {
     #[serde(rename = "_type")]
     pub _type: String,
     #[serde(rename = "confusion_matrix", skip_serializing_if = "Option::is_none")]
-    pub confusion_matrix: Option<Vec<f32>>,
+    pub confusion_matrix: Option<Vec<f64>>,
     #[serde(rename = "e")]
-    pub e: Vec<f32>,
+    pub e: Vec<f64>,
     #[serde(rename = "g")]
-    pub g: Vec<f32>,
+    pub g: Vec<f64>,
     #[serde(rename = "projection")]
-    pub projection: Vec<f32>,
+    pub projection: Vec<f64>,
     #[serde(rename = "threshold")]
-    pub threshold: f32,
+    pub threshold: f64,
 }
 
 impl ReadoutClassifier {
     /// All the information needed to perform readout classification for a single qubit.
     pub fn new(
         _type: String,
-        e: Vec<f32>,
-        g: Vec<f32>,
-        projection: Vec<f32>,
-        threshold: f32,
+        e: Vec<f64>,
+        g: Vec<f64>,
+        projection: Vec<f64>,
+        threshold: f64,
     ) -> ReadoutClassifier {
         ReadoutClassifier {
             _type,

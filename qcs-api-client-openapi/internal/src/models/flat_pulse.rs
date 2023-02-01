@@ -16,32 +16,32 @@ pub struct FlatPulse {
     #[serde(rename = "_type")]
     pub _type: String,
     #[serde(rename = "detuning")]
-    pub detuning: f32,
+    pub detuning: f64,
     #[serde(rename = "duration")]
-    pub duration: f32,
+    pub duration: f64,
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "iq")]
-    pub iq: Vec<f32>,
+    pub iq: Vec<f64>,
     #[serde(rename = "phase")]
-    pub phase: f32,
+    pub phase: f64,
     #[serde(rename = "scale")]
-    pub scale: f32,
+    pub scale: f64,
     #[serde(rename = "time")]
-    pub time: f32,
+    pub time: f64,
 }
 
 impl FlatPulse {
     /// Play a pulse with a constant complex amplitude.  This pulse is not derived from a waveform and admits the imposition of a scale, phase, and detuning.
     pub fn new(
         _type: String,
-        detuning: f32,
-        duration: f32,
+        detuning: f64,
+        duration: f64,
         frame: String,
-        iq: Vec<f32>,
-        phase: f32,
-        scale: f32,
-        time: f32,
+        iq: Vec<f64>,
+        phase: f64,
+        scale: f64,
+        time: f64,
     ) -> FlatPulse {
         FlatPulse {
             _type,

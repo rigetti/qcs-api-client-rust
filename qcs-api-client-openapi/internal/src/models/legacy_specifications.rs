@@ -15,17 +15,17 @@ use serde::{Deserialize, Serialize};
 pub struct LegacySpecifications {
     /// The set of all 1Q specifications, keyed by their node identifier.  Property keys must have the format: \\d+
     #[serde(rename = "1Q")]
-    pub var_1_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
+    pub var_1_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f64>>,
     /// The set of all 2Q specifications, keyed by their node identifier.  Property keys must have the format: \\d+-\\d+
     #[serde(rename = "2Q")]
-    pub var_2_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
+    pub var_2_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f64>>,
 }
 
 impl LegacySpecifications {
     /// The specifications of a deployed quantum processor.
     pub fn new(
-        var_1_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
-        var_2_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f32>>,
+        var_1_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f64>>,
+        var_2_q: ::std::collections::HashMap<String, ::std::collections::HashMap<String, f64>>,
     ) -> LegacySpecifications {
         LegacySpecifications { var_1_q, var_2_q }
     }

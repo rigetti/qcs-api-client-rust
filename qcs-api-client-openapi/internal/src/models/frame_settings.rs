@@ -20,7 +20,7 @@ pub struct FrameSettings {
     #[serde(rename = "direction")]
     pub direction: crate::models::PropagationDirection,
     #[serde(rename = "frequency")]
-    pub frequency: f32,
+    pub frequency: f64,
     #[serde(rename = "parent_frame_name", skip_serializing_if = "Option::is_none")]
     pub parent_frame_name: Option<String>,
 }
@@ -30,7 +30,7 @@ impl FrameSettings {
     pub fn new(
         _type: String,
         direction: crate::models::PropagationDirection,
-        frequency: f32,
+        frequency: f64,
     ) -> FrameSettings {
         FrameSettings {
             _type,

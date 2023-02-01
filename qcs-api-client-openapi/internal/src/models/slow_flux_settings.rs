@@ -16,14 +16,14 @@ pub struct SlowFluxSettings {
     #[serde(rename = "_type")]
     pub _type: String,
     #[serde(rename = "flux_bias")]
-    pub flux_bias: f32,
+    pub flux_bias: f64,
     #[serde(rename = "ramp_rate", skip_serializing_if = "Option::is_none")]
-    pub ramp_rate: Option<f32>,
+    pub ramp_rate: Option<f64>,
 }
 
 impl SlowFluxSettings {
     /// All information needed to control a slow flux setting on a qubit or amplifier.
-    pub fn new(_type: String, flux_bias: f32) -> SlowFluxSettings {
+    pub fn new(_type: String, flux_bias: f64) -> SlowFluxSettings {
         SlowFluxSettings {
             _type,
             flux_bias,

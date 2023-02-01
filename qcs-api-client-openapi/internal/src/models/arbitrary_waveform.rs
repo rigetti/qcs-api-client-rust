@@ -18,7 +18,7 @@ pub struct ArbitraryWaveform {
     #[serde(rename = "frame")]
     pub frame: String,
     #[serde(rename = "iqs", skip_serializing_if = "Option::is_none")]
-    pub iqs: Option<Vec<f32>>,
+    pub iqs: Option<Vec<f64>>,
 }
 
 impl ArbitraryWaveform {

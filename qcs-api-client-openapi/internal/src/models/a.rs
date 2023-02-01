@@ -25,7 +25,7 @@ use crate::models::ParameterExpression;
 pub enum A {
     ParameterAref(ParameterAref),
     ParameterExpression(ParameterExpression),
-    F32(f32),
+    F64(f64),
 }
 
 impl From<ParameterAref> for A {
@@ -38,9 +38,9 @@ impl From<ParameterExpression> for A {
         Self::ParameterExpression(variant)
     }
 }
-impl From<f32> for A {
-    fn from(variant: f32) -> Self {
-        Self::F32(variant)
+impl From<f64> for A {
+    fn from(variant: f64) -> Self {
+        Self::F64(variant)
     }
 }
 
@@ -89,20 +89,20 @@ impl A {
             Err(self)
         }
     }
-    pub fn is_f32(&self) -> bool {
-        matches!(self, Self::F32(_))
+    pub fn is_f64(&self) -> bool {
+        matches!(self, Self::F64(_))
     }
 
-    pub fn as_f32(&self) -> Option<&f32> {
-        if let Self::F32(inner) = self {
+    pub fn as_f64(&self) -> Option<&f64> {
+        if let Self::F64(inner) = self {
             Some(inner)
         } else {
             None
         }
     }
 
-    pub fn into_f32(self) -> Result<f32, Self> {
-        if let Self::F32(inner) = self {
+    pub fn into_f64(self) -> Result<f64, Self> {
+        if let Self::F64(inner) = self {
             Ok(inner)
         } else {
             Err(self)
