@@ -1,3 +1,9 @@
+## 0.4.2
+
+### Fixes
+
+- bump release version
+
 ## 0.4.0
 
 ### Breaking Changes
