@@ -7985,20 +7985,6 @@ components:
         - detuning
       title: Capture
       type: object
-    CompilerISA:
-      properties:
-        1Q:
-          additionalProperties:
-            $ref: "#/components/schemas/Qubit"
-          title: 1Q
-          type: object
-        2Q:
-          additionalProperties:
-            $ref: "#/components/schemas/Edge"
-          title: 2Q
-          type: object
-      title: CompilerISA
-      type: object
     ControlSettings:
       description: >-
         All "physical" converter and signal chain settings per "channel".
@@ -8309,39 +8295,6 @@ components:
         - direction
       title: FrameSettings
       type: object
-    GateInfo:
-      properties:
-        arguments:
-          items:
-            anyOf:
-              - type: integer
-              - type: string
-          title: Arguments
-          type: array
-        duration:
-          title: Duration
-          type: number
-        fidelity:
-          title: Fidelity
-          type: number
-        operator:
-          title: Operator
-          type: string
-        operator_type:
-          default: gate
-          enum:
-            - gate
-          title: Operator Type
-          type: string
-        parameters:
-          items:
-            anyOf:
-              - type: number
-              - type: string
-          title: Parameters
-          type: array
-      title: GateInfo
-      type: object
     GateSettings:
       description: Information needed to schedule a gate from Quil.
       properties:
@@ -8482,46 +8435,6 @@ components:
         - second_order_hrm_coeff
       title: HermiteGaussianWaveform
       type: object
-    MeasureInfo:
-      properties:
-        duration:
-          title: Duration
-          type: number
-        fidelity:
-          title: Fidelity
-          type: number
-        operator:
-          title: Operator
-          type: string
-        operator_type:
-          default: measure
-          enum:
-            - measure
-          title: Operator Type
-          type: string
-        qubit:
-          anyOf:
-            - type: integer
-            - type: string
-          title: Qubit
-        target:
-          anyOf:
-            - type: integer
-            - type: string
-          title: Target
-      title: MeasureInfo
-      type: object
-    MetaPass:
-      description: A compiler meta-pass to perform.
-      enum:
-        - address
-        - swap
-        - native
-        - rc_local
-        - rc_global
-        - readout_symmetrization
-      title: MetaPass
-      type: string
     ParameterAref:
       description: A parametric expression.
       properties:
@@ -8685,26 +8598,6 @@ components:
         - readouts
         - amplifiers
       title: QPUSettings
-      type: object
-    Qubit:
-      properties:
-        dead:
-          default: false
-          title: Dead
-          type: boolean
-        gates:
-          items:
-            anyOf:
-              - $ref: "#/components/schemas/GateInfo"
-              - $ref: "#/components/schemas/MeasureInfo"
-          title: Gates
-          type: array
-        id:
-          title: Id
-          type: integer
-      required:
-        - id
-      title: Qubit
       type: object
     QubitSettings:
       description: Information related to a specific qubit.
