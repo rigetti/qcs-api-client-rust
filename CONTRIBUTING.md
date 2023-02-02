@@ -37,7 +37,7 @@ changes.
 
 ### `cargo check` and `clippy`
 
-The templates should, as much as possible, generate clean Rust code. That is, no warnings or errors should surface when
+The templates should, as much as possible, generate clean Rust code. That means no warnings or errors should surface when
 running `cargo check` or `cargo clippy` on the generated code (or a project depending on the generated code).
 
 When possible, any warnings or errors should be resolved by editing the templates to generate better code. When that is
