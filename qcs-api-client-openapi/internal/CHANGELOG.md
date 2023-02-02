@@ -1,3 +1,9 @@
+## 0.5.2
+
+### Fixes
+
+- bump release version
+
 ## 0.5.0
 
 ### Breaking Changes
