@@ -9,10 +9,18 @@
  */
 
 use reqwest;
+#[cfg(feature = "otel-tracing")]
+use {
+    reqwest_middleware::ClientBuilder, reqwest_tracing::reqwest_otel_span,
+    reqwest_tracing::TracingMiddleware, tracing,
+};
 
 #[derive(Debug, Clone)]
 pub struct Configuration {
+    #[cfg(not(feature = "otel-tracing"))]
     pub client: reqwest::Client,
+    #[cfg(feature = "otel-tracing")]
+    pub client: reqwest_middleware::ClientWithMiddleware,
     pub qcs_config: crate::common::ClientConfiguration,
 }
 
@@ -24,6 +32,8 @@ pub struct ApiKey {
     pub key: String,
 }
 
+static USER_AGENT: &str = "QCS OpenAPI Client (Rust)/2020-07-31";
+
 impl Configuration {
     pub async fn new() -> Result<Self, crate::common::configuration::LoadError> {
         crate::common::ClientConfiguration::load_default()
@@ -32,10 +42,149 @@ impl Configuration {
     }
 
     pub fn with_qcs_config(qcs_config: crate::common::ClientConfiguration) -> Configuration {
-        let client = reqwest::Client::builder()
-            .user_agent("QCS OpenAPI Client (Rust)/2020-07-31")
-            .build()
-            .expect("failed to create HTTP client");
+        let client = {
+            reqwest::Client::builder()
+                .user_agent(USER_AGENT)
+                .build()
+                .expect("failed to create HTTP client")
+        };
+
+        #[cfg(feature = "otel-tracing")]
+        let client = {
+            use reqwest_middleware::Extension;
+
+            let mut client_builder = ClientBuilder::new(client);
+            if let Some(tracing_configuration) = qcs_config.tracing_configuration() {
+                // if tracing configuration set, tracing is enabled.
+                if let Some(tracing_filter) = tracing_configuration.filter() {
+                    // if a filter is set it, pass it to the middleware via Extension.
+                    client_builder = client_builder.with_init(Extension(tracing_filter.clone()));
+                }
+                let middleware = TracingMiddleware::<FilteredSpanBackend>::new();
+                client_builder = client_builder.with(middleware);
+            }
+            client_builder.build()
+        };
+
         Self { qcs_config, client }
+    }
+}
+
+#[cfg(feature = "otel-tracing")]
+struct FilteredSpanBackend;
+
+#[cfg(feature = "otel-tracing")]
+impl FilteredSpanBackend {
+    fn is_enabled(
+        req: &reqwest::Request,
+        extensions: &mut task_local_extensions::Extensions,
+    ) -> bool {
+        if let Some(filter) = extensions.get::<qcs_api_client_common::otel_tracing::TracingFilter>()
+        {
+            let input = urlpattern::UrlPatternMatchInput::Url(req.url().clone());
+            return filter.is_enabled(&input);
+        }
+        true
+    }
+}
+
+#[cfg(feature = "otel-tracing")]
+impl reqwest_tracing::ReqwestOtelSpanBackend for FilteredSpanBackend {
+    /// Checks the filter to verify whether an HTTP request should be traced and produces a span for the given
+    /// request that conforms to OpenTelemetry semantic conventions if so. See
+    /// <https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/http.md#http-client>
+    /// for details about the related semantic conventions.
+    fn on_request_start(
+        req: &reqwest::Request,
+        extensions: &mut task_local_extensions::Extensions,
+    ) -> tracing::Span {
+        if !Self::is_enabled(req, extensions) {
+            return tracing::Span::none();
+        }
+        let uri = req.url().to_string();
+        let http_target = req.url().path();
+        let user_agent = req
+            .headers()
+            .get("User-Agent")
+            .and_then(|ua| ua.to_str().ok())
+            .unwrap_or("");
+        reqwest_otel_span!(
+            name = "HTTP request",
+            req,
+            http.url = uri,
+            http.target = http_target,
+            http.user_agent = user_agent
+        )
+    }
+
+    fn on_request_end(
+        span: &tracing::Span,
+        outcome: &reqwest_middleware::Result<reqwest::Response>,
+        _extension: &mut task_local_extensions::Extensions,
+    ) {
+        reqwest_tracing::default_on_request_end(span, outcome)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[cfg(feature = "otel-tracing")]
+    use rstest::rstest;
+
+    /// https://docs.rs/reqwest_mock doesn't seem well maintained and requires setting the
+    /// Configuration::client field to be a trait or struct from the reqwest_mock crate.
+    ///
+    /// Additionally, reqwest still doesn't support Unix domain sockets, so unit testing is fairly
+    /// limited for here. See more info on UDS, see <https://github.com/seanmonstar/reqwest/issues/39>.
+
+    /// Test that all requests are traced when no filter is specified.
+    #[cfg(feature = "otel-tracing")]
+    #[rstest]
+    fn test_tracing_enabled_no_filter() {
+        use crate::apis::configuration::FilteredSpanBackend;
+
+        let request = reqwest::Request::new(
+            reqwest::Method::GET,
+            "https://api.qcs.rigetti.com"
+                .parse()
+                .expect("test url should be valid"),
+        );
+        let mut extensions = task_local_extensions::Extensions::new();
+        assert!(FilteredSpanBackend::is_enabled(&request, &mut extensions));
+    }
+
+    /// Test that requests are traced according to filter patterns.
+    #[cfg(feature = "otel-tracing")]
+    #[rstest]
+    #[case("https://api.qcs.rigetti.com/v1/path", true)]
+    #[case("https://api.qcs.rigetti.com/v1/other", false)]
+    #[case("https://other.qcs.rigetti.com/v1/path", false)]
+    fn test_tracing_enabled_filter_not_passed(#[case] url: &str, #[case] expected: bool) {
+        use qcs_api_client_common::otel_tracing::TracingFilterBuilder;
+
+        use crate::apis::configuration::FilteredSpanBackend;
+
+        let mut tracing_filter = qcs_api_client_common::otel_tracing::TracingFilter::builder()
+            .parse_strs_and_set_paths(&["https://api.qcs.rigetti.com/v1/path"])
+            .expect("test pattern should be valid")
+            .build();
+
+        let url = url.parse().expect("test url should be valid");
+        let request = reqwest::Request::new(reqwest::Method::GET, url);
+        let mut extensions = task_local_extensions::Extensions::new();
+        extensions.insert(tracing_filter.clone());
+        assert_eq!(
+            expected,
+            FilteredSpanBackend::is_enabled(&request, &mut extensions)
+        );
+
+        tracing_filter = TracingFilterBuilder::from(tracing_filter)
+            .set_is_negated(true)
+            .build();
+        extensions.insert(tracing_filter);
+        assert_ne!(
+            expected,
+            FilteredSpanBackend::is_enabled(&request, &mut extensions)
+        );
     }
 }

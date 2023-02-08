@@ -1,0 +1,17 @@
+extend = ".rust-ci/defaults/Makefile.toml"
+
+[config]
+load_script = """
+    if [ ! -d /etc/rust-ci ] || [ -d .rust-ci/.git ]; then
+        if [ ! -d .rust-ci ]; then
+            git clone git@gitlab.com:rigetti/qcs/utilities/rust-ci-image.git .rust-ci
+        else
+            git -C .rust-ci pull
+        fi
+    else 
+        if [ -d .rust-ci ]; then
+            rm -rf .rust-ci
+        fi
+        cp -r /etc/rust-ci .rust-ci
+    fi
+"""

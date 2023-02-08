@@ -66,3 +66,5 @@ while_true
 
 pub mod configuration;
 pub use configuration::ClientConfiguration;
+#[cfg(feature = "otel-tracing")]
+pub mod otel_tracing;

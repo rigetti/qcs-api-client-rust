@@ -21,6 +21,7 @@ include:
 .install_deps: &install_deps
   - apt-get update -y
   - apt-get install -y zip curl git
+  - cargo install --force cargo-make
 
 Check:
   stage: test
@@ -30,9 +31,8 @@ Check:
     - !reference [.install_protoc]
   script:
     - cargo --version
-    - cargo fmt --check
-    - cargo test
-    - cargo clippy
+    - cargo make clippy
+    - cargo make test
 
 Release:
   stage: publish

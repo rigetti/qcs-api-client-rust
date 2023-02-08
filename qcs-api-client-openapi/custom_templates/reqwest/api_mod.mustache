@@ -15,6 +15,8 @@ pub enum Error<T> {
     Io(std::io::Error),
     QcsRefresh(crate::common::configuration::RefreshError),
     ResponseError(ResponseContent<T>),
+    #[cfg(feature = "otel-tracing")]
+    ReqwestMiddleware(anyhow::Error),
 }
 
 impl<T> Error<T> {
@@ -26,50 +28,67 @@ impl<T> Error<T> {
     }
 }
 
-impl <T> fmt::Display for Error<T> {
+impl<T> fmt::Display for Error<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let (module, e) = match self {
             Error::Reqwest(e) => ("reqwest", e.to_string()),
             Error::Serde(e) => ("serde", e.to_string()),
             Error::Io(e) => ("IO", e.to_string()),
             Error::QcsRefresh(e) => ("refresh_qcs_token", e.to_string()),
-            Error::ResponseError(e) => ("response", format!("status code {}: {}", e.status, e.content)),
+            Error::ResponseError(e) => (
+                "response",
+                format!("status code {}: {}", e.status, e.content),
+            ),
+            #[cfg(feature = "otel-tracing")]
+            Error::ReqwestMiddleware(e) => ("reqwest-middleware", e.to_string()),
         };
         write!(f, "error in {}: {}", module, e)
     }
 }
 
-impl <T: fmt::Debug> error::Error for Error<T> {
+impl<T: fmt::Debug> error::Error for Error<T> {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         Some(match self {
             Error::Reqwest(e) => e,
             Error::Serde(e) => e,
             Error::Io(e) => e,
             Error::QcsRefresh(e) => e,
+            #[cfg(feature = "otel-tracing")]
+            Error::ReqwestMiddleware(e) => e.source()?,
             Error::ResponseError(_) => return None,
         })
     }
 }
 
-impl <T> From<reqwest::Error> for Error<T> {
+impl<T> From<reqwest::Error> for Error<T> {
     fn from(e: reqwest::Error) -> Self {
         Error::Reqwest(e)
     }
 }
 
-impl <T> From<serde_json::Error> for Error<T> {
+#[cfg(feature = "otel-tracing")]
+impl<T> From<reqwest_middleware::Error> for Error<T> {
+    fn from(e: reqwest_middleware::Error) -> Self {
+        match e {
+            reqwest_middleware::Error::Reqwest(e) => Error::Reqwest(e),
+            reqwest_middleware::Error::Middleware(e) => Error::ReqwestMiddleware(e),
+        }
+    }
+}
+
+impl<T> From<serde_json::Error> for Error<T> {
     fn from(e: serde_json::Error) -> Self {
         Error::Serde(e)
     }
 }
 
-impl <T> From<std::io::Error> for Error<T> {
+impl<T> From<std::io::Error> for Error<T> {
     fn from(e: std::io::Error) -> Self {
         Error::Io(e)
     }
 }
 
-impl <T> From<crate::common::configuration::RefreshError> for Error<T> {
+impl<T> From<crate::common::configuration::RefreshError> for Error<T> {
     fn from(e: crate::common::configuration::RefreshError) -> Self {
         Error::QcsRefresh(e)
     }
