@@ -1,6 +1,6 @@
 [package]
 name = "qcs-api-client-common"
-version = "0.4.2"
+version = "0.4.3"
 edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
@@ -15,14 +15,21 @@ description = "Common code for QCS API clients"
 [dependencies]
 dirs = "4.0.0"
 futures = "0.3.26"
+http = { version = "0.2.8", optional = true }
 jsonwebtoken = "8.1.1"
 reqwest = { version = "0.11.11", default-features = false, features = ["json", "rustls-tls"] }
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0.32"
 tokio = { version = "1.20.1", features = ["fs"] }
 toml = "0.5.9"
+tracing = { version = "0.1.37", optional = true }
+url = { version = "2.3.1", optional = true }
+urlpattern = { version = "0.2.0", optional = true }
 
 [dev-dependencies]
 rstest = "0.16.0"
 tempfile = "3.3.0"
 tokio = { version = "1.20.1", features = ["fs", "macros"] }
+
+[features]
+otel-tracing = ["http", "tracing", "url", "urlpattern"]

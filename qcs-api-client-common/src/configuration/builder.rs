@@ -25,6 +25,8 @@ pub struct ClientConfigurationBuilder {
     grpc_api_url: Option<String>,
     quilc_url: Option<String>,
     qvm_url: Option<String>,
+    #[cfg(feature = "otel-tracing")]
+    tracing_configuration: Option<crate::otel_tracing::TracingConfiguration>,
 }
 
 impl From<ClientConfiguration> for ClientConfigurationBuilder {
@@ -36,6 +38,8 @@ impl From<ClientConfiguration> for ClientConfigurationBuilder {
             grpc_api_url: Some(config.grpc_api_url),
             quilc_url: Some(config.quilc_url),
             qvm_url: Some(config.qvm_url),
+            #[cfg(feature = "otel-tracing")]
+            tracing_configuration: config.tracing_configuration,
         }
     }
 }
@@ -91,6 +95,18 @@ impl ClientConfigurationBuilder {
         self
     }
 
+    /// Set the [`TracingConfiguration`]. If set to `None`, network API calls will not be traced.
+    /// Otherwise, the given [`TracingConfiguration`] will be used to configure tracing.
+    #[cfg(feature = "otel-tracing")]
+    #[must_use]
+    pub fn set_tracing_configuration(
+        mut self,
+        tracing_configuration: Option<crate::otel_tracing::TracingConfiguration>,
+    ) -> Self {
+        self.tracing_configuration = tracing_configuration;
+        self
+    }
+
     /// Build the [`ClientConfiguration`].
     ///
     /// # Errors
@@ -108,6 +124,8 @@ impl ClientConfigurationBuilder {
                 .quilc_url
                 .unwrap_or_else(|| DEFAULT_QUILC_URL.to_string()),
             qvm_url: self.qvm_url.unwrap_or_else(|| DEFAULT_QVM_URL.to_string()),
+            #[cfg(feature = "otel-tracing")]
+            tracing_configuration: self.tracing_configuration,
         })
     }
 }

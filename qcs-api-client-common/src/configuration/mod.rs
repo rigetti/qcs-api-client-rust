@@ -38,6 +38,8 @@ use settings::Settings;
 pub use settings::{AuthServer, SETTINGS_PATH_VAR};
 
 use crate::configuration::LoadError::AuthServerNotFound;
+#[cfg(feature = "otel-tracing")]
+use crate::otel_tracing::{TracingConfiguration, TracingFilterError};
 
 mod builder;
 mod path;
@@ -93,6 +95,10 @@ pub struct ClientConfiguration {
 
     quilc_url: String,
     qvm_url: String,
+
+    /// Configuration for tracing of network API calls. If `None`, tracing is disabled.
+    #[cfg(feature = "otel-tracing")]
+    tracing_configuration: Option<TracingConfiguration>,
 }
 
 impl ClientConfiguration {
@@ -125,6 +131,14 @@ impl ClientConfiguration {
     #[must_use]
     pub fn qvm_url(&self) -> &str {
         &self.qvm_url
+    }
+
+    /// URL to access QVM. Defaults to [`DEFAULT_QVM_URL`].
+    #[cfg(feature = "otel-tracing")]
+    #[must_use]
+    #[allow(clippy::missing_const_for_fn)]
+    pub fn tracing_configuration(&self) -> Option<&TracingConfiguration> {
+        self.tracing_configuration.as_ref()
     }
 }
 
@@ -182,6 +196,12 @@ pub enum LoadError {
         /// The error from parsing.
         source: toml::de::Error,
     },
+
+    #[cfg(feature = "otel-tracing")]
+    /// Failed to parse tracing filter. These should be a comma separated list of URL patterns. See
+    /// <https://wicg.github.io/urlpattern> for reference.
+    #[error("Could not parse tracing filter: {0}")]
+    TracingFilterParseError(TracingFilterError),
 }
 
 impl ClientConfiguration {
@@ -320,14 +340,26 @@ impl ClientConfiguration {
             refresh_token,
         };
 
+        #[cfg(feature = "otel-tracing")]
+        let tracing_configuration = crate::otel_tracing::TracingConfiguration::from_env()
+            .map_err(LoadError::TracingFilterParseError)?;
+
+        let mut builder = Self::builder();
+        builder = builder
+            .set_tokens(tokens)
+            .set_auth_server(auth_server)
+            .set_api_url(profile.api_url)
+            .set_quilc_url(quilc_url)
+            .set_qvm_url(qvm_url)
+            .set_grpc_api_url(grpc_api_url);
+
+        #[cfg(feature = "otel-tracing")]
+        {
+            builder = builder.set_tracing_configuration(tracing_configuration);
+        };
+
         Ok({
-            Self::builder()
-                .set_tokens(tokens)
-                .set_auth_server(auth_server)
-                .set_api_url(profile.api_url)
-                .set_quilc_url(quilc_url)
-                .set_qvm_url(qvm_url)
-                .set_grpc_api_url(grpc_api_url)
+            builder
                 .build()
                 .expect("curated build process should not fail")
         })

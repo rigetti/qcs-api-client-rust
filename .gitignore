@@ -1,3 +1,13 @@
 .idea
 .vscode
+# supports https://github.com/tamago324/nlsp-settings.nvim
+/.nlsp-settings
 /target
+.DS_Store
+# developer notes, etc.
+/scratch
+# Currently ignored just to leave to developer preference. May be worth a dedicated
+# MR to define an approprate default configuration.
+# https://github.com/Canop/bacon.
+bacon.toml
+.rust-ci
