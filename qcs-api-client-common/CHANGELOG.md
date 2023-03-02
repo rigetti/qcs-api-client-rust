@@ -1,3 +1,13 @@
+## 0.4.3
+
+### Features
+
+- support otel tracing
+
+### Fixes
+
+- re-export pbjson_types instead of broken include
+
 ## 0.4.2
 
 ### Fixes
