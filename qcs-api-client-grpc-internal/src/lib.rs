@@ -11,7 +11,7 @@ pub use qcs_api_client_common::configuration as client_configuration;
 #[allow(clippy::derive_partial_eq_without_eq)]
 pub mod google {
     pub mod protobuf {
-        tonic::include_proto!("google.protobuf");
+        pub use pbjson_types::*;
     }
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
