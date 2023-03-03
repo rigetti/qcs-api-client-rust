@@ -6557,6 +6557,7 @@ components:
       enum:
         - reservation
         - resource
+        - settings
         - fifo
       title: QueuePolicyType
       type: string
