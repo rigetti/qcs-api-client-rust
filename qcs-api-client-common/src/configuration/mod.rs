@@ -397,6 +397,51 @@ impl Default for ClientConfiguration {
     }
 }
 
+/// Get and refresh access tokens
+#[async_trait::async_trait]
+pub trait TokenRefresher: Clone {
+    /// The type to be returned in the event of a error during getting or
+    /// refreshing an access token
+    type Error;
+
+    /// Get the current access token
+    async fn get_access_token(&self) -> Result<String, Self::Error>;
+
+    /// Get a fresh access token
+    async fn refresh_access_token(&self) -> Result<String, Self::Error>;
+
+    /// Get the base URL for requests
+    #[cfg(feature = "otel-tracing")]
+    fn base_url(&self) -> &str;
+
+    /// Get the tracing configuration
+    #[cfg(feature = "otel-tracing")]
+    fn tracing_configuration(&self) -> Option<&TracingConfiguration>;
+}
+
+#[async_trait::async_trait]
+impl TokenRefresher for ClientConfiguration {
+    type Error = RefreshError;
+
+    async fn refresh_access_token(&self) -> Result<String, Self::Error> {
+        self.refresh().await
+    }
+
+    async fn get_access_token(&self) -> Result<String, Self::Error> {
+        self.get_bearer_access_token().await
+    }
+
+    #[cfg(feature = "otel-tracing")]
+    fn base_url(&self) -> &str {
+        &self.grpc_api_url
+    }
+
+    #[cfg(feature = "otel-tracing")]
+    fn tracing_configuration(&self) -> Option<&TracingConfiguration> {
+        self.tracing_configuration()
+    }
+}
+
 #[cfg(test)]
 mod describe_client_configuration_load {
     #[allow(clippy::wildcard_imports)]

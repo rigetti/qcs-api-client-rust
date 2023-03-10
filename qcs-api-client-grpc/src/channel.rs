@@ -14,6 +14,7 @@
 
 use crate::client_configuration::{ClientConfiguration, LoadError, RefreshError};
 use http_body::Full;
+use qcs_api_client_common::configuration::TokenRefresher;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -29,10 +30,10 @@ use tower::{Layer, ServiceBuilder};
 /// Errors that may occur when using gRPC.
 #[derive(Debug, thiserror::Error)]
 #[allow(variant_size_differences)]
-pub enum Error {
+pub enum Error<E: std::error::Error> {
     /// Failed to refresh the access token.
     #[error("failed to refresh access token: {0}")]
-    Refresh(#[from] RefreshError),
+    Refresh(#[source] E),
     /// Failed to load the QCS configuration.
     #[error("failed to load QCS config: {0}")]
     Load(#[from] LoadError),
@@ -54,7 +55,7 @@ pub enum Error {
 /// # Errors
 ///
 /// [`Error::InvalidUri`] if the string is an invalid URI.
-pub fn parse_uri(s: &str) -> Result<Uri, Error> {
+pub fn parse_uri(s: &str) -> Result<Uri, Error<RefreshError>> {
     s.parse().map_err(Error::from)
 }
 
@@ -76,15 +77,32 @@ pub fn get_channel(uri: Uri) -> Channel {
 /// # Errors
 ///
 /// See [`Error`]
-pub async fn get_wrapped_channel(uri: Uri) -> Result<RefreshService<Channel>, Error> {
+pub async fn get_wrapped_channel(
+    uri: Uri,
+) -> Result<RefreshService<Channel, ClientConfiguration>, Error<RefreshError>> {
     wrap_channel(get_channel(uri)).await
 }
 
 /// Set up the given [`Channel`] with QCS authentication.
 #[must_use]
-pub fn wrap_channel_with(channel: Channel, config: ClientConfiguration) -> RefreshService<Channel> {
+pub fn wrap_channel_with(
+    channel: Channel,
+    config: ClientConfiguration,
+) -> RefreshService<Channel, ClientConfiguration> {
     ServiceBuilder::new()
         .layer(RefreshLayer::with_config(config))
+        .service(channel)
+}
+
+/// Set up the given [`Channel`] which will automatically
+/// attempt to refresh its access token when a request fails
+/// do to an expired token
+pub fn wrap_channel_with_token_refresher<T: TokenRefresher + Clone + Send + Sync>(
+    channel: Channel,
+    token_refresher: T,
+) -> RefreshService<Channel, T> {
+    ServiceBuilder::new()
+        .layer(RefreshLayer::with_refresher(token_refresher))
         .service(channel)
 }
 
@@ -93,7 +111,9 @@ pub fn wrap_channel_with(channel: Channel, config: ClientConfiguration) -> Refre
 /// # Errors
 ///
 /// See [`Error`]
-pub async fn wrap_channel(channel: Channel) -> Result<RefreshService<Channel>, Error> {
+pub async fn wrap_channel(
+    channel: Channel,
+) -> Result<RefreshService<Channel, ClientConfiguration>, Error<RefreshError>> {
     Ok(wrap_channel_with(
         channel,
         ClientConfiguration::load_default().await?,
@@ -108,7 +128,7 @@ pub async fn wrap_channel(channel: Channel) -> Result<RefreshService<Channel>, E
 pub async fn wrap_channel_with_profile(
     channel: Channel,
     profile: String,
-) -> Result<RefreshService<Channel>, Error> {
+) -> Result<RefreshService<Channel, ClientConfiguration>, Error<RefreshError>> {
     Ok(wrap_channel_with(
         channel,
         ClientConfiguration::load_profile(profile).await?,
@@ -116,40 +136,45 @@ pub async fn wrap_channel_with_profile(
 }
 
 /// The [`Layer`] used to apply QCS authentication to all gRPC calls.
-#[derive(Clone, Debug)]
-pub struct RefreshLayer {
-    config: ClientConfiguration,
+pub struct RefreshLayer<T> {
+    token_refresher: T,
 }
 
-impl RefreshLayer {
+impl<T: TokenRefresher> RefreshLayer<T> {
+    pub fn with_refresher(token_refresher: T) -> Self {
+        Self { token_refresher }
+    }
+}
+
+impl RefreshLayer<ClientConfiguration> {
     /// Create a new [`RefreshLayer`].
     ///
     /// # Errors
     ///
     /// Will fail with error if loading the [`ClientConfiguration`] fails.
-    pub async fn new() -> Result<Self, Error> {
+    pub async fn new() -> Result<Self, Error<RefreshError>> {
         let config = ClientConfiguration::load_default().await?;
         Ok(Self::with_config(config))
     }
 
-    pub async fn with_profile(profile: String) -> Result<Self, Error> {
+    pub async fn with_profile(profile: String) -> Result<Self, Error<RefreshError>> {
         let config = ClientConfiguration::load_profile(profile).await?;
         Ok(Self::with_config(config))
     }
 
     /// Create a [`RefreshLayer`] from an existing [`ClientConfiguration`].
     #[must_use]
-    pub const fn with_config(config: ClientConfiguration) -> Self {
-        Self { config }
+    pub fn with_config(config: ClientConfiguration) -> Self {
+        Self::with_refresher(config)
     }
 }
 
-impl<S> Layer<S> for RefreshLayer {
-    type Service = RefreshService<S>;
+impl<S, T: Clone> Layer<S> for RefreshLayer<T> {
+    type Service = RefreshService<S, T>;
 
     fn layer(&self, inner: S) -> Self::Service {
         RefreshService {
-            config: self.config.clone(),
+            token_refresher: self.token_refresher.clone(),
             service: inner,
         }
     }
@@ -158,10 +183,10 @@ impl<S> Layer<S> for RefreshLayer {
 /// The [`GrpcService`] that wraps the gRPC client in order to provide QCS authentication.
 ///
 /// See also: [`RefreshLayer`].
-#[derive(Clone, Debug)]
-pub struct RefreshService<S> {
+#[derive(Clone)]
+pub struct RefreshService<S, T> {
     service: S,
-    config: ClientConfiguration,
+    token_refresher: T,
 }
 
 type CloneBodyError = <BoxBody as Body>::Error;
@@ -206,11 +231,11 @@ async fn clone_request(req: Request<BoxBody>) -> (Request<BoxBody>, Request<BoxB
     (req_1, req_2)
 }
 
-async fn make_request(
+async fn make_request<E: std::error::Error>(
     service: &mut Channel,
     mut request: Request<BoxBody>,
     token: String,
-) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error> {
+) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error<E>> {
     let header_val = format!("Bearer {token}")
         .try_into()
         .map_err(Error::InvalidAccessToken)?;
@@ -219,11 +244,11 @@ async fn make_request(
 }
 
 #[cfg(feature = "otel-tracing")]
-async fn make_traced_request(
+async fn make_traced_request<E: std::error::Error>(
     service: &mut Channel,
     mut request: Request<BoxBody>,
     token: String,
-) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error> {
+) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error<E>> {
     let header_val = format!("Bearer {token}")
         .try_into()
         .map_err(Error::InvalidAccessToken)?;
@@ -240,13 +265,15 @@ async fn make_traced_request(
         .map_err(Error::from)
 }
 
-impl GrpcService<BoxBody> for RefreshService<Channel>
+impl<T: TokenRefresher + Clone + Send + Sync + 'static> GrpcService<BoxBody>
+    for RefreshService<Channel, T>
 where
     Channel: GrpcService<BoxBody, Error = TransportError> + Clone + Send + 'static,
     <Channel as GrpcService<BoxBody>>::Future: Send,
+    T::Error: std::error::Error + Send + Sync,
 {
     type ResponseBody = <Channel as GrpcService<BoxBody>>::ResponseBody;
-    type Error = Error;
+    type Error = Error<T::Error>;
     type Future =
         Pin<Box<dyn Future<Output = Result<Response<Self::ResponseBody>, Self::Error>> + Send>>;
 
@@ -262,34 +289,44 @@ where
         // See this github issue for more context:
         // https://github.com/tower-rs/tower/issues/547
         let service = std::mem::replace(&mut self.service, service);
-        let config = self.config.clone();
+        let token_refresher = self.token_refresher.clone();
         Box::pin(async move {
             #[cfg(feature = "otel-tracing")]
             use opentelemetry_api::trace::FutureExt;
 
             #[cfg(feature = "otel-tracing")]
-            return traced_service_call(req, config, service)
+            return traced_service_call(req, token_refresher, service)
                 .with_current_context()
                 .await;
 
             #[cfg(not(feature = "otel-tracing"))]
-            return service_call(req, config, service).await;
+            return service_call(req, token_refresher, service).await;
         })
     }
 }
 
-async fn service_call(
+async fn service_call<T>(
     req: Request<BoxBody>,
-    config: ClientConfiguration,
+    token_refresher: T,
     mut channel: Channel,
-) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error> {
-    let token = config.get_bearer_access_token().await?;
+) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error<T::Error>>
+where
+    T: TokenRefresher,
+    T::Error: std::error::Error,
+{
+    let token = token_refresher
+        .get_access_token()
+        .await
+        .map_err(Error::Refresh)?;
     let (req, retry_req) = clone_request(req).await;
     let resp = make_request(&mut channel, req, token).await?;
     match resp.status() {
         StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
             // Refresh token and try again
-            let token = config.refresh().await?;
+            let token = token_refresher
+                .refresh_access_token()
+                .await
+                .map_err(Error::Refresh)?;
             make_request(&mut channel, retry_req, token).await
         }
         _ => Ok(resp),
@@ -297,22 +334,21 @@ async fn service_call(
 }
 
 #[cfg(feature = "otel-tracing")]
-async fn traced_service_call(
+async fn traced_service_call<T: TokenRefresher>(
     original_req: Request<BoxBody>,
-    config: ClientConfiguration,
+    config: T,
     mut channel: Channel,
-) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error> {
+) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error<T::Error>>
+where
+    T::Error: std::error::Error,
+{
     use opentelemetry::{propagation::TextMapPropagator, sdk::propagation::TraceContextPropagator};
     use opentelemetry_api::trace::FutureExt;
     use opentelemetry_http::HeaderInjector;
     use urlpattern::UrlPatternMatchInput;
 
     // The request URI here doesn't include the base url, so we have  to manually add it here to evaluate request filter patterns.
-    let full_request_url = format!(
-        "{}{}",
-        config.grpc_api_url(),
-        &original_req.uri().to_string()
-    );
+    let full_request_url = format!("{}{}", config.base_url(), &original_req.uri().to_string());
 
     if !config
         .tracing_configuration()
@@ -336,9 +372,10 @@ async fn traced_service_call(
     }
 
     let token = config
-        .get_bearer_access_token()
+        .get_access_token()
         .with_current_context()
-        .await?;
+        .await
+        .map_err(Error::Refresh)?;
     let (mut req, mut retry_req) = clone_request(original_req).with_current_context().await;
 
     // Poor semantics here, but adding custom gRPC metadata is equivalent to setting request
@@ -355,7 +392,11 @@ async fn traced_service_call(
         StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
             tracing::info!("refreshing token after receiving unauthorized or forbidden status",);
             // Refresh token and try again
-            let token = config.refresh().with_current_context().await?;
+            let token = config
+                .refresh_access_token()
+                .with_current_context()
+                .await
+                .map_err(Error::Refresh)?;
             tracing::info!("token refreshed");
             let propagator = TraceContextPropagator::new();
             let mut injector = HeaderInjector(retry_req.headers_mut());
