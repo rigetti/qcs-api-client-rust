@@ -259,7 +259,9 @@ impl ClientConfiguration {
     /// See [`RefreshError`].
     pub async fn get_bearer_access_token(&self) -> Result<String, RefreshError> {
         let mut lock = self.tokens.lock().await;
-        match Self::validate_bearer_access_token(&mut lock) {
+        // clippy warns about possible deadlock without this `let`
+        let validation = Self::validate_bearer_access_token(&mut lock);
+        match validation {
             Ok(token) => Ok(token),
             Err(_) => self.internal_refresh(&mut lock).await,
         }

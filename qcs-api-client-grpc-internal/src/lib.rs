@@ -15,6 +15,7 @@ pub mod google {
     }
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
+#[allow(clippy::needless_borrow)]
 pub mod models {
     pub mod controller {
         tonic::include_proto!("models.controller");

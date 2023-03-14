@@ -16,79 +16,92 @@
 /// A request to execute multiple ControllerJobs as if they were sent as separate requests.
 /// Note that the job execution IDs will be returned in the same order as the requests,
 /// but execution itself may occur out of that order depending on executor configuration.
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct BatchExecuteControllerJobsRequest {
-    #[prost(message, repeated, tag="1")]
+    #[prost(message, repeated, tag = "1")]
     pub requests: ::prost::alloc::vec::Vec<ExecuteControllerJobRequest>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct BatchExecuteControllerJobsResponse {
-    #[prost(message, repeated, tag="1")]
+    #[prost(message, repeated, tag = "1")]
     pub responses: ::prost::alloc::vec::Vec<ExecuteControllerJobResponse>,
 }
 /// A request to execute a given ControllerJob on a specific target with one or more configurations.
 /// Note that a request to execute a job with zero configurations will result in an error.
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ExecuteControllerJobRequest {
     /// One or more configurations against which to execute the provided job.
     ///
     /// The response will include one `job_execution_id` for each entry in this list,
     /// each corresponding to its configuration in the same order.
-    #[prost(message, repeated, tag="3")]
-    pub execution_configurations: ::prost::alloc::vec::Vec<super::super::models::controller::JobExecutionConfiguration>,
-    #[prost(oneof="execute_controller_job_request::Job", tags="201")]
+    #[prost(message, repeated, tag = "3")]
+    pub execution_configurations: ::prost::alloc::vec::Vec<
+        super::super::models::controller::JobExecutionConfiguration,
+    >,
+    #[prost(oneof = "execute_controller_job_request::Job", tags = "201")]
     pub job: ::core::option::Option<execute_controller_job_request::Job>,
     /// Required by the gateway to forward requests to the correct execution host.
-    #[prost(oneof="execute_controller_job_request::Target", tags="101, 102")]
+    #[prost(oneof = "execute_controller_job_request::Target", tags = "101, 102")]
     pub target: ::core::option::Option<execute_controller_job_request::Target>,
 }
 /// Nested message and enum types in `ExecuteControllerJobRequest`.
 pub mod execute_controller_job_request {
     #[derive(serde::Deserialize)]
+    #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Job {
-        #[prost(message, tag="201")]
+        #[prost(message, tag = "201")]
         Encrypted(super::super::super::models::controller::EncryptedControllerJob),
     }
     /// Required by the gateway to forward requests to the correct execution host.
+    #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Target {
-        #[prost(string, tag="101")]
+        #[prost(string, tag = "101")]
         QuantumProcessorId(::prost::alloc::string::String),
-        #[prost(string, tag="102")]
+        #[prost(string, tag = "102")]
         EndpointId(::prost::alloc::string::String),
     }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ExecuteControllerJobResponse {
     /// One execution ID per input JobExecutionConfiguration, in the same order as the input.
-    #[prost(string, repeated, tag="1")]
+    #[prost(string, repeated, tag = "1")]
     pub job_execution_ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetControllerJobResultsRequest {
     /// Which Controller Job execution to query for results
-    #[prost(string, optional, tag="1")]
+    #[prost(string, optional, tag = "1")]
     pub job_execution_id: ::core::option::Option<::prost::alloc::string::String>,
     /// Required by the gateway to forward requests to the correct execution host.
-    #[prost(oneof="get_controller_job_results_request::Target", tags="101, 102")]
+    #[prost(oneof = "get_controller_job_results_request::Target", tags = "101, 102")]
     pub target: ::core::option::Option<get_controller_job_results_request::Target>,
 }
 /// Nested message and enum types in `GetControllerJobResultsRequest`.
 pub mod get_controller_job_results_request {
     /// Required by the gateway to forward requests to the correct execution host.
+    #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Target {
-        #[prost(string, tag="101")]
+        #[prost(string, tag = "101")]
         QuantumProcessorId(::prost::alloc::string::String),
-        #[prost(string, tag="102")]
+        #[prost(string, tag = "102")]
         EndpointId(::prost::alloc::string::String),
     }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetControllerJobResultsResponse {
-    #[prost(message, optional, tag="1")]
-    pub result: ::core::option::Option<super::super::models::controller::ControllerJobExecutionResult>,
+    #[prost(message, optional, tag = "1")]
+    pub result: ::core::option::Option<
+        super::super::models::controller::ControllerJobExecutionResult,
+    >,
 }
 /// Cancel all given jobs that have yet to begin executing.
 /// This endpoint is *not* atomic, and will attempt to cancel every job even
@@ -98,27 +111,44 @@ pub struct GetControllerJobResultsResponse {
 /// Success response indicates only that the request was received. Cancellation
 /// is not guaranteed, as it is based on job state at time of cancellation, and is
 /// completed on a best-effort basis.
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CancelControllerJobsRequest {
-    #[prost(string, repeated, tag="1")]
+    #[prost(string, repeated, tag = "1")]
     pub job_ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct CancelControllerJobsResponse {
-}
+pub struct CancelControllerJobsResponse {}
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetControllerJobStatusRequest {
-    #[prost(string, optional, tag="1")]
+    #[prost(string, optional, tag = "1")]
     pub job_id: ::core::option::Option<::prost::alloc::string::String>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetControllerJobStatusResponse {
-    #[prost(enumeration="get_controller_job_status_response::Status", optional, tag="1")]
+    #[prost(
+        enumeration = "get_controller_job_status_response::Status",
+        optional,
+        tag = "1"
+    )]
     pub status: ::core::option::Option<i32>,
 }
 /// Nested message and enum types in `GetControllerJobStatusResponse`.
 pub mod get_controller_job_status_response {
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum Status {
         Unknown = 0,
@@ -141,6 +171,18 @@ pub mod get_controller_job_status_response {
                 Status::Succeeded => "SUCCEEDED",
                 Status::Failed => "FAILED",
                 Status::Canceled => "CANCELED",
+            }
+        }
+        /// Creates an enum from field names used in the ProtoBuf definition.
+        pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+            match value {
+                "UNKNOWN" => Some(Self::Unknown),
+                "QUEUED" => Some(Self::Queued),
+                "RUNNING" => Some(Self::Running),
+                "SUCCEEDED" => Some(Self::Succeeded),
+                "FAILED" => Some(Self::Failed),
+                "CANCELED" => Some(Self::Canceled),
+                _ => None,
             }
         }
     }
@@ -331,7 +373,7 @@ pub mod controller_client {
 pub mod controller_server {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
-    ///Generated trait containing gRPC methods that should be implemented for use with ControllerServer.
+    /// Generated trait containing gRPC methods that should be implemented for use with ControllerServer.
     #[async_trait]
     pub trait Controller: Send + Sync + 'static {
         async fn execute_controller_job(
