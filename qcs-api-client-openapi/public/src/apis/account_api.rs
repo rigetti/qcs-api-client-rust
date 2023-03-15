@@ -15,7 +15,7 @@
 /*
  * Rigetti QCS API
  *
- * # Introduction  This is the documentation for the Rigetti QCS HTTP API.  You can find out more about Rigetti at [https://rigetti.com](https://rigetti.com), and also interact with QCS via the web at [https://qcs.rigetti.com](https://qcs.rigetti.com).  This API is documented in **OpenAPI format** and so is compatible with the dozens of language-specific client generators available [here](https://github.com/OpenAPITools/openapi-generator) and elsewhere on the web.  # Principles  This API follows REST design principles where appropriate, and otherwise an HTTP RPC paradigm. We adhere to the Google [API Improvement Proposals](https://google.aip.dev/general) where reasonable to provide a consistent, intuitive developer experience. HTTP response codes match their specifications, and error messages fit a common format.  # Authentication  All access to the QCS API requires OAuth2 authentication provided by Okta. You can request access [here](https://www.rigetti.com/get-quantum). Once you have a user account, you can download your access token from QCS [here](https://qcs.rigetti.com/auth/token).   That access token is valid for 24 hours after issuance. The value of `access_token` within the JSON file is the token used for authentication (don't use the entire JSON file).  Authenticate requests using the `Authorization` header and a `Bearer` prefix:  ``` curl --header \"Authorization: Bearer eyJraW...Iow\" ```  # Quantum Processor Access  Access to the quantum processors themselves is not yet provided directly by this HTTP API, but is instead performed over ZeroMQ/[rpcq](https://gitlab.com/rigetti/rpcq). Until that changes, we suggest using [pyquil](https://gitlab.com/rigetti/pyquil) to build and execute quantum programs via the Legacy API.  # Legacy API  Our legacy HTTP API remains accessible at https://forest-server.qcs.rigetti.com, and it shares a source of truth with this API's services. You can use either service with the same user account and means of authentication. We strongly recommend using the API documented here, as the legacy API is on the path to deprecation.
+ * # Introduction  This is the documentation for the Rigetti QCS HTTP API.  You can find out more about Rigetti at [https://rigetti.com](https://rigetti.com), and also interact with QCS via the web at [https://qcs.rigetti.com](https://qcs.rigetti.com).  This API is documented in **OpenAPI format** and so is compatible with the dozens of language-specific client generators available [here](https://github.com/OpenAPITools/openapi-generator) and elsewhere on the web.  # Principles  This API follows REST design principles where appropriate, and otherwise an HTTP RPC paradigm. We adhere to the Google [API Improvement Proposals](https://google.aip.dev/general) where reasonable to provide a consistent, intuitive developer experience. HTTP response codes match their specifications, and error messages fit a common format.  # Authentication  All access to the QCS API requires OAuth2 authentication provided by Okta. You can request access [here](https://www.rigetti.com/get-quantum). Once you have a user account, you can download your access token from QCS [here](https://qcs.rigetti.com/auth/token).   That access token is valid for 24 hours after issuance. The value of `access_token` within the JSON file is the token used for authentication (don't use the entire JSON file).  Authenticate requests using the `Authorization` header and a `Bearer` prefix:  ``` curl --header \"Authorization: Bearer eyJraW...Iow\" ```  # Quantum Processor Access  Access to the quantum processors themselves is not yet provided directly by this HTTP API, but is instead performed over ZeroMQ/[rpcq](https://github.com/rigetti/rpcq). Until that changes, we suggest using [pyquil](https://github.com/rigetti/pyquil) to build and execute quantum programs via the Legacy API.  # Legacy API  Our legacy HTTP API remains accessible at https://forest-server.qcs.rigetti.com, and it shares a source of truth with this API's services. You can use either service with the same user account and means of authentication. We strongly recommend using the API documented here, as the legacy API is on the path to deprecation.
  *
  * The version of the OpenAPI document: 2020-07-31
  * Contact: support@rigetti.com
@@ -577,7 +577,7 @@ async fn list_group_billing_invoice_lines_inner(
     group_name: &str,
     billing_invoice_id: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListGroupBillingInvoiceLinesError>,
@@ -635,7 +635,7 @@ pub async fn list_group_billing_invoice_lines(
     group_name: &str,
     billing_invoice_id: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListGroupBillingInvoiceLinesError>,
@@ -670,7 +670,7 @@ async fn list_group_billing_invoices_inner(
     configuration: &configuration::Configuration,
     group_name: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<crate::models::ListAccountBillingInvoicesResponse, Error<ListGroupBillingInvoicesError>>
 {
     let local_var_configuration = configuration;
@@ -724,7 +724,7 @@ pub async fn list_group_billing_invoices(
     configuration: &configuration::Configuration,
     group_name: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<crate::models::ListAccountBillingInvoicesResponse, Error<ListGroupBillingInvoicesError>>
 {
     match list_group_billing_invoices_inner(
@@ -750,7 +750,7 @@ async fn list_group_upcoming_billing_invoice_lines_inner(
     configuration: &configuration::Configuration,
     group_name: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListGroupUpcomingBillingInvoiceLinesError>,
@@ -806,7 +806,7 @@ pub async fn list_group_upcoming_billing_invoice_lines(
     configuration: &configuration::Configuration,
     group_name: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListGroupUpcomingBillingInvoiceLinesError>,
@@ -838,7 +838,7 @@ pub async fn list_group_upcoming_billing_invoice_lines(
 async fn list_group_users_inner(
     configuration: &configuration::Configuration,
     group_name: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListGroupUsersResponse, Error<ListGroupUsersError>> {
     let local_var_configuration = configuration;
@@ -891,7 +891,7 @@ async fn list_group_users_inner(
 pub async fn list_group_users(
     configuration: &configuration::Configuration,
     group_name: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListGroupUsersResponse, Error<ListGroupUsersError>> {
     match list_group_users_inner(
@@ -917,7 +917,7 @@ async fn list_user_billing_invoice_lines_inner(
     user_id: &str,
     billing_invoice_id: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListUserBillingInvoiceLinesError>,
@@ -975,7 +975,7 @@ pub async fn list_user_billing_invoice_lines(
     user_id: &str,
     billing_invoice_id: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListUserBillingInvoiceLinesError>,
@@ -1010,7 +1010,7 @@ async fn list_user_billing_invoices_inner(
     configuration: &configuration::Configuration,
     user_id: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<crate::models::ListAccountBillingInvoicesResponse, Error<ListUserBillingInvoicesError>>
 {
     let local_var_configuration = configuration;
@@ -1064,7 +1064,7 @@ pub async fn list_user_billing_invoices(
     configuration: &configuration::Configuration,
     user_id: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<crate::models::ListAccountBillingInvoicesResponse, Error<ListUserBillingInvoicesError>>
 {
     match list_user_billing_invoices_inner(
@@ -1089,7 +1089,7 @@ pub async fn list_user_billing_invoices(
 async fn list_user_groups_inner(
     configuration: &configuration::Configuration,
     user_id: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListGroupsResponse, Error<ListUserGroupsError>> {
     let local_var_configuration = configuration;
@@ -1142,7 +1142,7 @@ async fn list_user_groups_inner(
 pub async fn list_user_groups(
     configuration: &configuration::Configuration,
     user_id: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListGroupsResponse, Error<ListUserGroupsError>> {
     match list_user_groups_inner(
@@ -1167,7 +1167,7 @@ async fn list_user_upcoming_billing_invoice_lines_inner(
     configuration: &configuration::Configuration,
     user_id: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListUserUpcomingBillingInvoiceLinesError>,
@@ -1223,7 +1223,7 @@ pub async fn list_user_upcoming_billing_invoice_lines(
     configuration: &configuration::Configuration,
     user_id: &str,
     page_token: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
 ) -> Result<
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListUserUpcomingBillingInvoiceLinesError>,

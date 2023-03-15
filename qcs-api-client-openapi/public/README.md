@@ -36,8 +36,8 @@ curl --header \"Authorization: Bearer eyJraW...Iow\"
 # Quantum Processor Access
 
 Access to the quantum processors themselves is not yet provided directly by this HTTP API, but
-is instead performed over ZeroMQ/[rpcq](https://gitlab.com/rigetti/rpcq). Until that changes,
-we suggest using [pyquil](https://gitlab.com/rigetti/pyquil) to build and execute quantum
+is instead performed over ZeroMQ/[rpcq](https://github.com/rigetti/rpcq). Until that changes,
+we suggest using [pyquil](https://github.com/rigetti/pyquil) to build and execute quantum
 programs via the Legacy API.
 
 # Legacy API

@@ -38,9 +38,6 @@ pub use self::architecture::Architecture;
 pub mod architecture_1;
 pub use self::architecture_1::Architecture1;
 #[allow(non_snake_case)]
-pub mod arguments_inner;
-pub use self::arguments_inner::ArgumentsInner;
-#[allow(non_snake_case)]
 pub mod auth_email_password_reset_token_request;
 pub use self::auth_email_password_reset_token_request::AuthEmailPasswordResetTokenRequest;
 #[allow(non_snake_case)]
@@ -121,9 +118,6 @@ pub use self::client_application::ClientApplication;
 #[allow(non_snake_case)]
 pub mod client_applications_download_link;
 pub use self::client_applications_download_link::ClientApplicationsDownloadLink;
-#[allow(non_snake_case)]
-pub mod compiler_isa;
-pub use self::compiler_isa::CompilerIsa;
 #[allow(non_snake_case)]
 pub mod component_options;
 pub use self::component_options::ComponentOptions;
@@ -239,14 +233,8 @@ pub use self::flat_waveform::FlatWaveform;
 pub mod frame_settings;
 pub use self::frame_settings::FrameSettings;
 #[allow(non_snake_case)]
-pub mod gate_info;
-pub use self::gate_info::GateInfo;
-#[allow(non_snake_case)]
 pub mod gate_settings;
 pub use self::gate_settings::GateSettings;
-#[allow(non_snake_case)]
-pub mod gates_inner;
-pub use self::gates_inner::GatesInner;
 #[allow(non_snake_case)]
 pub mod gaussian_waveform;
 pub use self::gaussian_waveform::GaussianWaveform;
@@ -422,12 +410,6 @@ pub use self::list_reservations_response::ListReservationsResponse;
 pub mod logging_target;
 pub use self::logging_target::LoggingTarget;
 #[allow(non_snake_case)]
-pub mod measure_info;
-pub use self::measure_info::MeasureInfo;
-#[allow(non_snake_case)]
-pub mod meta_pass;
-pub use self::meta_pass::MetaPass;
-#[allow(non_snake_case)]
 pub mod mnio_connection;
 pub use self::mnio_connection::MnioConnection;
 #[allow(non_snake_case)]
@@ -460,9 +442,6 @@ pub use self::parameter_operator::ParameterOperator;
 #[allow(non_snake_case)]
 pub mod parameter_type;
 pub use self::parameter_type::ParameterType;
-#[allow(non_snake_case)]
-pub mod parameters_inner;
-pub use self::parameters_inner::ParametersInner;
 #[allow(non_snake_case)]
 pub mod phase;
 pub use self::phase::Phase;
@@ -539,12 +518,6 @@ pub use self::quantum_processor_accessor::QuantumProcessorAccessor;
 pub mod quantum_processor_accessor_type;
 pub use self::quantum_processor_accessor_type::QuantumProcessorAccessorType;
 #[allow(non_snake_case)]
-pub mod qubit;
-pub use self::qubit::Qubit;
-#[allow(non_snake_case)]
-pub mod qubit_1;
-pub use self::qubit_1::Qubit1;
-#[allow(non_snake_case)]
 pub mod qubit_settings;
 pub use self::qubit_settings::QubitSettings;
 #[allow(non_snake_case)]
@@ -610,9 +583,6 @@ pub use self::startup_configuration_source::StartupConfigurationSource;
 #[allow(non_snake_case)]
 pub mod swap_phases;
 pub use self::swap_phases::SwapPhases;
-#[allow(non_snake_case)]
-pub mod target;
-pub use self::target::Target;
 #[allow(non_snake_case)]
 pub mod template_name;
 pub use self::template_name::TemplateName;

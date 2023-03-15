@@ -1,7 +1,7 @@
 /*
  * Rigetti QCS API
  *
- * # Introduction  This is the documentation for the Rigetti QCS HTTP API.  You can find out more about Rigetti at [https://rigetti.com](https://rigetti.com), and also interact with QCS via the web at [https://qcs.rigetti.com](https://qcs.rigetti.com).  This API is documented in **OpenAPI format** and so is compatible with the dozens of language-specific client generators available [here](https://github.com/OpenAPITools/openapi-generator) and elsewhere on the web.  # Principles  This API follows REST design principles where appropriate, and otherwise an HTTP RPC paradigm. We adhere to the Google [API Improvement Proposals](https://google.aip.dev/general) where reasonable to provide a consistent, intuitive developer experience. HTTP response codes match their specifications, and error messages fit a common format.  # Authentication  All access to the QCS API requires OAuth2 authentication provided by Okta. You can request access [here](https://www.rigetti.com/get-quantum). Once you have a user account, you can download your access token from QCS [here](https://qcs.rigetti.com/auth/token).   That access token is valid for 24 hours after issuance. The value of `access_token` within the JSON file is the token used for authentication (don't use the entire JSON file).  Authenticate requests using the `Authorization` header and a `Bearer` prefix:  ``` curl --header \"Authorization: Bearer eyJraW...Iow\" ```  # Quantum Processor Access  Access to the quantum processors themselves is not yet provided directly by this HTTP API, but is instead performed over ZeroMQ/[rpcq](https://gitlab.com/rigetti/rpcq). Until that changes, we suggest using [pyquil](https://gitlab.com/rigetti/pyquil) to build and execute quantum programs via the Legacy API.  # Legacy API  Our legacy HTTP API remains accessible at https://forest-server.qcs.rigetti.com, and it shares a source of truth with this API's services. You can use either service with the same user account and means of authentication. We strongly recommend using the API documented here, as the legacy API is on the path to deprecation.
+ * # Introduction  This is the documentation for the Rigetti QCS HTTP API.  You can find out more about Rigetti at [https://rigetti.com](https://rigetti.com), and also interact with QCS via the web at [https://qcs.rigetti.com](https://qcs.rigetti.com).  This API is documented in **OpenAPI format** and so is compatible with the dozens of language-specific client generators available [here](https://github.com/OpenAPITools/openapi-generator) and elsewhere on the web.  # Principles  This API follows REST design principles where appropriate, and otherwise an HTTP RPC paradigm. We adhere to the Google [API Improvement Proposals](https://google.aip.dev/general) where reasonable to provide a consistent, intuitive developer experience. HTTP response codes match their specifications, and error messages fit a common format.  # Authentication  All access to the QCS API requires OAuth2 authentication provided by Okta. You can request access [here](https://www.rigetti.com/get-quantum). Once you have a user account, you can download your access token from QCS [here](https://qcs.rigetti.com/auth/token).   That access token is valid for 24 hours after issuance. The value of `access_token` within the JSON file is the token used for authentication (don't use the entire JSON file).  Authenticate requests using the `Authorization` header and a `Bearer` prefix:  ``` curl --header \"Authorization: Bearer eyJraW...Iow\" ```  # Quantum Processor Access  Access to the quantum processors themselves is not yet provided directly by this HTTP API, but is instead performed over ZeroMQ/[rpcq](https://github.com/rigetti/rpcq). Until that changes, we suggest using [pyquil](https://github.com/rigetti/pyquil) to build and execute quantum programs via the Legacy API.  # Legacy API  Our legacy HTTP API remains accessible at https://forest-server.qcs.rigetti.com, and it shares a source of truth with this API's services. You can use either service with the same user account and means of authentication. We strongly recommend using the API documented here, as the legacy API is on the path to deprecation.
  *
  * The version of the OpenAPI document: 2020-07-31
  * Contact: support@rigetti.com
@@ -178,7 +178,7 @@ pub async fn create_reservation(
 }
 async fn delete_reservation_inner(
     configuration: &configuration::Configuration,
-    reservation_id: i32,
+    reservation_id: i64,
 ) -> Result<crate::models::Reservation, Error<DeleteReservationError>> {
     let local_var_configuration = configuration;
 
@@ -220,7 +220,7 @@ async fn delete_reservation_inner(
 /// Cancel an existing reservation for the user.
 pub async fn delete_reservation(
     configuration: &configuration::Configuration,
-    reservation_id: i32,
+    reservation_id: i64,
 ) -> Result<crate::models::Reservation, Error<DeleteReservationError>> {
     match delete_reservation_inner(configuration, reservation_id.clone()).await {
         Ok(result) => Ok(result),
@@ -238,7 +238,7 @@ async fn find_available_reservations_inner(
     quantum_processor_id: &str,
     start_time_from: String,
     duration: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::FindAvailableReservationsResponse, Error<FindAvailableReservationsError>>
 {
@@ -298,7 +298,7 @@ pub async fn find_available_reservations(
     quantum_processor_id: &str,
     start_time_from: String,
     duration: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::FindAvailableReservationsResponse, Error<FindAvailableReservationsError>>
 {
@@ -419,7 +419,7 @@ async fn internal_find_available_reservations_inner(
     quantum_processor_id: &str,
     start_time_from: String,
     duration: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
     epoch: Option<&str>,
 ) -> Result<
@@ -486,7 +486,7 @@ pub async fn internal_find_available_reservations(
     quantum_processor_id: &str,
     start_time_from: String,
     duration: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
     epoch: Option<&str>,
 ) -> Result<
@@ -527,7 +527,7 @@ async fn internal_list_reservations_inner(
     configuration: &configuration::Configuration,
     filter: Option<&str>,
     order: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
     show_deleted: Option<&str>,
 ) -> Result<crate::models::ListReservationsResponse, Error<InternalListReservationsError>> {
@@ -593,7 +593,7 @@ pub async fn internal_list_reservations(
     configuration: &configuration::Configuration,
     filter: Option<&str>,
     order: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
     show_deleted: Option<&str>,
 ) -> Result<crate::models::ListReservationsResponse, Error<InternalListReservationsError>> {
@@ -630,7 +630,7 @@ async fn list_group_reservations_inner(
     group_name: &str,
     filter: Option<&str>,
     order: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
     show_deleted: Option<&str>,
 ) -> Result<crate::models::ListReservationsResponse, Error<ListGroupReservationsError>> {
@@ -698,7 +698,7 @@ pub async fn list_group_reservations(
     group_name: &str,
     filter: Option<&str>,
     order: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
     show_deleted: Option<&str>,
 ) -> Result<crate::models::ListReservationsResponse, Error<ListGroupReservationsError>> {
@@ -736,7 +736,7 @@ async fn list_reservations_inner(
     configuration: &configuration::Configuration,
     filter: Option<&str>,
     order: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
     show_deleted: Option<&str>,
     x_qcs_account_id: Option<&str>,
@@ -812,7 +812,7 @@ pub async fn list_reservations(
     configuration: &configuration::Configuration,
     filter: Option<&str>,
     order: Option<&str>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
     show_deleted: Option<&str>,
     x_qcs_account_id: Option<&str>,

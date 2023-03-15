@@ -1,7 +1,7 @@
 /*
  * Rigetti QCS API
  *
- * # Introduction  This is the documentation for the Rigetti QCS HTTP API.  You can find out more about Rigetti at [https://rigetti.com](https://rigetti.com), and also interact with QCS via the web at [https://qcs.rigetti.com](https://qcs.rigetti.com).  This API is documented in **OpenAPI format** and so is compatible with the dozens of language-specific client generators available [here](https://github.com/OpenAPITools/openapi-generator) and elsewhere on the web.  # Principles  This API follows REST design principles where appropriate, and otherwise an HTTP RPC paradigm. We adhere to the Google [API Improvement Proposals](https://google.aip.dev/general) where reasonable to provide a consistent, intuitive developer experience. HTTP response codes match their specifications, and error messages fit a common format.  # Authentication  All access to the QCS API requires OAuth2 authentication provided by Okta. You can request access [here](https://www.rigetti.com/get-quantum). Once you have a user account, you can download your access token from QCS [here](https://qcs.rigetti.com/auth/token).   That access token is valid for 24 hours after issuance. The value of `access_token` within the JSON file is the token used for authentication (don't use the entire JSON file).  Authenticate requests using the `Authorization` header and a `Bearer` prefix:  ``` curl --header \"Authorization: Bearer eyJraW...Iow\" ```  # Quantum Processor Access  Access to the quantum processors themselves is not yet provided directly by this HTTP API, but is instead performed over ZeroMQ/[rpcq](https://gitlab.com/rigetti/rpcq). Until that changes, we suggest using [pyquil](https://gitlab.com/rigetti/pyquil) to build and execute quantum programs via the Legacy API.  # Legacy API  Our legacy HTTP API remains accessible at https://forest-server.qcs.rigetti.com, and it shares a source of truth with this API's services. You can use either service with the same user account and means of authentication. We strongly recommend using the API documented here, as the legacy API is on the path to deprecation.
+ * # Introduction  This is the documentation for the Rigetti QCS HTTP API.  You can find out more about Rigetti at [https://rigetti.com](https://rigetti.com), and also interact with QCS via the web at [https://qcs.rigetti.com](https://qcs.rigetti.com).  This API is documented in **OpenAPI format** and so is compatible with the dozens of language-specific client generators available [here](https://github.com/OpenAPITools/openapi-generator) and elsewhere on the web.  # Principles  This API follows REST design principles where appropriate, and otherwise an HTTP RPC paradigm. We adhere to the Google [API Improvement Proposals](https://google.aip.dev/general) where reasonable to provide a consistent, intuitive developer experience. HTTP response codes match their specifications, and error messages fit a common format.  # Authentication  All access to the QCS API requires OAuth2 authentication provided by Okta. You can request access [here](https://www.rigetti.com/get-quantum). Once you have a user account, you can download your access token from QCS [here](https://qcs.rigetti.com/auth/token).   That access token is valid for 24 hours after issuance. The value of `access_token` within the JSON file is the token used for authentication (don't use the entire JSON file).  Authenticate requests using the `Authorization` header and a `Bearer` prefix:  ``` curl --header \"Authorization: Bearer eyJraW...Iow\" ```  # Quantum Processor Access  Access to the quantum processors themselves is not yet provided directly by this HTTP API, but is instead performed over ZeroMQ/[rpcq](https://github.com/rigetti/rpcq). Until that changes, we suggest using [pyquil](https://github.com/rigetti/pyquil) to build and execute quantum programs via the Legacy API.  # Legacy API  Our legacy HTTP API remains accessible at https://forest-server.qcs.rigetti.com, and it shares a source of truth with this API's services. You can use either service with the same user account and means of authentication. We strongly recommend using the API documented here, as the legacy API is on the path to deprecation.
  *
  * The version of the OpenAPI document: 2020-07-31
  * Contact: support@rigetti.com
@@ -862,7 +862,7 @@ pub async fn internal_get_legacy_quantum_processor(
 async fn internal_list_endpoint_engagements_inner(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::ListEndpointEngagementsResponse,
@@ -918,7 +918,7 @@ async fn internal_list_endpoint_engagements_inner(
 pub async fn internal_list_endpoint_engagements(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::ListEndpointEngagementsResponse,
@@ -951,7 +951,7 @@ pub async fn internal_list_endpoint_engagements(
 async fn internal_list_legacy_lattices_inner(
     configuration: &configuration::Configuration,
     mask_specifications_to_isa: Option<bool>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::InternalListLegacyLatticesResponse, Error<InternalListLegacyLatticesError>>
 {
@@ -1008,7 +1008,7 @@ async fn internal_list_legacy_lattices_inner(
 pub async fn internal_list_legacy_lattices(
     configuration: &configuration::Configuration,
     mask_specifications_to_isa: Option<bool>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::InternalListLegacyLatticesResponse, Error<InternalListLegacyLatticesError>>
 {
@@ -1039,7 +1039,7 @@ pub async fn internal_list_legacy_lattices(
 async fn internal_list_legacy_quantum_processors_inner(
     configuration: &configuration::Configuration,
     mask_specifications_to_isa: Option<bool>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::InternalListLegacyQuantumProcessorsResponse,
@@ -1098,7 +1098,7 @@ async fn internal_list_legacy_quantum_processors_inner(
 pub async fn internal_list_legacy_quantum_processors(
     configuration: &configuration::Configuration,
     mask_specifications_to_isa: Option<bool>,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::InternalListLegacyQuantumProcessorsResponse,
@@ -1584,7 +1584,7 @@ pub async fn internal_update_legacy_quantum_processor(
 }
 async fn list_instruction_set_architectures_inner(
     configuration: &configuration::Configuration,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::ListInstructionSetArchitectureResponse,
@@ -1638,7 +1638,7 @@ async fn list_instruction_set_architectures_inner(
 /// Retrieve all Instruction Set Architectures available to the user.
 pub async fn list_instruction_set_architectures(
     configuration: &configuration::Configuration,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::ListInstructionSetArchitectureResponse,
@@ -1664,7 +1664,7 @@ pub async fn list_instruction_set_architectures(
 async fn list_quantum_processor_accessors_inner(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::ListQuantumProcessorAccessorsResponse,
@@ -1720,7 +1720,7 @@ async fn list_quantum_processor_accessors_inner(
 pub async fn list_quantum_processor_accessors(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::ListQuantumProcessorAccessorsResponse,
@@ -1752,7 +1752,7 @@ pub async fn list_quantum_processor_accessors(
 }
 async fn list_quantum_processors_inner(
     configuration: &configuration::Configuration,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListQuantumProcessorsResponse, Error<ListQuantumProcessorsError>> {
     let local_var_configuration = configuration;
@@ -1803,7 +1803,7 @@ async fn list_quantum_processors_inner(
 /// List all QuantumProcessors available to the user.
 pub async fn list_quantum_processors(
     configuration: &configuration::Configuration,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListQuantumProcessorsResponse, Error<ListQuantumProcessorsError>> {
     match list_quantum_processors_inner(configuration, page_size.clone(), page_token.clone()).await

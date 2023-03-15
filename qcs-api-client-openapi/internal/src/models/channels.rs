@@ -1,7 +1,7 @@
 /*
  * Rigetti QCS API
  *
- * # Introduction  This is the documentation for the Rigetti QCS HTTP API.  You can find out more about Rigetti at [https://rigetti.com](https://rigetti.com), and also interact with QCS via the web at [https://qcs.rigetti.com](https://qcs.rigetti.com).  This API is documented in **OpenAPI format** and so is compatible with the dozens of language-specific client generators available [here](https://github.com/OpenAPITools/openapi-generator) and elsewhere on the web.  # Principles  This API follows REST design principles where appropriate, and otherwise an HTTP RPC paradigm. We adhere to the Google [API Improvement Proposals](https://google.aip.dev/general) where reasonable to provide a consistent, intuitive developer experience. HTTP response codes match their specifications, and error messages fit a common format.  # Authentication  All access to the QCS API requires OAuth2 authentication provided by Okta. You can request access [here](https://www.rigetti.com/get-quantum). Once you have a user account, you can download your access token from QCS [here](https://qcs.rigetti.com/auth/token).   That access token is valid for 24 hours after issuance. The value of `access_token` within the JSON file is the token used for authentication (don't use the entire JSON file).  Authenticate requests using the `Authorization` header and a `Bearer` prefix:  ``` curl --header \"Authorization: Bearer eyJraW...Iow\" ```  # Quantum Processor Access  Access to the quantum processors themselves is not yet provided directly by this HTTP API, but is instead performed over ZeroMQ/[rpcq](https://gitlab.com/rigetti/rpcq). Until that changes, we suggest using [pyquil](https://gitlab.com/rigetti/pyquil) to build and execute quantum programs via the Legacy API.  # Legacy API  Our legacy HTTP API remains accessible at https://forest-server.qcs.rigetti.com, and it shares a source of truth with this API's services. You can use either service with the same user account and means of authentication. We strongly recommend using the API documented here, as the legacy API is on the path to deprecation.
+ * # Introduction  This is the documentation for the Rigetti QCS HTTP API.  You can find out more about Rigetti at [https://rigetti.com](https://rigetti.com), and also interact with QCS via the web at [https://qcs.rigetti.com](https://qcs.rigetti.com).  This API is documented in **OpenAPI format** and so is compatible with the dozens of language-specific client generators available [here](https://github.com/OpenAPITools/openapi-generator) and elsewhere on the web.  # Principles  This API follows REST design principles where appropriate, and otherwise an HTTP RPC paradigm. We adhere to the Google [API Improvement Proposals](https://google.aip.dev/general) where reasonable to provide a consistent, intuitive developer experience. HTTP response codes match their specifications, and error messages fit a common format.  # Authentication  All access to the QCS API requires OAuth2 authentication provided by Okta. You can request access [here](https://www.rigetti.com/get-quantum). Once you have a user account, you can download your access token from QCS [here](https://qcs.rigetti.com/auth/token).   That access token is valid for 24 hours after issuance. The value of `access_token` within the JSON file is the token used for authentication (don't use the entire JSON file).  Authenticate requests using the `Authorization` header and a `Bearer` prefix:  ``` curl --header \"Authorization: Bearer eyJraW...Iow\" ```  # Quantum Processor Access  Access to the quantum processors themselves is not yet provided directly by this HTTP API, but is instead performed over ZeroMQ/[rpcq](https://github.com/rigetti/rpcq). Until that changes, we suggest using [pyquil](https://github.com/rigetti/pyquil) to build and execute quantum programs via the Legacy API.  # Legacy API  Our legacy HTTP API remains accessible at https://forest-server.qcs.rigetti.com, and it shares a source of truth with this API's services. You can use either service with the same user account and means of authentication. We strongly recommend using the API documented here, as the legacy API is on the path to deprecation.
  *
  * The version of the OpenAPI document: 2020-07-31
  * Contact: support@rigetti.com
@@ -38,27 +38,47 @@ use crate::models::YokogawaGs200Channel;
 /// [`Default`]. In keeping with the upstream templates, this override defaults to the first enum variant:
 /// `Channels::CwChannel`.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(untagged, deny_unknown_fields)]
+#[serde(tag = "_type", deny_unknown_fields)]
 pub enum Channels {
-    CwChannel(CwChannel),
-    LegacyUsrpSequencer(LegacyUsrpSequencer),
-    QdoFastFluxChannel(QdoFastFluxChannel),
-    QdoSequencer(QdoSequencer),
-    QdoSlowFluxChannel(QdoSlowFluxChannel),
-    QfdChannel(QfdChannel),
-    QfdSequencer(QfdSequencer),
-    Qfdx2Sequencer(Qfdx2Sequencer),
-    QgsChannel(QgsChannel),
-    QgsSequencer(QgsSequencer),
-    Qgsx2Sequencer(Qgsx2Sequencer),
-    QrrChannel(QrrChannel),
-    QrrSequencer(QrrSequencer),
-    QrtChannel(QrtChannel),
-    QrtSequencer(QrtSequencer),
-    Qrtx2Sequencer(Qrtx2Sequencer),
-    UsiCardSequencer(UsiCardSequencer),
-    UsiTargetSequencer(UsiTargetSequencer),
-    YokogawaGs200Channel(YokogawaGs200Channel),
+    #[serde(rename = "CWChannel")]
+    CwChannel(crate::models::CwChannel),
+    #[serde(rename = "QDOFastFluxChannel")]
+    QdoFastFluxChannel(crate::models::QdoFastFluxChannel),
+    #[serde(rename = "QDOSlowFluxChannel")]
+    QdoSlowFluxChannel(crate::models::QdoSlowFluxChannel),
+    #[serde(rename = "QFDChannel")]
+    QfdChannel(crate::models::QfdChannel),
+    #[serde(rename = "QGSChannel")]
+    QgsChannel(crate::models::QgsChannel),
+    #[serde(rename = "QRRChannel")]
+    QrrChannel(crate::models::QrrChannel),
+    #[serde(rename = "QRTChannel")]
+    QrtChannel(crate::models::QrtChannel),
+    #[serde(rename = "YokogawaGS200Channel")]
+    YokogawaGs200Channel(crate::models::YokogawaGs200Channel),
+    #[serde(rename = "LegacyUSRPSequencer")]
+    LegacyUsrpSequencer(crate::models::LegacyUsrpSequencer),
+    #[serde(rename = "QFDSequencer")]
+    QfdSequencer(crate::models::QfdSequencer),
+    #[serde(rename = "QFDx2Sequencer")]
+    Qfdx2Sequencer(crate::models::Qfdx2Sequencer),
+    #[serde(rename = "QDOSequencer")]
+    QdoSequencer(crate::models::QdoSequencer),
+    #[serde(rename = "QGSSequencer")]
+    QgsSequencer(crate::models::QgsSequencer),
+    #[serde(rename = "QGSx2Sequencer")]
+    Qgsx2Sequencer(crate::models::Qgsx2Sequencer),
+    #[serde(rename = "QRRSequencer")]
+    QrrSequencer(crate::models::QrrSequencer),
+    #[serde(rename = "QRTSequencer")]
+    QrtSequencer(crate::models::QrtSequencer),
+    #[serde(rename = "QRTx2Sequencer")]
+    Qrtx2Sequencer(crate::models::Qrtx2Sequencer),
+    #[serde(rename = "USICardSequencer")]
+    UsiCardSequencer(crate::models::UsiCardSequencer),
+    #[serde(rename = "USITargetSequencer")]
+    UsiTargetSequencer(crate::models::UsiTargetSequencer),
+    #[serde(rename = "serde_json::Value")]
     SerdeJsonValue(serde_json::Value),
 }
 

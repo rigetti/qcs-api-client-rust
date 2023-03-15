@@ -36,8 +36,8 @@ curl --header \"Authorization: Bearer eyJraW...Iow\"
 # Quantum Processor Access
 
 Access to the quantum processors themselves is not yet provided directly by this HTTP API, but
-is instead performed over ZeroMQ/[rpcq](https://gitlab.com/rigetti/rpcq). Until that changes,
-we suggest using [pyquil](https://gitlab.com/rigetti/pyquil) to build and execute quantum
+is instead performed over ZeroMQ/[rpcq](https://github.com/rigetti/rpcq). Until that changes,
+we suggest using [pyquil](https://github.com/rigetti/pyquil) to build and execute quantum
 programs via the Legacy API.
 
 # Legacy API
@@ -218,7 +218,6 @@ Class | Method | HTTP request | Description
  - [ArbitraryWaveform](docs/ArbitraryWaveform.md)
  - [Architecture](docs/Architecture.md)
  - [Architecture1](docs/Architecture1.md)
- - [ArgumentsInner](docs/ArgumentsInner.md)
  - [AuthEmailPasswordResetTokenRequest](docs/AuthEmailPasswordResetTokenRequest.md)
  - [AuthResetPasswordRequest](docs/AuthResetPasswordRequest.md)
  - [AuthResetPasswordWithTokenRequest](docs/AuthResetPasswordWithTokenRequest.md)
@@ -246,7 +245,6 @@ Class | Method | HTTP request | Description
  - [ChecksumDescription](docs/ChecksumDescription.md)
  - [ClientApplication](docs/ClientApplication.md)
  - [ClientApplicationsDownloadLink](docs/ClientApplicationsDownloadLink.md)
- - [CompilerIsa](docs/CompilerIsa.md)
  - [ComponentOptions](docs/ComponentOptions.md)
  - [ComponentParameters](docs/ComponentParameters.md)
  - [Components](docs/Components.md)
@@ -285,9 +283,7 @@ Class | Method | HTTP request | Description
  - [FlatReadoutKernel](docs/FlatReadoutKernel.md)
  - [FlatWaveform](docs/FlatWaveform.md)
  - [FrameSettings](docs/FrameSettings.md)
- - [GateInfo](docs/GateInfo.md)
  - [GateSettings](docs/GateSettings.md)
- - [GatesInner](docs/GatesInner.md)
  - [GaussianWaveform](docs/GaussianWaveform.md)
  - [GetQuiltCalibrationsResponse](docs/GetQuiltCalibrationsResponse.md)
  - [Group](docs/Group.md)
@@ -346,8 +342,6 @@ Class | Method | HTTP request | Description
  - [ListQuantumProcessorsResponse](docs/ListQuantumProcessorsResponse.md)
  - [ListReservationsResponse](docs/ListReservationsResponse.md)
  - [LoggingTarget](docs/LoggingTarget.md)
- - [MeasureInfo](docs/MeasureInfo.md)
- - [MetaPass](docs/MetaPass.md)
  - [MnioConnection](docs/MnioConnection.md)
  - [Node](docs/Node.md)
  - [NomadJobDatacenters](docs/NomadJobDatacenters.md)
@@ -359,7 +353,6 @@ Class | Method | HTTP request | Description
  - [ParameterExpression](docs/ParameterExpression.md)
  - [ParameterOperator](docs/ParameterOperator.md)
  - [ParameterType](docs/ParameterType.md)
- - [ParametersInner](docs/ParametersInner.md)
  - [Phase](docs/Phase.md)
  - [Product](docs/Product.md)
  - [PropagationDirection](docs/PropagationDirection.md)
@@ -385,8 +378,6 @@ Class | Method | HTTP request | Description
  - [QuantumProcessor](docs/QuantumProcessor.md)
  - [QuantumProcessorAccessor](docs/QuantumProcessorAccessor.md)
  - [QuantumProcessorAccessorType](docs/QuantumProcessorAccessorType.md)
- - [Qubit](docs/Qubit.md)
- - [Qubit1](docs/Qubit1.md)
  - [QubitSettings](docs/QubitSettings.md)
  - [QueuePolicyType](docs/QueuePolicyType.md)
  - [RackMeta](docs/RackMeta.md)
@@ -409,7 +400,6 @@ Class | Method | HTTP request | Description
  - [Specs](docs/Specs.md)
  - [StartupConfigurationSource](docs/StartupConfigurationSource.md)
  - [SwapPhases](docs/SwapPhases.md)
- - [Target](docs/Target.md)
  - [TemplateName](docs/TemplateName.md)
  - [TranslateNativeQuilToEncryptedBinaryRequest](docs/TranslateNativeQuilToEncryptedBinaryRequest.md)
  - [TranslateNativeQuilToEncryptedBinaryResponse](docs/TranslateNativeQuilToEncryptedBinaryResponse.md)
