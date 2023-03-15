@@ -17,9 +17,12 @@ use crate::models::{{{this}}};
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum {{{classname}}} {
+{{#composedSchemas}}
 {{#oneOf}}
-{{#lambda.pascalcase}}{{{this}}}{{/lambda.pascalcase}}({{{this}}}),
+#[serde(rename = "{{{baseType}}}")]
+{{#lambda.pascalcase}}{{{baseType}}}{{/lambda.pascalcase}}({{{dataType}}}),
 {{/oneOf}}
+{{/composedSchemas}}
 }
 
 {{#oneOf}}
