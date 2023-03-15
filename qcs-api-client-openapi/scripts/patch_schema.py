@@ -144,6 +144,27 @@ def use_oneof_not_anyof(obj):
         use_oneof_not_anyof(v)
 
 
+def integers_are_long(obj):
+    """
+    Insist that a `type: integer` is `format: long` and therefore
+    a 64-bit integer whenever it is ambiguous.
+    """
+
+    if isinstance(obj, list):
+        for v in obj:
+            integers_are_long(v)
+        return
+
+    if not isinstance(obj, dict):
+        return
+
+    if obj.get("type") == "integer" and obj.get("format") is None:
+        obj["format"] = "int64"
+
+    for _, v in obj.items():
+        integers_are_long(v)
+
+
 def numbers_are_double(obj):
     """
     Insist that a `type: number` is `format: double` and therefore
@@ -174,6 +195,7 @@ if __name__ == "__main__":
     fix_x_qcs_headers(document)
     title_conflicting_type_properties(document)
     use_oneof_not_anyof(document)
+    integers_are_long(document)
     numbers_are_double(document)
     openapi_compat_3_0(document)
 
