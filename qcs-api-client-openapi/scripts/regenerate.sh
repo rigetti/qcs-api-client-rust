@@ -11,7 +11,6 @@ for VARIANT in public internal; do
     python3 "$ROOT_PATH/scripts/patch_schema.py" "$VARIANT/schema.yaml"
     docker run --rm -v "$ROOT_PATH/$VARIANT:/src" -v "$ROOT_PATH/custom_templates:/custom_templates" openapitools/openapi-generator-cli:v6.0.0 generate \
         -i /src/schema-patched.yaml \
-        --additional-properties=bestFitInt=true \
         -g rust \
         -o /src \
         -t /custom_templates
