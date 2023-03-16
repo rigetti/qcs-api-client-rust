@@ -1,3 +1,18 @@
+## 0.6.0
+
+### Breaking Changes
+
+- default to 64-bit integers when not specified
+- The change to the common crate's `Error` enum introduces a generic parameter, making the change backwards incompatible.
+
+### Features
+
+- Support refreshing service tokens
+
+### Fixes
+
+- appease clippy
+
 ## 0.5.3
 
 ### Features

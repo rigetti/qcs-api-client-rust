@@ -1,3 +1,17 @@
+## 0.5.0
+
+### Breaking Changes
+
+- The change to the common crate's `Error` enum introduces a generic parameter, making the change backwards incompatible.
+
+### Features
+
+- Support refreshing service tokens
+
+### Fixes
+
+- appease clippy
+
 ## 0.4.3
 
 ### Features
