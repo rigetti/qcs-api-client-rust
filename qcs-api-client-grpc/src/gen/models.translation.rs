@@ -15,13 +15,17 @@
 
 /// Information about the result of Quil translation that may be useful for the client,
 /// but which is not needed for execution of the translated `ControllerJob`.
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QuilTranslationMetadata {
     /// Mapping of (Quil memory address as string) to (readout stream)
     /// This allows a Quil program author to write and execute `MEASURE 0 ro`,
     /// while being able to interpret the readout results for one of the post-processed
     /// readout streams as representing the result of the `MEASURE`.
-    #[prost(map="string, string", tag="1")]
-    pub readout_mappings: ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
+    #[prost(map = "string, string", tag = "1")]
+    pub readout_mappings: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
 }
 

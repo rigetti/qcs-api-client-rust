@@ -58,6 +58,7 @@ pub use channel::{get_channel, get_wrapped_channel, wrap_channel};
 pub use qcs_api_client_common::configuration as client_configuration;
 
 #[allow(clippy::derive_partial_eq_without_eq)]
+#[allow(clippy::needless_borrow)]
 pub mod models {
     pub mod controller {
         include!("gen/models.controller.rs");

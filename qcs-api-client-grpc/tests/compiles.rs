@@ -14,10 +14,11 @@
 
 use qcs_api_client_common::ClientConfiguration;
 use qcs_api_client_grpc::channel::{get_channel, parse_uri, wrap_channel_with, Error};
+use qcs_api_client_grpc::client_configuration::RefreshError;
 use qcs_api_client_grpc::services::translation::translation_client::TranslationClient;
 
 #[allow(dead_code)]
-async fn build_client() -> Result<(), Error> {
+async fn build_client() -> Result<(), Error<RefreshError>> {
     let config = ClientConfiguration::load_default().await?;
 
     let service = wrap_channel_with(get_channel(parse_uri("")?), config);

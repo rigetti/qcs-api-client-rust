@@ -13,29 +13,41 @@
 // limitations under the License.
 
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TranslateQuilToEncryptedControllerJobRequest {
-    #[prost(string, optional, tag="1")]
+    #[prost(string, optional, tag = "1")]
     pub quantum_processor_id: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(string, optional, tag="2")]
+    #[prost(string, optional, tag = "2")]
     pub quil_program: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(oneof="translate_quil_to_encrypted_controller_job_request::NumShots", tags="3")]
-    pub num_shots: ::core::option::Option<translate_quil_to_encrypted_controller_job_request::NumShots>,
+    #[prost(
+        oneof = "translate_quil_to_encrypted_controller_job_request::NumShots",
+        tags = "3"
+    )]
+    pub num_shots: ::core::option::Option<
+        translate_quil_to_encrypted_controller_job_request::NumShots,
+    >,
 }
 /// Nested message and enum types in `TranslateQuilToEncryptedControllerJobRequest`.
 pub mod translate_quil_to_encrypted_controller_job_request {
+    #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum NumShots {
-        #[prost(uint32, tag="3")]
+        #[prost(uint32, tag = "3")]
         NumShotsValue(u32),
     }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TranslateQuilToEncryptedControllerJobResponse {
-    #[prost(message, optional, tag="1")]
-    pub job: ::core::option::Option<super::super::models::controller::EncryptedControllerJob>,
-    #[prost(message, optional, tag="2")]
-    pub metadata: ::core::option::Option<super::super::models::translation::QuilTranslationMetadata>,
+    #[prost(message, optional, tag = "1")]
+    pub job: ::core::option::Option<
+        super::super::models::controller::EncryptedControllerJob,
+    >,
+    #[prost(message, optional, tag = "2")]
+    pub metadata: ::core::option::Option<
+        super::super::models::translation::QuilTranslationMetadata,
+    >,
 }
 /// Generated client implementations.
 pub mod translation_client {
@@ -137,7 +149,7 @@ pub mod translation_client {
 pub mod translation_server {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
-    ///Generated trait containing gRPC methods that should be implemented for use with TranslationServer.
+    /// Generated trait containing gRPC methods that should be implemented for use with TranslationServer.
     #[async_trait]
     pub trait Translation: Send + Sync + 'static {
         async fn translate_quil_to_encrypted_controller_job(
