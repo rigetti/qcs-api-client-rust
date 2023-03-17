@@ -1,3 +1,9 @@
+## 0.6.1
+
+### Fixes
+
+- fix how channels are parsed
+
 ## 0.6.0
 
 ### Breaking Changes
