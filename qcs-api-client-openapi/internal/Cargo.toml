@@ -9,6 +9,18 @@ publish = false
 
 [dependencies]
 qcs-api-client-common = { path = "../../qcs-api-client-common", version = "0.5.0" }
+# Before updating `serde`, check for the following:
+#
+# 1. Has support been added for retaining the tag field for internally tagged enums?
+# 2. Has support been added for deserializing into a default enum variant if the tag
+#    does not match other variants or is not present?
+#
+# If 1 *and* 2 are true, then `src/models/channels/manual_serde.rs` can be removed,
+# along with the relevant parts of `scripts/patch_generated_code.sh`, and the derived
+# versions of the traits can be used along with the above features.
+#
+# Otherwise, make sure that `manual_serde.rs` still compiles with the newer version,
+# as it uses `serde` modules not covered by semver.
 serde = { version = "1.0.140", features = ["derive"] }
 serde_json = "1.0.82"
 url = "2.2.2"

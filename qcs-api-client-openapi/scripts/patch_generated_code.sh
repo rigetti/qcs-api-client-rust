@@ -29,3 +29,8 @@ sed_replace "s|untagged|tag = \"_type\"|" "internal/src/models/channels.rs"
 # ("CwChannel"). This forced the enum variant names to use the tag name though, which is a breaking change.
 # This replaces the variant name with the name of the contained struct, which restores it to how it was previously.
 sed_replace "s|^\([[:space:]]*\)[[:alnum:]]*(crate::models::\([[:alnum:]]*\)),|\1\2(crate::models::\2),|g" "internal/src/models/channels.rs"
+
+# Channels have serialization manually implemented until serde supports having an untagged fallback variant
+sed_replace "/#\[serde(.*)\]/d" "internal/src/models/channels.rs"
+sed_replace "s|use serde::{Deserialize, Serialize};|mod manual_serde;|g" "internal/src/models/channels.rs"
+sed_replace "s|, Serialize, Deserialize||g" "internal/src/models/channels.rs"
