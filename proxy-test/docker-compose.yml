@@ -1,0 +1,5 @@
+services:
+  socks5:
+    image: serjs/go-socks5-proxy
+    ports:
+      - "49818:1080"

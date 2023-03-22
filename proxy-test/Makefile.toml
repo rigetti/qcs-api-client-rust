@@ -1,0 +1,28 @@
+[env]
+HTTPS_PROXY = "socks5://127.0.0.1:49818"
+
+[tasks.test]
+command = "cargo"
+args = ["test"]
+
+[config]
+on_error_task = "docker-down"
+
+[tasks.docker-up]
+command = "docker"
+args = ["compose", "up", "-d"]
+
+[tasks.docker-down]
+command = "docker"
+args = ["compose", "down"]
+
+[tasks.docker-logs]
+command = "docker"
+args = ["compose", "logs"]
+
+[tasks.docker-tests]
+command = "cargo"
+args = ["test", "-F", "docker"]
+
+[tasks.docker-test-flow]
+dependencies = ["docker-up", "docker-tests", "docker-logs", "docker-down"]

@@ -21,7 +21,7 @@ use qcs_api_client_grpc::services::translation::translation_client::TranslationC
 async fn build_client() -> Result<(), Error<RefreshError>> {
     let config = ClientConfiguration::load_default().await?;
 
-    let service = wrap_channel_with(get_channel(parse_uri("")?), config);
+    let service = wrap_channel_with(get_channel(parse_uri("")?)?, config);
 
     let _client = TranslationClient::new(service);
 

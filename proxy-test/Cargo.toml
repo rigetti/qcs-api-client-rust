@@ -1,0 +1,24 @@
+[package]
+name = "proxy-test"
+version = "0.5.3"
+edition = "2021"
+publish = false
+
+[dev-dependencies]
+eyre = "0.6.8"
+qcs-api-client-grpc = { path = "../qcs-api-client-grpc" }
+qcs-api-client-grpc-internal = { path = "../qcs-api-client-grpc-internal" }
+qcs-api-client-openapi = { path = "../qcs-api-client-openapi/public" }
+qcs-api-client-openapi-internal = { path = "../qcs-api-client-openapi/internal" }
+rstest = "0.16.0"
+serial_test = "1.0.0"
+socks5-server = "0.8.3"
+tokio = { version = "1.20.1" }
+
+[[test]]
+name = "test_proxy"
+path = "tests/test_proxy.rs"
+
+[features]
+# Test against the docker socks5 proxy, which is a fully-working socks5 proxy
+docker = []

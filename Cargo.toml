@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "proxy-test",
     "qcs-api-client-common",
     "qcs-api-client-common-internal",
     "qcs-api-client-grpc",
