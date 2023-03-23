@@ -1679,7 +1679,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-common"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "async-trait",
  "dirs",
@@ -1726,7 +1726,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "async-std",
  "futures-util",
@@ -1766,7 +1766,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc-internal"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "async-std",
  "futures-util",
@@ -1807,7 +1807,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-openapi"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "anyhow",
  "qcs-api-client-common",
@@ -1826,7 +1826,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-openapi-internal"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "anyhow",
  "qcs-api-client-common",
