@@ -16,7 +16,9 @@ description = "gRPC client for the QCS API"
 qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.6.0" }
 http-body = "0.4.5"
 hyper = "0.14.23"
-hyper-proxy = "0.9.1"
+hyper-proxy = { version = "0.9.1", default-features = false, features = [
+    "rustls",
+] }
 hyper-socks2 = { version = "0.7.0", default-features = false }
 pbjson = "0.4.0"
 prost = "0.11.0"
