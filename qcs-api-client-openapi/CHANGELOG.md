@@ -1,3 +1,9 @@
+## 0.7.1
+
+### Fixes
+
+- use rustls instead of native openssl-sys
+
 ## 0.7.0
 
 ### Breaking Changes
