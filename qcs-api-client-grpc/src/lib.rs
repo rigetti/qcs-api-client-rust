@@ -27,14 +27,14 @@
 //!
 //! async fn controller_request() {
 //!     let uri = "example.per-qpu.rigetti.com:50000".parse().unwrap();
-//!     let channel = get_channel(uri);
+//!     let channel = get_channel(uri).unwrap();
 //!     let mut client = ControllerClient::new(channel);
 //!     // Use the client
 //! }
 //!
 //! fn translation_request() {
 //!     let uri = "example.translation.rigetti.com:50000".parse().unwrap();
-//!     let channel = get_channel(uri);
+//!     let channel = get_channel(uri).unwrap();
 //!     let mut client = TranslationClient::new(channel);
 //!     // Use the client
 //! }

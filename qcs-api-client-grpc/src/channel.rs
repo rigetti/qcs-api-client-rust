@@ -14,6 +14,9 @@
 
 use crate::client_configuration::{ClientConfiguration, LoadError, RefreshError};
 use http_body::Full;
+use hyper::client::HttpConnector;
+use hyper_proxy::{Intercept, Proxy, ProxyConnector};
+use hyper_socks2::{Auth, SocksConnector};
 use qcs_api_client_common::configuration::TokenRefresher;
 use std::future::Future;
 use std::pin::Pin;
@@ -23,9 +26,10 @@ use tonic::client::GrpcService;
 use tonic::codegen::http::uri::InvalidUri;
 use tonic::codegen::http::{Request, Response, StatusCode};
 use tonic::codegen::Body;
-use tonic::transport::{Channel, Error as TransportError, Uri};
+use tonic::transport::{Channel, Endpoint, Error as TransportError, Uri};
 use tonic::Status;
 use tower::{Layer, ServiceBuilder};
+use url::Url;
 
 /// Errors that may occur when using gRPC.
 #[derive(Debug, thiserror::Error)]
@@ -46,6 +50,30 @@ pub enum Error<E: std::error::Error> {
     /// The provided access token is not a valid header value.
     #[error("access token is not a valid header value: {0}")]
     InvalidAccessToken(#[source] http::header::InvalidHeaderValue),
+    /// The proxy configuration caused an error
+    #[error("The channel configuration caused an error: {0}")]
+    ChannelError(#[from] ChannelError),
+}
+
+/// Errors that may occur when configuring a channel connection
+#[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
+pub enum ChannelError {
+    /// Failed to parse URI.
+    #[error("Failed to parse URI: {0}")]
+    InvalidUri(#[from] InvalidUri),
+    /// Failed to parse URL. Used to derive user/pass.
+    #[error("Failed to parse URL: {0}")]
+    InvalidUrl(#[from] url::ParseError),
+    /// Unsupported proxy protocol.
+    #[error("Protocol is missing or not supported: {0:?}")]
+    UnsupportedProtocol(Option<String>),
+    /// Proxy ssl verification failed
+    #[error("HTTP proxy ssl verification failed: {0}")]
+    SslFailure(#[from] std::io::Error),
+    /// Proxy targets do not agree
+    #[error("Cannot set separate https and http proxies if one of them is socks5")]
+    Mismatch { https_proxy: Uri, http_proxy: Uri },
 }
 
 /// Parse a string as a URI.
@@ -59,17 +87,107 @@ pub fn parse_uri(s: &str) -> Result<Uri, Error<RefreshError>> {
     s.parse().map_err(Error::from)
 }
 
-/// Get a [`Channel`] to the given [`Uri`].
-///
-/// Sets up things like user agent without setting up QCS credentials.
-pub fn get_channel(uri: Uri) -> Channel {
+fn get_endpoint(uri: Uri) -> Endpoint {
     Channel::builder(uri)
         .user_agent(concat!(
             "QCS gRPC Client (Rust)/",
             env!("CARGO_PKG_VERSION")
         ))
         .expect("user agent string should be valid")
-        .connect_lazy()
+}
+
+/// Fetch the env var named for `key` and parse as a `Uri`.
+fn get_env_uri(key: &str) -> Result<Option<Uri>, InvalidUri> {
+    std::env::var(key).ok().map(Uri::try_from).transpose()
+}
+
+/// Parse the authentication from `uri` into proxy `Auth`, if present.
+fn get_uri_socks_auth(uri: &Uri) -> Result<Option<Auth>, url::ParseError> {
+    let full_url = uri.to_string().parse::<Url>()?;
+    let user = full_url.username();
+    let auth = if user != "" {
+        let pass = full_url.password().unwrap_or_default();
+        Some(Auth::new(user, pass))
+    } else {
+        None
+    };
+    Ok(auth)
+}
+
+/// Get a [`Channel`] to the given [`Uri`],
+/// Sets up things like user agent without setting up QCS credentials.
+///
+/// This channel will be configured to route requests through proxies defined by
+/// `HTTPS_PROXY` and/or `HTTP_PROXY` environment variables, if they are defined.
+/// Supported proxy schemes are `http`, `https`, and `socks5`.
+///
+/// Proxy configuration caveats:
+/// - If both variables are defined, neither can be a `socks5` proxy, unless they are both the same value.
+/// - If only one variable is defined, and it is a `socks5` proxy, *all* traffic will be routed through it.
+pub fn get_channel(uri: Uri) -> Result<Channel, ChannelError> {
+    let https_proxy = get_env_uri("HTTPS_PROXY")?;
+    let http_proxy = get_env_uri("HTTP_PROXY")?;
+
+    let endpoint = get_endpoint(uri);
+
+    let mut connector = HttpConnector::new();
+    connector.enforce_http(false);
+
+    let connect_to = |uri: Uri, intercept: Intercept| {
+        let connector = connector.clone();
+        match uri.scheme_str() {
+            Some("socks5") => {
+                let socks_connector = SocksConnector {
+                    auth: get_uri_socks_auth(&uri)?,
+                    proxy_addr: uri,
+                    connector,
+                };
+                Ok(endpoint.connect_with_connector_lazy(socks_connector))
+            }
+            Some("https" | "http") => {
+                let proxy = Proxy::new(intercept, uri);
+                let proxy_connector = ProxyConnector::from_proxy(connector, proxy)?;
+                Ok(endpoint.connect_with_connector_lazy(proxy_connector))
+            }
+            scheme => Err(ChannelError::UnsupportedProtocol(scheme.map(String::from))),
+        }
+    };
+
+    let channel = match (https_proxy, http_proxy) {
+        // no proxies, default behavior
+        (None, None) => endpoint.connect_lazy(),
+
+        // either proxy may use https/http, or socks.
+        (Some(https_proxy), None) => connect_to(https_proxy, Intercept::Https)?,
+        (None, Some(http_proxy)) => connect_to(http_proxy, Intercept::Http)?,
+
+        // both proxies are set. If they are the same, they can be socks5. If there are different, they
+        // must both be `https?` URIs in order to use the same `ProxyConnector`.
+        (Some(https_proxy), Some(http_proxy)) => {
+            if https_proxy == http_proxy {
+                connect_to(https_proxy, Intercept::All)?
+            } else {
+                let accepted = [https_proxy.scheme_str(), http_proxy.scheme_str()]
+                    .into_iter()
+                    .all(|scheme| matches!(scheme, Some("https" | "http")));
+                if accepted {
+                    let mut proxy_connector = ProxyConnector::new(connector)?;
+                    proxy_connector.extend_proxies(vec![
+                        Proxy::new(Intercept::Https, https_proxy),
+                        Proxy::new(Intercept::Http, http_proxy),
+                    ]);
+                    endpoint.connect_with_connector_lazy(proxy_connector)
+                } else {
+                    return Err(ChannelError::Mismatch {
+                        https_proxy,
+                        http_proxy,
+                    });
+                }
+            }
+        }
+    };
+
+    Ok(channel)
 }
 
 /// Get a [`Channel`] to the given [`Uri`] with QCS authentication set up already.
@@ -80,7 +198,7 @@ pub fn get_channel(uri: Uri) -> Channel {
 pub async fn get_wrapped_channel(
     uri: Uri,
 ) -> Result<RefreshService<Channel, ClientConfiguration>, Error<RefreshError>> {
-    wrap_channel(get_channel(uri)).await
+    wrap_channel(get_channel(uri)?).await
 }
 
 /// Set up the given [`Channel`] with QCS authentication.

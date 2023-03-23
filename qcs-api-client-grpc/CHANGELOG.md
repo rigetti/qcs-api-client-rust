@@ -1,3 +1,9 @@
+## 0.6.0
+
+### Breaking Changes
+
+- release proxy clients
+
 ## 0.5.0
 
 ### Breaking Changes
