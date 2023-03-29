@@ -10,6 +10,9 @@ use super::{
     DEFAULT_QVM_URL,
 };
 
+#[cfg(feature = "tracing-config")]
+use crate::tracing_configuration::TracingConfiguration;
+
 /// Errors that may occur when building a [`ClientConfiguration`].
 #[derive(Debug, Error)]
 #[non_exhaustive]
@@ -25,8 +28,8 @@ pub struct ClientConfigurationBuilder {
     grpc_api_url: Option<String>,
     quilc_url: Option<String>,
     qvm_url: Option<String>,
-    #[cfg(feature = "otel-tracing")]
-    tracing_configuration: Option<crate::otel_tracing::TracingConfiguration>,
+    #[cfg(feature = "tracing-config")]
+    tracing_configuration: Option<TracingConfiguration>,
 }
 
 impl From<ClientConfiguration> for ClientConfigurationBuilder {
@@ -38,7 +41,7 @@ impl From<ClientConfiguration> for ClientConfigurationBuilder {
             grpc_api_url: Some(config.grpc_api_url),
             quilc_url: Some(config.quilc_url),
             qvm_url: Some(config.qvm_url),
-            #[cfg(feature = "otel-tracing")]
+            #[cfg(feature = "tracing-config")]
             tracing_configuration: config.tracing_configuration,
         }
     }
@@ -97,11 +100,11 @@ impl ClientConfigurationBuilder {
 
     /// Set the [`TracingConfiguration`]. If set to `None`, network API calls will not be traced.
     /// Otherwise, the given [`TracingConfiguration`] will be used to configure tracing.
-    #[cfg(feature = "otel-tracing")]
+    #[cfg(feature = "tracing-config")]
     #[must_use]
     pub fn set_tracing_configuration(
         mut self,
-        tracing_configuration: Option<crate::otel_tracing::TracingConfiguration>,
+        tracing_configuration: Option<TracingConfiguration>,
     ) -> Self {
         self.tracing_configuration = tracing_configuration;
         self
@@ -124,13 +127,14 @@ impl ClientConfigurationBuilder {
                 .quilc_url
                 .unwrap_or_else(|| DEFAULT_QUILC_URL.to_string()),
             qvm_url: self.qvm_url.unwrap_or_else(|| DEFAULT_QVM_URL.to_string()),
-            #[cfg(feature = "otel-tracing")]
+            #[cfg(feature = "tracing-config")]
             tracing_configuration: self.tracing_configuration,
         })
     }
 }
 
 #[cfg(test)]
+#[allow(clippy::cognitive_complexity)]
 mod tests {
     use super::*;
     use rstest::rstest;

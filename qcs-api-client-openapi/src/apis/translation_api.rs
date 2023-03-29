@@ -24,6 +24,8 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
+#[cfg(feature = "tracing")]
+use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -61,6 +63,29 @@ async fn get_quilt_calibrations_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making get_quilt_calibrations request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -122,6 +147,29 @@ async fn translate_native_quil_to_encrypted_binary_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="POST",
+                "making translate_native_quil_to_encrypted_binary request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;

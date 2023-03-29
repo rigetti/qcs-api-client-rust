@@ -25,6 +25,8 @@ pub const SECRETS_PATH_VAR: &str = "QCS_SECRETS_FILE_PATH";
 
 pub(crate) async fn load() -> Result<Secrets, LoadError> {
     let path = path_from_env_or_home(SECRETS_PATH_VAR, "secrets.toml")?;
+    #[cfg(feature = "tracing")]
+    tracing::debug!("attempting to load QCS secrets from {}", path.display());
     let content =
         tokio::fs::read_to_string(&path)
             .await

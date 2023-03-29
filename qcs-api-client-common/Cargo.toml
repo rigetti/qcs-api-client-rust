@@ -11,6 +11,9 @@ keywords = ["qcs", "quantum", "rigetti", "api"]
 description = "Common code for QCS API clients"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+tracing = ["dep:tracing", "url", "urlpattern"]
+tracing-config = ["http", "tracing"]
 
 [dependencies]
 async-trait = "0.1"
@@ -31,6 +34,3 @@ urlpattern = { version = "0.2.0", optional = true }
 rstest = "0.16.0"
 tempfile = "3.3.0"
 tokio = { version = "1.20.1", features = ["fs", "macros"] }
-
-[features]
-otel-tracing = ["http", "tracing", "url", "urlpattern"]

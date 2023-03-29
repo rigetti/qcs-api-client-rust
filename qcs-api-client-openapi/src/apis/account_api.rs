@@ -24,6 +24,8 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
+#[cfg(feature = "tracing")]
+use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -187,6 +189,29 @@ async fn add_group_user_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="POST",
+                "making add_group_user request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -246,6 +271,29 @@ async fn get_group_balance_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making get_group_balance request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -302,6 +350,29 @@ async fn get_group_billing_customer_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making get_group_billing_customer request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -360,6 +431,29 @@ async fn get_group_upcoming_billing_invoice_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making get_group_upcoming_billing_invoice request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -416,6 +510,29 @@ async fn get_user_balance_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making get_user_balance request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -474,6 +591,29 @@ async fn get_user_billing_customer_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making get_user_billing_customer request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -530,6 +670,29 @@ async fn get_user_upcoming_billing_invoice_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making get_user_upcoming_billing_invoice request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -594,6 +757,29 @@ async fn list_group_billing_invoice_lines_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_group_billing_invoice_lines request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = page_token {
         local_var_req_builder =
@@ -685,6 +871,29 @@ async fn list_group_billing_invoices_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_group_billing_invoices request",
+            );
+        }
+    }
+
     if let Some(ref local_var_str) = page_token {
         local_var_req_builder =
             local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
@@ -766,6 +975,29 @@ async fn list_group_upcoming_billing_invoice_lines_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_group_upcoming_billing_invoice_lines request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = page_token {
         local_var_req_builder =
@@ -853,6 +1085,29 @@ async fn list_group_users_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_group_users request",
+            );
+        }
+    }
+
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
             local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
@@ -934,6 +1189,29 @@ async fn list_user_billing_invoice_lines_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_user_billing_invoice_lines request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = page_token {
         local_var_req_builder =
@@ -1025,6 +1303,29 @@ async fn list_user_billing_invoices_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_user_billing_invoices request",
+            );
+        }
+    }
+
     if let Some(ref local_var_str) = page_token {
         local_var_req_builder =
             local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
@@ -1103,6 +1404,29 @@ async fn list_user_groups_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_user_groups request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
@@ -1183,6 +1507,29 @@ async fn list_user_upcoming_billing_invoice_lines_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_user_upcoming_billing_invoice_lines request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = page_token {
         local_var_req_builder =
@@ -1266,6 +1613,29 @@ async fn remove_group_user_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="POST",
+                "making remove_group_user request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;

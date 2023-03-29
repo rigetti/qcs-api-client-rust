@@ -25,6 +25,8 @@ pub const SETTINGS_PATH_VAR: &str = "QCS_SETTINGS_FILE_PATH";
 
 pub(crate) async fn load() -> Result<Settings, LoadError> {
     let path = path_from_env_or_home(SETTINGS_PATH_VAR, "settings.toml")?;
+    #[cfg(feature = "tracing")]
+    tracing::debug!("attempting to load QCS settings from {}", path.display());
     let content =
         tokio::fs::read_to_string(&path)
             .await
