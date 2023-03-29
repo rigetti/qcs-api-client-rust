@@ -37,14 +37,11 @@ prost-build = "0.11.1"
 [features]
 default = ["tls"]
 tls = ["tonic/tls", "tonic/tls-roots"]
-otel-tracing = [
-    "opentelemetry",
-    "opentelemetry_api",
-    "opentelemetry-http",
-    "qcs-api-client-common/otel-tracing",
-    "tracing",
-    "urlpattern",
-]
+# The old name of the tracing-opentelemetry feature, here for backwards compatibility
+otel-tracing = ["tracing-opentelemetry"]
+tracing-opentelemetry = ["opentelemetry", "opentelemetry_api", "opentelemetry-http", "tracing-config"]
+tracing = ["dep:tracing", "urlpattern", "qcs-api-client-common/tracing"]
+tracing-config = ["tracing", "qcs-api-client-common/tracing-config"]
 
 [dev-dependencies]
 async-std = { version = "1.12.0", features = ["attributes"] }

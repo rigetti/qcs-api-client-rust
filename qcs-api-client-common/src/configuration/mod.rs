@@ -30,6 +30,8 @@ use futures::future::try_join;
 use jsonwebtoken::{decode, errors::Error as JWTError, Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use tokio::sync::{Mutex, MutexGuard};
+#[cfg(feature = "tracing")]
+use urlpattern::UrlPatternMatchInput;
 
 pub use builder::{BuildError, ClientConfigurationBuilder};
 use secrets::Secrets;
@@ -38,8 +40,8 @@ use settings::Settings;
 pub use settings::{AuthServer, SETTINGS_PATH_VAR};
 
 use crate::configuration::LoadError::AuthServerNotFound;
-#[cfg(feature = "otel-tracing")]
-use crate::otel_tracing::{TracingConfiguration, TracingFilterError};
+#[cfg(feature = "tracing-config")]
+use crate::tracing_configuration::{TracingConfiguration, TracingFilterError};
 
 mod builder;
 mod path;
@@ -97,7 +99,7 @@ pub struct ClientConfiguration {
     qvm_url: String,
 
     /// Configuration for tracing of network API calls. If `None`, tracing is disabled.
-    #[cfg(feature = "otel-tracing")]
+    #[cfg(feature = "tracing-config")]
     tracing_configuration: Option<TracingConfiguration>,
 }
 
@@ -133,8 +135,8 @@ impl ClientConfiguration {
         &self.qvm_url
     }
 
-    /// URL to access QVM. Defaults to [`DEFAULT_QVM_URL`].
-    #[cfg(feature = "otel-tracing")]
+    /// Returns the configured [`TracingConfiguration`], if present.
+    #[cfg(feature = "tracing-config")]
     #[must_use]
     #[allow(clippy::missing_const_for_fn)]
     pub fn tracing_configuration(&self) -> Option<&TracingConfiguration> {
@@ -197,7 +199,7 @@ pub enum LoadError {
         source: toml::de::Error,
     },
 
-    #[cfg(feature = "otel-tracing")]
+    #[cfg(feature = "tracing-config")]
     /// Failed to parse tracing filter. These should be a comma separated list of URL patterns. See
     /// <https://wicg.github.io/urlpattern> for reference.
     #[error("Could not parse tracing filter: {0}")]
@@ -231,25 +233,28 @@ impl ClientConfiguration {
 
     #[inline]
     async fn load(profile_name: Option<String>) -> Result<Self, LoadError> {
+        #[cfg(feature = "tracing")]
+        #[allow(clippy::option_if_let_else)]
+        match profile_name.as_ref() {
+            None => tracing::debug!("loading default QCS profile"),
+            Some(profile) => tracing::debug!("loading QCS profile {:?}", profile),
+        }
         let (settings, secrets) = try_join(settings::load(), secrets::load()).await?;
         Self::new(settings, secrets, profile_name)
     }
 
-    fn validate_bearer_access_token(lock: &mut MutexGuard<Tokens>) -> Result<String, RefreshError> {
+    fn validated_bearer_access_token(lock: &mut MutexGuard<Tokens>) -> Option<String> {
         #[allow(clippy::option_if_let_else)]
-        match &lock.bearer_access_token {
-            None => Err(RefreshError::NoRefreshToken),
-            Some(token) => {
-                let dummy_key = DecodingKey::from_secret(&[]);
-                let mut validation = Validation::new(Algorithm::RS256);
-                validation.validate_exp = true;
-                validation.leeway = 0;
-                validation.insecure_disable_signature_validation();
-                decode::<toml::Value>(token, &dummy_key, &validation)
-                    .map(|_| token.to_string())
-                    .map_err(RefreshError::from)
-            }
-        }
+        lock.bearer_access_token.as_ref().and_then(|token| {
+            let dummy_key = DecodingKey::from_secret(&[]);
+            let mut validation = Validation::new(Algorithm::RS256);
+            validation.validate_exp = true;
+            validation.leeway = 0;
+            validation.insecure_disable_signature_validation();
+            decode::<toml::Value>(token, &dummy_key, &validation)
+                .map(|_| token.clone())
+                .ok()
+        })
     }
 
     /// Gets the `Bearer` access token, refreshing it if expired.
@@ -260,10 +265,10 @@ impl ClientConfiguration {
     pub async fn get_bearer_access_token(&self) -> Result<String, RefreshError> {
         let mut lock = self.tokens.lock().await;
         // clippy warns about possible deadlock without this `let`
-        let validation = Self::validate_bearer_access_token(&mut lock);
+        let validation = Self::validated_bearer_access_token(&mut lock);
         match validation {
-            Ok(token) => Ok(token),
-            Err(_) => self.internal_refresh(&mut lock).await,
+            Some(token) => Ok(token),
+            None => self.internal_refresh(&mut lock).await,
         }
     }
 
@@ -281,6 +286,9 @@ impl ClientConfiguration {
         &'a self,
         lock: &mut MutexGuard<'a, Tokens>,
     ) -> Result<String, RefreshError> {
+        #[cfg(feature = "tracing")]
+        tracing::trace!("refreshing QCS access token");
+
         let refresh_token = lock
             .refresh_token
             .as_deref()
@@ -342,9 +350,9 @@ impl ClientConfiguration {
             refresh_token,
         };
 
-        #[cfg(feature = "otel-tracing")]
-        let tracing_configuration = crate::otel_tracing::TracingConfiguration::from_env()
-            .map_err(LoadError::TracingFilterParseError)?;
+        #[cfg(feature = "tracing-config")]
+        let tracing_configuration =
+            TracingConfiguration::from_env().map_err(LoadError::TracingFilterParseError)?;
 
         let mut builder = Self::builder();
         builder = builder
@@ -355,7 +363,7 @@ impl ClientConfiguration {
             .set_qvm_url(qvm_url)
             .set_grpc_api_url(grpc_api_url);
 
-        #[cfg(feature = "otel-tracing")]
+        #[cfg(feature = "tracing-config")]
         {
             builder = builder.set_tracing_configuration(tracing_configuration);
         };
@@ -413,12 +421,28 @@ pub trait TokenRefresher: Clone {
     async fn refresh_access_token(&self) -> Result<String, Self::Error>;
 
     /// Get the base URL for requests
-    #[cfg(feature = "otel-tracing")]
+    #[cfg(feature = "tracing")]
     fn base_url(&self) -> &str;
 
     /// Get the tracing configuration
-    #[cfg(feature = "otel-tracing")]
+    #[cfg(feature = "tracing-config")]
     fn tracing_configuration(&self) -> Option<&TracingConfiguration>;
+
+    /// Returns whether the given URL should be traced. Following
+    /// [`TracingConfiguration::is_enabled`], this defaults to `true`.
+    #[cfg(feature = "tracing")]
+    #[allow(clippy::needless_return)]
+    fn should_trace(&self, url: &UrlPatternMatchInput) -> bool {
+        #[cfg(not(feature = "tracing-config"))]
+        {
+            let _ = url;
+            return true;
+        }
+
+        #[cfg(feature = "tracing-config")]
+        self.tracing_configuration()
+            .map_or(true, |config| config.is_enabled(url))
+    }
 }
 
 #[async_trait::async_trait]
@@ -433,12 +457,12 @@ impl TokenRefresher for ClientConfiguration {
         self.get_bearer_access_token().await
     }
 
-    #[cfg(feature = "otel-tracing")]
+    #[cfg(feature = "tracing")]
     fn base_url(&self) -> &str {
         &self.grpc_api_url
     }
 
-    #[cfg(feature = "otel-tracing")]
+    #[cfg(feature = "tracing-config")]
     fn tracing_configuration(&self) -> Option<&TracingConfiguration> {
         self.tracing_configuration()
     }

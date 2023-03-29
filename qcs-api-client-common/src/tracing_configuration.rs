@@ -19,7 +19,7 @@
 //! # Examples
 //!
 //! ```
-//! use qcs_api_client_common::otel_tracing::{TracingFilter, TracingFilterBuilder};
+//! use qcs_api_client_common::tracing_configuration::{TracingFilter, TracingFilterBuilder};
 //! use urlpattern::UrlPatternMatchInput;
 //!
 //! let mut filter = TracingFilter::builder()
@@ -157,6 +157,17 @@ impl TracingConfiguration {
     pub fn filter(&self) -> Option<&TracingFilter> {
         self.filter.as_ref()
     }
+
+    /// Returns `true` if the specified URL should be traced. For details on how this is determined,
+    /// see [`TracingFilter`].
+    ///
+    /// Defaults to `true` if no filter is set.
+    #[must_use]
+    pub fn is_enabled(&self, url: &UrlPatternMatchInput) -> bool {
+        self.filter
+            .as_ref()
+            .map_or(true, |filter| filter.is_enabled(url))
+    }
 }
 
 impl From<TracingFilter> for TracingFilterBuilder {
@@ -278,7 +289,7 @@ impl TracingFilter {
         })
     }
 
-    /// Returns true if the specified URL should be traced. For details on how this is determined,
+    /// Returns `true` if the specified URL should be traced. For details on how this is determined,
     /// see [`TracingFilter`].
     ///
     /// Note, if any regular expression executor for matching returns an error, this function will
@@ -339,12 +350,8 @@ fn parse_constructor_string(filter: &str) -> Result<UrlPatternInit, TracingFilte
                     // [`UrlPatternInit`].
                     url_to_url_pattern_init(&url_with_bootstrapped_base_url, None)
                 });
-            if let Ok(baseless_url_pattern_init) = baseless_url_pattern_init {
-                Ok(baseless_url_pattern_init)
-            } else {
-                // Discard the error from the second parsing attempt.
-                Err(original_error)
-            }
+
+            baseless_url_pattern_init.map_err(|_| original_error)
         })
 }
 

@@ -4,6 +4,8 @@ use serde::{Serialize, Deserialize};
 use crate::apis::ResponseContent;
 use super::{Error, configuration};
 use reqwest::StatusCode;
+#[cfg(feature = "tracing")]
+use qcs_api_client_common::configuration::TokenRefresher;
 
 {{#operations}}
 {{#operation}}
@@ -92,6 +94,27 @@ pub enum {{{operationIdCamelCase}}}Error {
 
     let local_var_uri_str = format!("{}{{{path}}}", local_var_configuration.qcs_config.api_url(){{#pathParams}}, {{{baseName}}}={{#isString}}crate::apis::urlencode({{/isString}}{{{paramName}}}{{^required}}.unwrap(){{/required}}{{#required}}{{#isNullable}}.unwrap(){{/isNullable}}{{/required}}{{#isArray}}.join(",").as_ref(){{/isArray}}{{#isString}}){{/isString}}{{/pathParams}});
     let mut local_var_req_builder = local_var_client.request(reqwest::Method::{{{httpMethod}}}, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing = local_var_uri_str.parse::<::url::Url>()
+            .ok()
+            .map_or(true, |url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="{{{httpMethod}}}",
+                "making {{{operationId}}} request",
+            );
+        }
+    }
 
     {{#queryParams}}
     {{#required}}

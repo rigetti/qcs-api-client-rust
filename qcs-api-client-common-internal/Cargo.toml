@@ -38,5 +38,5 @@ tempfile = "3.3.0"
 tokio = { version = "1.20.1", features = ["fs", "macros"] }
 
 [features]
-otel-tracing = ["qcs-api-client-common/otel-tracing"]
-
+tracing = ["dep:tracing", "qcs-api-client-common/tracing", "url", "urlpattern"]
+tracing-config = ["http", "tracing", "qcs-api-client-common/tracing-config"]

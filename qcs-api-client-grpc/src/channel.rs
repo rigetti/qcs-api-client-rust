@@ -31,6 +31,9 @@ use tonic::Status;
 use tower::{Layer, ServiceBuilder};
 use url::Url;
 
+#[cfg(feature = "tracing")]
+use urlpattern::UrlPatternMatchInput;
+
 /// Errors that may occur when using gRPC.
 #[derive(Debug, thiserror::Error)]
 #[allow(variant_size_differences)]
@@ -105,11 +108,11 @@ fn get_env_uri(key: &str) -> Result<Option<Uri>, InvalidUri> {
 fn get_uri_socks_auth(uri: &Uri) -> Result<Option<Auth>, url::ParseError> {
     let full_url = uri.to_string().parse::<Url>()?;
     let user = full_url.username();
-    let auth = if user != "" {
+    let auth = if user.is_empty() {
+        None
+    } else {
         let pass = full_url.password().unwrap_or_default();
         Some(Auth::new(user, pass))
-    } else {
-        None
     };
     Ok(auth)
 }
@@ -361,7 +364,7 @@ async fn make_request<E: std::error::Error>(
     service.call(request).await.map_err(Error::from)
 }
 
-#[cfg(feature = "otel-tracing")]
+#[cfg(feature = "tracing-opentelemetry")]
 async fn make_traced_request<E: std::error::Error>(
     service: &mut Channel,
     mut request: Request<BoxBody>,
@@ -409,18 +412,32 @@ where
         let service = std::mem::replace(&mut self.service, service);
         let token_refresher = self.token_refresher.clone();
         Box::pin(async move {
-            #[cfg(feature = "otel-tracing")]
+            #[cfg(feature = "tracing-opentelemetry")]
             use opentelemetry_api::trace::FutureExt;
 
-            #[cfg(feature = "otel-tracing")]
+            #[cfg(feature = "tracing-opentelemetry")]
             return traced_service_call(req, token_refresher, service)
                 .with_current_context()
                 .await;
 
-            #[cfg(not(feature = "otel-tracing"))]
+            #[cfg(not(feature = "tracing-opentelemetry"))]
             return service_call(req, token_refresher, service).await;
         })
     }
+}
+
+#[cfg(feature = "tracing")]
+fn get_full_url_string<T: TokenRefresher>(token_refresher: &T, uri: &Uri) -> String {
+    format!("{}{}", token_refresher.base_url(), uri)
+}
+
+#[cfg(feature = "tracing")]
+fn should_trace<T: TokenRefresher>(token_refresher: &T, url_str: &str, default: bool) -> bool {
+    let url = url_str.parse::<::url::Url>().ok();
+
+    url.map_or(default, |url| {
+        token_refresher.should_trace(&UrlPatternMatchInput::Url(url))
+    })
 }
 
 async fn service_call<T>(
@@ -432,6 +449,17 @@ where
     T: TokenRefresher,
     T::Error: std::error::Error,
 {
+    #[cfg(feature = "tracing")]
+    {
+        if should_trace(
+            &token_refresher,
+            &get_full_url_string(&token_refresher, req.uri()),
+            true,
+        ) {
+            tracing::debug!("making gRPC request to {}", req.uri());
+        }
+    }
+
     let token = token_refresher
         .get_access_token()
         .await
@@ -451,7 +479,7 @@ where
     }
 }
 
-#[cfg(feature = "otel-tracing")]
+#[cfg(feature = "tracing-opentelemetry")]
 async fn traced_service_call<T: TokenRefresher>(
     original_req: Request<BoxBody>,
     config: T,
@@ -463,29 +491,17 @@ where
     use opentelemetry::{propagation::TextMapPropagator, sdk::propagation::TraceContextPropagator};
     use opentelemetry_api::trace::FutureExt;
     use opentelemetry_http::HeaderInjector;
-    use urlpattern::UrlPatternMatchInput;
 
     // The request URI here doesn't include the base url, so we have  to manually add it here to evaluate request filter patterns.
-    let full_request_url = format!("{}{}", config.base_url(), &original_req.uri().to_string());
+    let full_request_url = format!("{}{}", config.base_url(), &original_req.uri());
 
-    if !config
-        .tracing_configuration()
-        .map(|tracing_config| {
-            tracing_config
-                .filter()
-                .map(|filter| {
-                    url::Url::parse(full_request_url.as_str())
-                        .map(UrlPatternMatchInput::Url)
-                        .map(|input| filter.is_enabled(&input))
-                        // tracing enabled and filter set, but url failed to parse for filter evaluation - do not trace the request
-                        .unwrap_or(false)
-                })
-                // tracing enabled, but not filter set, trace all requests
-                .unwrap_or(true)
-        })
-        // tracing not enabled, do not trace the request
-        .unwrap_or(false)
-    {
+    if should_trace(&config, &full_request_url, true) {
+        tracing::debug!("making traced gRPC request to {}", full_request_url);
+    }
+
+    let should_otel_trace = config.tracing_configuration().is_some() && should_trace(&config, &full_request_url, false);
+
+    if !should_otel_trace {
         return service_call(original_req, config, channel).await;
     }
 
@@ -528,11 +544,11 @@ where
     }
 }
 
-#[cfg(feature = "otel-tracing")]
+#[cfg(feature = "tracing-opentelemetry")]
 static GRPC_SPAN_NAME: &str = "gRPC request";
 
 /// Creates a gRPC request span that conforms to the gRPC semantic conventions. See <https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/rpc.md> for details.
-#[cfg(feature = "otel-tracing")]
+#[cfg(feature = "tracing-opentelemetry")]
 fn make_grpc_request_span(
     request: &tonic::codegen::http::Request<tonic::body::BoxBody>,
 ) -> tracing::Span {
@@ -566,7 +582,7 @@ fn make_grpc_request_span(
 }
 
 #[cfg(test)]
-#[cfg(feature = "otel-tracing")]
+#[cfg(feature = "tracing-opentelemetry")]
 mod tests {
     use opentelemetry::propagation::TextMapPropagator;
     use opentelemetry::sdk::propagation::TraceContextPropagator;
@@ -590,7 +606,7 @@ mod tests {
     /// Test that when tracing is enabled and no filter is set, any request is properly traced.
     #[tokio::test]
     async fn test_tracing_enabled_no_filter() {
-        use qcs_api_client_common::otel_tracing::TracingConfiguration;
+        use qcs_api_client_common::tracing_configuration::TracingConfiguration;
 
         let client_config = ClientConfiguration::builder()
             .set_tracing_configuration(Some(TracingConfiguration::default()))
@@ -607,7 +623,7 @@ mod tests {
     /// properly traced.
     #[tokio::test]
     async fn test_tracing_enabled_filter_passed() {
-        use qcs_api_client_common::otel_tracing::{TracingConfiguration, TracingFilter};
+        use qcs_api_client_common::tracing_configuration::{TracingConfiguration, TracingFilter};
 
         let tracing_filter = TracingFilter::builder()
             .parse_strs_and_set_paths(&[HEALTH_CHECK_PATH])
@@ -694,7 +710,7 @@ mod tests {
     /// request is not traced.
     #[tokio::test]
     async fn test_tracing_enabled_filter_not_passed() {
-        use qcs_api_client_common::otel_tracing::{TracingConfiguration, TracingFilter};
+        use qcs_api_client_common::tracing_configuration::{TracingConfiguration, TracingFilter};
 
         let tracing_filter = TracingFilter::builder()
             .parse_strs_and_set_paths(&[HEALTH_CHECK_PATH])

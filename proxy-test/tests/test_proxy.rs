@@ -14,6 +14,10 @@ use qcs_api_client_openapi::{
 };
 use serial_test::serial;
 
+fn set_https_proxy() {
+    std::env::set_var("HTTPS_PROXY", "socks5://127.0.0.1:49818");
+}
+
 /// Make a gRPC translation request to the live QCS API using proxy configuration.
 ///
 /// Loads a default [`ClientConfiguration`] and thus relies on the presence of
@@ -89,6 +93,7 @@ mod test_in_process {
     #[tokio::test]
     #[serial]
     async fn test_openapi_proxy_connects() -> Result<()> {
+        set_https_proxy();
         let proxy = Proxy::new().await?;
         let serve = tokio::spawn(proxy.accept_one_connection());
 
@@ -96,7 +101,7 @@ mod test_in_process {
         let _ = request_list_quantum_processors().await;
 
         // check that the proxy received a connection.
-        let _ = serve.await??;
+        serve.await??;
 
         Ok(())
     }
@@ -105,6 +110,7 @@ mod test_in_process {
     #[tokio::test]
     #[serial]
     async fn test_grpc_proxy_connects() -> Result<()> {
+        set_https_proxy();
         let proxy = Proxy::new().await?;
         let serve = tokio::spawn(proxy.accept_one_connection());
 
@@ -112,7 +118,7 @@ mod test_in_process {
         let _ = request_translation().await;
 
         // check that the proxy received a connection.
-        let _ = serve.await??;
+        serve.await??;
 
         Ok(())
     }
@@ -125,6 +131,7 @@ mod test_docker {
     #[tokio::test]
     #[serial]
     async fn test_grpc_proxy() -> Result<()> {
+        set_https_proxy();
         // the translation result comes back correctly
         let _ = request_translation()
             .await
@@ -136,6 +143,7 @@ mod test_docker {
     #[tokio::test]
     #[serial]
     async fn test_openapi_proxy() -> Result<()> {
+        set_https_proxy();
         // the translation result comes back correctly
         let _ = request_list_quantum_processors().await?;
 

@@ -10,6 +10,8 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
+#[cfg(feature = "tracing")]
+use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -109,6 +111,29 @@ async fn create_reservation_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="POST",
+                "making create_reservation request",
+            );
+        }
+    }
+
     if let Some(local_var_param_value) = x_qcs_account_id {
         local_var_req_builder =
             local_var_req_builder.header("x-qcs-account-id", local_var_param_value.to_string());
@@ -192,6 +217,29 @@ async fn delete_reservation_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="DELETE",
+                "making delete_reservation request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -252,6 +300,29 @@ async fn find_available_reservations_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making find_available_reservations request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
@@ -347,6 +418,29 @@ async fn internal_create_reservation_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="POST",
+                "making internal_create_reservation request",
+            );
+        }
+    }
+
     if let Some(local_var_param_value) = x_qcs_account_id {
         local_var_req_builder =
             local_var_req_builder.header("x-qcs-account-id", local_var_param_value.to_string());
@@ -436,6 +530,29 @@ async fn internal_find_available_reservations_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_find_available_reservations request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
@@ -542,6 +659,29 @@ async fn internal_list_reservations_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_list_reservations request",
+            );
+        }
+    }
+
     if let Some(ref local_var_str) = filter {
         local_var_req_builder =
             local_var_req_builder.query(&[("filter", &local_var_str.to_string())]);
@@ -645,6 +785,29 @@ async fn list_group_reservations_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_group_reservations request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = filter {
         local_var_req_builder =
@@ -752,6 +915,29 @@ async fn list_reservations_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_reservations request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = filter {
         local_var_req_builder =

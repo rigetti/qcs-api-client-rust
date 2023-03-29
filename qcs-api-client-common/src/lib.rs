@@ -16,6 +16,12 @@
 //!
 //! You probably don't need to use this directly, as the clients should expose anything you might
 //! need.
+//!
+//! # Features
+//!
+//! - `tracing`: enables `tracing` support in [`ClientConfiguration`].
+//! - `tracing-config`: enables [`TracingConfiguration`] support for enabling/disabling traces per-URL.
+//!   Requires the `tracing` feature.
 
 // Covers correctness, suspicious, style, complexity, and perf
 #![deny(clippy::all)]
@@ -24,7 +30,6 @@
 #![warn(clippy::nursery)]
 // Has false positives that conflict with unreachable_pub
 #![allow(clippy::redundant_pub_crate)]
-#![deny(rustdoc::missing_doc_code_examples)]
 #![deny(
 absolute_paths_not_starting_with_crate,
 anonymous_parameters,
@@ -66,5 +71,5 @@ while_true
 
 pub mod configuration;
 pub use configuration::ClientConfiguration;
-#[cfg(feature = "otel-tracing")]
-pub mod otel_tracing;
+#[cfg(feature = "tracing-config")]
+pub mod tracing_configuration;

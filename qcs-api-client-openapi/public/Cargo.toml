@@ -31,12 +31,14 @@ rstest = "0.16.0"
 tokio = { version = "1.20.1", features = ["rt-multi-thread", "rt", "macros"] }
 
 [features]
-otel-tracing = [
+# The old name of the tracing-opentelemetry feature, here for backwards compatibility
+otel-tracing = ["tracing-opentelemetry"]
+tracing = ["dep:tracing", "urlpattern", "qcs-api-client-common/tracing"]
+tracing-config = ["tracing", "qcs-api-client-common/tracing-config"]
+tracing-opentelemetry = [
   "anyhow",
   "task-local-extensions",
-  "qcs-api-client-common/otel-tracing",
   "reqwest-middleware",
   "reqwest-tracing/opentelemetry_0_18",
-  "tracing",
-  "urlpattern"
+  "tracing-config",
 ]

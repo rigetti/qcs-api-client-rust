@@ -1,6 +1,12 @@
 extend = ".rust-ci/defaults/Makefile.toml"
 
+[env]
+    # Removed --optional-deps from default flags, as only explicit features should be used
+    CARGO_HACK_COMMON_FLAGS = "--feature-powerset --exclude-features docker"
+
 [config]
+default_to_workspace = false
+on_error_task = "docker-down"
 load_script = """
     if [ ! -d /etc/rust-ci ] || [ -d .rust-ci/.git ]; then
         if [ ! -d .rust-ci ]; then
@@ -8,10 +14,30 @@ load_script = """
         else
             git -C .rust-ci pull
         fi
-    else 
+    else
         if [ -d .rust-ci ]; then
             rm -rf .rust-ci
         fi
         cp -r /etc/rust-ci .rust-ci
     fi
 """
+
+[tasks.docker-up]
+command = "docker"
+args = ["compose", "up", "-d"]
+
+[tasks.docker-down]
+command = "docker"
+ignore_errors = true
+args = ["compose", "down"]
+
+[tasks.docker-logs]
+command = "docker"
+args = ["compose", "logs"]
+
+[tasks.docker-tests]
+command = "cargo"
+args = ["test", "-F", "docker"]
+
+[tasks.docker-test-flow]
+dependencies = ["docker-up", "docker-tests", "docker-logs", "docker-down"]

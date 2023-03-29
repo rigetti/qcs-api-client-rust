@@ -34,13 +34,15 @@ impl Configuration {
     }
 
     pub fn with_qcs_config(qcs_config: crate::common::ClientConfiguration) -> Configuration {
-        let client = {
-            reqwest::Client::builder()
-                .user_agent(USER_AGENT)
-                .build()
-                .expect("failed to create HTTP client")
-        };
+        let client = reqwest::Client::builder()
+            .user_agent(USER_AGENT)
+            .build()
+            .expect("failed to add User-Agent to HTTP client");
 
+        Self::with_client_and_qcs_config(client, qcs_config)
+    }
+
+    pub fn with_client_and_qcs_config(client: reqwest::Client, qcs_config: crate::common::ClientConfiguration) -> Self {
         #[cfg(feature = "otel-tracing")]
         let client = {
             use reqwest_middleware::Extension;
@@ -71,7 +73,7 @@ impl FilteredSpanBackend {
         req: &reqwest::Request,
         extensions: &mut task_local_extensions::Extensions,
     ) -> bool {
-        if let Some(filter) = extensions.get::<qcs_api_client_common::otel_tracing::TracingFilter>()
+        if let Some(filter) = extensions.get::<qcs_api_client_common::tracing_configuration::TracingFilter>()
         {
             let input = urlpattern::UrlPatternMatchInput::Url(req.url().clone());
             return filter.is_enabled(&input);
@@ -152,11 +154,11 @@ mod tests {
     #[case("https://api.qcs.rigetti.com/v1/other", false)]
     #[case("https://other.qcs.rigetti.com/v1/path", false)]
     fn test_tracing_enabled_filter_not_passed(#[case] url: &str, #[case] expected: bool) {
-        use qcs_api_client_common::otel_tracing::TracingFilterBuilder;
+        use qcs_api_client_common::tracing_configuration::TracingFilterBuilder;
 
         use crate::apis::configuration::FilteredSpanBackend;
 
-        let mut tracing_filter = qcs_api_client_common::otel_tracing::TracingFilter::builder()
+        let mut tracing_filter = qcs_api_client_common::tracing_configuration::TracingFilter::builder()
             .parse_strs_and_set_paths(&["https://api.qcs.rigetti.com/v1/path"])
             .expect("test pattern should be valid")
             .build();
@@ -178,4 +180,3 @@ mod tests {
         );
     }
 }
-

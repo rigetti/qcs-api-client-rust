@@ -1,7 +1,12 @@
 [packages.common]
 versioned_files = ["qcs-api-client-common/Cargo.toml"]
 changelog = "qcs-api-client-common/CHANGELOG.md"
-scopes = ["common"]
+scopes = ["common", "common-public"]
+
+[packages.common-internal]
+versioned_files = ["qcs-api-client-common-internal/Cargo.toml"]
+changelog = "qcs-api-client-common-internal/CHANGELOG.md"
+scopes = ["common", "common-internal"]
 
 [packages.grpc]
 versioned_files = ["qcs-api-client-grpc/Cargo.toml"]

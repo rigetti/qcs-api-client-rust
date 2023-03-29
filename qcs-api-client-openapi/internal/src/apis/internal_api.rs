@@ -10,6 +10,8 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
+#[cfg(feature = "tracing")]
+use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -218,6 +220,29 @@ async fn internal_create_endpoint_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="POST",
+                "making internal_create_endpoint request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -280,6 +305,29 @@ async fn internal_delete_endpoint_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="DELETE",
+                "making internal_delete_endpoint request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -336,6 +384,29 @@ async fn internal_delete_instruction_set_architecture_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="DELETE",
+                "making internal_delete_instruction_set_architecture request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -403,6 +474,29 @@ async fn internal_delete_legacy_deployed_rack_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="DELETE",
+                "making internal_delete_legacy_deployed_rack request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -462,6 +556,29 @@ async fn internal_delete_legacy_quantum_processor_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="DELETE",
+                "making internal_delete_legacy_quantum_processor request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -526,6 +643,29 @@ async fn internal_delete_quantum_processor_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="DELETE",
+                "making internal_delete_quantum_processor request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -585,6 +725,29 @@ async fn internal_delete_quantum_processor_accessor_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="DELETE",
+                "making internal_delete_quantum_processor_accessor request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -655,6 +818,29 @@ async fn internal_get_default_endpoint_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_get_default_endpoint request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -711,6 +897,29 @@ async fn internal_get_endpoint_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_get_endpoint request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -769,6 +978,29 @@ async fn internal_get_legacy_deployed_rack_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_get_legacy_deployed_rack request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = mock {
         local_var_req_builder =
@@ -844,6 +1076,29 @@ async fn internal_list_endpoint_engagements_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_list_endpoint_engagements request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
@@ -930,6 +1185,29 @@ async fn internal_list_endpoints_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_list_endpoints request",
+            );
+        }
+    }
+
     if let Some(ref local_var_str) = filter {
         local_var_req_builder =
             local_var_req_builder.query(&[("filter", &local_var_str.to_string())]);
@@ -1013,6 +1291,29 @@ async fn internal_put_instruction_set_architecture_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making internal_put_instruction_set_architecture request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -1088,6 +1389,29 @@ async fn internal_put_legacy_deployed_rack_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making internal_put_legacy_deployed_rack request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -1160,6 +1484,29 @@ async fn internal_put_legacy_quantum_processor_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making internal_put_legacy_quantum_processor request",
+            );
+        }
+    }
 
     if let Some(ref local_var_str) = architecture_family {
         local_var_req_builder =
@@ -1242,6 +1589,29 @@ async fn internal_put_quantum_processor_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making internal_put_quantum_processor request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -1314,6 +1684,29 @@ async fn internal_put_quantum_processor_accessor_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making internal_put_quantum_processor_accessor request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -1389,6 +1782,29 @@ async fn internal_set_default_endpoint_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making internal_set_default_endpoint request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -1460,6 +1876,29 @@ async fn internal_update_endpoint_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PATCH",
+                "making internal_update_endpoint request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
@@ -1534,6 +1973,29 @@ async fn internal_update_legacy_quantum_processor_inner(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PATCH",
+                "making internal_update_legacy_quantum_processor request",
+            );
+        }
+    }
+
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;
     local_var_req_builder = local_var_req_builder.bearer_auth(token);
@@ -1604,6 +2066,29 @@ async fn list_endpoint_templates_inner(
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_endpoint_templates request",
+            );
+        }
+    }
 
     // Use QCS Bearer token
     let token = configuration.qcs_config.get_bearer_access_token().await?;

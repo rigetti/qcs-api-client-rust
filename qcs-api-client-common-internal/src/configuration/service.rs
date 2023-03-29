@@ -2,8 +2,8 @@ use oauth2::basic::BasicClient;
 use oauth2::reqwest::async_http_client;
 use oauth2::{AuthUrl, ClientId, ClientSecret, Scope, TokenResponse, TokenUrl};
 use qcs_api_client_common::configuration::TokenRefresher;
-#[cfg(feature = "otel-tracing")]
-use qcs_api_client_common::otel_tracing::TracingConfiguration;
+#[cfg(feature = "tracing-config")]
+use qcs_api_client_common::tracing_configuration::TracingConfiguration;
 use std::ops::Add;
 use std::sync::Arc;
 use std::time::SystemTime;
@@ -92,6 +92,9 @@ impl ClientConfiguration {
         credentials: OAuthClientCredentials,
         issuer: String,
     ) -> Result<(String, SystemTime), AccessTokenError> {
+        #[cfg(feature = "tracing")]
+        tracing::trace!("fetching new OAuth2 access token");
+
         let token_url = format!("{issuer}/v1/token");
 
         let client = BasicClient::new(
@@ -143,12 +146,12 @@ impl TokenRefresher for ClientConfiguration {
             .map_err(Into::into)
     }
 
-    #[cfg(feature = "otel-tracing")]
+    #[cfg(feature = "tracing")]
     fn base_url(&self) -> &str {
         unimplemented!()
     }
 
-    #[cfg(feature = "otel-tracing")]
+    #[cfg(feature = "tracing-config")]
     fn tracing_configuration(&self) -> Option<&TracingConfiguration> {
         unimplemented!()
     }
