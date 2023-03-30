@@ -1,3 +1,9 @@
+## 0.7.2
+
+### Features
+
+- add general tracing support
+
 ## 0.7.1
 
 ### Fixes

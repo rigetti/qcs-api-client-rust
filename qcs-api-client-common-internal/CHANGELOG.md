@@ -1,3 +1,9 @@
+## 0.5.1
+
+### Features
+
+- add general tracing support
+
 ## 0.5.0
 
 ### Breaking Changes
