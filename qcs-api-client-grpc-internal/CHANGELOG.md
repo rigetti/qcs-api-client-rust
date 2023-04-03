@@ -1,3 +1,9 @@
+## 0.6.3
+
+### Features
+
+- try lowercase http(s?)_proxy variables
+
 ## 0.6.2
 
 ### Features
