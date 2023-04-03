@@ -100,8 +100,13 @@ fn get_endpoint(uri: Uri) -> Endpoint {
 }
 
 /// Fetch the env var named for `key` and parse as a `Uri`.
+/// Tries the original casing, then the full lowercasing of `key`.
 fn get_env_uri(key: &str) -> Result<Option<Uri>, InvalidUri> {
-    std::env::var(key).ok().map(Uri::try_from).transpose()
+    std::env::var(key)
+        .or_else(|_| std::env::var(key.to_lowercase()))
+        .ok()
+        .map(Uri::try_from)
+        .transpose()
 }
 
 /// Parse the authentication from `uri` into proxy `Auth`, if present.
@@ -122,7 +127,8 @@ fn get_uri_socks_auth(uri: &Uri) -> Result<Option<Auth>, url::ParseError> {
 ///
 /// This channel will be configured to route requests through proxies defined by
 /// `HTTPS_PROXY` and/or `HTTP_PROXY` environment variables, if they are defined.
-/// Supported proxy schemes are `http`, `https`, and `socks5`.
+/// The variable names can be all-uppercase or all-lowercase, but the all-uppercase
+/// variants will take precedence. Supported proxy schemes are `http`, `https`, and `socks5`.
 ///
 /// Proxy configuration caveats:
 /// - If both variables are defined, neither can be a `socks5` proxy, unless they are both the same value.
@@ -499,7 +505,8 @@ where
         tracing::debug!("making traced gRPC request to {}", full_request_url);
     }
 
-    let should_otel_trace = config.tracing_configuration().is_some() && should_trace(&config, &full_request_url, false);
+    let should_otel_trace =
+        config.tracing_configuration().is_some() && should_trace(&config, &full_request_url, false);
 
     if !should_otel_trace {
         return service_call(original_req, config, channel).await;

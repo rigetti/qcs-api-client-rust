@@ -20,7 +20,8 @@ See [docs.rs] for a quick start guide.
 
 ## Proxies
 The [`get_channel`][get_channel] function configures the returned `Channel` to route requests through a client proxy
-based on the presence of environment variables `HTTPS_PROXY` and/or `HTTP_PROXY`.
+based on the presence of environment variables `HTTPS_PROXY` and/or `HTTP_PROXY`. The variable names can be
+all-uppercase or all-lowercase, but the all-uppercase variants will take precedence.
 Currently, the supported proxy schemes are `http`, `https`, and `socks5`.
 
 There are some caveats to the proxy configuration:
