@@ -45,6 +45,11 @@ git add qcs-api-client-grpc/Cargo.toml qcs-api-client-grpc-internal/Cargo.toml q
 
 [[workflows.steps]]
 type = "Command"
+# Fail the workflow if there are no staged changes added from the previous `cargo upgrade`
+command = "! git diff --cached --quiet"
+
+[[workflows.steps]]
+type = "Command"
 command = "cargo update -w"
 
 [[workflows.steps]]
