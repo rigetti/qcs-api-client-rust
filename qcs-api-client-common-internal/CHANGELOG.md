@@ -1,3 +1,9 @@
+## 0.5.3
+
+### Fixes
+
+- fail knope PrepareRelease if cargo upgrade and git add fails
+
 ## 0.5.2
 
 ### Features
