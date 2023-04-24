@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2023 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,16 +17,40 @@ package services.translation;
 option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/translation";
 import "controller/job.proto";
 import "translation/metadata.proto";
+
+// Options specified on RPCs that translate Quil to a ControllerJob. Intended to support custom pre-processing
+// and other translation features.
+message TranslationOptions {
+
+    // The backend to use for translation, to include relevant options.
+    // If neither is specified, the implementing service may select the
+    // translation backend and options.
+    oneof translation_backend {
+        .services.translation.BackendV1Options v1 = 101;
+        .services.translation.BackendV2Options v2 = 102;
+    }
+}
+
+// Options for translation backend V1
+message BackendV1Options {
+}
+
+// Options for translation backend V2
+message BackendV2Options {
+}
 message TranslateQuilToEncryptedControllerJobRequest {
-    optional string quantum_processor_id = 1;
-    optional string quil_program = 2;
+    string quantum_processor_id = 1;
+    string quil_program = 2;
+
+    // Specification of optional translation features.
+    .services.translation.TranslationOptions options = 4;
     oneof num_shots {
         uint32 num_shots_value = 3;
     }
 }
 message TranslateQuilToEncryptedControllerJobResponse {
-    optional .models.controller.EncryptedControllerJob job = 1;
-    optional .models.translation.QuilTranslationMetadata metadata = 2;
+    .models.controller.EncryptedControllerJob job = 1;
+    .models.translation.QuilTranslationMetadata metadata = 2;
 }
 
 service Translation {

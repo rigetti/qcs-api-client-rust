@@ -2,31 +2,79 @@ syntax = "proto3";
 package services.translation;
 option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/translation";
 import "controller/job.proto";
+import "translation/metadata.proto";
+
+// Options specified on RPCs that translate Quil to a ControllerJob. Intended to support custom pre-processing
+// and other translation features.
+message TranslationOptions {
+
+    // When set, the client program will be pre-processed via the Q-CTRL API before
+    // translation.
+    .services.translation.TranslationOptions.QCtrl q_ctrl = 1;
+    message QCtrl {
+    }
+
+    // The backend to use for translation, to include relevant options.
+    // If neither is specified, the implementing service may select the
+    // translation backend and options.
+    oneof translation_backend {
+        .services.translation.BackendV1Options v1 = 101;
+        .services.translation.BackendV2Options v2 = 102;
+    }
+}
+
+// Options for translation backend V1
+message BackendV1Options {
+}
+
+// Options for translation backend V2
+message BackendV2Options {
+}
 message TranslateQuilToSignedControllerJobRequest {
-    optional string quantum_processor_id = 1;
-    optional string quil_program = 2;
+    string quantum_processor_id = 1;
+    string quil_program = 2;
+
+    // Specification of optional translation features.
+    .services.translation.TranslationOptions options = 4;
     oneof num_shots {
         uint32 num_shots_value = 3;
     }
 }
 message TranslateQuilToSignedControllerJobResponse {
-    optional .models.controller.SignedControllerJob job = 1;
+    .models.controller.SignedControllerJob job = 1;
+    .models.translation.QuilTranslationMetadata metadata = 2;
+}
+message BatchTranslateQuilToSignedControllerJobRequest {
+    repeated .services.translation.TranslateQuilToSignedControllerJobRequest requests = 1;
+}
+message BatchTranslateQuilToSignedControllerJobResponse {
+    repeated .services.translation.TranslateQuilToSignedControllerJobResponse responses = 1;
 }
 message TranslateQuilToEncryptedControllerJobRequest {
-    optional string quantum_processor_id = 1;
-    optional string quil_program = 2;
+    string quantum_processor_id = 1;
+    string quil_program = 2;
+
+    // Specification of optional translation features.
+    .services.translation.TranslationOptions options = 4;
     oneof num_shots {
         uint32 num_shots_value = 3;
     }
 }
 message TranslateQuilToEncryptedControllerJobResponse {
-    optional .models.controller.EncryptedControllerJob job = 1;
+    .models.controller.EncryptedControllerJob job = 1;
+    .models.translation.QuilTranslationMetadata metadata = 2;
+}
+message BatchTranslateQuilToEncryptedControllerJobRequest {
+    repeated .services.translation.TranslateQuilToEncryptedControllerJobRequest requests = 1;
+}
+message BatchTranslateQuilToEncryptedControllerJobResponse {
+    repeated .services.translation.TranslateQuilToEncryptedControllerJobResponse responses = 1;
 }
 message HealthCheckRequest {
-    optional string service = 1;
+    string service = 1;
 }
 message HealthCheckResponse {
-    optional .services.translation.HealthCheckResponse.ServingStatus status = 1;
+    .services.translation.HealthCheckResponse.ServingStatus status = 1;
     enum ServingStatus {
         UNKNOWN = 0;
         SERVING = 1;
@@ -38,7 +86,17 @@ service Translation {
 
     rpc TranslateQuilToSignedControllerJob(.services.translation.TranslateQuilToSignedControllerJobRequest) returns (.services.translation.TranslateQuilToSignedControllerJobResponse);
 
+    // Translate multiple programs to signed Controller jobs in a single request. As a batched request, this is an atomic operation. Failure to translate one program will result in a failed
+    // RPC response.
+    rpc BatchTranslateQuilToSignedControllerJob(.services.translation.BatchTranslateQuilToSignedControllerJobRequest) returns (.services.translation.BatchTranslateQuilToSignedControllerJobResponse) {
+    }
+
     rpc TranslateQuilToEncryptedControllerJob(.services.translation.TranslateQuilToEncryptedControllerJobRequest) returns (.services.translation.TranslateQuilToEncryptedControllerJobResponse) {
+    }
+
+    // Translate multiple programs to encrypted Controller jobs in a single request. As a batched request, this is an atomic operation. Failure to translate one program will result in a failed
+    // RPC response.
+    rpc BatchTranslateQuilToEncryptedControllerJob(.services.translation.BatchTranslateQuilToEncryptedControllerJobRequest) returns (.services.translation.BatchTranslateQuilToEncryptedControllerJobResponse) {
     }
 
     rpc Check(.services.translation.HealthCheckRequest) returns (.services.translation.HealthCheckResponse);

@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2023 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -601,15 +601,15 @@ impl serde::Serialize for GetControllerJobResultsRequest {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.job_execution_id.is_some() {
+        if !self.job_execution_id.is_empty() {
             len += 1;
         }
         if self.target.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("services.controller.GetControllerJobResultsRequest", len)?;
-        if let Some(v) = self.job_execution_id.as_ref() {
-            struct_ser.serialize_field("jobExecutionId", v)?;
+        if !self.job_execution_id.is_empty() {
+            struct_ser.serialize_field("jobExecutionId", &self.job_execution_id)?;
         }
         if let Some(v) = self.target.as_ref() {
             match v {
@@ -709,7 +709,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobResultsRequest {
                     }
                 }
                 Ok(GetControllerJobResultsRequest {
-                    job_execution_id: job_execution_id__,
+                    job_execution_id: job_execution_id__.unwrap_or_default(),
                     target: target__,
                 })
             }
@@ -816,12 +816,12 @@ impl serde::Serialize for GetControllerJobStatusRequest {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.job_id.is_some() {
+        if !self.job_id.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("services.controller.GetControllerJobStatusRequest", len)?;
-        if let Some(v) = self.job_id.as_ref() {
-            struct_ser.serialize_field("jobId", v)?;
+        if !self.job_id.is_empty() {
+            struct_ser.serialize_field("jobId", &self.job_id)?;
         }
         struct_ser.end()
     }
@@ -892,7 +892,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusRequest {
                     }
                 }
                 Ok(GetControllerJobStatusRequest {
-                    job_id: job_id__,
+                    job_id: job_id__.unwrap_or_default(),
                 })
             }
         }
@@ -907,13 +907,13 @@ impl serde::Serialize for GetControllerJobStatusResponse {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.status.is_some() {
+        if self.status != 0 {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("services.controller.GetControllerJobStatusResponse", len)?;
-        if let Some(v) = self.status.as_ref() {
-            let v = get_controller_job_status_response::Status::from_i32(*v)
-                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
+        if self.status != 0 {
+            let v = get_controller_job_status_response::Status::from_i32(self.status)
+                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.status)))?;
             struct_ser.serialize_field("status", &v)?;
         }
         struct_ser.end()
@@ -985,7 +985,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusResponse {
                     }
                 }
                 Ok(GetControllerJobStatusResponse {
-                    status: status__,
+                    status: status__.unwrap_or_default(),
                 })
             }
         }

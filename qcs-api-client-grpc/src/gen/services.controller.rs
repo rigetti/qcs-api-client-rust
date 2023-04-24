@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2023 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -77,8 +77,8 @@ pub struct ExecuteControllerJobResponse {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetControllerJobResultsRequest {
     /// Which Controller Job execution to query for results
-    #[prost(string, optional, tag = "1")]
-    pub job_execution_id: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, tag = "1")]
+    pub job_execution_id: ::prost::alloc::string::String,
     /// Required by the gateway to forward requests to the correct execution host.
     #[prost(oneof = "get_controller_job_results_request::Target", tags = "101, 102")]
     pub target: ::core::option::Option<get_controller_job_results_request::Target>,
@@ -123,18 +123,14 @@ pub struct CancelControllerJobsResponse {}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetControllerJobStatusRequest {
-    #[prost(string, optional, tag = "1")]
-    pub job_id: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, tag = "1")]
+    pub job_id: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetControllerJobStatusResponse {
-    #[prost(
-        enumeration = "get_controller_job_status_response::Status",
-        optional,
-        tag = "1"
-    )]
-    pub status: ::core::option::Option<i32>,
+    #[prost(enumeration = "get_controller_job_status_response::Status", tag = "1")]
+    pub status: i32,
 }
 /// Nested message and enum types in `GetControllerJobStatusResponse`.
 pub mod get_controller_job_status_response {

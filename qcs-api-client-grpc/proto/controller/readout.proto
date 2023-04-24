@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2023 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/
 
 // Complex64 is a 64-bit complex value with float32 real and imaginary parts
 message Complex64 {
-    optional float real = 1;
-    optional float imaginary = 2;
+    float real = 1;
+    float imaginary = 2;
 }
 
 // ReadoutValues are data readout values that have been read out from the quantum processor

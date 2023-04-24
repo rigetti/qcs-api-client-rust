@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2023 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,13 +13,51 @@
 // limitations under the License.
 
 
+/// Options specified on RPCs that translate Quil to a ControllerJob. Intended to support custom pre-processing
+/// and other translation features.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct TranslationOptions {
+    /// The backend to use for translation, to include relevant options.
+    /// If neither is specified, the implementing service may select the
+    /// translation backend and options.
+    #[prost(oneof = "translation_options::TranslationBackend", tags = "101, 102")]
+    pub translation_backend: ::core::option::Option<
+        translation_options::TranslationBackend,
+    >,
+}
+/// Nested message and enum types in `TranslationOptions`.
+pub mod translation_options {
+    /// The backend to use for translation, to include relevant options.
+    /// If neither is specified, the implementing service may select the
+    /// translation backend and options.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum TranslationBackend {
+        #[prost(message, tag = "101")]
+        V1(super::BackendV1Options),
+        #[prost(message, tag = "102")]
+        V2(super::BackendV2Options),
+    }
+}
+/// Options for translation backend V1
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BackendV1Options {}
+/// Options for translation backend V2
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BackendV2Options {}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TranslateQuilToEncryptedControllerJobRequest {
-    #[prost(string, optional, tag = "1")]
-    pub quantum_processor_id: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(string, optional, tag = "2")]
-    pub quil_program: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, tag = "1")]
+    pub quantum_processor_id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub quil_program: ::prost::alloc::string::String,
+    /// Specification of optional translation features.
+    #[prost(message, optional, tag = "4")]
+    pub options: ::core::option::Option<TranslationOptions>,
     #[prost(
         oneof = "translate_quil_to_encrypted_controller_job_request::NumShots",
         tags = "3"

@@ -23,6 +23,7 @@ message ExecuteControllerJobRequest {
     // The response will include one `job_execution_id` for each entry in this list,
     // each corresponding to its configuration in the same order.
     repeated .models.controller.JobExecutionConfiguration execution_configurations = 3;
+    .services.controller.ExecutionOptions options = 4;
     oneof job {
         .models.controller.EncryptedControllerJob encrypted = 201;
         .models.controller.SignedControllerJob signed = 202;
@@ -34,6 +35,23 @@ message ExecuteControllerJobRequest {
         string endpoint_id = 102;
     }
 }
+
+// Options specified on execution requests describing any features or processes requested before or after job execution.
+message ExecutionOptions {
+
+    // When specified, Controller service will submit job execution results to the Q-CTRL API for post-processing. If the
+    // client specifies this option but Q-CTRL translation metadata is not specified in the JobMetadata, the server will
+    // return a validation error to the client.
+    .services.controller.ExecutionOptions.QCtrl q_ctrl = 1;
+    message QCtrl {
+
+        // Mapping of (Quil memory address as string) to (readout stream)
+        // This enables Q-CTRL to map readout data to the appropriate bitstring, effectively specifying
+        // the appropriate ro_sources for extracting memory regions:
+        // https://github.com/rigetti/pyquil/blob/33a5e2cae34332eca8dd66ed3470a709454a3966/pyquil/api/_qpu.py#L50
+        map<string, string> readout_mappings = 1;
+    }
+}
 message ExecuteControllerJobResponse {
 
     // One execution ID per input JobExecutionConfiguration, in the same order as the input.
@@ -42,7 +60,7 @@ message ExecuteControllerJobResponse {
 message GetControllerJobResultsRequest {
 
     // Which Controller Job execution to query for results
-    optional string job_execution_id = 1;
+    string job_execution_id = 1;
     oneof target {
         // Required by the gateway to forward requests to the correct execution host.
 
@@ -51,7 +69,7 @@ message GetControllerJobResultsRequest {
     }
 }
 message GetControllerJobResultsResponse {
-    optional .models.controller.ControllerJobExecutionResult result = 1;
+    .models.controller.ControllerJobExecutionResult result = 1;
 }
 
 // Cancel all given jobs that have yet to begin executing.
@@ -74,7 +92,7 @@ message CancelControllerJobsRequest {
 message CancelControllerJobsResponse {
 }
 message GetControllerJobStatusRequest {
-    optional string job_id = 1;
+    string job_id = 1;
     oneof target {
         // Required by ConServ gateway to forward requests to the correct rackhost.
 
@@ -83,7 +101,7 @@ message GetControllerJobStatusRequest {
     }
 }
 message GetControllerJobStatusResponse {
-    optional .services.controller.GetControllerJobStatusResponse.Status status = 1;
+    .services.controller.GetControllerJobStatusResponse.Status status = 1;
     enum Status {
         UNKNOWN = 0;
         QUEUED = 1;
@@ -96,13 +114,13 @@ message GetControllerJobStatusResponse {
 message GetRackManifestRequest {
 }
 message GetRackManifestResponse {
-    optional .models.controller.RackManifest manifest = 1;
+    .models.controller.RackManifest manifest = 1;
 }
 message HealthCheckRequest {
-    optional string service = 1;
+    string service = 1;
 }
 message HealthCheckResponse {
-    optional .services.controller.HealthCheckResponse.ServingStatus status = 1;
+    .services.controller.HealthCheckResponse.ServingStatus status = 1;
     enum ServingStatus {
         UNKNOWN = 0;
         SERVING = 1;

@@ -27,7 +27,7 @@ message RackManifest {
 
 // An InstrumentManifest represents the physical configuration of a single instrument.
 message InstrumentManifest {
-    optional string address = 1;
+    string address = 1;
     oneof instrument {
         .models.controller.TsunamiInstrumentManifest tsunami = 2;
         .models.controller.YokogawaGS200Manifest yokogawa_gs200 = 3;
@@ -46,5 +46,5 @@ message YokogawaGS200Manifest {
 // A TsunamiCard represents the physical configuration and characteristics of a single card mounted
 // in a Tsunami chassis.
 message TsunamiCard {
-    optional .models.controller.TsunamiCardType card_type = 1;
+    .models.controller.TsunamiCardType card_type = 1;
 }

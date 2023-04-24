@@ -30,8 +30,9 @@ async fn request_translation() -> Result<TranslateQuilToEncryptedControllerJobRe
 
     let request = TranslateQuilToEncryptedControllerJobRequest {
         num_shots: Some(NumShots::NumShotsValue(1)),
-        quantum_processor_id: Some(String::from("Aspen-M-3")),
-        quil_program: Some(String::from("DECLARE ro BIT")),
+        quantum_processor_id: String::from("Aspen-M-3"),
+        quil_program: String::from("DECLARE ro BIT"),
+        options: None,
     };
 
     let response = client

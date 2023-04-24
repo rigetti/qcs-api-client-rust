@@ -15,10 +15,10 @@ message ControllerServiceStartupConfiguration {
 message InstrumentStartupConfiguration {
 
     // Network or device address for the instrument
-    optional string address = 1;
+    string address = 1;
 
     // The instrument hardware variant
-    optional .models.controller.InstrumentStartupConfiguration.InstrumentType instrument_type = 2;
+    .models.controller.InstrumentStartupConfiguration.InstrumentType instrument_type = 2;
     enum InstrumentType {
         UNKNOWN_INSTRUMENT = 0;
         TSUNAMI = 1;

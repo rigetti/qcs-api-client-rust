@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2023 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Complex64 {
-    #[prost(float, optional, tag = "1")]
-    pub real: ::core::option::Option<f32>,
-    #[prost(float, optional, tag = "2")]
-    pub imaginary: ::core::option::Option<f32>,
+    #[prost(float, tag = "1")]
+    pub real: f32,
+    #[prost(float, tag = "2")]
+    pub imaginary: f32,
 }
 /// ReadoutValues are data readout values that have been read out from the quantum processor
 /// and optionally processed by a readout transformation pipeline.
@@ -62,8 +62,8 @@ pub struct Complex64ReadoutValues {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct EncryptedControllerJob {
     /// Encrypted form of ControllerJob.
-    #[prost(bytes = "vec", optional, tag = "1")]
-    pub job: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
+    #[prost(bytes = "vec", tag = "1")]
+    pub job: ::prost::alloc::vec::Vec<u8>,
     /// Information about the means by which `inner` was encrypted.
     #[prost(message, optional, tag = "2")]
     pub encryption: ::core::option::Option<JobEncryption>,
@@ -73,11 +73,11 @@ pub struct EncryptedControllerJob {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct JobEncryption {
     /// Opaque identifier for the key to use in decryption
-    #[prost(string, optional, tag = "1")]
-    pub key_id: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, tag = "1")]
+    pub key_id: ::prost::alloc::string::String,
     /// If relevant, the nonce to use in decryption
-    #[prost(bytes = "vec", optional, tag = "2")]
-    pub nonce: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
+    #[prost(bytes = "vec", tag = "2")]
+    pub nonce: ::prost::alloc::vec::Vec<u8>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -90,72 +90,6 @@ pub struct JobExecutionConfiguration {
         ::prost::alloc::string::String,
         DataValue,
     >,
-}
-/// This data is used to patch values into a pre-compiled binary prior to
-/// execution, and to retrieve data from memory following execution.
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct MemoryRegion {
-    /// The type of data expected for patch values
-    #[prost(enumeration = "memory_region::DataType", optional, tag = "1")]
-    pub data_type: ::core::option::Option<i32>,
-    /// The count of elements within the region
-    #[prost(uint32, optional, tag = "2")]
-    pub length: ::core::option::Option<u32>,
-    /// The byte offset of the value within sequencer shared memory. This is used
-    /// for both patching of memory prior to execution, and retrieval of the memory
-    /// following execution.
-    #[prost(uint32, optional, tag = "3")]
-    pub memory_offset: ::core::option::Option<u32>,
-}
-/// Nested message and enum types in `MemoryRegion`.
-pub mod memory_region {
-    /// The different types of data available for patching
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
-    #[repr(i32)]
-    pub enum DataType {
-        UnknownDatatype = 0,
-        /// Raw binary data; length is in bytes
-        Binary = 1,
-        /// 64-bit signed integer
-        Integer = 2,
-        /// 64-bit signed floating-point number
-        Real = 3,
-    }
-    impl DataType {
-        /// String value of the enum field names used in the ProtoBuf definition.
-        ///
-        /// The values are not transformed in any way and thus are considered stable
-        /// (if the ProtoBuf definition does not change) and safe for programmatic use.
-        pub fn as_str_name(&self) -> &'static str {
-            match self {
-                DataType::UnknownDatatype => "UNKNOWN_DATATYPE",
-                DataType::Binary => "BINARY",
-                DataType::Integer => "INTEGER",
-                DataType::Real => "REAL",
-            }
-        }
-        /// Creates an enum from field names used in the ProtoBuf definition.
-        pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
-            match value {
-                "UNKNOWN_DATATYPE" => Some(Self::UnknownDatatype),
-                "BINARY" => Some(Self::Binary),
-                "INTEGER" => Some(Self::Integer),
-                "REAL" => Some(Self::Real),
-                _ => None,
-            }
-        }
-    }
 }
 /// The value of the data to insert into memory corresponding to a MemoryRegion.
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -184,8 +118,8 @@ pub mod data_value {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct BinaryDataValue {
-    #[prost(bytes = "vec", optional, tag = "1")]
-    pub data: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
+    #[prost(bytes = "vec", tag = "1")]
+    pub data: ::prost::alloc::vec::Vec<u8>,
 }
 /// Signed integer value, corresponding to INTEGER in Quil.
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -220,18 +154,14 @@ pub struct ControllerJobExecutionResult {
         ::prost::alloc::string::String,
         ReadoutValues,
     >,
-    #[prost(
-        enumeration = "controller_job_execution_result::Status",
-        optional,
-        tag = "3"
-    )]
-    pub status: ::core::option::Option<i32>,
+    #[prost(enumeration = "controller_job_execution_result::Status", tag = "3")]
+    pub status: i32,
     /// Optional message providing context to the result's status.
     #[prost(string, optional, tag = "4")]
     pub status_message: ::core::option::Option<::prost::alloc::string::String>,
     /// Duration (µs) job held exclusive access to control hardware.
-    #[prost(uint64, optional, tag = "5")]
-    pub execution_duration_microseconds: ::core::option::Option<u64>,
+    #[prost(uint64, tag = "5")]
+    pub execution_duration_microseconds: u64,
 }
 /// Nested message and enum types in `ControllerJobExecutionResult`.
 pub mod controller_job_execution_result {
