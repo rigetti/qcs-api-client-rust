@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2023 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -220,6 +220,7 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsRequest {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "job_ids",
             "jobIds",
         ];
 
@@ -247,7 +248,7 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsRequest {
                         E: serde::de::Error,
                     {
                         match value {
-                            "jobIds" => Ok(GeneratedField::JobIds),
+                            "jobIds" | "job_ids" => Ok(GeneratedField::JobIds),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -405,9 +406,12 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "execution_configurations",
             "executionConfigurations",
             "encrypted",
+            "quantum_processor_id",
             "quantumProcessorId",
+            "endpoint_id",
             "endpointId",
         ];
 
@@ -438,10 +442,10 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                         E: serde::de::Error,
                     {
                         match value {
-                            "executionConfigurations" => Ok(GeneratedField::ExecutionConfigurations),
+                            "executionConfigurations" | "execution_configurations" => Ok(GeneratedField::ExecutionConfigurations),
                             "encrypted" => Ok(GeneratedField::Encrypted),
-                            "quantumProcessorId" => Ok(GeneratedField::QuantumProcessorId),
-                            "endpointId" => Ok(GeneratedField::EndpointId),
+                            "quantumProcessorId" | "quantum_processor_id" => Ok(GeneratedField::QuantumProcessorId),
+                            "endpointId" | "endpoint_id" => Ok(GeneratedField::EndpointId),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -476,19 +480,20 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                             if job__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("encrypted"));
                             }
-                            job__ = Some(execute_controller_job_request::Job::Encrypted(map.next_value()?));
+                            job__ = map.next_value::<::std::option::Option<_>>()?.map(execute_controller_job_request::Job::Encrypted)
+;
                         }
                         GeneratedField::QuantumProcessorId => {
                             if target__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("quantumProcessorId"));
                             }
-                            target__ = Some(execute_controller_job_request::Target::QuantumProcessorId(map.next_value()?));
+                            target__ = map.next_value::<::std::option::Option<_>>()?.map(execute_controller_job_request::Target::QuantumProcessorId);
                         }
                         GeneratedField::EndpointId => {
                             if target__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("endpointId"));
                             }
-                            target__ = Some(execute_controller_job_request::Target::EndpointId(map.next_value()?));
+                            target__ = map.next_value::<::std::option::Option<_>>()?.map(execute_controller_job_request::Target::EndpointId);
                         }
                     }
                 }
@@ -527,6 +532,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobResponse {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "job_execution_ids",
             "jobExecutionIds",
         ];
 
@@ -554,7 +560,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobResponse {
                         E: serde::de::Error,
                     {
                         match value {
-                            "jobExecutionIds" => Ok(GeneratedField::JobExecutionIds),
+                            "jobExecutionIds" | "job_execution_ids" => Ok(GeneratedField::JobExecutionIds),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -601,15 +607,15 @@ impl serde::Serialize for GetControllerJobResultsRequest {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.job_execution_id.is_some() {
+        if !self.job_execution_id.is_empty() {
             len += 1;
         }
         if self.target.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("services.controller.GetControllerJobResultsRequest", len)?;
-        if let Some(v) = self.job_execution_id.as_ref() {
-            struct_ser.serialize_field("jobExecutionId", v)?;
+        if !self.job_execution_id.is_empty() {
+            struct_ser.serialize_field("jobExecutionId", &self.job_execution_id)?;
         }
         if let Some(v) = self.target.as_ref() {
             match v {
@@ -631,8 +637,11 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobResultsRequest {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "job_execution_id",
             "jobExecutionId",
+            "quantum_processor_id",
             "quantumProcessorId",
+            "endpoint_id",
             "endpointId",
         ];
 
@@ -662,9 +671,9 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobResultsRequest {
                         E: serde::de::Error,
                     {
                         match value {
-                            "jobExecutionId" => Ok(GeneratedField::JobExecutionId),
-                            "quantumProcessorId" => Ok(GeneratedField::QuantumProcessorId),
-                            "endpointId" => Ok(GeneratedField::EndpointId),
+                            "jobExecutionId" | "job_execution_id" => Ok(GeneratedField::JobExecutionId),
+                            "quantumProcessorId" | "quantum_processor_id" => Ok(GeneratedField::QuantumProcessorId),
+                            "endpointId" | "endpoint_id" => Ok(GeneratedField::EndpointId),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -698,18 +707,18 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobResultsRequest {
                             if target__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("quantumProcessorId"));
                             }
-                            target__ = Some(get_controller_job_results_request::Target::QuantumProcessorId(map.next_value()?));
+                            target__ = map.next_value::<::std::option::Option<_>>()?.map(get_controller_job_results_request::Target::QuantumProcessorId);
                         }
                         GeneratedField::EndpointId => {
                             if target__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("endpointId"));
                             }
-                            target__ = Some(get_controller_job_results_request::Target::EndpointId(map.next_value()?));
+                            target__ = map.next_value::<::std::option::Option<_>>()?.map(get_controller_job_results_request::Target::EndpointId);
                         }
                     }
                 }
                 Ok(GetControllerJobResultsRequest {
-                    job_execution_id: job_execution_id__,
+                    job_execution_id: job_execution_id__.unwrap_or_default(),
                     target: target__,
                 })
             }
@@ -796,7 +805,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobResultsResponse {
                             if result__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("result"));
                             }
-                            result__ = Some(map.next_value()?);
+                            result__ = map.next_value()?;
                         }
                     }
                 }
@@ -816,12 +825,12 @@ impl serde::Serialize for GetControllerJobStatusRequest {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.job_id.is_some() {
+        if !self.job_id.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("services.controller.GetControllerJobStatusRequest", len)?;
-        if let Some(v) = self.job_id.as_ref() {
-            struct_ser.serialize_field("jobId", v)?;
+        if !self.job_id.is_empty() {
+            struct_ser.serialize_field("jobId", &self.job_id)?;
         }
         struct_ser.end()
     }
@@ -833,6 +842,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusRequest {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "job_id",
             "jobId",
         ];
 
@@ -860,7 +870,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusRequest {
                         E: serde::de::Error,
                     {
                         match value {
-                            "jobId" => Ok(GeneratedField::JobId),
+                            "jobId" | "job_id" => Ok(GeneratedField::JobId),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -892,7 +902,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusRequest {
                     }
                 }
                 Ok(GetControllerJobStatusRequest {
-                    job_id: job_id__,
+                    job_id: job_id__.unwrap_or_default(),
                 })
             }
         }
@@ -907,13 +917,13 @@ impl serde::Serialize for GetControllerJobStatusResponse {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.status.is_some() {
+        if self.status != 0 {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("services.controller.GetControllerJobStatusResponse", len)?;
-        if let Some(v) = self.status.as_ref() {
-            let v = get_controller_job_status_response::Status::from_i32(*v)
-                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
+        if self.status != 0 {
+            let v = get_controller_job_status_response::Status::from_i32(self.status)
+                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.status)))?;
             struct_ser.serialize_field("status", &v)?;
         }
         struct_ser.end()
@@ -985,7 +995,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusResponse {
                     }
                 }
                 Ok(GetControllerJobStatusResponse {
-                    status: status__,
+                    status: status__.unwrap_or_default(),
                 })
             }
         }

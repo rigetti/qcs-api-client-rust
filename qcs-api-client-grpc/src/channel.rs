@@ -263,7 +263,7 @@ pub async fn wrap_channel_with_profile(
 }
 
 /// The [`Layer`] used to apply QCS authentication to all gRPC calls.
-pub struct RefreshLayer<T> {
+pub struct RefreshLayer<T: TokenRefresher> {
     token_refresher: T,
 }
 
@@ -296,7 +296,11 @@ impl RefreshLayer<ClientConfiguration> {
     }
 }
 
-impl<S, T: Clone> Layer<S> for RefreshLayer<T> {
+impl<S, T: Clone> Layer<S> for RefreshLayer<T>
+where
+    S: GrpcService<BoxBody>,
+    T: TokenRefresher,
+{
     type Service = RefreshService<S, T>;
 
     fn layer(&self, inner: S) -> Self::Service {
@@ -311,7 +315,7 @@ impl<S, T: Clone> Layer<S> for RefreshLayer<T> {
 ///
 /// See also: [`RefreshLayer`].
 #[derive(Clone)]
-pub struct RefreshService<S, T> {
+pub struct RefreshService<S: GrpcService<BoxBody>, T: TokenRefresher> {
     service: S,
     token_refresher: T,
 }
@@ -392,11 +396,9 @@ async fn make_traced_request<E: std::error::Error>(
         .map_err(Error::from)
 }
 
-impl<T: TokenRefresher + Clone + Send + Sync + 'static> GrpcService<BoxBody>
-    for RefreshService<Channel, T>
+impl<T> GrpcService<BoxBody> for RefreshService<Channel, T>
 where
-    Channel: GrpcService<BoxBody, Error = TransportError> + Clone + Send + 'static,
-    <Channel as GrpcService<BoxBody>>::Future: Send,
+    T: TokenRefresher + Clone + Send + Sync + 'static,
     T::Error: std::error::Error + Send + Sync,
 {
     type ResponseBody = <Channel as GrpcService<BoxBody>>::ResponseBody;
@@ -602,9 +604,9 @@ mod tests {
     use tonic::codegen::http::{HeaderMap, HeaderValue};
     use tonic::transport::NamedService;
     use tonic::Request;
-    use tonic_health::proto::health_check_response::ServingStatus;
-    use tonic_health::proto::health_server::{Health, HealthServer};
-    use tonic_health::{proto::health_client::HealthClient, server::HealthService};
+    use tonic_health::pb::health_check_response::ServingStatus;
+    use tonic_health::pb::health_server::{Health, HealthServer};
+    use tonic_health::{pb::health_client::HealthClient, server::HealthService};
 
     use super::wrap_channel_with;
 
@@ -673,7 +675,7 @@ mod tests {
                         let mut client =
                             HealthClient::new(wrap_channel_with(channel, client_configuration));
                         let response =
-                            client.check(Request::new(tonic_health::proto::HealthCheckRequest {
+                            client.check(Request::new(tonic_health::pb::HealthCheckRequest {
                                 service: <HealthServer<HealthService> as NamedService>::NAME
                                     .to_string(),
                             }));
@@ -761,7 +763,7 @@ mod tests {
                         let mut client =
                             HealthClient::new(wrap_channel_with(channel, client_configuration));
                         let response =
-                            client.check(Request::new(tonic_health::proto::HealthCheckRequest {
+                            client.check(Request::new(tonic_health::pb::HealthCheckRequest {
                                 service: <HealthServer<HealthService> as NamedService>::NAME
                                     .to_string(),
                             }));
@@ -895,26 +897,26 @@ mod tests {
     impl Health for SleepyHealthService {
         async fn check(
             &self,
-            _request: Request<tonic_health::proto::HealthCheckRequest>,
-        ) -> Result<tonic::Response<tonic_health::proto::HealthCheckResponse>, tonic::Status>
+            _request: Request<tonic_health::pb::HealthCheckRequest>,
+        ) -> Result<tonic::Response<tonic_health::pb::HealthCheckResponse>, tonic::Status>
         {
             tokio::time::sleep(self.sleep_time).await;
-            let response = tonic_health::proto::HealthCheckResponse {
+            let response = tonic_health::pb::HealthCheckResponse {
                 status: ServingStatus::Serving as i32,
             };
             Ok(tonic::Response::new(response))
         }
 
         type WatchStream = tokio_stream::wrappers::ReceiverStream<
-            Result<tonic_health::proto::HealthCheckResponse, tonic::Status>,
+            Result<tonic_health::pb::HealthCheckResponse, tonic::Status>,
         >;
 
         async fn watch(
             &self,
-            _request: Request<tonic_health::proto::HealthCheckRequest>,
+            _request: Request<tonic_health::pb::HealthCheckRequest>,
         ) -> Result<tonic::Response<Self::WatchStream>, tonic::Status> {
             let (tx, rx) = tokio::sync::mpsc::channel(1);
-            let response = tonic_health::proto::HealthCheckResponse {
+            let response = tonic_health::pb::HealthCheckResponse {
                 status: ServingStatus::Serving as i32,
             };
             tx.send(Ok(response)).await.unwrap();

@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2023 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ message ExecuteControllerJobResponse {
 message GetControllerJobResultsRequest {
 
     // Which Controller Job execution to query for results
-    optional string job_execution_id = 1;
+    string job_execution_id = 1;
     oneof target {
         // Required by the gateway to forward requests to the correct execution host.
 
@@ -63,7 +63,7 @@ message GetControllerJobResultsRequest {
     }
 }
 message GetControllerJobResultsResponse {
-    optional .models.controller.ControllerJobExecutionResult result = 1;
+    .models.controller.ControllerJobExecutionResult result = 1;
 }
 
 // Cancel all given jobs that have yet to begin executing.
@@ -80,10 +80,10 @@ message CancelControllerJobsRequest {
 message CancelControllerJobsResponse {
 }
 message GetControllerJobStatusRequest {
-    optional string job_id = 1;
+    string job_id = 1;
 }
 message GetControllerJobStatusResponse {
-    optional .services.controller.GetControllerJobStatusResponse.Status status = 1;
+    .services.controller.GetControllerJobStatusResponse.Status status = 1;
     enum Status {
         UNKNOWN = 0;
         QUEUED = 1;

@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2023 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@ impl serde::Serialize for BinaryDataValue {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.data.is_some() {
+        if !self.data.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("models.controller.BinaryDataValue", len)?;
-        if let Some(v) = self.data.as_ref() {
-            struct_ser.serialize_field("data", pbjson::private::base64::encode(&v).as_str())?;
+        if !self.data.is_empty() {
+            struct_ser.serialize_field("data", pbjson::private::base64::encode(&self.data).as_str())?;
         }
         struct_ser.end()
     }
@@ -92,14 +92,14 @@ impl<'de> serde::Deserialize<'de> for BinaryDataValue {
                             if data__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("data"));
                             }
-                            data__ = Some(
-                                map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0
-                            );
+                            data__ = 
+                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
                 Ok(BinaryDataValue {
-                    data: data__,
+                    data: data__.unwrap_or_default(),
                 })
             }
         }
@@ -114,18 +114,18 @@ impl serde::Serialize for Complex64 {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.real.is_some() {
+        if self.real != 0. {
             len += 1;
         }
-        if self.imaginary.is_some() {
+        if self.imaginary != 0. {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("models.controller.Complex64", len)?;
-        if let Some(v) = self.real.as_ref() {
-            struct_ser.serialize_field("real", v)?;
+        if self.real != 0. {
+            struct_ser.serialize_field("real", &self.real)?;
         }
-        if let Some(v) = self.imaginary.as_ref() {
-            struct_ser.serialize_field("imaginary", v)?;
+        if self.imaginary != 0. {
+            struct_ser.serialize_field("imaginary", &self.imaginary)?;
         }
         struct_ser.end()
     }
@@ -195,23 +195,23 @@ impl<'de> serde::Deserialize<'de> for Complex64 {
                             if real__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("real"));
                             }
-                            real__ = Some(
-                                map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0
-                            );
+                            real__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Imaginary => {
                             if imaginary__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("imaginary"));
                             }
-                            imaginary__ = Some(
-                                map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0
-                            );
+                            imaginary__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
                 Ok(Complex64 {
-                    real: real__,
-                    imaginary: imaginary__,
+                    real: real__.unwrap_or_default(),
+                    imaginary: imaginary__.unwrap_or_default(),
                 })
             }
         }
@@ -323,13 +323,13 @@ impl serde::Serialize for ControllerJobExecutionResult {
         if !self.readout_values.is_empty() {
             len += 1;
         }
-        if self.status.is_some() {
+        if self.status != 0 {
             len += 1;
         }
         if self.status_message.is_some() {
             len += 1;
         }
-        if self.execution_duration_microseconds.is_some() {
+        if self.execution_duration_microseconds != 0 {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("models.controller.ControllerJobExecutionResult", len)?;
@@ -339,16 +339,16 @@ impl serde::Serialize for ControllerJobExecutionResult {
         if !self.readout_values.is_empty() {
             struct_ser.serialize_field("readoutValues", &self.readout_values)?;
         }
-        if let Some(v) = self.status.as_ref() {
-            let v = controller_job_execution_result::Status::from_i32(*v)
-                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
+        if self.status != 0 {
+            let v = controller_job_execution_result::Status::from_i32(self.status)
+                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.status)))?;
             struct_ser.serialize_field("status", &v)?;
         }
         if let Some(v) = self.status_message.as_ref() {
             struct_ser.serialize_field("statusMessage", v)?;
         }
-        if let Some(v) = self.execution_duration_microseconds.as_ref() {
-            struct_ser.serialize_field("executionDurationMicroseconds", ToString::to_string(&v).as_str())?;
+        if self.execution_duration_microseconds != 0 {
+            struct_ser.serialize_field("executionDurationMicroseconds", ToString::to_string(&self.execution_duration_microseconds).as_str())?;
         }
         struct_ser.end()
     }
@@ -360,10 +360,14 @@ impl<'de> serde::Deserialize<'de> for ControllerJobExecutionResult {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "memory_values",
             "memoryValues",
+            "readout_values",
             "readoutValues",
             "status",
+            "status_message",
             "statusMessage",
+            "execution_duration_microseconds",
             "executionDurationMicroseconds",
         ];
 
@@ -395,11 +399,11 @@ impl<'de> serde::Deserialize<'de> for ControllerJobExecutionResult {
                         E: serde::de::Error,
                     {
                         match value {
-                            "memoryValues" => Ok(GeneratedField::MemoryValues),
-                            "readoutValues" => Ok(GeneratedField::ReadoutValues),
+                            "memoryValues" | "memory_values" => Ok(GeneratedField::MemoryValues),
+                            "readoutValues" | "readout_values" => Ok(GeneratedField::ReadoutValues),
                             "status" => Ok(GeneratedField::Status),
-                            "statusMessage" => Ok(GeneratedField::StatusMessage),
-                            "executionDurationMicroseconds" => Ok(GeneratedField::ExecutionDurationMicroseconds),
+                            "statusMessage" | "status_message" => Ok(GeneratedField::StatusMessage),
+                            "executionDurationMicroseconds" | "execution_duration_microseconds" => Ok(GeneratedField::ExecutionDurationMicroseconds),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -452,24 +456,24 @@ impl<'de> serde::Deserialize<'de> for ControllerJobExecutionResult {
                             if status_message__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("statusMessage"));
                             }
-                            status_message__ = Some(map.next_value()?);
+                            status_message__ = map.next_value()?;
                         }
                         GeneratedField::ExecutionDurationMicroseconds => {
                             if execution_duration_microseconds__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("executionDurationMicroseconds"));
                             }
-                            execution_duration_microseconds__ = Some(
-                                map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0
-                            );
+                            execution_duration_microseconds__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
                 Ok(ControllerJobExecutionResult {
                     memory_values: memory_values__.unwrap_or_default(),
                     readout_values: readout_values__.unwrap_or_default(),
-                    status: status__,
+                    status: status__.unwrap_or_default(),
                     status_message: status_message__,
-                    execution_duration_microseconds: execution_duration_microseconds__,
+                    execution_duration_microseconds: execution_duration_microseconds__.unwrap_or_default(),
                 })
             }
         }
@@ -653,19 +657,22 @@ impl<'de> serde::Deserialize<'de> for DataValue {
                             if value__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("binary"));
                             }
-                            value__ = Some(data_value::Value::Binary(map.next_value()?));
+                            value__ = map.next_value::<::std::option::Option<_>>()?.map(data_value::Value::Binary)
+;
                         }
                         GeneratedField::Integer => {
                             if value__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("integer"));
                             }
-                            value__ = Some(data_value::Value::Integer(map.next_value()?));
+                            value__ = map.next_value::<::std::option::Option<_>>()?.map(data_value::Value::Integer)
+;
                         }
                         GeneratedField::Real => {
                             if value__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("real"));
                             }
-                            value__ = Some(data_value::Value::Real(map.next_value()?));
+                            value__ = map.next_value::<::std::option::Option<_>>()?.map(data_value::Value::Real)
+;
                         }
                     }
                 }
@@ -685,15 +692,15 @@ impl serde::Serialize for EncryptedControllerJob {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.job.is_some() {
+        if !self.job.is_empty() {
             len += 1;
         }
         if self.encryption.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("models.controller.EncryptedControllerJob", len)?;
-        if let Some(v) = self.job.as_ref() {
-            struct_ser.serialize_field("job", pbjson::private::base64::encode(&v).as_str())?;
+        if !self.job.is_empty() {
+            struct_ser.serialize_field("job", pbjson::private::base64::encode(&self.job).as_str())?;
         }
         if let Some(v) = self.encryption.as_ref() {
             struct_ser.serialize_field("encryption", v)?;
@@ -766,20 +773,20 @@ impl<'de> serde::Deserialize<'de> for EncryptedControllerJob {
                             if job__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("job"));
                             }
-                            job__ = Some(
-                                map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0
-                            );
+                            job__ = 
+                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Encryption => {
                             if encryption__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("encryption"));
                             }
-                            encryption__ = Some(map.next_value()?);
+                            encryption__ = map.next_value()?;
                         }
                     }
                 }
                 Ok(EncryptedControllerJob {
-                    job: job__,
+                    job: job__.unwrap_or_default(),
                     encryption: encryption__,
                 })
             }
@@ -866,10 +873,10 @@ impl<'de> serde::Deserialize<'de> for IntegerDataValue {
                             if data__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("data"));
                             }
-                            data__ = Some(
-                                map.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
-                                    .into_iter().map(|x| x.0).collect()
-                            );
+                            data__ = 
+                                Some(map.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                    .into_iter().map(|x| x.0).collect())
+                            ;
                         }
                     }
                 }
@@ -960,10 +967,10 @@ impl<'de> serde::Deserialize<'de> for IntegerReadoutValues {
                             if values__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("values"));
                             }
-                            values__ = Some(
-                                map.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
-                                    .into_iter().map(|x| x.0).collect()
-                            );
+                            values__ = 
+                                Some(map.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                    .into_iter().map(|x| x.0).collect())
+                            ;
                         }
                     }
                 }
@@ -983,18 +990,18 @@ impl serde::Serialize for JobEncryption {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.key_id.is_some() {
+        if !self.key_id.is_empty() {
             len += 1;
         }
-        if self.nonce.is_some() {
+        if !self.nonce.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("models.controller.JobEncryption", len)?;
-        if let Some(v) = self.key_id.as_ref() {
-            struct_ser.serialize_field("keyId", v)?;
+        if !self.key_id.is_empty() {
+            struct_ser.serialize_field("keyId", &self.key_id)?;
         }
-        if let Some(v) = self.nonce.as_ref() {
-            struct_ser.serialize_field("nonce", pbjson::private::base64::encode(&v).as_str())?;
+        if !self.nonce.is_empty() {
+            struct_ser.serialize_field("nonce", pbjson::private::base64::encode(&self.nonce).as_str())?;
         }
         struct_ser.end()
     }
@@ -1006,6 +1013,7 @@ impl<'de> serde::Deserialize<'de> for JobEncryption {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "key_id",
             "keyId",
             "nonce",
         ];
@@ -1035,7 +1043,7 @@ impl<'de> serde::Deserialize<'de> for JobEncryption {
                         E: serde::de::Error,
                     {
                         match value {
-                            "keyId" => Ok(GeneratedField::KeyId),
+                            "keyId" | "key_id" => Ok(GeneratedField::KeyId),
                             "nonce" => Ok(GeneratedField::Nonce),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -1070,15 +1078,15 @@ impl<'de> serde::Deserialize<'de> for JobEncryption {
                             if nonce__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("nonce"));
                             }
-                            nonce__ = Some(
-                                map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0
-                            );
+                            nonce__ = 
+                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
                 Ok(JobEncryption {
-                    key_id: key_id__,
-                    nonce: nonce__,
+                    key_id: key_id__.unwrap_or_default(),
+                    nonce: nonce__.unwrap_or_default(),
                 })
             }
         }
@@ -1110,6 +1118,7 @@ impl<'de> serde::Deserialize<'de> for JobExecutionConfiguration {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "memory_values",
             "memoryValues",
         ];
 
@@ -1137,7 +1146,7 @@ impl<'de> serde::Deserialize<'de> for JobExecutionConfiguration {
                         E: serde::de::Error,
                     {
                         match value {
-                            "memoryValues" => Ok(GeneratedField::MemoryValues),
+                            "memoryValues" | "memory_values" => Ok(GeneratedField::MemoryValues),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1178,216 +1187,6 @@ impl<'de> serde::Deserialize<'de> for JobExecutionConfiguration {
         deserializer.deserialize_struct("models.controller.JobExecutionConfiguration", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for MemoryRegion {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if self.data_type.is_some() {
-            len += 1;
-        }
-        if self.length.is_some() {
-            len += 1;
-        }
-        if self.memory_offset.is_some() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("models.controller.MemoryRegion", len)?;
-        if let Some(v) = self.data_type.as_ref() {
-            let v = memory_region::DataType::from_i32(*v)
-                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
-            struct_ser.serialize_field("dataType", &v)?;
-        }
-        if let Some(v) = self.length.as_ref() {
-            struct_ser.serialize_field("length", v)?;
-        }
-        if let Some(v) = self.memory_offset.as_ref() {
-            struct_ser.serialize_field("memoryOffset", v)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for MemoryRegion {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "dataType",
-            "length",
-            "memoryOffset",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            DataType,
-            Length,
-            MemoryOffset,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "dataType" => Ok(GeneratedField::DataType),
-                            "length" => Ok(GeneratedField::Length),
-                            "memoryOffset" => Ok(GeneratedField::MemoryOffset),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = MemoryRegion;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct models.controller.MemoryRegion")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<MemoryRegion, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut data_type__ = None;
-                let mut length__ = None;
-                let mut memory_offset__ = None;
-                while let Some(k) = map.next_key()? {
-                    match k {
-                        GeneratedField::DataType => {
-                            if data_type__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("dataType"));
-                            }
-                            data_type__ = Some(map.next_value::<memory_region::DataType>()? as i32);
-                        }
-                        GeneratedField::Length => {
-                            if length__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("length"));
-                            }
-                            length__ = Some(
-                                map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0
-                            );
-                        }
-                        GeneratedField::MemoryOffset => {
-                            if memory_offset__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("memoryOffset"));
-                            }
-                            memory_offset__ = Some(
-                                map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0
-                            );
-                        }
-                    }
-                }
-                Ok(MemoryRegion {
-                    data_type: data_type__,
-                    length: length__,
-                    memory_offset: memory_offset__,
-                })
-            }
-        }
-        deserializer.deserialize_struct("models.controller.MemoryRegion", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for memory_region::DataType {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let variant = match self {
-            Self::UnknownDatatype => "UNKNOWN_DATATYPE",
-            Self::Binary => "BINARY",
-            Self::Integer => "INTEGER",
-            Self::Real => "REAL",
-        };
-        serializer.serialize_str(variant)
-    }
-}
-impl<'de> serde::Deserialize<'de> for memory_region::DataType {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "UNKNOWN_DATATYPE",
-            "BINARY",
-            "INTEGER",
-            "REAL",
-        ];
-
-        struct GeneratedVisitor;
-
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = memory_region::DataType;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(formatter, "expected one of: {:?}", &FIELDS)
-            }
-
-            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                use std::convert::TryFrom;
-                i32::try_from(v)
-                    .ok()
-                    .and_then(memory_region::DataType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
-            }
-
-            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                use std::convert::TryFrom;
-                i32::try_from(v)
-                    .ok()
-                    .and_then(memory_region::DataType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
-            }
-
-            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                match value {
-                    "UNKNOWN_DATATYPE" => Ok(memory_region::DataType::UnknownDatatype),
-                    "BINARY" => Ok(memory_region::DataType::Binary),
-                    "INTEGER" => Ok(memory_region::DataType::Integer),
-                    "REAL" => Ok(memory_region::DataType::Real),
-                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
-                }
-            }
-        }
-        deserializer.deserialize_any(GeneratedVisitor)
-    }
-}
 impl serde::Serialize for ReadoutValues {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -1420,7 +1219,9 @@ impl<'de> serde::Deserialize<'de> for ReadoutValues {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "integer_values",
             "integerValues",
+            "complex_values",
             "complexValues",
         ];
 
@@ -1449,8 +1250,8 @@ impl<'de> serde::Deserialize<'de> for ReadoutValues {
                         E: serde::de::Error,
                     {
                         match value {
-                            "integerValues" => Ok(GeneratedField::IntegerValues),
-                            "complexValues" => Ok(GeneratedField::ComplexValues),
+                            "integerValues" | "integer_values" => Ok(GeneratedField::IntegerValues),
+                            "complexValues" | "complex_values" => Ok(GeneratedField::ComplexValues),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1477,13 +1278,15 @@ impl<'de> serde::Deserialize<'de> for ReadoutValues {
                             if values__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("integerValues"));
                             }
-                            values__ = Some(readout_values::Values::IntegerValues(map.next_value()?));
+                            values__ = map.next_value::<::std::option::Option<_>>()?.map(readout_values::Values::IntegerValues)
+;
                         }
                         GeneratedField::ComplexValues => {
                             if values__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("complexValues"));
                             }
-                            values__ = Some(readout_values::Values::ComplexValues(map.next_value()?));
+                            values__ = map.next_value::<::std::option::Option<_>>()?.map(readout_values::Values::ComplexValues)
+;
                         }
                     }
                 }
@@ -1574,10 +1377,10 @@ impl<'de> serde::Deserialize<'de> for RealDataValue {
                             if data__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("data"));
                             }
-                            data__ = Some(
-                                map.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
-                                    .into_iter().map(|x| x.0).collect()
-                            );
+                            data__ = 
+                                Some(map.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                    .into_iter().map(|x| x.0).collect())
+                            ;
                         }
                     }
                 }
