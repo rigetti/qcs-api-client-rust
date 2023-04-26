@@ -202,9 +202,12 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobReque
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "quantum_processor_id",
             "quantumProcessorId",
+            "quil_program",
             "quilProgram",
             "options",
+            "num_shots_value",
             "numShotsValue",
         ];
 
@@ -235,10 +238,10 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobReque
                         E: serde::de::Error,
                     {
                         match value {
-                            "quantumProcessorId" => Ok(GeneratedField::QuantumProcessorId),
-                            "quilProgram" => Ok(GeneratedField::QuilProgram),
+                            "quantumProcessorId" | "quantum_processor_id" => Ok(GeneratedField::QuantumProcessorId),
+                            "quilProgram" | "quil_program" => Ok(GeneratedField::QuilProgram),
                             "options" => Ok(GeneratedField::Options),
-                            "numShotsValue" => Ok(GeneratedField::NumShotsValue),
+                            "numShotsValue" | "num_shots_value" => Ok(GeneratedField::NumShotsValue),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -280,15 +283,13 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobReque
                             if options__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("options"));
                             }
-                            options__ = Some(map.next_value()?);
+                            options__ = map.next_value()?;
                         }
                         GeneratedField::NumShotsValue => {
                             if num_shots__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("numShotsValue"));
                             }
-                            num_shots__ = Some(translate_quil_to_encrypted_controller_job_request::NumShots::NumShotsValue(
-                                map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0
-                            ));
+                            num_shots__ = map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| translate_quil_to_encrypted_controller_job_request::NumShots::NumShotsValue(x.0));
                         }
                     }
                 }
@@ -392,13 +393,13 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobRespo
                             if job__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("job"));
                             }
-                            job__ = Some(map.next_value()?);
+                            job__ = map.next_value()?;
                         }
                         GeneratedField::Metadata => {
                             if metadata__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("metadata"));
                             }
-                            metadata__ = Some(map.next_value()?);
+                            metadata__ = map.next_value()?;
                         }
                     }
                 }
@@ -500,13 +501,15 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                             if translation_backend__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("v1"));
                             }
-                            translation_backend__ = Some(translation_options::TranslationBackend::V1(map.next_value()?));
+                            translation_backend__ = map.next_value::<::std::option::Option<_>>()?.map(translation_options::TranslationBackend::V1)
+;
                         }
                         GeneratedField::V2 => {
                             if translation_backend__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("v2"));
                             }
-                            translation_backend__ = Some(translation_options::TranslationBackend::V2(map.next_value()?));
+                            translation_backend__ = map.next_value::<::std::option::Option<_>>()?.map(translation_options::TranslationBackend::V2)
+;
                         }
                     }
                 }

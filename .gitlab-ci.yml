@@ -23,7 +23,7 @@ include:
 .install_deps: &install_deps
   - apt-get update -y
   - apt-get install -y zip curl git
-  - cargo binstall cargo-make
+  - cargo binstall -y cargo-make
 
 Check:
   stage: test

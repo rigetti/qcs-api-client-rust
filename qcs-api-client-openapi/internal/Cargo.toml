@@ -37,7 +37,7 @@ default-features = false
 features = ["json", "multipart", "rustls-tls"]
 
 [dev-dependencies]
-rstest = "0.16.0"
+rstest = "0.17.0"
 tokio = { version = "1.20.1", features = ["rt-multi-thread", "rt", "macros"] }
 
 [features]

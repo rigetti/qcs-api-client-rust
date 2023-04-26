@@ -38,6 +38,7 @@ impl<'de> serde::Deserialize<'de> for QuilTranslationMetadata {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "readout_mappings",
             "readoutMappings",
         ];
 
@@ -65,7 +66,7 @@ impl<'de> serde::Deserialize<'de> for QuilTranslationMetadata {
                         E: serde::de::Error,
                     {
                         match value {
-                            "readoutMappings" => Ok(GeneratedField::ReadoutMappings),
+                            "readoutMappings" | "readout_mappings" => Ok(GeneratedField::ReadoutMappings),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
