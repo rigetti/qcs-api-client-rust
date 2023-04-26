@@ -1,3 +1,13 @@
+## 0.5.4
+
+### Features
+
+- update gRPC Proto Definitions
+
+### Fixes
+
+- fix the GrpcService blanket impl on RefreshService<T>
+
 ## 0.5.3
 
 ### Fixes
