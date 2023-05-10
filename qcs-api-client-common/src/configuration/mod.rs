@@ -56,6 +56,8 @@ pub const DEFAULT_GRPC_API_URL: &str = "https://legacy.grpc.qcs.rigetti.com";
 pub const DEFAULT_QVM_URL: &str = "http://127.0.0.1:5000";
 /// Default URL to access `quilc`.
 pub const DEFAULT_QUILC_URL: &str = "tcp://127.0.0.1:5555";
+/// Default auth server name
+pub const DEFAULT_AUTH_SERVER_NAME: &str = "default";
 
 /// Setting this environment variable will override the URL used to access quilc.
 pub const QUILC_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_QUILC_URL";
@@ -117,19 +119,19 @@ impl ClientConfiguration {
         &self.api_url
     }
 
-    /// URL to access the gRPC API.
+    /// URL to access the gRPC API. Defaults to the value of the `QCS_SETTINGS_APPLICATIONS_GRPC_URL` environment variable if set, [`DEFAULT_GRPC_API_URL`] otherwise.
     #[must_use]
     pub fn grpc_api_url(&self) -> &str {
         &self.grpc_api_url
     }
 
-    /// URL to access `quilc`. Defaults to [`DEFAULT_QUILC_URL`].
+    /// URL to access `quilc`. Defaults to the value of the ``QCS_SETTINGS_APPLICATIONS_QUILC_URL`` environment variable if set, [`DEFAULT_QUILC_URL`] otherwise.
     #[must_use]
     pub fn quilc_url(&self) -> &str {
         &self.quilc_url
     }
 
-    /// URL to access QVM. Defaults to [`DEFAULT_QVM_URL`].
+    /// URL to access QVM. Defaults to the value of the ``QCS_SETTINGS_APPLICATIONS_QVM_URL`` environment variable if set, [`DEFAULT_QVM_URL`] otherwise.
     #[must_use]
     pub fn qvm_url(&self) -> &str {
         &self.qvm_url
@@ -470,10 +472,13 @@ impl TokenRefresher for ClientConfiguration {
 
 #[cfg(test)]
 mod describe_client_configuration_load {
+    use serial_test::serial;
+
     #[allow(clippy::wildcard_imports)]
     use crate::configuration::*;
 
     #[tokio::test]
+    #[serial]
     async fn it_uses_env_var_overrides() {
         let quilc_url = "tcp://quilc:5555";
         let qvm_url = "http://qvm:5000";
@@ -492,7 +497,19 @@ mod describe_client_configuration_load {
     }
 
     #[test]
-    fn test_default_does_not_panic() {
-        ClientConfiguration::default();
+    #[serial]
+    fn test_default_uses_env_var_overrides() {
+        let quilc_url = "quilc_url";
+        let qvm_url = "qvm_url";
+        let grpc_url = "grpc_url";
+
+        std::env::set_var(QUILC_URL_VAR, quilc_url);
+        std::env::set_var(QVM_URL_VAR, qvm_url);
+        std::env::set_var(GRPC_API_URL_VAR, grpc_url);
+
+        let config = ClientConfiguration::default();
+        assert_eq!(config.quilc_url, quilc_url);
+        assert_eq!(config.qvm_url, qvm_url);
+        assert_eq!(config.grpc_api_url, grpc_url);
     }
 }

@@ -18,7 +18,7 @@ use crate::configuration::DEFAULT_API_URL;
 use serde::{Deserialize, Serialize};
 
 use super::path::path_from_env_or_home;
-use super::{LoadError, DEFAULT_GRPC_API_URL};
+use super::{LoadError, DEFAULT_AUTH_SERVER_NAME, DEFAULT_GRPC_API_URL};
 
 /// Setting the `QCS_SETTINGS_FILE_PATH` environment variable will change which file is used for loading settings
 pub const SETTINGS_PATH_VAR: &str = "QCS_SETTINGS_FILE_PATH";
@@ -76,6 +76,7 @@ pub(crate) struct Profile {
     pub(crate) api_url: String,
     #[serde(default = "default_grpc_api_url")]
     pub(crate) grpc_api_url: String,
+    #[serde(default = "default_auth_server_name")]
     pub(crate) auth_server_name: String,
     pub(crate) credentials_name: String,
     #[serde(default)]
@@ -96,6 +97,10 @@ impl Default for Profile {
 
 fn default_grpc_api_url() -> String {
     DEFAULT_GRPC_API_URL.to_string()
+}
+
+fn default_auth_server_name() -> String {
+    DEFAULT_AUTH_SERVER_NAME.to_string()
 }
 
 #[derive(Deserialize, Debug, Default, PartialEq, Serialize)]
