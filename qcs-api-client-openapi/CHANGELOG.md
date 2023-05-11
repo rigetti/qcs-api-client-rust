@@ -1,3 +1,9 @@
+## 0.7.6
+
+### Features
+
+- Environment variable overrides for QVM, QUILC, and the GRPC API URLs are now respected when initializing a default client configuration
+
 ## 0.7.5
 
 ### Features

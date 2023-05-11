@@ -7,7 +7,7 @@ use crate::ClientConfiguration;
 
 use super::{
     settings::AuthServer, Tokens, DEFAULT_API_URL, DEFAULT_GRPC_API_URL, DEFAULT_QUILC_URL,
-    DEFAULT_QVM_URL,
+    DEFAULT_QVM_URL, GRPC_API_URL_VAR, QUILC_URL_VAR, QVM_URL_VAR,
 };
 
 #[cfg(feature = "tracing-config")]
@@ -122,11 +122,16 @@ impl ClientConfigurationBuilder {
             auth_server: self.auth_server.unwrap_or_default(),
             grpc_api_url: self
                 .grpc_api_url
+                .or_else(|| std::env::var(GRPC_API_URL_VAR).ok())
                 .unwrap_or_else(|| DEFAULT_GRPC_API_URL.to_string()),
             quilc_url: self
                 .quilc_url
+                .or_else(|| std::env::var(QUILC_URL_VAR).ok())
                 .unwrap_or_else(|| DEFAULT_QUILC_URL.to_string()),
-            qvm_url: self.qvm_url.unwrap_or_else(|| DEFAULT_QVM_URL.to_string()),
+            qvm_url: self
+                .qvm_url
+                .or_else(|| std::env::var(QVM_URL_VAR).ok())
+                .unwrap_or_else(|| DEFAULT_QVM_URL.to_string()),
             #[cfg(feature = "tracing-config")]
             tracing_configuration: self.tracing_configuration,
         })
@@ -138,6 +143,7 @@ impl ClientConfigurationBuilder {
 mod tests {
     use super::*;
     use rstest::rstest;
+    use serial_test::serial;
 
     fn get_tokens() -> Tokens {
         Tokens {
@@ -178,6 +184,7 @@ mod tests {
     }
 
     #[rstest]
+    #[serial]
     fn test_builder_sets_options_or_default(
         #[values(None, Some(get_tokens()))] tokens: Option<Tokens>,
         #[values(None, Some(get_tokens_arc()))] tokens_arc: Option<Arc<Mutex<Tokens>>>,
@@ -188,6 +195,10 @@ mod tests {
         #[values(None, Some(String::from("custom qvm url")))] qvm_url: Option<String>,
     ) {
         let mut builder = ClientConfigurationBuilder::default();
+
+        std::env::remove_var(QUILC_URL_VAR);
+        std::env::remove_var(QVM_URL_VAR);
+        std::env::remove_var(GRPC_API_URL_VAR);
 
         set_from_option!(builder, set_tokens, tokens);
         set_from_option!(builder, set_tokens_arc, tokens_arc);
