@@ -24,7 +24,7 @@ anyhow = { version = "1.0.68", optional = true }
 [dependencies.reqwest]
 version = "0.11.11"
 default-features = false
-features = ["json", "multipart", "rustls-tls"]
+features = ["json", "multipart", "rustls-tls-native-roots"]
 
 [dev-dependencies]
 rstest = "0.17.0"

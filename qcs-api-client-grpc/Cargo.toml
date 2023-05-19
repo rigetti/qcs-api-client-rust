@@ -19,7 +19,7 @@ hyper = "0.14.23"
 hyper-proxy = { version = "0.9.1", default-features = false, features = [
     "rustls",
 ] }
-hyper-socks2 = { version = "0.7.0", default-features = false }
+hyper-socks2 = { version = "0.8.0", default-features = false }
 pbjson = "0.5.1"
 prost = "0.11.0"
 serde = "1.0"

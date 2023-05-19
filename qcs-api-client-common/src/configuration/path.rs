@@ -22,7 +22,7 @@ pub(crate) fn path_from_env_or_home(env: &str, file_name: &str) -> Result<PathBu
     #[allow(clippy::option_if_let_else)]
     match std::env::var(env) {
         Ok(path) => Ok(PathBuf::from(path)),
-        Err(_) => dirs::home_dir()
+        Err(_) => home::home_dir()
             .map(|path| path.join(".qcs").join(file_name))
             .ok_or_else(|| LoadError::HomeDirError {
                 env: env.to_string(),

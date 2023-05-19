@@ -1,0 +1,29 @@
+[advisories]
+ignore = [
+    "RUSTSEC-2020-0071"
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "warn"
+
+[licenses]
+allow = [
+    "Apache-2.0",
+    "ISC",
+    "MIT",
+    "OpenSSL",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "Unicode-DFS-2016",
+]
+
+[[licenses.exceptions]]
+allow = ["GPL-3.0"]
+name = "socks5-proto"
+version = "0.3.3"
+
+[[licenses.exceptions]]
+allow = ["GPL-3.0"]
+name = "socks5-server"
+version = "0.8.3"
