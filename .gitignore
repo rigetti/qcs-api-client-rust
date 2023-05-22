@@ -6,6 +6,7 @@
 .DS_Store
 # developer notes, etc.
 /scratch
+/deny.toml
 # Currently ignored just to leave to developer preference. May be worth a dedicated
 # MR to define an approprate default configuration.
 # https://github.com/Canop/bacon.
