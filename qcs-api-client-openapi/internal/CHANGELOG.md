@@ -1,3 +1,9 @@
+## 0.7.7
+
+### Fixes
+
+- bump api client versions
+
 ## 0.7.6
 
 ### Features

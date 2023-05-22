@@ -1,3 +1,9 @@
+## 0.5.6
+
+### Fixes
+
+- bump api client versions
+
 ## 0.5.5
 
 ### Features
