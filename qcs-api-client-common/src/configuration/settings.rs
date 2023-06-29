@@ -18,7 +18,7 @@ use crate::configuration::DEFAULT_API_URL;
 use serde::{Deserialize, Serialize};
 
 use super::path::path_from_env_or_home;
-use super::{LoadError, DEFAULT_AUTH_SERVER_NAME, DEFAULT_GRPC_API_URL};
+use super::{LoadError, DEFAULT_GRPC_API_URL, DEFAULT_PROFILE_NAME};
 
 /// Setting the `QCS_SETTINGS_FILE_PATH` environment variable will change which file is used for loading settings
 pub const SETTINGS_PATH_VAR: &str = "QCS_SETTINGS_FILE_PATH";
@@ -40,11 +40,12 @@ pub(crate) async fn load() -> Result<Settings, LoadError> {
 #[derive(Deserialize, Debug, PartialEq, Serialize)]
 pub(crate) struct Settings {
     /// Which profile to select settings from when none is specified.
+    #[serde(default = "default_profile_name")]
     pub(crate) default_profile_name: String,
     /// All available configuration profiles, keyed by profile name.
     #[serde(default = "default_profiles")]
     pub(crate) profiles: HashMap<String, Profile>,
-    #[serde(default)]
+    #[serde(default = "default_auth_servers")]
     pub(crate) auth_servers: HashMap<String, AuthServer>,
 }
 
@@ -66,8 +67,12 @@ fn default_profiles() -> HashMap<String, Profile> {
 
 fn default_auth_servers() -> HashMap<String, AuthServer> {
     let mut map = HashMap::with_capacity(1);
-    map.insert("default".to_string(), AuthServer::default());
+    map.insert(DEFAULT_PROFILE_NAME.to_string(), AuthServer::default());
     map
+}
+
+fn default_profile_name() -> String {
+    DEFAULT_PROFILE_NAME.to_string()
 }
 
 #[derive(Deserialize, Debug, PartialEq, Serialize)]
@@ -76,8 +81,9 @@ pub(crate) struct Profile {
     pub(crate) api_url: String,
     #[serde(default = "default_grpc_api_url")]
     pub(crate) grpc_api_url: String,
-    #[serde(default = "default_auth_server_name")]
+    #[serde(default = "default_profile_name")]
     pub(crate) auth_server_name: String,
+    #[serde(default = "default_profile_name")]
     pub(crate) credentials_name: String,
     #[serde(default)]
     pub(crate) applications: Applications,
@@ -97,10 +103,6 @@ impl Default for Profile {
 
 fn default_grpc_api_url() -> String {
     DEFAULT_GRPC_API_URL.to_string()
-}
-
-fn default_auth_server_name() -> String {
-    DEFAULT_AUTH_SERVER_NAME.to_string()
 }
 
 #[derive(Deserialize, Debug, Default, PartialEq, Serialize)]
@@ -194,19 +196,29 @@ mod describe_load {
     }
 
     #[tokio::test]
+    async fn it_uses_defaults_incomplete_settings() {
+        let file = NamedTempFile::new().expect("should be able to create temporary file");
+        std::env::set_var(SETTINGS_PATH_VAR, file.path());
+
+        let loaded = load().await.expect("should load settings");
+
+        assert_eq!(Settings::default(), loaded);
+    }
+
+    #[tokio::test]
     async fn it_loads_from_env_var_path() {
-        let mut file = NamedTempFile::new().expect("Failed to create temporary settings file");
+        let mut file = NamedTempFile::new().expect("should be able to create temporary file");
         let settings = Settings {
             default_profile_name: "THIS IS A TEST".to_string(),
             ..Settings::default()
         };
         let settings_string =
-            toml::to_string(&settings).expect("Could not serialize test settings");
+            toml::to_string(&settings).expect("should be able to serialize test settings");
         file.write_all(settings_string.as_bytes())
             .expect("Failed to write test settings");
         std::env::set_var(SETTINGS_PATH_VAR, file.path());
 
-        let loaded = load().await.expect("Failed to load settings");
+        let loaded = load().await.expect("should be able to load settings");
 
         assert_eq!(settings, loaded);
     }

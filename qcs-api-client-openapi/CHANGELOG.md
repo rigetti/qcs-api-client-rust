@@ -1,3 +1,9 @@
+## 0.8.0
+
+### Breaking Changes
+
+- If a settings file is incomplete, defaults are used for missing values.
+
 ## 0.7.8
 
 ### Features

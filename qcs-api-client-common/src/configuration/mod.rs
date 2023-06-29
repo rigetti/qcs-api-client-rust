@@ -56,9 +56,8 @@ pub const DEFAULT_GRPC_API_URL: &str = "https://grpc.qcs.rigetti.com";
 pub const DEFAULT_QVM_URL: &str = "http://127.0.0.1:5000";
 /// Default URL to access `quilc`.
 pub const DEFAULT_QUILC_URL: &str = "tcp://127.0.0.1:5555";
-/// Default auth server name
-pub const DEFAULT_AUTH_SERVER_NAME: &str = "default";
-
+/// Default profile name.
+pub const DEFAULT_PROFILE_NAME: &str = "default";
 /// Setting this environment variable will override the URL used to access quilc.
 pub const QUILC_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_QUILC_URL";
 /// Setting this environment variable will override the URL used to access the QVM.
