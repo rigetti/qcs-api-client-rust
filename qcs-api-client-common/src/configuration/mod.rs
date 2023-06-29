@@ -51,7 +51,7 @@ mod settings;
 /// Default URL to access the QCS API.
 pub const DEFAULT_API_URL: &str = "https://api.qcs.rigetti.com";
 /// Default URL to access the gRPC API.
-pub const DEFAULT_GRPC_API_URL: &str = "https://legacy.grpc.qcs.rigetti.com";
+pub const DEFAULT_GRPC_API_URL: &str = "https://grpc.qcs.rigetti.com";
 /// Default URL to access QVM.
 pub const DEFAULT_QVM_URL: &str = "http://127.0.0.1:5000";
 /// Default URL to access `quilc`.
