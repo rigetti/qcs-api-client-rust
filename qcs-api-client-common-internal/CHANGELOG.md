@@ -1,3 +1,9 @@
+## 0.5.7
+
+### Features
+
+- Update `DEFAULT_GRPC_API_URL`
+
 ## 0.5.6
 
 ### Fixes
