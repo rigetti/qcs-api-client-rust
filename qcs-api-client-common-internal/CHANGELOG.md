@@ -1,3 +1,9 @@
+## 0.6.0
+
+### Breaking Changes
+
+- If a settings file is incomplete, defaults are used for missing values.
+
 ## 0.5.7
 
 ### Features
