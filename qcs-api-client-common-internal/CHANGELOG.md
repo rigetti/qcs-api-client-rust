@@ -1,3 +1,9 @@
+## 0.6.1
+
+### Features
+
+- Add `get_channel_with_timeout` and `get_channel_with_endpoint` functions for more fine tune configuration of a channel.
+
 ## 0.6.0
 
 ### Breaking Changes
