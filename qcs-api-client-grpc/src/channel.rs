@@ -21,6 +21,7 @@ use qcs_api_client_common::configuration::TokenRefresher;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
+use std::time::Duration;
 use tonic::body::BoxBody;
 use tonic::client::GrpcService;
 use tonic::codegen::http::uri::InvalidUri;
@@ -90,13 +91,23 @@ pub fn parse_uri(s: &str) -> Result<Uri, Error<RefreshError>> {
     s.parse().map_err(Error::from)
 }
 
-fn get_endpoint(uri: Uri) -> Endpoint {
+/// Get an [`Endpoint`] for the given [`Uri`]
+pub fn get_endpoint(uri: Uri) -> Endpoint {
     Channel::builder(uri)
         .user_agent(concat!(
             "QCS gRPC Client (Rust)/",
             env!("CARGO_PKG_VERSION")
         ))
         .expect("user agent string should be valid")
+}
+
+/// Get an [`Endpoint`] for the given [`Uri`] and timeout.
+pub fn get_endpoint_with_timeout(uri: Uri, timeout: Option<Duration>) -> Endpoint {
+    if let Some(duration) = timeout {
+        get_endpoint(uri).timeout(duration)
+    } else {
+        get_endpoint(uri)
+    }
 }
 
 /// Fetch the env var named for `key` and parse as a `Uri`.
@@ -122,7 +133,7 @@ fn get_uri_socks_auth(uri: &Uri) -> Result<Option<Auth>, url::ParseError> {
     Ok(auth)
 }
 
-/// Get a [`Channel`] to the given [`Uri`],
+/// Get a [`Channel`] to the given [`Uri`].
 /// Sets up things like user agent without setting up QCS credentials.
 ///
 /// This channel will be configured to route requests through proxies defined by
@@ -134,10 +145,47 @@ fn get_uri_socks_auth(uri: &Uri) -> Result<Option<Auth>, url::ParseError> {
 /// - If both variables are defined, neither can be a `socks5` proxy, unless they are both the same value.
 /// - If only one variable is defined, and it is a `socks5` proxy, *all* traffic will be routed through it.
 pub fn get_channel(uri: Uri) -> Result<Channel, ChannelError> {
+    let endpoint = get_endpoint(uri);
+    get_channel_with_endpoint(endpoint)
+}
+
+/// Get a [`Channel`] to the given [`Uri`], with an optional timeout. If set to [`None`], no timeout is
+/// used.
+/// Sets up things like user agent without setting up QCS credentials.
+///
+/// This channel will be configured to route requests through proxies defined by
+/// `HTTPS_PROXY` and/or `HTTP_PROXY` environment variables, if they are defined.
+/// The variable names can be all-uppercase or all-lowercase, but the all-uppercase
+/// variants will take precedence. Supported proxy schemes are `http`, `https`, and `socks5`.
+///
+/// Proxy configuration caveats:
+/// - If both variables are defined, neither can be a `socks5` proxy, unless they are both the same value.
+/// - If only one variable is defined, and it is a `socks5` proxy, *all* traffic will be routed through it.
+pub fn get_channel_with_timeout(
+    uri: Uri,
+    timeout: Option<Duration>,
+) -> Result<Channel, ChannelError> {
+    let endpoint = get_endpoint_with_timeout(uri, timeout);
+    get_channel_with_endpoint(endpoint)
+}
+
+/// Get a [`Channel`] to the given [`Endpoint`]. Useful if [`get_channel`] or
+/// [`get_channel_with_timeout`] don't provide the configurability you need.
+///
+/// Use [`get_endpoint`] or [`get_endpoint_with_timeout`] to get a starting
+/// [`Endpoint`].
+///
+/// This channel will be configured to route requests through proxies defined by
+/// `HTTPS_PROXY` and/or `HTTP_PROXY` environment variables, if they are defined.
+/// The variable names can be all-uppercase or all-lowercase, but the all-uppercase
+/// variants will take precedence. Supported proxy schemes are `http`, `https`, and `socks5`.
+///
+/// Proxy configuration caveats:
+/// - If both variables are defined, neither can be a `socks5` proxy, unless they are both the same value.
+/// - If only one variable is defined, and it is a `socks5` proxy, *all* traffic will be routed through it.
+pub fn get_channel_with_endpoint(endpoint: Endpoint) -> Result<Channel, ChannelError> {
     let https_proxy = get_env_uri("HTTPS_PROXY")?;
     let http_proxy = get_env_uri("HTTP_PROXY")?;
-
-    let endpoint = get_endpoint(uri);
 
     let mut connector = HttpConnector::new();
     connector.enforce_http(false);
@@ -898,8 +946,7 @@ mod tests {
         async fn check(
             &self,
             _request: Request<tonic_health::pb::HealthCheckRequest>,
-        ) -> Result<tonic::Response<tonic_health::pb::HealthCheckResponse>, tonic::Status>
-        {
+        ) -> Result<tonic::Response<tonic_health::pb::HealthCheckResponse>, tonic::Status> {
             tokio::time::sleep(self.sleep_time).await;
             let response = tonic_health::pb::HealthCheckResponse {
                 status: ServingStatus::Serving as i32,
