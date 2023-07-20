@@ -4544,6 +4544,14 @@ components:
           description: The QCS service environment from which this stack will request data
           title: Environment
           type: string
+        environmentVariables:
+          description: Environment variables to set for this component. To unset a
+            variable which has been set by component defaults, set it to an
+            empty string. Note that not all environment variables may be
+            overridden. Examples of such variables are those set by Nomad to
+            provide secret values to the task container.
+          title: Environment Variables
+          type: object
         gitBranch:
           description: Which branch of the relevant repository to associate with this
             endpoint. May be used for automatic upgrades on updates to the git
@@ -4662,6 +4670,14 @@ components:
           description: The QCS service environment from which this stack will request data
           title: Environment
           type: string
+        environmentVariables:
+          description: Environment variables to set for this component. To unset a
+            variable which has been set by component defaults, set it to an
+            empty string. Note that not all environment variables may be
+            overridden. Examples of such variables are those set by Nomad to
+            provide secret values to the task container.
+          title: Environment Variables
+          type: object
         fridgeId:
           description: Which fridge wiring architecture this Controller Service should
             implement
@@ -4707,6 +4723,11 @@ components:
           description: Select the data source from which the endpoint's startup
             configuration should be retrieved
           title: Startup Configuration Source
+        storageBackend:
+          description: Which storage backend to configure. See Controller Service
+            documentation for the available options.
+          title: Storage Backend
+          type: string
         visaPassthrough:
           default: false
           description: Whether to pass through access to USB instruments with host VISA
@@ -5325,6 +5346,14 @@ components:
           description: "Which docker tag to pull and start. [Example: v1.0.0]"
           title: Docker Tag
           type: string
+        environmentVariables:
+          description: Environment variables to set for this component. To unset a
+            variable which has been set by component defaults, set it to an
+            empty string. Note that not all environment variables may be
+            overridden. Examples of such variables are those set by Nomad to
+            provide secret values to the task container.
+          title: Environment Variables
+          type: object
         gitBranch:
           description: Which branch of the relevant repository to associate with this
             endpoint. May be used for automatic upgrades on updates to the git
@@ -6091,6 +6120,14 @@ components:
           description: The QCS service environment from which this stack will request data
           title: Environment
           type: string
+        environmentVariables:
+          description: Environment variables to set for this component. To unset a
+            variable which has been set by component defaults, set it to an
+            empty string. Note that not all environment variables may be
+            overridden. Examples of such variables are those set by Nomad to
+            provide secret values to the task container.
+          title: Environment Variables
+          type: object
         gitBranch:
           description: Which branch of the relevant repository to associate with this
             endpoint. May be used for automatic upgrades on updates to the git
