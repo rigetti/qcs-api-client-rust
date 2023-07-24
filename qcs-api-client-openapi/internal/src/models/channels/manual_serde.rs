@@ -6,7 +6,7 @@
 //!
 //! This code is copied from the derived implementation using `cargo-expand`, with minor
 //! edits to fix the behavior. No effort has been made to simplify or clean up the
-//! implementation.
+//! implementation. This also properly falls back to `SerdeJsonValue` for unknown variants.
 //!
 //! # Warning
 //!
@@ -161,7 +161,7 @@ impl<'de> _serde::Deserialize<'de> for Channels {
             ),
         ) {
             // __val.content has the __type field removed, but it needs to be present
-            _serde::__private::Ok(__val) => (__val.tag, __content),
+            _serde::__private::Ok(__val) => (__val.0, __content),
             _serde::__private::Err(__err) => (__Field::__field19, __content),
         };
 

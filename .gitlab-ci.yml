@@ -24,9 +24,6 @@ include:
   - apt-get update -y
   - apt-get install -y zip curl git
   - ldd --version
-  # Installing from source is required until the upstream Rust CI image has 
-  # a fix for the binary version it installs: https://gitlab.com/rigetti/qcs/utilities/rust-ci-image/-/issues/17
-  - cargo install cargo-make --force
 
 Check:
   stage: test
