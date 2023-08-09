@@ -4709,6 +4709,27 @@ components:
           description: Memory allocation in MB required by this component.
           title: Memory Soft Limit
           type: integer
+        onlyApplyTsunamiInstrumentChannelSettingsDelta:
+          default: false
+          description: When `True`, only the calculated delta between an instrument's
+            current settings and the job's settings will be applied. Otherwise,
+            the full set of the job's settings will be applied, even if the
+            delta is empty.
+          title: Only Apply Tsunami Instrument Channel Settings Delta
+          type: boolean
+        protectedTsunamiInstrumentChannelSettings:
+          default: []
+          description: A list of glob patterns that match protected settings for a given
+            card type. Each pattern is a colon-separated pair of card type and
+            setting name in the form '<card_type>:<setting_name>' where each can
+            be a specific calue or a wildcard '*'. For example, qfd:attenuation
+            would match the `attenuation` settings for qfd cards, or
+            *:center_frequency would match the `center_frequency` settings for
+            all cards.
+          items:
+            type: string
+          title: Protected Tsunami Instrument Channel Settings
+          type: array
         queuePolicyType:
           allOf:
             - $ref: "#/components/schemas/QueuePolicyType"
@@ -4728,6 +4749,12 @@ components:
             documentation for the available options.
           title: Storage Backend
           type: string
+        useTsunamiInstrumentChannelSettingsManagement:
+          default: true
+          description: When `False`, deactivates all tsunami settings management,
+            overriding the feature's other related settings.
+          title: Use Tsunami Instrument Channel Settings Management
+          type: boolean
         visaPassthrough:
           default: false
           description: Whether to pass through access to USB instruments with host VISA
