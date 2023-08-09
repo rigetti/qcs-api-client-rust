@@ -1,6 +1,6 @@
 syntax = "proto3";
 package services.controller;
-option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/controller";
+option go_package = "gitlab.com/rigetti/share/service-model/golang/controller";
 import "controller/job.proto";
 import "controller/manifest.proto";
 
@@ -43,6 +43,11 @@ message ExecutionOptions {
     // client specifies this option but Q-CTRL translation metadata is not specified in the JobMetadata, the server will
     // return a validation error to the client.
     .services.controller.ExecutionOptions.QCtrl q_ctrl = 1;
+
+    // If jobs contain settings that would cause protected settings to change values
+    // for any instrument, ControllerService will reject that job unless this field is set to true
+    // and the submitter has the appropriate authorization.
+    bool bypass_instrument_channel_settings_protection = 2;
     message QCtrl {
 
         // Mapping of (Quil memory address as string) to (readout stream)

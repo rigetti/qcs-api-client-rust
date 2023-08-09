@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 package models.translation;
-option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/translation";
+option go_package = "gitlab.com/rigetti/share/service-model/golang/translation";
 
 // Information about the result of Quil translation that may be useful for the client,
 // but which is not needed for execution of the translated `ControllerJob`.

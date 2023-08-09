@@ -1,6 +1,6 @@
 syntax = "proto3";
 package models.translation;
-option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/translation";
+option go_package = "gitlab.com/rigetti/share/service-model/golang/translation";
 
 // A Quil program classical memory region declaration.
 // https://github.com/quil-lang/quil/blob/master/spec/Quil.md#plain-declaration

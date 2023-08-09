@@ -17,7 +17,7 @@ hyper-socks2 = { version = "0.8.0", default-features = false }
 pbjson = "0.5.1"
 prost = "0.11.0"
 serde = "1.0"
-tonic = "0.9.0"
+tonic = { version = "0.9.2", features = ["tls-roots"] }
 pbjson-types = "0.5.1"
 tower = "0.4"
 thiserror = "1.0.32"
@@ -31,13 +31,11 @@ url = { version = "2.3.1" }
 http = "0.2.8"
 
 [build-dependencies]
-tonic-build = "0.9.0"
+tonic-build = "0.9.2"
 pbjson-build = "0.5.1"
 prost-build = "0.11.1"
 
 [features]
-default = ["tls"]
-tls = ["tonic/tls", "tonic/tls-roots"]
 # The old name of the tracing-opentelemetry feature, here for backwards compatibility
 otel-tracing = ["tracing-opentelemetry"]
 tracing-opentelemetry = ["opentelemetry", "opentelemetry_api", "opentelemetry-http", "tracing-config"]
@@ -57,6 +55,6 @@ serde_json = "1.0.91"
 tempfile = "3.3.0"
 tokio = { version = "1.24.1", features = ["parking_lot"] }
 tokio-stream = { version = "0.1.11", features = ["net"] }
-tonic-health = "0.9.0"
+tonic-health = "0.9.2"
 tracing-opentelemetry = "0.18.0"
 tracing-subscriber = "0.3.16"

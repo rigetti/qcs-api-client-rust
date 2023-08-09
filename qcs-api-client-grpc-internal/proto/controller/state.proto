@@ -1,11 +1,11 @@
 //*
 //
-// Messages related to the _state_ of a Controller and its instruments
+// Messages related to the _state_ of a Controller, which consists of the settings on its instruments
 //
 
 syntax = "proto3";
 package models.controller;
-option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/controller";
+option go_package = "gitlab.com/rigetti/share/service-model/golang/controller";
 
 // which variable of voltage or current is settable on the power supply
 enum YokogawaGS200Mode {
@@ -14,11 +14,8 @@ enum YokogawaGS200Mode {
     CURRENT = 2;
 }
 
-// See
-// https://gitlab.com/rigetti/share/domain-model-specification/-/blob/master/Python/rigetti_domain_model/models/controller/tsunami_settings.py
-
 // Settings which are read from or written to the controller, depending on context
-message ControllerState {
+message ControllerSettings {
 
     // Keyed on instrument name
     map<string, .models.controller.InstrumentSettings> instrument_settings = 1;
@@ -49,9 +46,6 @@ message TsunamiCardSettings {
         .models.controller.TsunamiValonCardSettings valon = 109;
     }
 }
-
-// https://rigetti.gitlab.io/share/domain-model-specification/models.controller.html#models.controller.tsunami.QDOCard
-
 message TsunamiQDOCardSettings {
     map<uint32, .models.controller.TsunamiQDOChannelSettings> channel_settings = 1;
 }
@@ -70,13 +64,10 @@ message TsunamiQDOSlowFluxChannelSettings {
 
 }
 message TsunamiQDOFastFluxChannelSettings {
-    int32 dac_dc_offset = 1;
+    optional int32 dac_dc_offset = 1;
     // DC offset of the RF DAC, as a (dimensionless) 16-bit signed value.
 
 }
-
-// https://rigetti.gitlab.io/share/domain-model-specification/models.controller.html#models.controller.tsunami.QFDCard
-
 message TsunamiQFDCardSettings {
     map<uint32, .models.controller.TsunamiQFDChannelSettings> channel_settings = 1;
 }
@@ -113,9 +104,6 @@ message TsunamiQFDx2ChannelSettings {
 
     }
 }
-
-// https://rigetti.gitlab.io/share/domain-model-specification/models.controller.html#models.controller.tsunami.QGSCard
-
 message TsunamiQGSCardSettings {
     map<uint32, .models.controller.TsunamiQGSChannelSettings> channel_settings = 1;
 }
@@ -132,9 +120,6 @@ message TsunamiQGSChannelSettings {
 
     }
 }
-
-// https://rigetti.gitlab.io/share/domain-model-specification/models.controller.html#models.controller.tsunami.QGSx2Card
-
 message TsunamiQGSx2CardSettings {
     map<uint32, .models.controller.TsunamiQGSx2ChannelSettings> channel_settings = 1;
 }
@@ -151,9 +136,6 @@ message TsunamiQGSx2ChannelSettings {
 
     }
 }
-
-// https://rigetti.gitlab.io/share/domain-model-specification/models.controller.html#models.controller.tsunami.QRRx2Card
-
 message TsunamiQRRx2CardSettings {
 
     // channel name => channel settings
@@ -164,9 +146,6 @@ message TsunamiQRRx2ChannelSettings {
     // decibels, +3.0 is half power
 
 }
-
-// https://rigetti.gitlab.io/share/domain-model-specification/models.controller.html#models.controller.tsunami.QRTx2HiCard
-
 message TsunamiQRTx2HiCardSettings {
 
     // channel name => channel settings
@@ -185,9 +164,6 @@ message TsunamiQRTx2HiChannelSettings {
 
     }
 }
-
-// https://rigetti.gitlab.io/share/domain-model-specification/models.controller.html#models.controller.tsunami.QRTx2LoCard
-
 message TsunamiQRTx2LoCardSettings {
 
     // channel name => channel settings

@@ -1,6 +1,6 @@
 syntax = "proto3";
 package models.controller;
-option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/controller";
+option go_package = "gitlab.com/rigetti/share/service-model/golang/controller";
 
 // Contains the information necessary for the service to start up and connect to its instruments.
 message ControllerServiceStartupConfiguration {

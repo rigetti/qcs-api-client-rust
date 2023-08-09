@@ -1,6 +1,6 @@
 syntax = "proto3";
 package models.controller;
-option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/controller";
+option go_package = "gitlab.com/rigetti/share/service-model/golang/controller";
 import "controller/readout.proto";
 import "controller/state.proto";
 import "google/protobuf/duration.proto";
@@ -11,7 +11,7 @@ import "google/protobuf/duration.proto";
 message ControllerJob {
 
     // The settings to apply to and maintain on the controller throughout execution
-    .models.controller.ControllerState state = 1;
+    .models.controller.ControllerSettings settings = 1;
 
     // The processing pipeline to transform raw results prior to return to the
     // user
@@ -137,6 +137,9 @@ message MemoryRegion {
     // following execution.
     uint32 memory_offset = 3;
 
+    // How to pack the user-provided value to binary format
+    .models.controller.MemoryFormat format = 4;
+
     // The different types of data available for patching
     enum DataType {
         UNKNOWN_DATATYPE = 0;
@@ -149,6 +152,44 @@ message MemoryRegion {
 
         // 64-bit signed floating-point number
         REAL = 3;
+    }
+}
+
+// A description of a single memory value to be patched into a sequencer program
+// based on a computation rather than a value provided directly by the user.
+//
+// It is used as follows:
+// 
+// 1. The `computation` is evaluated within the scope of all values provided by the user,
+//   which produces a new value
+// 2. That value is packed into the format specified by `format`
+// 3. The resulting value is patched into the memory region at `memory_offset_bytes`
+message MemorySubstitution {
+
+    // Where to insert the value, in bytes from the start of the memory region
+    uint32 memory_offset_bytes = 1;
+
+    // How to pack the value to binary format after computation
+    .models.controller.MemoryFormat format = 2;
+
+    // How to compute the value from the user-provided parameters
+    oneof computation {
+        string quil_expression = 101;
+    }
+}
+message MemoryFormat {
+
+    // Represent a number in fixed-point format: https://en.wikipedia.org/wiki/Fixed-point_arithmetic
+    message FixedPoint {
+
+        // How many bits to which to truncate the value
+        uint32 mask_bits = 1;
+
+        // How many places or bits to shift the input value to the left (if big-endian)
+        uint32 scale_bits = 2;
+    }
+    oneof format {
+        .models.controller.MemoryFormat.FixedPoint fixed_point = 201;
     }
 }
 
@@ -210,6 +251,11 @@ message TsunamiSequencerProgram {
     // These string keys are matched against the string keys in
     // ControllerJob.memory_values for memory patching prior to execution.
     map<string, .models.controller.MemoryRegion> memory_map = 2;
+
+    // Substitutions for memory values which must be computed by the execution
+    // service prior to patching into memory. They are applied in order, so
+    // earlier substitutions will be clobbered by later ones.
+    repeated .models.controller.MemorySubstitution memory_substitutions = 3;
 }
 
 // A ControllerJobExecutionResult includes the result data from a single
@@ -252,9 +298,21 @@ message TranslationMetadata {
 
     // Set when the program has been pre-processed through Q-CTRL's API.
     .models.controller.TranslationMetadata.QCtrl q_ctrl = 1;
+
+    // The raw program input as received from the client.
+    .models.controller.TranslationMetadata.ProgramInput program_input = 2;
+    message ProgramInput {
+        oneof value {
+            string quil_text = 101;
+            string quil_digest_sha256 = 102;
+        }
+    }
     message QCtrl {
 
-        // The program identifier returned by Q-CTRL's API after pre-processing.
+        // The program identifier returned by Q-CTRL's pre-processing API.
         string program_identifier = 1;
+
+        // The program input returned by Q-CTRL's pre-processing API.
+        .models.controller.TranslationMetadata.ProgramInput program_input = 2;
     }
 }

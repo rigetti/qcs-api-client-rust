@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 package services.controller;
-option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/controller";
+option go_package = "gitlab.com/rigetti/share/service-model/golang/controller";
 import "controller/job.proto";
 
 // A request to execute multiple ControllerJobs as if they were sent as separate requests.

@@ -121,7 +121,7 @@ def use_oneof_not_anyof(obj):
     when any subschemas are primitives or have conflicting types for a given field.
 
     > Example python source models:
-    https://gitlab.com/rigetti/share/domain-model-specification/-/blob/master/Python/rigetti_domain_model/models/schedule_ir/instruction_parameters.py#L34-48
+    https://gitlab.com/rigetti/internal-software/treeline/-/blob/main/rdm-legacy/rdm_legacy/schedule_ir/instruction_parameters.py?ref_type=heads#L34
 
     > FastAPI documentation;
     https://fastapi.tiangolo.com/tutorial/extra-models/?h=anyof#union-or-anyof
