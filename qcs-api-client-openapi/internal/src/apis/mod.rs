@@ -15,7 +15,7 @@ pub enum Error<T> {
     Io(std::io::Error),
     QcsRefresh(crate::common::configuration::RefreshError),
     ResponseError(ResponseContent<T>),
-    #[cfg(feature = "tracing-opentelemetry")]
+    #[cfg(feature = "otel-tracing")]
     ReqwestMiddleware(anyhow::Error),
 }
 
@@ -39,7 +39,7 @@ impl<T> fmt::Display for Error<T> {
                 "response",
                 format!("status code {}: {}", e.status, e.content),
             ),
-            #[cfg(feature = "tracing-opentelemetry")]
+            #[cfg(feature = "otel-tracing")]
             Error::ReqwestMiddleware(e) => ("reqwest-middleware", e.to_string()),
         };
         write!(f, "error in {}: {}", module, e)
@@ -53,7 +53,7 @@ impl<T: fmt::Debug> error::Error for Error<T> {
             Error::Serde(e) => e,
             Error::Io(e) => e,
             Error::QcsRefresh(e) => e,
-            #[cfg(feature = "tracing-opentelemetry")]
+            #[cfg(feature = "otel-tracing")]
             Error::ReqwestMiddleware(e) => e.source()?,
             Error::ResponseError(_) => return None,
         })
@@ -66,7 +66,7 @@ impl<T> From<reqwest::Error> for Error<T> {
     }
 }
 
-#[cfg(feature = "tracing-opentelemetry")]
+#[cfg(feature = "otel-tracing")]
 impl<T> From<reqwest_middleware::Error> for Error<T> {
     fn from(e: reqwest_middleware::Error) -> Self {
         match e {

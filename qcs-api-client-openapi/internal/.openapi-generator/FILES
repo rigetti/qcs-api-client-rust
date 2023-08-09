@@ -168,6 +168,8 @@ src/models/propagation_direction.rs
 src/models/pulse.rs
 src/models/put_instruction_set_architecture_request.rs
 src/models/put_qpu_settings_request.rs
+src/models/put_translation_settings_request.rs
+src/models/put_translation_settings_response.rs
 src/models/qdo_fast_flux_channel.rs
 src/models/qdo_sequencer.rs
 src/models/qdo_slow_flux_channel.rs
@@ -190,12 +192,12 @@ src/models/quantum_processor_accessor_type.rs
 src/models/qubit_settings.rs
 src/models/queue_policy_type.rs
 src/models/rack_meta.rs
+src/models/rdm_legacy__schedule_ir__instruction_parameters__parameter_spec.rs
 src/models/readout_classifier.rs
 src/models/readout_settings.rs
 src/models/remove_group_user_request.rs
 src/models/reservation.rs
 src/models/restart_endpoint_request.rs
-src/models/rigetti_domain_model__models__schedule_ir__instruction_parameters__parameter_spec.rs
 src/models/scheduled_instructions_inner.rs
 src/models/scheduled_program.rs
 src/models/set_default_endpoint_request.rs

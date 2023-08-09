@@ -200,6 +200,7 @@ Class | Method | HTTP request | Description
 *TranslationApi* | [**get_qpu_settings**](docs/TranslationApi.md#get_qpu_settings) | **GET** /v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings | Get Qpu Settings
 *TranslationApi* | [**get_quilt_calibrations**](docs/TranslationApi.md#get_quilt_calibrations) | **GET** /v1/quantumProcessors/{quantumProcessorId}/quiltCalibrations | Get Quilt Calibrations
 *TranslationApi* | [**put_qpu_settings**](docs/TranslationApi.md#put_qpu_settings) | **PUT** /v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings | Put Qpu Settings
+*TranslationApi* | [**put_translation_settings**](docs/TranslationApi.md#put_translation_settings) | **PUT** /v1/internal/quantumProcessors/{quantumProcessorId}/translationSettings | Put Translation Settings
 *TranslationApi* | [**translate_native_quil_to_encrypted_binary**](docs/TranslationApi.md#translate_native_quil_to_encrypted_binary) | **POST** /v1/quantumProcessors/{quantumProcessorId}:translateNativeQuilToEncryptedBinary | Translate Native Quil To Encrypted Binary
 
 
@@ -359,6 +360,8 @@ Class | Method | HTTP request | Description
  - [Pulse](docs/Pulse.md)
  - [PutInstructionSetArchitectureRequest](docs/PutInstructionSetArchitectureRequest.md)
  - [PutQpuSettingsRequest](docs/PutQpuSettingsRequest.md)
+ - [PutTranslationSettingsRequest](docs/PutTranslationSettingsRequest.md)
+ - [PutTranslationSettingsResponse](docs/PutTranslationSettingsResponse.md)
  - [QdoFastFluxChannel](docs/QdoFastFluxChannel.md)
  - [QdoSequencer](docs/QdoSequencer.md)
  - [QdoSlowFluxChannel](docs/QdoSlowFluxChannel.md)
@@ -381,12 +384,12 @@ Class | Method | HTTP request | Description
  - [QubitSettings](docs/QubitSettings.md)
  - [QueuePolicyType](docs/QueuePolicyType.md)
  - [RackMeta](docs/RackMeta.md)
+ - [RdmLegacyScheduleIrInstructionParametersParameterSpec](docs/RdmLegacyScheduleIrInstructionParametersParameterSpec.md)
  - [ReadoutClassifier](docs/ReadoutClassifier.md)
  - [ReadoutSettings](docs/ReadoutSettings.md)
  - [RemoveGroupUserRequest](docs/RemoveGroupUserRequest.md)
  - [Reservation](docs/Reservation.md)
  - [RestartEndpointRequest](docs/RestartEndpointRequest.md)
- - [RigettiDomainModelModelsScheduleIrInstructionParametersParameterSpec](docs/RigettiDomainModelModelsScheduleIrInstructionParametersParameterSpec.md)
  - [ScheduledInstructionsInner](docs/ScheduledInstructionsInner.md)
  - [ScheduledProgram](docs/ScheduledProgram.md)
  - [SetDefaultEndpointRequest](docs/SetDefaultEndpointRequest.md)

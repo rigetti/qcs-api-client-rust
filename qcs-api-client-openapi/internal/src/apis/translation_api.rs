@@ -51,6 +51,15 @@ pub enum PutQpuSettingsError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`put_translation_settings`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PutTranslationSettingsError {
+    Status400(crate::models::Error),
+    Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`translate_native_quil_to_encrypted_binary`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -402,6 +411,101 @@ pub async fn put_qpu_settings(
                     configuration,
                     quantum_processor_id,
                     put_qpu_settings_request,
+                )
+                .await
+            }
+            _ => Err(err),
+        },
+    }
+}
+async fn put_translation_settings_inner(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+    put_translation_settings_request: crate::models::PutTranslationSettingsRequest,
+) -> Result<crate::models::PutTranslationSettingsResponse, Error<PutTranslationSettingsError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/quantumProcessors/{quantumProcessorId}/translationSettings",
+        local_var_configuration.qcs_config.api_url(),
+        quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making put_translation_settings request",
+            );
+        }
+    }
+
+    // Use QCS Bearer token
+    let token = configuration.qcs_config.get_bearer_access_token().await?;
+    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+
+    local_var_req_builder = local_var_req_builder.json(&put_translation_settings_request);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    let local_var_content = local_var_resp.text().await?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<PutTranslationSettingsError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Write the Quil-T calibration program and ControllerState for a quantum processor.
+pub async fn put_translation_settings(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+    put_translation_settings_request: crate::models::PutTranslationSettingsRequest,
+) -> Result<crate::models::PutTranslationSettingsResponse, Error<PutTranslationSettingsError>> {
+    match put_translation_settings_inner(
+        configuration,
+        quantum_processor_id.clone(),
+        put_translation_settings_request.clone(),
+    )
+    .await
+    {
+        Ok(result) => Ok(result),
+        Err(err) => match err.status_code() {
+            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
+                configuration.qcs_config.refresh().await?;
+                put_translation_settings_inner(
+                    configuration,
+                    quantum_processor_id,
+                    put_translation_settings_request,
                 )
                 .await
             }

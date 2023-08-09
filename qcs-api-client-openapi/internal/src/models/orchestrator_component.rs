@@ -33,6 +33,12 @@ pub struct OrchestratorComponent {
     /// The QCS service environment from which this stack will request data
     #[serde(rename = "environment", skip_serializing_if = "Option::is_none")]
     pub environment: Option<String>,
+    /// Environment variables to set for this component. To unset a variable which has been set by component defaults, set it to an empty string. Note that not all environment variables may be overridden. Examples of such variables are those set by Nomad to provide secret values to the task container.
+    #[serde(
+        rename = "environmentVariables",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub environment_variables: Option<serde_json::Value>,
     /// Which branch of the relevant repository to associate with this endpoint. May be used for automatic upgrades on updates to the git branch.
     #[serde(rename = "gitBranch", skip_serializing_if = "Option::is_none")]
     pub git_branch: Option<String>,
@@ -74,6 +80,7 @@ impl OrchestratorComponent {
             docker_tag: None,
             enable_sentry: None,
             environment: None,
+            environment_variables: None,
             git_branch: None,
             listen_ports: None,
             logging_provider: None,

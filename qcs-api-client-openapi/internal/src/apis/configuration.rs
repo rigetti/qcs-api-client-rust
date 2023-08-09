@@ -9,7 +9,7 @@
  */
 
 use reqwest;
-#[cfg(feature = "tracing-opentelemetry")]
+#[cfg(feature = "otel-tracing")]
 use {
     reqwest_middleware::ClientBuilder, reqwest_tracing::reqwest_otel_span,
     reqwest_tracing::TracingMiddleware, tracing,
@@ -17,9 +17,9 @@ use {
 
 #[derive(Debug, Clone)]
 pub struct Configuration {
-    #[cfg(not(feature = "tracing-opentelemetry"))]
+    #[cfg(not(feature = "otel-tracing"))]
     pub client: reqwest::Client,
-    #[cfg(feature = "tracing-opentelemetry")]
+    #[cfg(feature = "otel-tracing")]
     pub client: reqwest_middleware::ClientWithMiddleware,
     pub qcs_config: crate::common::ClientConfiguration,
 }
@@ -54,7 +54,7 @@ impl Configuration {
         client: reqwest::Client,
         qcs_config: crate::common::ClientConfiguration,
     ) -> Self {
-        #[cfg(feature = "tracing-opentelemetry")]
+        #[cfg(feature = "otel-tracing")]
         let client = {
             use reqwest_middleware::Extension;
 
@@ -75,10 +75,10 @@ impl Configuration {
     }
 }
 
-#[cfg(feature = "tracing-opentelemetry")]
+#[cfg(feature = "otel-tracing")]
 struct FilteredSpanBackend;
 
-#[cfg(feature = "tracing-opentelemetry")]
+#[cfg(feature = "otel-tracing")]
 impl FilteredSpanBackend {
     fn is_enabled(
         req: &reqwest::Request,
@@ -94,7 +94,7 @@ impl FilteredSpanBackend {
     }
 }
 
-#[cfg(feature = "tracing-opentelemetry")]
+#[cfg(feature = "otel-tracing")]
 impl reqwest_tracing::ReqwestOtelSpanBackend for FilteredSpanBackend {
     /// Checks the filter to verify whether an HTTP request should be traced and produces a span for the given
     /// request that conforms to OpenTelemetry semantic conventions if so. See
@@ -134,7 +134,7 @@ impl reqwest_tracing::ReqwestOtelSpanBackend for FilteredSpanBackend {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "tracing-opentelemetry")]
+    #[cfg(feature = "otel-tracing")]
     use rstest::rstest;
 
     /// https://docs.rs/reqwest_mock doesn't seem well maintained and requires setting the
@@ -144,7 +144,7 @@ mod tests {
     /// limited for here. See more info on UDS, see <https://github.com/seanmonstar/reqwest/issues/39>.
 
     /// Test that all requests are traced when no filter is specified.
-    #[cfg(feature = "tracing-opentelemetry")]
+    #[cfg(feature = "otel-tracing")]
     #[rstest]
     fn test_tracing_enabled_no_filter() {
         use crate::apis::configuration::FilteredSpanBackend;
@@ -160,7 +160,7 @@ mod tests {
     }
 
     /// Test that requests are traced according to filter patterns.
-    #[cfg(feature = "tracing-opentelemetry")]
+    #[cfg(feature = "otel-tracing")]
     #[rstest]
     #[case("https://api.qcs.rigetti.com/v1/path", true)]
     #[case("https://api.qcs.rigetti.com/v1/other", false)]

@@ -33,6 +33,12 @@ pub struct ControllerComponent {
     /// The QCS service environment from which this stack will request data
     #[serde(rename = "environment", skip_serializing_if = "Option::is_none")]
     pub environment: Option<String>,
+    /// Environment variables to set for this component. To unset a variable which has been set by component defaults, set it to an empty string. Note that not all environment variables may be overridden. Examples of such variables are those set by Nomad to provide secret values to the task container.
+    #[serde(
+        rename = "environmentVariables",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub environment_variables: Option<serde_json::Value>,
     /// Which fridge wiring architecture this Controller Service should implement
     #[serde(rename = "fridgeId", skip_serializing_if = "Option::is_none")]
     pub fridge_id: Option<String>,
@@ -60,6 +66,9 @@ pub struct ControllerComponent {
         skip_serializing_if = "Option::is_none"
     )]
     pub startup_configuration_source: Option<Box<crate::models::StartupConfigurationSource>>,
+    /// Which storage backend to configure. See Controller Service documentation for the available options.
+    #[serde(rename = "storageBackend", skip_serializing_if = "Option::is_none")]
+    pub storage_backend: Option<String>,
     /// Whether to pass through access to USB instruments with host VISA configuration
     #[serde(rename = "visaPassthrough", skip_serializing_if = "Option::is_none")]
     pub visa_passthrough: Option<bool>,
@@ -75,6 +84,7 @@ impl ControllerComponent {
             enable_sentry: None,
             enforce_tls: None,
             environment: None,
+            environment_variables: None,
             fridge_id: None,
             git_branch: None,
             kafka_event_producer_types: None,
@@ -82,6 +92,7 @@ impl ControllerComponent {
             memory_soft_limit: None,
             queue_policy_type: None,
             startup_configuration_source: None,
+            storage_backend: None,
             visa_passthrough: None,
         }
     }

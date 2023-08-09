@@ -21,7 +21,7 @@ pub struct ScheduledProgram {
     pub parameters: Option<
         ::std::collections::HashMap<
             String,
-            crate::models::RigettiDomainModelModelsScheduleIrInstructionParametersParameterSpec,
+            crate::models::RdmLegacyScheduleIrInstructionParametersParameterSpec,
         >,
     >,
     #[serde(

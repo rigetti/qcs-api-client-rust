@@ -461,6 +461,12 @@ pub use self::put_instruction_set_architecture_request::PutInstructionSetArchite
 pub mod put_qpu_settings_request;
 pub use self::put_qpu_settings_request::PutQpuSettingsRequest;
 #[allow(non_snake_case)]
+pub mod put_translation_settings_request;
+pub use self::put_translation_settings_request::PutTranslationSettingsRequest;
+#[allow(non_snake_case)]
+pub mod put_translation_settings_response;
+pub use self::put_translation_settings_response::PutTranslationSettingsResponse;
+#[allow(non_snake_case)]
 pub mod qdo_fast_flux_channel;
 pub use self::qdo_fast_flux_channel::QdoFastFluxChannel;
 #[allow(non_snake_case)]
@@ -527,6 +533,9 @@ pub use self::queue_policy_type::QueuePolicyType;
 pub mod rack_meta;
 pub use self::rack_meta::RackMeta;
 #[allow(non_snake_case)]
+pub mod rdm_legacy__schedule_ir__instruction_parameters__parameter_spec;
+pub use self::rdm_legacy__schedule_ir__instruction_parameters__parameter_spec::RdmLegacyScheduleIrInstructionParametersParameterSpec;
+#[allow(non_snake_case)]
 pub mod readout_classifier;
 pub use self::readout_classifier::ReadoutClassifier;
 #[allow(non_snake_case)]
@@ -541,9 +550,6 @@ pub use self::reservation::Reservation;
 #[allow(non_snake_case)]
 pub mod restart_endpoint_request;
 pub use self::restart_endpoint_request::RestartEndpointRequest;
-#[allow(non_snake_case)]
-pub mod rigetti_domain_model__models__schedule_ir__instruction_parameters__parameter_spec;
-pub use self::rigetti_domain_model__models__schedule_ir__instruction_parameters__parameter_spec::RigettiDomainModelModelsScheduleIrInstructionParametersParameterSpec;
 #[allow(non_snake_case)]
 pub mod scheduled_instructions_inner;
 pub use self::scheduled_instructions_inner::ScheduledInstructionsInner;

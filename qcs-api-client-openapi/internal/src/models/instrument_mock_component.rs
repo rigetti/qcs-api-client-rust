@@ -18,6 +18,12 @@ pub struct InstrumentMockComponent {
     /// Which docker tag to pull and start. [Example: v1.0.0]
     #[serde(rename = "dockerTag", skip_serializing_if = "Option::is_none")]
     pub docker_tag: Option<String>,
+    /// Environment variables to set for this component. To unset a variable which has been set by component defaults, set it to an empty string. Note that not all environment variables may be overridden. Examples of such variables are those set by Nomad to provide secret values to the task container.
+    #[serde(
+        rename = "environmentVariables",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub environment_variables: Option<serde_json::Value>,
     /// Which branch of the relevant repository to associate with this endpoint. May be used for automatic upgrades on updates to the git branch.
     #[serde(rename = "gitBranch", skip_serializing_if = "Option::is_none")]
     pub git_branch: Option<String>,
@@ -34,6 +40,7 @@ impl InstrumentMockComponent {
         InstrumentMockComponent {
             cpu_limit: None,
             docker_tag: None,
+            environment_variables: None,
             git_branch: None,
             memory_soft_limit: None,
             rack_config_url: None,
