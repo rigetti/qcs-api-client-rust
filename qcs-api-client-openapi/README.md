@@ -33,11 +33,6 @@ Authenticate requests using the `Authorization` header and a `Bearer` prefix:
 curl --header \"Authorization: Bearer eyJraW...Iow\"
 ```
 
-# Proxies
-Requests can be redirected through client-side proxies based on the presence of `HTTP_PROXY` (for http connections) and `HTTPS_PROXY` (for https connections) environment variables.
-
-Currently, the supported proxy schemes are `http`, `https`, and `socks5`.
-
 # Quantum Processor Access
 
 Access to the quantum processors themselves is not yet provided directly by this HTTP API, but

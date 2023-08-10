@@ -1,3 +1,9 @@
+## 0.7.2
+
+### Fixes
+
+- private type was changed from struct to tuple
+
 ## 0.7.1
 
 ### Features

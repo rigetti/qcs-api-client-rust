@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 package services.translation;
-option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/translation";
+option go_package = "gitlab.com/rigetti/share/service-model/golang/translation";
 import "controller/job.proto";
 import "translation/metadata.proto";
 

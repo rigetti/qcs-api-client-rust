@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 package models.controller;
-option go_package = "gitlab.com/rigetti/share/domain-model-specification/golang/controller";
+option go_package = "gitlab.com/rigetti/share/service-model/golang/controller";
 
 // Complex64 is a 64-bit complex value with float32 real and imaginary parts
 message Complex64 {
