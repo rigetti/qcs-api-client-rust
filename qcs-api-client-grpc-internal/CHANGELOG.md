@@ -1,3 +1,9 @@
+## 0.8.0
+
+### Breaking Changes
+
+- previous release will break builds
+
 ## 0.7.2
 
 ### Fixes
