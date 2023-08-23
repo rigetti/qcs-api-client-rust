@@ -4737,6 +4737,10 @@ components:
           description: Strategy used when deciding which jobs take priority and how to
             execute them (parallel vs. sequential).
           title: Queue policy
+        settingsPublicationTopic:
+          description: The Kafka topic that instrument settings changes are published to.
+          title: Settings Publication Topic
+          type: string
         startupConfigurationSource:
           allOf:
             - $ref: "#/components/schemas/StartupConfigurationSource"
