@@ -4545,6 +4545,8 @@ components:
           title: Environment
           type: string
         environmentVariables:
+          additionalProperties:
+            type: string
           description: Environment variables to set for this component. To unset a
             variable which has been set by component defaults, set it to an
             empty string. Note that not all environment variables may be
@@ -4671,6 +4673,8 @@ components:
           title: Environment
           type: string
         environmentVariables:
+          additionalProperties:
+            type: string
           description: Environment variables to set for this component. To unset a
             variable which has been set by component defaults, set it to an
             empty string. Note that not all environment variables may be
@@ -5378,6 +5382,8 @@ components:
           title: Docker Tag
           type: string
         environmentVariables:
+          additionalProperties:
+            type: string
           description: Environment variables to set for this component. To unset a
             variable which has been set by component defaults, set it to an
             empty string. Note that not all environment variables may be
@@ -6152,6 +6158,8 @@ components:
           title: Environment
           type: string
         environmentVariables:
+          additionalProperties:
+            type: string
           description: Environment variables to set for this component. To unset a
             variable which has been set by component defaults, set it to an
             empty string. Note that not all environment variables may be
