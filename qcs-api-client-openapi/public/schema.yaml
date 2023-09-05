@@ -2834,6 +2834,8 @@ components:
             share the same value.
           enum:
             - product
+          x-enum-varnames:
+            - productObject
           type: string
         unitLabel:
           description: A label that represents units of this product. When set, this will
