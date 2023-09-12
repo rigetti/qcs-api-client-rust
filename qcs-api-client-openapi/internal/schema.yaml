@@ -4639,8 +4639,8 @@ components:
           default: virtual
           description: Define the controller's relationship to hardware controls
         commandLineArgs:
-          description: Command line arguments to append to the default values in the
-            controller start command
+          description: NOT SUPPORTED. Command line arguments to append to the default
+            values in the controller start command
           items:
             type: string
           title: Command Line Arguments
