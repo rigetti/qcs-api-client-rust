@@ -5160,7 +5160,7 @@ components:
           title: Alternate Quantum Processor IDs
           type: array
         onDemand:
-          default: false
+          default: true
           title: Enable On Demand
           type: boolean
         onDemandProtectedUserIds:
