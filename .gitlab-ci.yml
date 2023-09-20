@@ -69,6 +69,7 @@ Release Dry Run:
     - !reference [.setup_git]
     - git_config_insteadof "${CI_PROJECT_PATH}" "${API_CLIENT_PUSH_TOKEN}"
     - git remote set-url origin "https://git:${API_CLIENT_PUSH_TOKEN}@gitlab.com/${CI_PROJECT_PATH}"
+    - echo "KNOPE_VERSION=$KNOPE_VERSION"
     - !reference [.install_protoc]
     - !reference [.install_knope]
   script:

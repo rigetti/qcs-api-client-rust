@@ -4,13 +4,72 @@ option go_package = "gitlab.com/rigetti/share/service-model/golang/controller";
 import "controller/readout.proto";
 import "controller/state.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+// Internal-only representation of the current phase in a job's lifecycle; this
+// is a superset of the public `GetControllerJobStatusResponse.Status` field.
+// Each phase is mapped to a public status by the `JobPhaseToJobStatus` function
+// in the `controller` service repo.
+// The mapping is as follows:
+// SUBMITTED, NEW_ENQUEUED, PREEMPTED, and RETRYING:
+//   -> QUEUED
+// LOADING, TRIGGERING, and RUNNING:
+//   -> RUNNING
+// SUCCEEDED:
+//   -> SUCCEEDED
+// FAILED, RETRY_COUNT_EXCEEDED:
+//   -> FAILED
+// CANCELED:
+//   -> CANCELED
+// (Note that since clients are not able to query the status of a job before it
+// has been queued, the mapping of `SUBMITTED` to `QUEUED` should not actually
+// have any effect.)
+enum JobPhase {
+    UNKNOWN = 0;
+
+    // SUBMITTED is the initial state of a job, prior to being enqueued.
+    SUBMITTED = 1;
+
+    // NEW_ENQUEUED indicates that the job has never been executed.
+    NEW_ENQUEUED = 2;
+
+    // LOADING is the hardware initialization stage.
+    LOADING = 3;
+
+    // TRIGGERING is the start of the actual execution.
+    TRIGGERING = 4;
+
+    // RUNNING is entered as soon as the job has been successfully triggered.
+    RUNNING = 5;
+
+    // FAILED indicates a failure that cannot be retried.
+    FAILED = 6;
+
+    // SUCCEEDED is the terminal state of a successful job.
+    SUCCEEDED = 7;
+
+    // PREEMPTED is a re-queued state; the job has been interrupted.
+    PREEMPTED = 8;
+
+    // CANCELED indicates that the job was canceled by the user.
+    CANCELED = 9;
+
+    // RETRYING is a re-queued state; the job had a transient failure.
+    RETRYING = 10;
+
+    // RETRY_COUNT_EXCEEDED indicates that the job had a retryable failure but has exceeded its retry count.
+    RETRY_COUNT_EXCEEDED = 11;
+}
 
 // A ControllerJob is the result of compiling and packaging a higher-level program 
 // to run on a quantum processor. It may be parametric, allowing it to be modified
 // just prior to execution using externally-supplied parameter values and other configuration.
 message ControllerJob {
 
-    // The settings to apply to and maintain on the controller throughout execution
+    // The settings to apply to and maintain on the controller throughout execution.
+    // During execution, null-valued settings may have any value and change over time.
+    // A missing key is equivalent to null values for all settings below that key.
+    // There is no way to require that settings specified by other jobs are held constant during execution.
     .models.controller.ControllerSettings settings = 1;
 
     // The processing pipeline to transform raw results prior to return to the
@@ -133,9 +192,12 @@ message MemoryRegion {
     uint32 length = 2;
 
     // The byte offset of the value within sequencer shared memory. This is used
-    // for both patching of memory prior to execution, and retrieval of the memory
+    // for both patching of memory prior to execution and retrieval of the memory
     // following execution.
-    uint32 memory_offset = 3;
+    //
+    // An empty value indicates that the memory region is not patched into sequencer
+    // shared memory.
+    optional uint32 memory_offset_bytes = 3;
 
     // How to pack the user-provided value to binary format
     .models.controller.MemoryFormat format = 4;
@@ -166,11 +228,15 @@ message MemoryRegion {
 // 3. The resulting value is patched into the memory region at `memory_offset_bytes`
 message MemorySubstitution {
 
-    // Where to insert the value, in bytes from the start of the memory region
-    uint32 memory_offset_bytes = 1;
+    // Where to insert the value, in bytes from the start of the sequencer's shared memory segment.
+    // If unset, this value is not patched into shared memory.
+    optional uint32 memory_offset_bytes = 1;
 
     // How to pack the value to binary format after computation
     .models.controller.MemoryFormat format = 2;
+
+    // Where to insert the computed value in executable memory
+    repeated .models.controller.ExecutableMemoryPatchTarget executable_memory_patch_targets = 3;
 
     // How to compute the value from the user-provided parameters
     oneof computation {
@@ -188,9 +254,36 @@ message MemoryFormat {
         // How many places or bits to shift the input value to the left (if big-endian)
         uint32 scale_bits = 2;
     }
+
+    // Format as a frequency value in Hz, per the format expected by the target sequencer.
+    message Frequency {
+
+        // If true, this frequency is an offset value from another frequency (a shift).
+        // If false, this frequency is an absolute value.
+        bool relative = 1;
+    }
     oneof format {
         .models.controller.MemoryFormat.FixedPoint fixed_point = 201;
+        .models.controller.MemoryFormat.Frequency frequency = 202;
     }
+}
+
+// Description for the site into which to patch a value into sequencer executable memory:
+//
+// * Start at the byte offset specified by `memory_offset_bytes` from the start of that sequencer's
+//   executable memory segment
+// * Mask the patch value to the `bit_width` least-significant bits
+// * Overwrite the `bit_shift..bit_shift+bit_width` bits with the value
+message ExecutableMemoryPatchTarget {
+
+    // The byte offset of the value from the start of the sequencer's executable memory segment.
+    uint32 memory_offset_bytes = 1;
+
+    // How many bits to shift the value to the left before patching.
+    uint32 bit_shift = 2;
+
+    // The bit width of the value.
+    uint32 bit_width = 3;
 }
 
 // The value of the data to insert into memory corresponding to a MemoryRegion.
@@ -276,6 +369,10 @@ message ControllerJobExecutionResult {
 
     // Duration (µs) job held exclusive access to control hardware.
     uint64 execution_duration_microseconds = 5;
+
+    // Internal data about the timing of specific phases in job execution (only included
+    // if the user requesting the job result has appropriate permissions)
+    repeated .models.controller.JobPhaseChange timing_data = 6;
     enum Status {
         UNKNOWN = 0;
         SUCCESS = 1;
@@ -286,9 +383,17 @@ message ControllerJobExecutionResult {
         // Failure state caused by user.
         USER_FAILURE = 3;
 
-        // Job was cancelled by user before execution completed.
+        // Job was canceled by user before execution completed.
         USER_CANCELLATION = 4;
     }
+}
+
+// Internal data with the time the job entered each phase during execution
+message JobPhaseChange {
+
+    // The instant when the job entered the new phase
+    .google.protobuf.Timestamp timestamp = 1;
+    .models.controller.JobPhase new_phase = 2;
 }
 
 // Information about the translation process, especially custom features, that may be useful for reporting,
