@@ -1,3 +1,9 @@
+## 0.8.1 (2023-09-20)
+
+### Features
+
+#### timing data fields
+
 ## 0.8.0
 
 ### Breaking Changes
