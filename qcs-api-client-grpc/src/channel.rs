@@ -620,7 +620,7 @@ fn make_grpc_request_span(
     let host = url.host().unwrap_or("");
     let host_port = url.port().map(|p| p.as_u16()).unwrap_or(0u16);
     tracing::span!(
-        tracing::Level::TRACE,
+        tracing::Level::INFO,
         GRPC_SPAN_NAME,
         rpc.system = "grpc",
         rpc.service = %service,
