@@ -7469,8 +7469,9 @@ components:
               type: boolean
             validateOther:
               default: true
-              description: When false, this will not validate maximum reservation duration or
-                past and maximum future start times.
+              description: When false, this will not validate maximum reservation duration, if
+                the reservation is in the past, or if the reservation end time
+                exceeds the configured maximum future end time.
               type: boolean
           type: object
           x-internal: true
