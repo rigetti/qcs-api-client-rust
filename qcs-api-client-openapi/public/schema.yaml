@@ -3140,6 +3140,10 @@ components:
           type: string
         cancelled:
           type: boolean
+        createdByAccountId:
+          $ref: "#/components/schemas/AccountId"
+        createdByAccountType:
+          $ref: "#/components/schemas/AccountType"
         createdTime:
           format: date-time
           type: string
