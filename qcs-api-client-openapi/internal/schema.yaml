@@ -6676,6 +6676,7 @@ components:
       description: Which queue policy to use when prioritizing queued jobs.
       enum:
         - reservation
+        - reservation-settings
         - resource
         - settings
         - fifo
@@ -6730,6 +6731,7 @@ components:
       enum:
         - deployedRack
         - blackpine
+        - treeline
       title: StartupConfigurationSource
       type: string
     TemplateName:
