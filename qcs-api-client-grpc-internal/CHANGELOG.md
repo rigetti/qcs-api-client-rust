@@ -1,3 +1,9 @@
+## 0.8.2 (2023-11-11)
+
+### Fixes
+
+#### trace grpc requests with level info
+
 ## 0.8.1 (2023-09-20)
 
 ### Features

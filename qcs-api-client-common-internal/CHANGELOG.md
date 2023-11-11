@@ -1,3 +1,9 @@
+## 0.6.3 (2023-11-11)
+
+### Fixes
+
+#### trace grpc requests with level info
+
 ## 0.6.2
 
 ### Fixes
