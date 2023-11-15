@@ -38,7 +38,7 @@ pub struct OrchestratorComponent {
         rename = "environmentVariables",
         skip_serializing_if = "Option::is_none"
     )]
-    pub environment_variables: Option<serde_json::Value>,
+    pub environment_variables: Option<::std::collections::HashMap<String, String>>,
     /// Which branch of the relevant repository to associate with this endpoint. May be used for automatic upgrades on updates to the git branch.
     #[serde(rename = "gitBranch", skip_serializing_if = "Option::is_none")]
     pub git_branch: Option<String>,

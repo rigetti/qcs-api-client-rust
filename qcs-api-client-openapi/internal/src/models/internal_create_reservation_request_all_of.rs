@@ -25,7 +25,7 @@ pub struct InternalCreateReservationRequestAllOf {
         skip_serializing_if = "Option::is_none"
     )]
     pub validate_availability: Option<bool>,
-    /// When false, this will not validate maximum reservation duration or past and maximum future start times.
+    /// When false, this will not validate maximum reservation duration, if the reservation is in the past, or if the reservation end time exceeds the configured maximum future end time.
     #[serde(rename = "validateOther", skip_serializing_if = "Option::is_none")]
     pub validate_other: Option<bool>,
 }

@@ -16,6 +16,8 @@ use serde::{Deserialize, Serialize};
 pub enum QueuePolicyType {
     #[serde(rename = "reservation")]
     Reservation,
+    #[serde(rename = "reservation-settings")]
+    ReservationSettings,
     #[serde(rename = "resource")]
     Resource,
     #[serde(rename = "settings")]
@@ -28,6 +30,7 @@ impl std::fmt::Display for QueuePolicyType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Reservation => write!(f, "reservation"),
+            Self::ReservationSettings => write!(f, "reservation-settings"),
             Self::Resource => write!(f, "resource"),
             Self::Settings => write!(f, "settings"),
             Self::Fifo => write!(f, "fifo"),

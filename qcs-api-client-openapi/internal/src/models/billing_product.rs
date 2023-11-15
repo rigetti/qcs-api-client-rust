@@ -46,11 +46,11 @@ impl BillingProduct {
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Object {
     #[serde(rename = "product")]
-    Product,
+    ProductObject,
 }
 
 impl Default for Object {
     fn default() -> Object {
-        Self::Product
+        Self::ProductObject
     }
 }

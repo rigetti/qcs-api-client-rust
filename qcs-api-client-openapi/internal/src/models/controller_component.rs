@@ -15,7 +15,7 @@ pub struct ControllerComponent {
     /// Define the controller's relationship to hardware controls
     #[serde(rename = "backend", skip_serializing_if = "Option::is_none")]
     pub backend: Option<Box<crate::models::ExecutionBackend>>,
-    /// Command line arguments to append to the default values in the controller start command
+    /// NOT SUPPORTED. Command line arguments to append to the default values in the controller start command
     #[serde(rename = "commandLineArgs", skip_serializing_if = "Option::is_none")]
     pub command_line_args: Option<Vec<String>>,
     /// CPU Allocation, in MHz, required by this component. Whether it is a hard or soft limit is specified by the component itself. By default, it is a soft limit, and components are allowed to burst above when there is unused capacity.
@@ -38,7 +38,7 @@ pub struct ControllerComponent {
         rename = "environmentVariables",
         skip_serializing_if = "Option::is_none"
     )]
-    pub environment_variables: Option<serde_json::Value>,
+    pub environment_variables: Option<::std::collections::HashMap<String, String>>,
     /// Which fridge wiring architecture this Controller Service should implement
     #[serde(rename = "fridgeId", skip_serializing_if = "Option::is_none")]
     pub fridge_id: Option<String>,
@@ -57,9 +57,27 @@ pub struct ControllerComponent {
     /// Memory allocation in MB required by this component.
     #[serde(rename = "memorySoftLimit", skip_serializing_if = "Option::is_none")]
     pub memory_soft_limit: Option<i64>,
+    /// When `True`, only the calculated delta between an instrument's current settings and the job's settings will be applied. Otherwise, the full set of the job's settings will be applied, even if the delta is empty.
+    #[serde(
+        rename = "onlyApplyTsunamiInstrumentChannelSettingsDelta",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub only_apply_tsunami_instrument_channel_settings_delta: Option<bool>,
+    /// A list of glob patterns that match protected settings for a given card type. Each pattern is a colon-separated pair of card type and setting name in the form '<card_type>:<setting_name>' where each can be a specific calue or a wildcard '*'. For example, qfd:attenuation would match the `attenuation` settings for qfd cards, or *:center_frequency would match the `center_frequency` settings for all cards.
+    #[serde(
+        rename = "protectedTsunamiInstrumentChannelSettings",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub protected_tsunami_instrument_channel_settings: Option<Vec<String>>,
     /// Strategy used when deciding which jobs take priority and how to execute them (parallel vs. sequential).
     #[serde(rename = "queuePolicyType", skip_serializing_if = "Option::is_none")]
     pub queue_policy_type: Option<Box<crate::models::QueuePolicyType>>,
+    /// The Kafka topic that instrument settings changes are published to.
+    #[serde(
+        rename = "settingsPublicationTopic",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub settings_publication_topic: Option<String>,
     /// Select the data source from which the endpoint's startup configuration should be retrieved
     #[serde(
         rename = "startupConfigurationSource",
@@ -69,6 +87,12 @@ pub struct ControllerComponent {
     /// Which storage backend to configure. See Controller Service documentation for the available options.
     #[serde(rename = "storageBackend", skip_serializing_if = "Option::is_none")]
     pub storage_backend: Option<String>,
+    /// When `False`, deactivates all tsunami settings management, overriding the feature's other related settings.
+    #[serde(
+        rename = "useTsunamiInstrumentChannelSettingsManagement",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub use_tsunami_instrument_channel_settings_management: Option<bool>,
     /// Whether to pass through access to USB instruments with host VISA configuration
     #[serde(rename = "visaPassthrough", skip_serializing_if = "Option::is_none")]
     pub visa_passthrough: Option<bool>,
@@ -90,9 +114,13 @@ impl ControllerComponent {
             kafka_event_producer_types: None,
             listen_ports: None,
             memory_soft_limit: None,
+            only_apply_tsunami_instrument_channel_settings_delta: None,
+            protected_tsunami_instrument_channel_settings: None,
             queue_policy_type: None,
+            settings_publication_topic: None,
             startup_configuration_source: None,
             storage_backend: None,
+            use_tsunami_instrument_channel_settings_management: None,
             visa_passthrough: None,
         }
     }

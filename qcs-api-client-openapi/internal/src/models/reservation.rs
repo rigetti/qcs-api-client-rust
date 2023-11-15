@@ -24,6 +24,14 @@ pub struct Reservation {
     pub cancellation_billing_invoice_item_id: Option<String>,
     #[serde(rename = "cancelled", skip_serializing_if = "Option::is_none")]
     pub cancelled: Option<bool>,
+    /// userId for `accountType` \"user\", group name for `accountType` \"group\".
+    #[serde(rename = "createdByAccountId", skip_serializing_if = "Option::is_none")]
+    pub created_by_account_id: Option<String>,
+    #[serde(
+        rename = "createdByAccountType",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub created_by_account_type: Option<crate::models::AccountType>,
     #[serde(rename = "createdTime")]
     pub created_time: String,
     #[serde(
@@ -67,6 +75,8 @@ impl Reservation {
             account_type,
             cancellation_billing_invoice_item_id: None,
             cancelled: None,
+            created_by_account_id: None,
+            created_by_account_type: None,
             created_time,
             creation_billing_invoice_item_id: None,
             end_time,
