@@ -1,3 +1,9 @@
+## 0.7.4 (2023-11-15)
+
+### Features
+
+#### regenerate client code with new queue policy type
+
 ## 0.7.3 (2023-11-11)
 
 ### Fixes
