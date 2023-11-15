@@ -1,3 +1,9 @@
+## 0.8.3 (2023-11-15)
+
+### Features
+
+#### regenerate client code with new queue policy type
+
 ## 0.8.2 (2023-11-11)
 
 ### Fixes
