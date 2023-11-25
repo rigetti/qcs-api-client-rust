@@ -1,3 +1,9 @@
+## 0.7.5 (2023-11-25)
+
+### Features
+
+#### Update gRPC schemas
+
 ## 0.7.4 (2023-11-15)
 
 ### Features

@@ -37,6 +37,20 @@ message BackendV1Options {
 
 // Options for translation backend V2
 message BackendV2Options {
+
+    // Whether to prepend the default calibrations for a particular QPU to the program.
+    // This may be set to false if you have prepended your own calibrations, or are submitting
+    // a pre-calibrated pulse-level program which does not need further expansion.
+    optional bool prepend_default_calibrations = 1;
+
+    // The number of seconds to stall at the beginning of each num-shots loop iteration in order to allow adiabatic reset.
+    optional double passive_reset_delay_seconds = 2;
+
+    // Whether to disable bounds checks on dynamic memory access. Only available to authorized users.
+    optional bool allow_unchecked_pointer_arithmetic = 4;
+
+    // Whether to skip program frame validation against Rigetti calibrations.
+    optional bool allow_frame_redefinition = 5;
 }
 message TranslateQuilToEncryptedControllerJobRequest {
     string quantum_processor_id = 1;

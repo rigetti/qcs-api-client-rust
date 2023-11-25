@@ -184,7 +184,7 @@ pub mod controller_job_execution_result {
         ServiceFailure = 2,
         /// Failure state caused by user.
         UserFailure = 3,
-        /// Job was cancelled by user before execution completed.
+        /// Job was canceled by user before execution completed.
         UserCancellation = 4,
     }
     impl Status {
