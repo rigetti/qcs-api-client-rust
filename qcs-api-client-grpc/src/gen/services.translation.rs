@@ -47,7 +47,22 @@ pub struct BackendV1Options {}
 /// Options for translation backend V2
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct BackendV2Options {}
+pub struct BackendV2Options {
+    /// Whether to prepend the default calibrations for a particular QPU to the program.
+    /// This may be set to false if you have prepended your own calibrations, or are submitting
+    /// a pre-calibrated pulse-level program which does not need further expansion.
+    #[prost(bool, optional, tag = "1")]
+    pub prepend_default_calibrations: ::core::option::Option<bool>,
+    /// The number of seconds to stall at the beginning of each num-shots loop iteration in order to allow adiabatic reset.
+    #[prost(double, optional, tag = "2")]
+    pub passive_reset_delay_seconds: ::core::option::Option<f64>,
+    /// Whether to disable bounds checks on dynamic memory access. Only available to authorized users.
+    #[prost(bool, optional, tag = "4")]
+    pub allow_unchecked_pointer_arithmetic: ::core::option::Option<bool>,
+    /// Whether to skip program frame validation against Rigetti calibrations.
+    #[prost(bool, optional, tag = "5")]
+    pub allow_frame_redefinition: ::core::option::Option<bool>,
+}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TranslateQuilToEncryptedControllerJobRequest {

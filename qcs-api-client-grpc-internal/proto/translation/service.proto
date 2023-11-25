@@ -41,6 +41,12 @@ message BackendV2Options {
     // What factor of the minimum theoretically required time to await the transfer of readout data to ensure that link bandwidth is not exceeded.
     // Higher values are less likely to cause flaky or hard-to-diagnose program failures. 2.0 is recommended for safety in most programs.
     optional double data_transfer_bandwidth_delay_factor = 3;
+
+    // Whether to disable bounds checks on dynamic memory access. Only available to authorized users.
+    optional bool allow_unchecked_pointer_arithmetic = 4;
+
+    // Whether to skip program frame validation against Rigetti calibrations.
+    optional bool allow_frame_redefinition = 5;
 }
 message TranslateQuilToSignedControllerJobRequest {
     string quantum_processor_id = 1;
