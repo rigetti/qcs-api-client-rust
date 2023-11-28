@@ -1,3 +1,7 @@
+# WARNING: ./scripts/commit-public-repo-update.sh overwrites this file before
+# pushing commits to the public github repo. `workspace.dependencies` should
+# be manually curated there to reflect the dependencies for the _public_ crates
+# only.
 [workspace]
 members = [
     "proxy-test",

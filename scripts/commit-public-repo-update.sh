@@ -60,6 +60,16 @@ members = [
     "qcs-api-client-grpc",
     "qcs-api-client-openapi",
 ]
+
+[workspace.dependencies]
+opentelemetry = "0.20.0"
+opentelemetry_api = "0.20.0"
+opentelemetry_sdk = "0.20.0"
+opentelemetry-http = "0.9.0"
+reqwest-middleware = "0.2.0"
+reqwest-tracing = { version = "0.4.6", features = ["opentelemetry_0_20"] }
+tracing-opentelemetry = "0.20.0"
+tracing-subscriber = "0.3.17"
 EOF
 
 # We use `ex` here because sed works differently between gnu/linux and macOS.
