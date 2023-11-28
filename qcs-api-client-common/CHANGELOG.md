@@ -1,3 +1,9 @@
+## 0.7.6 (2023-11-28)
+
+### Fixes
+
+#### workspace dependencies
+
 ## 0.7.5 (2023-11-25)
 
 ### Features
