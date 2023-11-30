@@ -516,6 +516,23 @@ paths:
       summary: Create Engagement
       tags:
         - engagements
+  /v1/healthcheck:
+    get:
+      description: Endpoint to return a status 200 for load balancer health checks
+      operationId: HealthCheck
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+          description: Unprocessable Entity
+      summary: Health Check
   /v1/instructionSetArchitectures:
     get:
       description: Retrieve all Instruction Set Architectures available to the user.
