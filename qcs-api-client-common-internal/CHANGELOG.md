@@ -1,3 +1,9 @@
+## 0.6.7 (2023-12-05)
+
+### Fixes
+
+#### trigger new release after ci fix
+
 ## 0.6.6 (2023-11-28)
 
 ### Fixes
