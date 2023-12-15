@@ -11,8 +11,10 @@
 use reqwest;
 #[cfg(feature = "otel-tracing")]
 use {
-    reqwest_middleware::ClientBuilder, reqwest_tracing::reqwest_otel_span,
-    reqwest_tracing::TracingMiddleware, tracing,
+    reqwest_middleware::ClientBuilder,
+    reqwest_tracing::reqwest_otel_span,
+    reqwest_tracing::{DisableOtelPropagation, TracingMiddleware},
+    tracing,
 };
 
 #[derive(Debug, Clone)]
@@ -60,6 +62,9 @@ impl Configuration {
 
             let mut client_builder = ClientBuilder::new(client);
             if let Some(tracing_configuration) = qcs_config.tracing_configuration() {
+                if !tracing_configuration.propagate_otel_context() {
+                    client_builder = client_builder.with_init(Extension(DisableOtelPropagation));
+                }
                 // if tracing configuration set, tracing is enabled.
                 if let Some(tracing_filter) = tracing_configuration.filter() {
                     // if a filter is set it, pass it to the middleware via Extension.
