@@ -1,6 +1,6 @@
 [package]
 name = "qcs-api-client-grpc"
-version = "0.7.7"
+version = "0.7.8"
 edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
@@ -13,7 +13,7 @@ description = "gRPC client for the QCS API"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.7.7" }
+qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.7.8" }
 http-body = "0.4.5"
 hyper = "0.14.23"
 hyper-proxy = { version = "0.9.1", default-features = false, features = [

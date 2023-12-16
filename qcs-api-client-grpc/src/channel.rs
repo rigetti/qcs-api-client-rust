@@ -569,11 +569,17 @@ where
         .map_err(Error::Refresh)?;
     let (mut req, mut retry_req) = clone_request(original_req).with_current_context().await;
 
-    // Poor semantics here, but adding custom gRPC metadata is equivalent to setting request
-    // headers: https://chromium.googlesource.com/external/github.com/grpc/grpc/+/HEAD/doc/PROTOCOL-HTTP2.md.
-    let propagator = TraceContextPropagator::new();
-    let mut injector = HeaderInjector(req.headers_mut());
-    propagator.inject_context(&opentelemetry::Context::current(), &mut injector);
+    if config
+        .tracing_configuration()
+        .map(|tracing_configuration| tracing_configuration.propagate_otel_context())
+        .unwrap_or(false)
+    {
+        // Poor semantics here, but adding custom gRPC metadata is equivalent to setting request
+        // headers: https://chromium.googlesource.com/external/github.com/grpc/grpc/+/HEAD/doc/PROTOCOL-HTTP2.md.
+        let propagator = TraceContextPropagator::new();
+        let mut injector = HeaderInjector(req.headers_mut());
+        propagator.inject_context(&opentelemetry::Context::current(), &mut injector);
+    }
 
     let resp = make_traced_request(&mut channel, req, token)
         .with_current_context()
@@ -665,8 +671,29 @@ mod tests {
     async fn test_tracing_enabled_no_filter() {
         use qcs_api_client_common::tracing_configuration::TracingConfiguration;
 
+        let tracing_configuration = TracingConfiguration::builder()
+            .set_propagate_otel_context(true)
+            .build();
         let client_config = ClientConfiguration::builder()
-            .set_tracing_configuration(Some(TracingConfiguration::default()))
+            .set_tracing_configuration(Some(tracing_configuration))
+            .set_tokens(Tokens {
+                bearer_access_token: Some(create_jwt()),
+                refresh_token: Some("refresh_token".to_string()),
+            })
+            .build()
+            .expect("failed to build client config");
+        assert_grpc_health_check_traced(client_config).await;
+    }
+
+    /// Test that when tracing is enabled, no filter is set, and OTel context propagation is
+    /// disabled, any request is properly traced without propagation.
+    #[tokio::test]
+    async fn test_tracing_enabled_no_filter_nor_otel_context_propagation() {
+        use qcs_api_client_common::tracing_configuration::TracingConfiguration;
+
+        let tracing_configuration = TracingConfiguration::default();
+        let client_config = ClientConfiguration::builder()
+            .set_tracing_configuration(Some(tracing_configuration))
             .set_tokens(Tokens {
                 bearer_access_token: Some(create_jwt()),
                 refresh_token: Some("refresh_token".to_string()),
@@ -689,6 +716,7 @@ mod tests {
 
         let tracing_configuration = TracingConfiguration::builder()
             .set_filter(Some(tracing_filter))
+            .set_propagate_otel_context(true)
             .build();
 
         let client_config = ClientConfiguration::builder()
@@ -707,16 +735,26 @@ mod tests {
     async fn assert_grpc_health_check_traced(client_configuration: ClientConfiguration) {
         use opentelemetry::trace::FutureExt;
 
+        let propagate_otel_context = client_configuration
+            .tracing_configuration()
+            .map(|tracing_configuration| tracing_configuration.propagate_otel_context())
+            .unwrap_or(false);
         let spans = tracing_test::start(
             "test_trace_id_propagation",
             |trace_id, _span_id| async move {
-                let interceptor = move |req| validate_trace_id_propagated(trace_id, req);
-                let health_server = HealthServer::with_interceptor(
-                    SleepyHealthService {
-                        sleep_time: Duration::from_millis(50),
-                    },
-                    interceptor,
-                );
+                let sleepy_health_service = SleepyHealthService {
+                    sleep_time: Duration::from_millis(50),
+                };
+
+                let interceptor = move |req| {
+                    if propagate_otel_context {
+                        validate_trace_id_propagated(trace_id, req)
+                    } else {
+                        validate_otel_context_not_propagated(req)
+                    }
+                };
+                let health_server =
+                    HealthServer::with_interceptor(sleepy_health_service, interceptor);
 
                 uds_grpc_stream::serve(health_server, |channel| {
                     async {
@@ -777,6 +815,7 @@ mod tests {
 
         let tracing_configuration = TracingConfiguration::builder()
             .set_filter(Some(tracing_filter))
+            .set_propagate_otel_context(true)
             .build();
 
         let client_config = ClientConfiguration::builder()
@@ -798,7 +837,7 @@ mod tests {
 
         let spans =
             tracing_test::start("test_tracing_disabled", |_trace_id, _span_id| async move {
-                let interceptor = validate_trace_parent_not_propagated;
+                let interceptor = validate_otel_context_not_propagated;
                 let health_server = HealthServer::with_interceptor(
                     SleepyHealthService {
                         sleep_time: Duration::from_millis(0),
@@ -863,8 +902,8 @@ mod tests {
     enum ServerAssertionError {
         #[error("trace id did not propagate to server: {0}")]
         UnexpectedTraceId(String),
-        #[error("traceparent unexpectedly propagated to server")]
-        UnexpectedTraceParent,
+        #[error("otel context headers unexpectedly sent to server")]
+        UnexpectedOTelContextHeaders,
     }
 
     impl From<ServerAssertionError> for tonic::Status {
@@ -920,13 +959,16 @@ mod tests {
             .map_err(Into::into)
     }
 
-    /// Simply validate that the `traceparent` metadata header is not present on the incoming gRPC.
-    fn validate_trace_parent_not_propagated(
+    /// Simply validate that the `traceparent` and `tracestate` metadata headers are not present
+    /// on the incoming gRPC.
+    fn validate_otel_context_not_propagated(
         req: tonic::Request<()>,
     ) -> Result<tonic::Request<()>, tonic::Status> {
-        match req.metadata().get("traceparent") {
-            Some(_) => Err(ServerAssertionError::UnexpectedTraceParent.into()),
-            None => Ok(req),
+        if req.metadata().get("traceparent").is_some() || req.metadata().get("tracestate").is_some()
+        {
+            Err(ServerAssertionError::UnexpectedOTelContextHeaders.into())
+        } else {
+            Ok(req)
         }
     }
 

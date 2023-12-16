@@ -63,6 +63,9 @@ use {std::env, thiserror::Error, urlpattern::UrlPattern};
 
 /// Environment variable for controlling whether any network API calls are traced.
 pub static QCS_API_TRACING_ENABLED: &str = "QCS_API_TRACING_ENABLED";
+/// Environment variable for controlling whether network API calls set Open Telemetry
+/// context propagation headers.
+pub static QCS_API_PROPAGATE_OTEL_CONTEXT: &str = "QCS_API_PROPAGATE_OTEL_CONTEXT";
 /// Environment variable for filtering which network API calls are traced.
 pub static QCS_API_TRACING_FILTER: &str = "QCS_API_TRACING_FILTER";
 /// Environment variable to turn the tracing filter into an exclusive filter.
@@ -91,12 +94,14 @@ pub enum TracingFilterError {
 #[derive(Debug, Default, Clone)]
 pub struct TracingConfigurationBuilder {
     filter: Option<TracingFilter>,
+    propagate_otel_context: bool,
 }
 
 impl From<TracingConfiguration> for TracingConfigurationBuilder {
     fn from(tracing_configuration: TracingConfiguration) -> Self {
         Self {
             filter: tracing_configuration.filter,
+            propagate_otel_context: tracing_configuration.propagate_otel_context,
         }
     }
 }
@@ -112,11 +117,20 @@ impl TracingConfigurationBuilder {
         self
     }
 
+    /// Sets `propagate_otel_context` which indicates whether Open Telelmetry context propagation
+    /// headers should be set on network API calls.
+    #[must_use]
+    pub fn set_propagate_otel_context(mut self, propagate_otel_context: bool) -> Self {
+        self.propagate_otel_context = propagate_otel_context;
+        self
+    }
+
     /// Build a [`TracingConfiguration`] based on this builder's values.
     #[must_use]
     pub fn build(self) -> TracingConfiguration {
         TracingConfiguration {
             filter: self.filter,
+            propagate_otel_context: self.propagate_otel_context,
         }
     }
 }
@@ -127,6 +141,8 @@ impl TracingConfigurationBuilder {
 pub struct TracingConfiguration {
     /// An optional [`TracingFilter`].
     filter: Option<TracingFilter>,
+    /// Whether or not API calls should set Open Telemetry context propagation headers.
+    propagate_otel_context: bool,
 }
 
 impl TracingConfiguration {
@@ -149,13 +165,24 @@ impl TracingConfiguration {
             return Ok(None);
         }
         let filter = TracingFilter::from_env()?;
-        Ok(Some(Self { filter }))
+        let propagate_otel_context = is_env_var_true(QCS_API_PROPAGATE_OTEL_CONTEXT);
+        Ok(Some(Self {
+            filter,
+            propagate_otel_context,
+        }))
     }
 
     /// Get the [`TracingFilter`], if any, for this configuration.
     #[must_use]
     pub fn filter(&self) -> Option<&TracingFilter> {
         self.filter.as_ref()
+    }
+
+    /// Indicates whether Open Telemetry context propagation headers should be set on
+    /// API calls.
+    #[must_use]
+    pub fn propagate_otel_context(&self) -> bool {
+        self.propagate_otel_context
     }
 
     /// Returns `true` if the specified URL should be traced. For details on how this is determined,
