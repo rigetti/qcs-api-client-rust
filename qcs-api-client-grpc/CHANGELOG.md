@@ -1,3 +1,9 @@
+## 0.7.8 (2023-12-16)
+
+### Fixes
+
+#### separate configuration of client network OTEL tracing from context propagation
+
 ## 0.7.7 (2023-12-05)
 
 ### Fixes
