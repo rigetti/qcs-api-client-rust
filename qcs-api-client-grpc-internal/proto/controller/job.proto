@@ -163,10 +163,28 @@ message JobMetadata {
     .google.protobuf.Duration duration = 1;
 
     // The quantum processor ID for which this job was compiled
+    //
+    // Note: this field is not required (i.e. the string may be empty), and is
+    // being deprecated in favor of `quantum_processor_ids` below. It will be
+    // marked `optional` in a future release, which will be a breaking change for
+    // some generated libraries (but not for the wire format).
+    //
+    // See the ConServ user guide for how this field is used:
+    // https://gitlab.com/rigetti/qcs/services/controller/-/blob/master/docs/user-guide.md
     string quantum_processor_id = 2;
 
     // Metadata about the translation process that may be useful for metric reporting or results post-processing.
     .models.controller.TranslationMetadata translation_metadata = 3;
+
+    // The quantum processor IDs for which this job was compiled
+    //
+    // Providing a single QPU ID in this list is equivalent to setting the
+    // `quantum_processor_id` field. If both this field and `quantum_processor_id`
+    // are set, `quantum_processor_id` will be ignored.
+    //
+    // This field is not required to run jobs. See the ConServ user guide for this field is used:
+    // https://gitlab.com/rigetti/qcs/services/controller/-/blob/master/docs/user-guide.md
+    repeated string quantum_processor_ids = 4;
 }
 
 // The JobSignature is used to assert integrity of a ControllerJob

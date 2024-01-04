@@ -44,10 +44,9 @@ message ExecutionOptions {
     // return a validation error to the client.
     .services.controller.ExecutionOptions.QCtrl q_ctrl = 1;
 
-    // If jobs contain settings that would cause protected settings to change values
-    // for any instrument, ControllerService will reject that job unless this field is set to true
-    // and the submitter has the appropriate authorization.
-    bool bypass_instrument_channel_settings_protection = 2;
+    // If jobs contain settings that would cause managed settings to change values,
+    // that job will be rejected unless this field is set to true and the submitter has the appropriate authorization.
+    bool bypass_settings_protection = 3;
     message QCtrl {
 
         // Mapping of (Quil memory address as string) to (readout stream)
@@ -56,7 +55,9 @@ message ExecutionOptions {
         // https://github.com/rigetti/pyquil/blob/33a5e2cae34332eca8dd66ed3470a709454a3966/pyquil/api/_qpu.py#L50
         map<string, string> readout_mappings = 1;
     }
-}
+
+    reserved 2;
+    reserved "bypass_instrument_channel_settings_protection";}
 message ExecuteControllerJobResponse {
 
     // One execution ID per input JobExecutionConfiguration, in the same order as the input.
