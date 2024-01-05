@@ -1,3 +1,9 @@
+## 0.8.9 (2024-01-05)
+
+### Features
+
+#### add ExecutionOptions
+
 ## 0.8.8 (2023-12-16)
 
 ### Fixes

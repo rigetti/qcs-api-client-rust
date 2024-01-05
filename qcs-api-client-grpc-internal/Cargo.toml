@@ -1,13 +1,13 @@
 [package]
 name = "qcs-api-client-grpc-internal"
-version = "0.8.7"
+version = "0.8.8"
 edition = "2021"
 publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.7.8" }
+qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.7.9" }
 http-body = "0.4.5"
 hyper = "0.14.23"
 hyper-proxy = { version = "0.9.1", default-features = false, features = [
