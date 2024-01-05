@@ -41,6 +41,8 @@ pub struct ExecuteControllerJobRequest {
     pub execution_configurations: ::prost::alloc::vec::Vec<
         super::super::models::controller::JobExecutionConfiguration,
     >,
+    #[prost(message, optional, tag = "4")]
+    pub options: ::core::option::Option<ExecutionOptions>,
     #[prost(oneof = "execute_controller_job_request::Job", tags = "201")]
     pub job: ::core::option::Option<execute_controller_job_request::Job>,
     /// Required by the gateway to forward requests to the correct execution host.
@@ -65,6 +67,15 @@ pub mod execute_controller_job_request {
         #[prost(string, tag = "102")]
         EndpointId(::prost::alloc::string::String),
     }
+}
+/// Options specified on execution requests describing any features or processes requested before or after job execution.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ExecutionOptions {
+    /// If jobs contain settings that would cause managed settings to change values,
+    /// that job will be rejected unless this field is set to true and the submitter has the appropriate authorization.
+    #[prost(bool, tag = "3")]
+    pub bypass_settings_protection: bool,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

@@ -36,6 +36,7 @@ message ExecuteControllerJobRequest {
     // The response will include one `job_execution_id` for each entry in this list,
     // each corresponding to its configuration in the same order.
     repeated .models.controller.JobExecutionConfiguration execution_configurations = 3;
+    .services.controller.ExecutionOptions options = 4;
     oneof job {
         .models.controller.EncryptedControllerJob encrypted = 201;
     }
@@ -45,6 +46,16 @@ message ExecuteControllerJobRequest {
         string quantum_processor_id = 101;
         string endpoint_id = 102;
     }
+}
+
+// Options specified on execution requests describing any features or processes requested before or after job execution.
+message ExecutionOptions {
+
+    // If jobs contain settings that would cause managed settings to change values,
+    // that job will be rejected unless this field is set to true and the submitter has the appropriate authorization.
+    bool bypass_settings_protection = 3;
+
+    reserved 2;
 }
 message ExecuteControllerJobResponse {
 

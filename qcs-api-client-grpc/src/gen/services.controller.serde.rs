@@ -369,6 +369,9 @@ impl serde::Serialize for ExecuteControllerJobRequest {
         if !self.execution_configurations.is_empty() {
             len += 1;
         }
+        if self.options.is_some() {
+            len += 1;
+        }
         if self.job.is_some() {
             len += 1;
         }
@@ -378,6 +381,9 @@ impl serde::Serialize for ExecuteControllerJobRequest {
         let mut struct_ser = serializer.serialize_struct("services.controller.ExecuteControllerJobRequest", len)?;
         if !self.execution_configurations.is_empty() {
             struct_ser.serialize_field("executionConfigurations", &self.execution_configurations)?;
+        }
+        if let Some(v) = self.options.as_ref() {
+            struct_ser.serialize_field("options", v)?;
         }
         if let Some(v) = self.job.as_ref() {
             match v {
@@ -408,6 +414,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
         const FIELDS: &[&str] = &[
             "execution_configurations",
             "executionConfigurations",
+            "options",
             "encrypted",
             "quantum_processor_id",
             "quantumProcessorId",
@@ -418,6 +425,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             ExecutionConfigurations,
+            Options,
             Encrypted,
             QuantumProcessorId,
             EndpointId,
@@ -443,6 +451,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                     {
                         match value {
                             "executionConfigurations" | "execution_configurations" => Ok(GeneratedField::ExecutionConfigurations),
+                            "options" => Ok(GeneratedField::Options),
                             "encrypted" => Ok(GeneratedField::Encrypted),
                             "quantumProcessorId" | "quantum_processor_id" => Ok(GeneratedField::QuantumProcessorId),
                             "endpointId" | "endpoint_id" => Ok(GeneratedField::EndpointId),
@@ -466,6 +475,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut execution_configurations__ = None;
+                let mut options__ = None;
                 let mut job__ = None;
                 let mut target__ = None;
                 while let Some(k) = map.next_key()? {
@@ -475,6 +485,12 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                                 return Err(serde::de::Error::duplicate_field("executionConfigurations"));
                             }
                             execution_configurations__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::Options => {
+                            if options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("options"));
+                            }
+                            options__ = map.next_value()?;
                         }
                         GeneratedField::Encrypted => {
                             if job__.is_some() {
@@ -499,6 +515,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                 }
                 Ok(ExecuteControllerJobRequest {
                     execution_configurations: execution_configurations__.unwrap_or_default(),
+                    options: options__,
                     job: job__,
                     target: target__,
                 })
@@ -597,6 +614,98 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobResponse {
             }
         }
         deserializer.deserialize_struct("services.controller.ExecuteControllerJobResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ExecutionOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.bypass_settings_protection {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("services.controller.ExecutionOptions", len)?;
+        if self.bypass_settings_protection {
+            struct_ser.serialize_field("bypassSettingsProtection", &self.bypass_settings_protection)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ExecutionOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "bypass_settings_protection",
+            "bypassSettingsProtection",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            BypassSettingsProtection,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "bypassSettingsProtection" | "bypass_settings_protection" => Ok(GeneratedField::BypassSettingsProtection),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ExecutionOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct services.controller.ExecutionOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ExecutionOptions, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut bypass_settings_protection__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::BypassSettingsProtection => {
+                            if bypass_settings_protection__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("bypassSettingsProtection"));
+                            }
+                            bypass_settings_protection__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(ExecutionOptions {
+                    bypass_settings_protection: bypass_settings_protection__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("services.controller.ExecutionOptions", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for GetControllerJobResultsRequest {
