@@ -106,7 +106,7 @@ pub fn get_endpoint_with_timeout(uri: Uri, timeout: Option<Duration>, connection
     if let Some(duration) = timeout {
         get_endpoint(uri)
             .timeout(duration)
-            .connect_timeout(connection_timeout.unwrap_or_default());
+            .connect_timeout(connection_timeout.unwrap_or_default())
     } else {
         get_endpoint(uri)
     }
