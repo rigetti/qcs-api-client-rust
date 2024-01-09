@@ -102,7 +102,11 @@ pub fn get_endpoint(uri: Uri) -> Endpoint {
 }
 
 /// Get an [`Endpoint`] for the given [`Uri`] and timeout.
-pub fn get_endpoint_with_timeout(uri: Uri, timeout: Option<Duration>, connection_timeout: Option<Duration>) -> Endpoint {
+pub fn get_endpoint_with_timeout(
+    uri: Uri,
+    timeout: Option<Duration>,
+    connection_timeout: Option<Duration>,
+) -> Endpoint {
     if let Some(duration) = timeout {
         get_endpoint(uri)
             .timeout(duration)
