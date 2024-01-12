@@ -4644,9 +4644,37 @@ components:
           $ref: "#/components/schemas/ControllerComponent"
         instrumentMock:
           $ref: "#/components/schemas/InstrumentMockComponent"
+        magsim:
+          $ref: "#/components/schemas/MagnetoSimulatorComponent"
         orchestrator:
           $ref: "#/components/schemas/OrchestratorComponent"
       title: ComponentOptions
+      type: object
+    ControllerAddress:
+      properties:
+        address:
+          anyOf:
+            - type: string
+            - $ref: "#/components/schemas/NomadDynamicPort"
+            - $ref: "#/components/schemas/NomadReservedPort"
+          title: Address
+        instrument_type:
+          $ref: "#/components/schemas/ControllerInstrumentType"
+      required:
+        - address
+        - instrument_type
+      title: ControllerAddress
+      type: object
+    ControllerAddresses:
+      properties:
+        instruments:
+          additionalProperties:
+            $ref: "#/components/schemas/ControllerAddress"
+          title: Instruments
+          type: object
+      required:
+        - instruments
+      title: ControllerAddresses
       type: object
     ControllerComponent:
       properties:
@@ -4762,6 +4790,12 @@ components:
           description: The Kafka topic that instrument settings changes are published to.
           title: Settings Publication Topic
           type: string
+        startupConfiguration:
+          allOf:
+            - $ref: "#/components/schemas/ControllerAddresses"
+          description: Configuration used by Controller on startup to connect to its
+            instruments.
+          title: Startup Configuration
         startupConfigurationSource:
           allOf:
             - $ref: "#/components/schemas/StartupConfigurationSource"
@@ -4788,6 +4822,14 @@ components:
           type: boolean
       title: Controller Component
       type: object
+    ControllerInstrumentType:
+      description: An enumeration.
+      enum:
+        - UNKNOWN_INSTRUMENT
+        - TSUNAMI
+        - YOKOGAWA_GS200
+      title: ControllerInstrumentType
+      type: string
     CreateEndpointParameters:
       description: A publicly available set of parameters for defining an endpoint.
       properties:
@@ -6043,6 +6085,69 @@ components:
         - destination
       title: MNIOConnection
       type: object
+    MagnetoInstrumentConfiguration:
+      properties:
+        port:
+          anyOf:
+            - type: integer
+            - $ref: "#/components/schemas/NomadDynamicPort"
+            - $ref: "#/components/schemas/NomadReservedPort"
+          title: Port
+      required:
+        - port
+      title: MagnetoInstrumentConfiguration
+      type: object
+    MagnetoSimulatorComponent:
+      properties:
+        cpuLimit:
+          description: CPU Allocation, in MHz, required by this component. Whether it is a
+            hard or soft limit is specified by the component itself. By default,
+            it is a soft limit, and components are allowed to burst above when
+            there is unused capacity.
+          title: CPU Limit
+          type: integer
+        dockerTag:
+          description: Which docker tag to pull and start. [Example v1.0.0].
+          title: Docker tag
+          type: string
+        environmentVariables:
+          additionalProperties:
+            type: string
+          description: Environment variables to set for this component. To unset a
+            variable which has been set by component defaults, set it to an
+            empty string. Note that not all environment variables may be
+            overridden. Examples of such variables are those set by Nomad to
+            provide secret values to the task container.
+          title: Environment Variables
+          type: object
+        gitBranch:
+          description: Which branch of the relevant repository to associate with this
+            endpoint. May be used for automatic upgrades on updates to the git
+            branch.
+          title: Git Branch
+          type: string
+        memorySoftLimit:
+          description: Memory allocation in MB required by this component.
+          title: Memory Soft Limit
+          type: integer
+        startupConfiguration:
+          allOf:
+            - $ref: "#/components/schemas/MagnetoStartupConfiguration"
+          description: Configuration used by Magneto simulator on startup.
+          title: Startup Configuration
+      title: Continuous Integration Component
+      type: object
+    MagnetoStartupConfiguration:
+      properties:
+        tsunamis:
+          additionalProperties:
+            $ref: "#/components/schemas/MagnetoInstrumentConfiguration"
+          title: Tsunamis
+          type: object
+      required:
+        - tsunamis
+      title: MagnetoStartupConfiguration
+      type: object
     Node:
       additionalProperties: false
       description: >-
@@ -6065,6 +6170,21 @@ components:
         - node_id
       title: Node
       type: object
+    NomadDynamicPort:
+      properties:
+        Label:
+          title: Label
+          type: string
+        To:
+          title: To
+          type: integer
+        Value:
+          title: Value
+          type: integer
+      required:
+        - Label
+      title: NomadDynamicPort
+      type: object
     NomadJobDatacenters:
       description: An enumeration.
       enum:
@@ -6073,6 +6193,19 @@ components:
         - oxford-instruments
       title: NomadJobDatacenters
       type: string
+    NomadReservedPort:
+      properties:
+        Label:
+          title: Label
+          type: string
+        Value:
+          title: Value
+          type: integer
+      required:
+        - Label
+        - Value
+      title: NomadReservedPort
+      type: object
     Operation:
       additionalProperties: false
       description: An operation, with its sites and site-independent characteristics.
@@ -6748,6 +6881,7 @@ components:
       enum:
         - deployedRack
         - blackpine
+        - explicit
         - treeline
       title: StartupConfigurationSource
       type: string
@@ -6759,6 +6893,7 @@ components:
         - production
         - integration
         - controllerMigration
+        - test.magneto-backed-controller.v1
       title: TemplateName
       type: string
     USICardSequencer:
