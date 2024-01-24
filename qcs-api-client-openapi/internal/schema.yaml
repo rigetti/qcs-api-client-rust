@@ -6136,7 +6136,7 @@ components:
             - $ref: "#/components/schemas/MagnetoStartupConfiguration"
           description: Configuration used by Magneto simulator on startup.
           title: Startup Configuration
-      title: Continuous Integration Component
+      title: Magneto Simulator Component
       type: object
     MagnetoStartupConfiguration:
       properties:
