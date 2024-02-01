@@ -1766,6 +1766,7 @@ dependencies = [
  "opentelemetry_sdk",
  "pbjson",
  "pbjson-build",
+ "pbjson-types",
  "prost",
  "prost-build",
  "qcs-api-client-common",

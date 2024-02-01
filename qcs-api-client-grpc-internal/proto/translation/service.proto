@@ -1,7 +1,9 @@
 syntax = "proto3";
 package services.translation;
 option go_package = "gitlab.com/rigetti/share/service-model/golang/translation";
+import "google/protobuf/timestamp.proto";
 import "controller/job.proto";
+import "controller/state.proto";
 import "translation/metadata.proto";
 
 // Options specified on RPCs that translate Quil to a ControllerJob. Intended to support custom pre-processing
@@ -88,6 +90,36 @@ message BatchTranslateQuilToEncryptedControllerJobRequest {
 message BatchTranslateQuilToEncryptedControllerJobResponse {
     repeated .services.translation.TranslateQuilToEncryptedControllerJobResponse responses = 1;
 }
+
+// Data required as inputs to the translation process.
+//
+// The calibration program and controller settings are grouped together in this
+// single request because they correspond to one another and are valid in a shared
+// context.
+message QuantumProcessorQuilTranslationConfiguration {
+
+    // The quantum processor described by these calibrations
+    string quantum_processor_id = 1;
+
+    // The Quil program containing the calibrations
+    string quil_calibration_program = 2;
+
+    // The controller settings to be attached to compiled jobs
+    .models.controller.ControllerSettings controller_settings = 3;
+
+    // The date and time at which the calibrations were last updated.
+    // If omitted from a request, the service may substitute a timestamp of its own.
+    .google.protobuf.Timestamp last_updated = 4;
+}
+message UpdateQuantumProcessorQuilTranslationConfigurationRequest {
+
+    // The program to store
+    .services.translation.QuantumProcessorQuilTranslationConfiguration quantum_processor_quil_translation_configuration = 1;
+
+    // Whether to allow updating settings which do not yet exist
+    // https://google.aip.dev/134#create-or-update
+    bool allow_missing = 2;
+}
 message HealthCheckRequest {
     string service = 1;
 }
@@ -115,6 +147,10 @@ service Translation {
     // Translate multiple programs to encrypted Controller jobs in a single request. As a batched request, this is an atomic operation. Failure to translate one program will result in a failed
     // RPC response.
     rpc BatchTranslateQuilToEncryptedControllerJob(.services.translation.BatchTranslateQuilToEncryptedControllerJobRequest) returns (.services.translation.BatchTranslateQuilToEncryptedControllerJobResponse) {
+    }
+
+    // Update the input translation configuration stored by the service.
+    rpc UpdateQuantumProcessorQuilCalibrationProgram(.services.translation.UpdateQuantumProcessorQuilTranslationConfigurationRequest) returns (.services.translation.QuantumProcessorQuilTranslationConfiguration) {
     }
 
     rpc Check(.services.translation.HealthCheckRequest) returns (.services.translation.HealthCheckResponse);
