@@ -90,6 +90,16 @@ message BatchTranslateQuilToEncryptedControllerJobRequest {
 message BatchTranslateQuilToEncryptedControllerJobResponse {
     repeated .services.translation.TranslateQuilToEncryptedControllerJobResponse responses = 1;
 }
+message QuantumProcessorQuilCalibrationProgram {
+
+    // The Quil program containing the requested calibrations
+    string quil_calibration_program = 1;
+}
+message GetQuantumProcessorQuilCalibrationProgramRequest {
+
+    // The quantum processor for which to retrieve the calibration program.
+    string quantum_processor_id = 1;
+}
 
 // Data required as inputs to the translation process.
 //
@@ -147,6 +157,10 @@ service Translation {
     // Translate multiple programs to encrypted Controller jobs in a single request. As a batched request, this is an atomic operation. Failure to translate one program will result in a failed
     // RPC response.
     rpc BatchTranslateQuilToEncryptedControllerJob(.services.translation.BatchTranslateQuilToEncryptedControllerJobRequest) returns (.services.translation.BatchTranslateQuilToEncryptedControllerJobResponse) {
+    }
+
+    // Get the current calibration program for the given quantum processor.
+    rpc GetQuantumProcessorQuilCalibrationProgram(.services.translation.GetQuantumProcessorQuilCalibrationProgramRequest) returns (.services.translation.QuantumProcessorQuilCalibrationProgram) {
     }
 
     // Update the input translation configuration stored by the service.
