@@ -232,6 +232,190 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
         deserializer.deserialize_struct("services.translation.BackendV2Options", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for GetQuantumProcessorQuilCalibrationProgramRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.quantum_processor_id.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("services.translation.GetQuantumProcessorQuilCalibrationProgramRequest", len)?;
+        if !self.quantum_processor_id.is_empty() {
+            struct_ser.serialize_field("quantumProcessorId", &self.quantum_processor_id)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for GetQuantumProcessorQuilCalibrationProgramRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "quantum_processor_id",
+            "quantumProcessorId",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            QuantumProcessorId,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "quantumProcessorId" | "quantum_processor_id" => Ok(GeneratedField::QuantumProcessorId),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = GetQuantumProcessorQuilCalibrationProgramRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct services.translation.GetQuantumProcessorQuilCalibrationProgramRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<GetQuantumProcessorQuilCalibrationProgramRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut quantum_processor_id__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::QuantumProcessorId => {
+                            if quantum_processor_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("quantumProcessorId"));
+                            }
+                            quantum_processor_id__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(GetQuantumProcessorQuilCalibrationProgramRequest {
+                    quantum_processor_id: quantum_processor_id__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("services.translation.GetQuantumProcessorQuilCalibrationProgramRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for QuantumProcessorQuilCalibrationProgram {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.quil_calibration_program.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("services.translation.QuantumProcessorQuilCalibrationProgram", len)?;
+        if !self.quil_calibration_program.is_empty() {
+            struct_ser.serialize_field("quilCalibrationProgram", &self.quil_calibration_program)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for QuantumProcessorQuilCalibrationProgram {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "quil_calibration_program",
+            "quilCalibrationProgram",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            QuilCalibrationProgram,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "quilCalibrationProgram" | "quil_calibration_program" => Ok(GeneratedField::QuilCalibrationProgram),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = QuantumProcessorQuilCalibrationProgram;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct services.translation.QuantumProcessorQuilCalibrationProgram")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<QuantumProcessorQuilCalibrationProgram, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut quil_calibration_program__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::QuilCalibrationProgram => {
+                            if quil_calibration_program__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("quilCalibrationProgram"));
+                            }
+                            quil_calibration_program__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(QuantumProcessorQuilCalibrationProgram {
+                    quil_calibration_program: quil_calibration_program__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("services.translation.QuantumProcessorQuilCalibrationProgram", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for TranslateQuilToEncryptedControllerJobRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>

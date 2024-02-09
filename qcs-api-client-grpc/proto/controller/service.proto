@@ -16,6 +16,7 @@ syntax = "proto3";
 package services.controller;
 option go_package = "gitlab.com/rigetti/share/service-model/golang/controller";
 import "controller/job.proto";
+import "google/protobuf/duration.proto";
 
 // A request to execute multiple ControllerJobs as if they were sent as separate requests.
 // Note that the job execution IDs will be returned in the same order as the requests,
@@ -54,6 +55,16 @@ message ExecutionOptions {
     // If jobs contain settings that would cause managed settings to change values,
     // that job will be rejected unless this field is set to true and the submitter has the appropriate authorization.
     bool bypass_settings_protection = 3;
+
+    // The timeout while running a job; the job will be evicted from the hardware
+    // once this time has elapsed.
+    //
+    // If unset, the job's estimated duration will be used;
+    // if the job does not have an estimated duration, the default
+    // timeout is selected by the service.
+    //
+    // The service may also enforce a maximum value for this field.
+    optional .google.protobuf.Duration timeout = 4;
 
     reserved 2;
 }

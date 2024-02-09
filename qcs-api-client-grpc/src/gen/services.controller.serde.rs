@@ -627,9 +627,15 @@ impl serde::Serialize for ExecutionOptions {
         if self.bypass_settings_protection {
             len += 1;
         }
+        if self.timeout.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("services.controller.ExecutionOptions", len)?;
         if self.bypass_settings_protection {
             struct_ser.serialize_field("bypassSettingsProtection", &self.bypass_settings_protection)?;
+        }
+        if let Some(v) = self.timeout.as_ref() {
+            struct_ser.serialize_field("timeout", v)?;
         }
         struct_ser.end()
     }
@@ -643,11 +649,13 @@ impl<'de> serde::Deserialize<'de> for ExecutionOptions {
         const FIELDS: &[&str] = &[
             "bypass_settings_protection",
             "bypassSettingsProtection",
+            "timeout",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             BypassSettingsProtection,
+            Timeout,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -670,6 +678,7 @@ impl<'de> serde::Deserialize<'de> for ExecutionOptions {
                     {
                         match value {
                             "bypassSettingsProtection" | "bypass_settings_protection" => Ok(GeneratedField::BypassSettingsProtection),
+                            "timeout" => Ok(GeneratedField::Timeout),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -690,6 +699,7 @@ impl<'de> serde::Deserialize<'de> for ExecutionOptions {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut bypass_settings_protection__ = None;
+                let mut timeout__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::BypassSettingsProtection => {
@@ -698,10 +708,17 @@ impl<'de> serde::Deserialize<'de> for ExecutionOptions {
                             }
                             bypass_settings_protection__ = Some(map.next_value()?);
                         }
+                        GeneratedField::Timeout => {
+                            if timeout__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("timeout"));
+                            }
+                            timeout__ = map.next_value()?;
+                        }
                     }
                 }
                 Ok(ExecutionOptions {
                     bypass_settings_protection: bypass_settings_protection__.unwrap_or_default(),
+                    timeout: timeout__,
                 })
             }
         }

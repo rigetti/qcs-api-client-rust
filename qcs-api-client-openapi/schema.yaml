@@ -202,8 +202,9 @@ paths:
           description: Critical services are healthy.
   /v1/:
     get:
+      deprecated: true
       description: Endpoint to return a status 200 for load balancer health checks
-      operationId: HealthCheck
+      operationId: HealthCheckDeprecated
       responses:
         "200":
           content:

@@ -1,3 +1,11 @@
+## 0.7.10 (2024-02-09)
+
+### Features
+
+#### update protobuf schemas to include timeout field in ExecutionOptions
+
+#### Add GetQuantumProcessorQuilCalibrationProgram
+
 ## 0.7.9 (2024-01-05)
 
 ### Features

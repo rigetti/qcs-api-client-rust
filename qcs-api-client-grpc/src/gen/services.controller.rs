@@ -76,6 +76,16 @@ pub struct ExecutionOptions {
     /// that job will be rejected unless this field is set to true and the submitter has the appropriate authorization.
     #[prost(bool, tag = "3")]
     pub bypass_settings_protection: bool,
+    /// The timeout while running a job; the job will be evicted from the hardware
+    /// once this time has elapsed.
+    ///
+    /// If unset, the job's estimated duration will be used;
+    /// if the job does not have an estimated duration, the default
+    /// timeout is selected by the service.
+    ///
+    /// The service may also enforce a maximum value for this field.
+    #[prost(message, optional, tag = "4")]
+    pub timeout: ::core::option::Option<::pbjson_types::Duration>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

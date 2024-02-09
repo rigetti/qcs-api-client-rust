@@ -66,9 +66,23 @@ message TranslateQuilToEncryptedControllerJobResponse {
     .models.controller.EncryptedControllerJob job = 1;
     .models.translation.QuilTranslationMetadata metadata = 2;
 }
+message QuantumProcessorQuilCalibrationProgram {
+
+    // The Quil program containing the requested calibrations
+    string quil_calibration_program = 1;
+}
+message GetQuantumProcessorQuilCalibrationProgramRequest {
+
+    // The quantum processor for which to retrieve the calibration program.
+    string quantum_processor_id = 1;
+}
 
 service Translation {
 
     rpc TranslateQuilToEncryptedControllerJob(.services.translation.TranslateQuilToEncryptedControllerJobRequest) returns (.services.translation.TranslateQuilToEncryptedControllerJobResponse) {
+    }
+
+    // Get the current calibration program for the given quantum processor.
+    rpc GetQuantumProcessorQuilCalibrationProgram(.services.translation.GetQuantumProcessorQuilCalibrationProgramRequest) returns (.services.translation.QuantumProcessorQuilCalibrationProgram) {
     }
 }
