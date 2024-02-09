@@ -1749,7 +1749,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc"
-version = "0.7.9"
+version = "0.7.10"
 dependencies = [
  "async-std",
  "futures-util",
@@ -1790,7 +1790,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc-internal"
-version = "0.8.8"
+version = "0.8.9"
 dependencies = [
  "async-std",
  "futures-util",
