@@ -1,3 +1,9 @@
+## 0.8.10 (2024-02-12)
+
+### Fixes
+
+#### Release schema updates
+
 ## 0.8.9 (2024-01-05)
 
 ### Features
