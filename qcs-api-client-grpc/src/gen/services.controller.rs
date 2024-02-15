@@ -137,6 +137,21 @@ pub struct GetControllerJobResultsResponse {
 pub struct CancelControllerJobsRequest {
     #[prost(string, repeated, tag = "1")]
     pub job_ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    /// Required by ConServ gateway to forward requests to the correct rackhost.
+    #[prost(oneof = "cancel_controller_jobs_request::Target", tags = "101, 102")]
+    pub target: ::core::option::Option<cancel_controller_jobs_request::Target>,
+}
+/// Nested message and enum types in `CancelControllerJobsRequest`.
+pub mod cancel_controller_jobs_request {
+    /// Required by ConServ gateway to forward requests to the correct rackhost.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum Target {
+        #[prost(string, tag = "101")]
+        QuantumProcessorId(::prost::alloc::string::String),
+        #[prost(string, tag = "102")]
+        EndpointId(::prost::alloc::string::String),
+    }
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

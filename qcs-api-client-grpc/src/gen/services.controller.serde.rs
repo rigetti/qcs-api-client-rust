@@ -206,9 +206,22 @@ impl serde::Serialize for CancelControllerJobsRequest {
         if !self.job_ids.is_empty() {
             len += 1;
         }
+        if self.target.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("services.controller.CancelControllerJobsRequest", len)?;
         if !self.job_ids.is_empty() {
             struct_ser.serialize_field("jobIds", &self.job_ids)?;
+        }
+        if let Some(v) = self.target.as_ref() {
+            match v {
+                cancel_controller_jobs_request::Target::QuantumProcessorId(v) => {
+                    struct_ser.serialize_field("quantumProcessorId", v)?;
+                }
+                cancel_controller_jobs_request::Target::EndpointId(v) => {
+                    struct_ser.serialize_field("endpointId", v)?;
+                }
+            }
         }
         struct_ser.end()
     }
@@ -222,11 +235,17 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsRequest {
         const FIELDS: &[&str] = &[
             "job_ids",
             "jobIds",
+            "quantum_processor_id",
+            "quantumProcessorId",
+            "endpoint_id",
+            "endpointId",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             JobIds,
+            QuantumProcessorId,
+            EndpointId,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -249,6 +268,8 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsRequest {
                     {
                         match value {
                             "jobIds" | "job_ids" => Ok(GeneratedField::JobIds),
+                            "quantumProcessorId" | "quantum_processor_id" => Ok(GeneratedField::QuantumProcessorId),
+                            "endpointId" | "endpoint_id" => Ok(GeneratedField::EndpointId),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -269,6 +290,7 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsRequest {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut job_ids__ = None;
+                let mut target__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::JobIds => {
@@ -277,10 +299,23 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsRequest {
                             }
                             job_ids__ = Some(map.next_value()?);
                         }
+                        GeneratedField::QuantumProcessorId => {
+                            if target__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("quantumProcessorId"));
+                            }
+                            target__ = map.next_value::<::std::option::Option<_>>()?.map(cancel_controller_jobs_request::Target::QuantumProcessorId);
+                        }
+                        GeneratedField::EndpointId => {
+                            if target__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("endpointId"));
+                            }
+                            target__ = map.next_value::<::std::option::Option<_>>()?.map(cancel_controller_jobs_request::Target::EndpointId);
+                        }
                     }
                 }
                 Ok(CancelControllerJobsRequest {
                     job_ids: job_ids__.unwrap_or_default(),
+                    target: target__,
                 })
             }
         }
