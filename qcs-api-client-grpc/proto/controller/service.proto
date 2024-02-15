@@ -98,6 +98,12 @@ message GetControllerJobResultsResponse {
 // completed on a best-effort basis.
 message CancelControllerJobsRequest {
     repeated string job_ids = 1;
+    oneof target {
+        // Required by ConServ gateway to forward requests to the correct rackhost.
+
+        string quantum_processor_id = 101;
+        string endpoint_id = 102;
+    }
 }
 message CancelControllerJobsResponse {
 }
