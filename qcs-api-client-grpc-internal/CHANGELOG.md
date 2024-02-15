@@ -1,3 +1,9 @@
+## 0.8.10 (2024-02-15)
+
+### Fixes
+
+#### Add target to CancelControllerJobsRequest
+
 ## 0.8.9 (2024-02-09)
 
 ### Features
