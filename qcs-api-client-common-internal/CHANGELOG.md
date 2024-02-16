@@ -1,3 +1,9 @@
+## 0.6.10 (2024-02-16)
+
+### Features
+
+#### add automatic retry logic to clients
+
 ## 0.6.9 (2024-01-05)
 
 ### Features
