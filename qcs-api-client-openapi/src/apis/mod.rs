@@ -20,6 +20,7 @@ pub struct ResponseContent<T> {
     pub status: reqwest::StatusCode,
     pub content: String,
     pub entity: Option<T>,
+    pub retry_delay: Option<std::time::Duration>,
 }
 
 #[derive(Debug)]
