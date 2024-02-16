@@ -6,6 +6,10 @@ use super::{Error, configuration};
 use reqwest::StatusCode;
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
+use ::qcs_api_client_common::backoff::{
+    duration_from_response,
+    ExponentialBackoff,
+};
 
 {{#operations}}
 {{#operation}}
@@ -76,7 +80,8 @@ pub enum {{{operationIdCamelCase}}}Error {
 {{#operations}}
 {{#operation}}
 {{#vendorExtensions.x-group-parameters}}
-{{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}_inner(configuration: &configuration::Configuration{{#allParams}}{{#-first}}, params: {{{operationIdCamelCase}}}Params{{/-first}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
+{{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}_inner(configuration: &configuration::Configuration,
+backoff: &mut ExponentialBackoff{{#allParams}}{{#-first}}, params: {{{operationIdCamelCase}}}Params{{/-first}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
     let local_var_configuration = configuration;
 
     // unbox the parameters
@@ -86,7 +91,8 @@ pub enum {{{operationIdCamelCase}}}Error {
 
 {{/vendorExtensions.x-group-parameters}}
 {{^vendorExtensions.x-group-parameters}}
-{{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}_inner(configuration: &configuration::Configuration, {{#allParams}}{{#lambda.snakecase}}{{{paramName}}}{{/lambda.snakecase}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}{{#isPathParam}}crate::models::{{/isPathParam}}{{#isBodyParam}}crate::models::{{/isBodyParam}}{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
+{{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}_inner(configuration: &configuration::Configuration,
+backoff: &mut ExponentialBackoff, {{#allParams}}{{#lambda.snakecase}}{{{paramName}}}{{/lambda.snakecase}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}{{#isPathParam}}crate::models::{{/isPathParam}}{{#isBodyParam}}crate::models::{{/isBodyParam}}{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
     let local_var_configuration = configuration;
 {{/vendorExtensions.x-group-parameters}}
 
@@ -296,25 +302,32 @@ pub enum {{{operationIdCamelCase}}}Error {
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         {{^supportMultipleResponses}}
         {{^returnType}}
         Ok(())
         {{/returnType}}
         {{#returnType}}
+        let local_var_content = local_var_resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
         {{/returnType}}
         {{/supportMultipleResponses}}
         {{#supportMultipleResponses}}
+        let local_var_content = local_var_resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
         let local_var_entity: Option<{{{operationIdCamelCase}}}Success> = serde_json::from_str(&local_var_content).ok();
         let local_var_result = ResponseContent { status: local_var_status, content: local_var_content, entity: local_var_entity };
         Ok(local_var_result)
         {{/supportMultipleResponses}}
     } else {
+        let local_var_retry_delay = duration_from_response(
+            local_var_resp.status(),
+            local_var_resp.headers(),
+            backoff,
+        );
+        let local_var_content = local_var_resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
         let local_var_entity: Option<{{{operationIdCamelCase}}}Error> = serde_json::from_str(&local_var_content).ok();
-        let local_var_error = ResponseContent { status: local_var_status, content: local_var_content, entity: local_var_entity };
+        let local_var_error = ResponseContent { status: local_var_status, content: local_var_content, entity:
+        local_var_entity, retry_delay: local_var_retry_delay };
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -327,26 +340,35 @@ pub enum {{{operationIdCamelCase}}}Error {
 {{/notes}}
 {{#vendorExtensions.x-group-parameters}}
 pub {{#supportAsync}}async {{/supportAsync}}fn {{#lambda.snakecase}}{{{operationId}}}{{/lambda.snakecase}}(configuration: &configuration::Configuration{{#allParams}}{{#-first}}, params: {{{operationIdCamelCase}}}Params{{/-first}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
-    match {{{operationId}}}_inner(configuration{{#allParams}}{{#-first}}, params.clone(){{/-first}}{{/allParams}}, true){{#supportAsync}}.await{{/supportAsync}} {
 {{/vendorExtensions.x-group-parameters}}
 {{^vendorExtensions.x-group-parameters}}
 pub {{#supportAsync}}async {{/supportAsync}}fn {{#lambda.snakecase}}{{{operationId}}}{{/lambda.snakecase}}(configuration: &configuration::Configuration, {{#allParams}}{{#lambda.snakecase}}{{{paramName}}}{{/lambda.snakecase}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}{{#isPathParam}}crate::models::{{/isPathParam}}{{#isBodyParam}}crate::models::{{/isBodyParam}}{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}, Error<{{{operationIdCamelCase}}}Error>> {
-    match {{#lambda.snakecase}}{{{operationId}}}_inner{{/lambda.snakecase}}(configuration, {{#allParams}}{{#lambda.snakecase}}{{{paramName}}}{{/lambda.snakecase}}.clone(), {{/allParams}}){{#supportAsync}}.await{{/supportAsync}} {
 {{/vendorExtensions.x-group-parameters}}
-        Ok(result) => Ok(result),
-        Err(err) => {
-            match err.status_code() {
-                Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        {{#vendorExtensions.x-group-parameters}}
+        let result = {{#lambda.snakecase}}{{{operationId}}}_inner{{/lambda.snakecase}}(configuration, &mut backoff{{#allParams}}{{#-first}},params.clone(){{/-first}}{{/allParams}}){{#supportAsync}}.await{{/supportAsync}};
+        {{/vendorExtensions.x-group-parameters}}
+        {{^vendorExtensions.x-group-parameters}}
+        let result = {{#lambda.snakecase}}{{{operationId}}}_inner{{/lambda.snakecase}}(configuration, &mut backoff, {{#allParams}}{{#lambda.snakecase}}{{{paramName}}}{{/lambda.snakecase}}.clone(),{{/allParams}}){{#supportAsync}}.await{{/supportAsync}};
+        {{/vendorExtensions.x-group-parameters}}
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials && matches!(response.status, StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) {
                     configuration.qcs_config.refresh().await?;
-                    {{#vendorExtensions.x-group-parameters}}
-                    {{#lambda.snakecase}}{{{operationId}}}_inner{{/lambda.snakecase}}(configuration{{#allParams}}{{#-first}}, params{{/-first}}{{/allParams}}){{#supportAsync}}.await{{/supportAsync}}
-                    {{/vendorExtensions.x-group-parameters}}
-                    {{^vendorExtensions.x-group-parameters}}
-                    {{#lambda.snakecase}}{{{operationId}}}_inner{{/lambda.snakecase}}(configuration{{#allParams}}, {{#lambda.snakecase}}{{{paramName}}}{{/lambda.snakecase}}{{/allParams}}){{#supportAsync}}.await{{/supportAsync}}
-                    {{/vendorExtensions.x-group-parameters}}
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay { 
+                    tokio::time::sleep(duration).await;
+                    continue;
                 }
-                _ => Err(err),
-            }
+
+                return Err(Error::ResponseError(response));
+            },
+            Err(error) => return Err(error),
         }
     }
 }

@@ -1,5 +1,6 @@
 {{>partial_header}}
 
+use qcs_api_client_common::backoff;
 use reqwest;
 #[cfg(feature = "otel-tracing")]
 use {
@@ -14,6 +15,7 @@ pub struct Configuration {
     #[cfg(feature = "otel-tracing")]
     pub client: reqwest_middleware::ClientWithMiddleware,
     pub qcs_config: crate::common::ClientConfiguration,
+    pub backoff: backoff::ExponentialBackoff,
 }
 
 pub type BasicAuth = (String, Option<String>);
@@ -60,7 +62,7 @@ impl Configuration {
             client_builder.build()
         };
 
-        Self { qcs_config, client }
+        Self { qcs_config, client, backoff: backoff::default_backoff() }
     }
 }
 

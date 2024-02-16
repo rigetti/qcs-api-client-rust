@@ -24,6 +24,7 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
+use ::qcs_api_client_common::backoff::{duration_from_response, ExponentialBackoff};
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
@@ -65,6 +66,7 @@ pub enum ListQuantumProcessorsError {
 
 async fn get_instruction_set_architecture_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
 ) -> Result<crate::models::InstructionSetArchitecture, Error<GetInstructionSetArchitectureError>> {
     let local_var_configuration = configuration;
@@ -111,17 +113,20 @@ async fn get_instruction_set_architecture_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<GetInstructionSetArchitectureError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -132,20 +137,42 @@ pub async fn get_instruction_set_architecture(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
 ) -> Result<crate::models::InstructionSetArchitecture, Error<GetInstructionSetArchitectureError>> {
-    match get_instruction_set_architecture_inner(configuration, quantum_processor_id.clone()).await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                get_instruction_set_architecture_inner(configuration, quantum_processor_id).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = get_instruction_set_architecture_inner(
+            configuration,
+            &mut backoff,
+            quantum_processor_id.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn get_quantum_processor_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
 ) -> Result<crate::models::QuantumProcessor, Error<GetQuantumProcessorError>> {
     let local_var_configuration = configuration;
@@ -192,17 +219,20 @@ async fn get_quantum_processor_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<GetQuantumProcessorError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -213,19 +243,39 @@ pub async fn get_quantum_processor(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
 ) -> Result<crate::models::QuantumProcessor, Error<GetQuantumProcessorError>> {
-    match get_quantum_processor_inner(configuration, quantum_processor_id.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                get_quantum_processor_inner(configuration, quantum_processor_id).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result =
+            get_quantum_processor_inner(configuration, &mut backoff, quantum_processor_id.clone())
+                .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn list_quantum_processor_accessors_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
     page_size: Option<i64>,
     page_token: Option<&str>,
@@ -286,17 +336,20 @@ async fn list_quantum_processor_accessors_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<ListQuantumProcessorAccessorsError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -312,32 +365,44 @@ pub async fn list_quantum_processor_accessors(
     crate::models::ListQuantumProcessorAccessorsResponse,
     Error<ListQuantumProcessorAccessorsError>,
 > {
-    match list_quantum_processor_accessors_inner(
-        configuration,
-        quantum_processor_id.clone(),
-        page_size.clone(),
-        page_token.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                list_quantum_processor_accessors_inner(
-                    configuration,
-                    quantum_processor_id,
-                    page_size,
-                    page_token,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = list_quantum_processor_accessors_inner(
+            configuration,
+            &mut backoff,
+            quantum_processor_id.clone(),
+            page_size.clone(),
+            page_token.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn list_quantum_processors_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListQuantumProcessorsResponse, Error<ListQuantumProcessorsError>> {
@@ -393,17 +458,20 @@ async fn list_quantum_processors_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<ListQuantumProcessorsError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -415,15 +483,37 @@ pub async fn list_quantum_processors(
     page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListQuantumProcessorsResponse, Error<ListQuantumProcessorsError>> {
-    match list_quantum_processors_inner(configuration, page_size.clone(), page_token.clone()).await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                list_quantum_processors_inner(configuration, page_size, page_token).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = list_quantum_processors_inner(
+            configuration,
+            &mut backoff,
+            page_size.clone(),
+            page_token.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }

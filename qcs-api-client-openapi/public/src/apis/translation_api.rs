@@ -24,6 +24,7 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
+use ::qcs_api_client_common::backoff::{duration_from_response, ExponentialBackoff};
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
@@ -50,6 +51,7 @@ pub enum TranslateNativeQuilToEncryptedBinaryError {
 
 async fn get_quilt_calibrations_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
 ) -> Result<crate::models::GetQuiltCalibrationsResponse, Error<GetQuiltCalibrationsError>> {
     let local_var_configuration = configuration;
@@ -96,17 +98,20 @@ async fn get_quilt_calibrations_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<GetQuiltCalibrationsError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -117,19 +122,39 @@ pub async fn get_quilt_calibrations(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
 ) -> Result<crate::models::GetQuiltCalibrationsResponse, Error<GetQuiltCalibrationsError>> {
-    match get_quilt_calibrations_inner(configuration, quantum_processor_id.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                get_quilt_calibrations_inner(configuration, quantum_processor_id).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result =
+            get_quilt_calibrations_inner(configuration, &mut backoff, quantum_processor_id.clone())
+                .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn translate_native_quil_to_encrypted_binary_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
     translate_native_quil_to_encrypted_binary_request: crate::models::TranslateNativeQuilToEncryptedBinaryRequest,
 ) -> Result<
@@ -183,17 +208,20 @@ async fn translate_native_quil_to_encrypted_binary_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<TranslateNativeQuilToEncryptedBinaryError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -208,25 +236,37 @@ pub async fn translate_native_quil_to_encrypted_binary(
     crate::models::TranslateNativeQuilToEncryptedBinaryResponse,
     Error<TranslateNativeQuilToEncryptedBinaryError>,
 > {
-    match translate_native_quil_to_encrypted_binary_inner(
-        configuration,
-        quantum_processor_id.clone(),
-        translate_native_quil_to_encrypted_binary_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                translate_native_quil_to_encrypted_binary_inner(
-                    configuration,
-                    quantum_processor_id,
-                    translate_native_quil_to_encrypted_binary_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = translate_native_quil_to_encrypted_binary_inner(
+            configuration,
+            &mut backoff,
+            quantum_processor_id.clone(),
+            translate_native_quil_to_encrypted_binary_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }

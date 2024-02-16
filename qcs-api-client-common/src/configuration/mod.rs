@@ -244,7 +244,7 @@ impl ClientConfiguration {
         Self::new(settings, secrets, profile_name)
     }
 
-    fn validated_bearer_access_token(lock: &mut MutexGuard<Tokens>) -> Option<String> {
+    fn validated_bearer_access_token(lock: &MutexGuard<Tokens>) -> Option<String> {
         #[allow(clippy::option_if_let_else)]
         lock.bearer_access_token.as_ref().and_then(|token| {
             let dummy_key = DecodingKey::from_secret(&[]);
@@ -266,7 +266,7 @@ impl ClientConfiguration {
     pub async fn get_bearer_access_token(&self) -> Result<String, RefreshError> {
         let mut lock = self.tokens.lock().await;
         // clippy warns about possible deadlock without this `let`
-        let validation = Self::validated_bearer_access_token(&mut lock);
+        let validation = Self::validated_bearer_access_token(&lock);
         match validation {
             Some(token) => Ok(token),
             None => self.internal_refresh(&mut lock).await,

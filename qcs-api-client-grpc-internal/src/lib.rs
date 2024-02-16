@@ -1,8 +1,38 @@
 pub mod channel {
+    //! Utilities for creating and working with [`Channel`]s.
+    //!
     //! This module contains helper code for wrapping a [`Channel`] so that QCS credentials are
     //! automatically used and refreshed as necessary.
     //!
     //! Most users will want to use [`get_channel`], [`get_wrapped_channel`], or [`wrap_channel`].
+    //!
+    //! # Generics
+    //!
+    //! The functions for wrapping channels use generics `C: GrpcService<BoxBody>` to accept not only
+    //! bare [`Channel`]s but also channels wrapped in middleware like [`RefreshService`] or
+    //! [`RetryService`]
+    //!
+    //! # Example
+    //!
+    //! To create a channel that automatically retries on certain errors and refreshes QCS credentials
+    //! when authentication fails:
+    //!
+    //! ```no_run
+    //! # #[tokio::main]
+    //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    //! use qcs_api_client_grpc_internal::channel::parse_uri;
+    //! use qcs_api_client_grpc_internal::channel::get_channel;
+    //! use qcs_api_client_grpc_internal::channel::wrap_channel;
+    //! use qcs_api_client_grpc_internal::channel::wrap_channel_with_retry;
+    //!
+    //! let uri = parse_uri("https://api.qcs.rigetti.com")?;
+    //! let channel = get_channel(uri)?;
+    //! let with_creds = wrap_channel(channel).await?;
+    //! let with_creds_and_retry = wrap_channel_with_retry(with_creds);
+    //! // Use with_creds_and_retry as a gRPC client
+    //! # Ok(())
+    //! # }
+    //! ```
     include!("../../qcs-api-client-grpc/src/channel.rs");
 }
 pub use channel::{get_channel, wrap_channel, wrap_channel_with_token_refresher};

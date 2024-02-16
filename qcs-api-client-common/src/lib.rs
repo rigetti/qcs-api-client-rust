@@ -49,7 +49,6 @@ overflowing_literals,
 path_statements,
 patterns_in_fns_without_body,
 pointer_structural_match,
-private_in_public,
 semicolon_in_expressions_from_macros,
 trivial_casts,
 trivial_numeric_casts,
@@ -68,6 +67,7 @@ variant_size_differences,
 while_true
 )]
 
+pub mod backoff;
 pub mod configuration;
 pub use configuration::ClientConfiguration;
 #[cfg(feature = "tracing-config")]

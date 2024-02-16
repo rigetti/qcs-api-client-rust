@@ -10,6 +10,7 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
+use ::qcs_api_client_common::backoff::{duration_from_response, ExponentialBackoff};
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
@@ -103,6 +104,7 @@ pub enum InternalUpdateLegacyQuantumProcessorError {
 
 async fn internal_delete_legacy_deployed_rack_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
 ) -> Result<serde_json::Value, Error<InternalDeleteLegacyDeployedRackError>> {
     let local_var_configuration = configuration;
@@ -149,17 +151,20 @@ async fn internal_delete_legacy_deployed_rack_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalDeleteLegacyDeployedRackError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -170,22 +175,42 @@ pub async fn internal_delete_legacy_deployed_rack(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
 ) -> Result<serde_json::Value, Error<InternalDeleteLegacyDeployedRackError>> {
-    match internal_delete_legacy_deployed_rack_inner(configuration, quantum_processor_id.clone())
-        .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_delete_legacy_deployed_rack_inner(configuration, quantum_processor_id)
-                    .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_delete_legacy_deployed_rack_inner(
+            configuration,
+            &mut backoff,
+            quantum_processor_id.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_delete_legacy_quantum_processor_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
 ) -> Result<serde_json::Value, Error<InternalDeleteLegacyQuantumProcessorError>> {
     let local_var_configuration = configuration;
@@ -232,17 +257,20 @@ async fn internal_delete_legacy_quantum_processor_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalDeleteLegacyQuantumProcessorError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -253,25 +281,42 @@ pub async fn internal_delete_legacy_quantum_processor(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
 ) -> Result<serde_json::Value, Error<InternalDeleteLegacyQuantumProcessorError>> {
-    match internal_delete_legacy_quantum_processor_inner(
-        configuration,
-        quantum_processor_id.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_delete_legacy_quantum_processor_inner(configuration, quantum_processor_id)
-                    .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_delete_legacy_quantum_processor_inner(
+            configuration,
+            &mut backoff,
+            quantum_processor_id.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_get_legacy_deployed_rack_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
     mock: Option<bool>,
 ) -> Result<crate::models::DeployedRack, Error<InternalGetLegacyDeployedRackError>> {
@@ -324,17 +369,20 @@ async fn internal_get_legacy_deployed_rack_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalGetLegacyDeployedRackError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -346,26 +394,43 @@ pub async fn internal_get_legacy_deployed_rack(
     quantum_processor_id: &str,
     mock: Option<bool>,
 ) -> Result<crate::models::DeployedRack, Error<InternalGetLegacyDeployedRackError>> {
-    match internal_get_legacy_deployed_rack_inner(
-        configuration,
-        quantum_processor_id.clone(),
-        mock.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_get_legacy_deployed_rack_inner(configuration, quantum_processor_id, mock)
-                    .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_get_legacy_deployed_rack_inner(
+            configuration,
+            &mut backoff,
+            quantum_processor_id.clone(),
+            mock.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_get_legacy_lattice_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
     mask_specifications_to_isa: Option<bool>,
 ) -> Result<crate::models::LegacyLattice, Error<InternalGetLegacyLatticeError>> {
@@ -418,17 +483,20 @@ async fn internal_get_legacy_lattice_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalGetLegacyLatticeError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -440,30 +508,43 @@ pub async fn internal_get_legacy_lattice(
     quantum_processor_id: &str,
     mask_specifications_to_isa: Option<bool>,
 ) -> Result<crate::models::LegacyLattice, Error<InternalGetLegacyLatticeError>> {
-    match internal_get_legacy_lattice_inner(
-        configuration,
-        quantum_processor_id.clone(),
-        mask_specifications_to_isa.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_get_legacy_lattice_inner(
-                    configuration,
-                    quantum_processor_id,
-                    mask_specifications_to_isa,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_get_legacy_lattice_inner(
+            configuration,
+            &mut backoff,
+            quantum_processor_id.clone(),
+            mask_specifications_to_isa.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_get_legacy_quantum_processor_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
     mask_specifications_to_isa: Option<bool>,
 ) -> Result<crate::models::LegacyQuantumProcessor, Error<InternalGetLegacyQuantumProcessorError>> {
@@ -516,17 +597,20 @@ async fn internal_get_legacy_quantum_processor_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalGetLegacyQuantumProcessorError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -538,30 +622,43 @@ pub async fn internal_get_legacy_quantum_processor(
     quantum_processor_id: &str,
     mask_specifications_to_isa: Option<bool>,
 ) -> Result<crate::models::LegacyQuantumProcessor, Error<InternalGetLegacyQuantumProcessorError>> {
-    match internal_get_legacy_quantum_processor_inner(
-        configuration,
-        quantum_processor_id.clone(),
-        mask_specifications_to_isa.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_get_legacy_quantum_processor_inner(
-                    configuration,
-                    quantum_processor_id,
-                    mask_specifications_to_isa,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_get_legacy_quantum_processor_inner(
+            configuration,
+            &mut backoff,
+            quantum_processor_id.clone(),
+            mask_specifications_to_isa.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_list_legacy_lattices_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     mask_specifications_to_isa: Option<bool>,
     page_size: Option<i64>,
     page_token: Option<&str>,
@@ -623,17 +720,20 @@ async fn internal_list_legacy_lattices_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalListLegacyLatticesError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -647,32 +747,44 @@ pub async fn internal_list_legacy_lattices(
     page_token: Option<&str>,
 ) -> Result<crate::models::InternalListLegacyLatticesResponse, Error<InternalListLegacyLatticesError>>
 {
-    match internal_list_legacy_lattices_inner(
-        configuration,
-        mask_specifications_to_isa.clone(),
-        page_size.clone(),
-        page_token.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_list_legacy_lattices_inner(
-                    configuration,
-                    mask_specifications_to_isa,
-                    page_size,
-                    page_token,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_list_legacy_lattices_inner(
+            configuration,
+            &mut backoff,
+            mask_specifications_to_isa.clone(),
+            page_size.clone(),
+            page_token.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_list_legacy_quantum_processors_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     mask_specifications_to_isa: Option<bool>,
     page_size: Option<i64>,
     page_token: Option<&str>,
@@ -736,17 +848,20 @@ async fn internal_list_legacy_quantum_processors_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalListLegacyQuantumProcessorsError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -762,32 +877,44 @@ pub async fn internal_list_legacy_quantum_processors(
     crate::models::InternalListLegacyQuantumProcessorsResponse,
     Error<InternalListLegacyQuantumProcessorsError>,
 > {
-    match internal_list_legacy_quantum_processors_inner(
-        configuration,
-        mask_specifications_to_isa.clone(),
-        page_size.clone(),
-        page_token.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_list_legacy_quantum_processors_inner(
-                    configuration,
-                    mask_specifications_to_isa,
-                    page_size,
-                    page_token,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_list_legacy_quantum_processors_inner(
+            configuration,
+            &mut backoff,
+            mask_specifications_to_isa.clone(),
+            page_size.clone(),
+            page_token.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_put_legacy_deployed_rack_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
     internal_put_legacy_deployed_rack_request: crate::models::InternalPutLegacyDeployedRackRequest,
 ) -> Result<crate::models::DeployedRack, Error<InternalPutLegacyDeployedRackError>> {
@@ -837,17 +964,20 @@ async fn internal_put_legacy_deployed_rack_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalPutLegacyDeployedRackError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -859,30 +989,43 @@ pub async fn internal_put_legacy_deployed_rack(
     quantum_processor_id: &str,
     internal_put_legacy_deployed_rack_request: crate::models::InternalPutLegacyDeployedRackRequest,
 ) -> Result<crate::models::DeployedRack, Error<InternalPutLegacyDeployedRackError>> {
-    match internal_put_legacy_deployed_rack_inner(
-        configuration,
-        quantum_processor_id.clone(),
-        internal_put_legacy_deployed_rack_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_put_legacy_deployed_rack_inner(
-                    configuration,
-                    quantum_processor_id,
-                    internal_put_legacy_deployed_rack_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_put_legacy_deployed_rack_inner(
+            configuration,
+            &mut backoff,
+            quantum_processor_id.clone(),
+            internal_put_legacy_deployed_rack_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_put_legacy_quantum_processor_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
     internal_put_legacy_quantum_processor_request: crate::models::InternalPutLegacyQuantumProcessorRequest,
     architecture_family: Option<crate::models::Family>,
@@ -939,17 +1082,20 @@ async fn internal_put_legacy_quantum_processor_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalPutLegacyQuantumProcessorError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -962,32 +1108,44 @@ pub async fn internal_put_legacy_quantum_processor(
     internal_put_legacy_quantum_processor_request: crate::models::InternalPutLegacyQuantumProcessorRequest,
     architecture_family: Option<crate::models::Family>,
 ) -> Result<crate::models::LegacyQuantumProcessor, Error<InternalPutLegacyQuantumProcessorError>> {
-    match internal_put_legacy_quantum_processor_inner(
-        configuration,
-        quantum_processor_id.clone(),
-        internal_put_legacy_quantum_processor_request.clone(),
-        architecture_family.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_put_legacy_quantum_processor_inner(
-                    configuration,
-                    quantum_processor_id,
-                    internal_put_legacy_quantum_processor_request,
-                    architecture_family,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_put_legacy_quantum_processor_inner(
+            configuration,
+            &mut backoff,
+            quantum_processor_id.clone(),
+            internal_put_legacy_quantum_processor_request.clone(),
+            architecture_family.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_update_legacy_quantum_processor_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
     internal_update_legacy_quantum_processor_request: crate::models::InternalUpdateLegacyQuantumProcessorRequest,
 ) -> Result<crate::models::LegacyQuantumProcessor, Error<InternalUpdateLegacyQuantumProcessorError>>
@@ -1039,17 +1197,20 @@ async fn internal_update_legacy_quantum_processor_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalUpdateLegacyQuantumProcessorError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -1062,25 +1223,37 @@ pub async fn internal_update_legacy_quantum_processor(
     internal_update_legacy_quantum_processor_request: crate::models::InternalUpdateLegacyQuantumProcessorRequest,
 ) -> Result<crate::models::LegacyQuantumProcessor, Error<InternalUpdateLegacyQuantumProcessorError>>
 {
-    match internal_update_legacy_quantum_processor_inner(
-        configuration,
-        quantum_processor_id.clone(),
-        internal_update_legacy_quantum_processor_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_update_legacy_quantum_processor_inner(
-                    configuration,
-                    quantum_processor_id,
-                    internal_update_legacy_quantum_processor_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_update_legacy_quantum_processor_inner(
+            configuration,
+            &mut backoff,
+            quantum_processor_id.clone(),
+            internal_update_legacy_quantum_processor_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }

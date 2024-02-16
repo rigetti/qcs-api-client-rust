@@ -20,11 +20,13 @@
 {{! Both of these lints are allowed for the same reason: it's easier to have unnecessary }}
 {{! clones than it is to determine whether a clone is necessary. }}
 {{! clone_double_ref triggers when cloning a reference to a reference, which returns a reference. }}
-#![allow(clippy::clone_double_ref)]
+#![allow(suspicious_double_ref_op)]
 {{! clone_on_copy triggers when cloning a type that is Copy -- that is, does not need cloning }}
 #![allow(clippy::clone_on_copy)]
 {{! Functions have as many arguments as the associated request has parameters }}
 #![allow(clippy::too_many_arguments)]
+{{! Some items that are Copy are cloned because not all items are Copy }}
+#![allow(noop_method_call)]
 
 {{#hyper}}
 pub use hyper;

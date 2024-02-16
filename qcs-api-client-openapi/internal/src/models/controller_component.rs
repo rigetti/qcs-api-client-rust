@@ -78,6 +78,11 @@ pub struct ControllerComponent {
         skip_serializing_if = "Option::is_none"
     )]
     pub settings_publication_topic: Option<String>,
+    #[serde(
+        rename = "startupConfiguration",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub startup_configuration: Option<Box<crate::models::StartupConfiguration>>,
     /// Select the data source from which the endpoint's startup configuration should be retrieved
     #[serde(
         rename = "startupConfigurationSource",
@@ -118,6 +123,7 @@ impl ControllerComponent {
             protected_tsunami_instrument_channel_settings: None,
             queue_policy_type: None,
             settings_publication_topic: None,
+            startup_configuration: None,
             startup_configuration_source: None,
             storage_backend: None,
             use_tsunami_instrument_channel_settings_management: None,

@@ -10,11 +10,11 @@ qcs-api-client-grpc = { path = "../qcs-api-client-grpc" }
 qcs-api-client-grpc-internal = { path = "../qcs-api-client-grpc-internal" }
 qcs-api-client-openapi = { path = "../qcs-api-client-openapi/public" }
 qcs-api-client-openapi-internal = { path = "../qcs-api-client-openapi/internal" }
-rstest = "0.17.0"
-serial_test = "2.0.0"
+rstest = "0.18.0"
+serial_test = "3.0.0"
 # WARNING: This is licensed under GPL-3.0 and should not be part of any non-testing code
-socks5-server = "0.8.3"
-tokio = { version = "1.20.1" }
+socks5-server = "0.10.0"
+tokio = { version = "1.36.0" }
 
 [[test]]
 name = "test_proxy"

@@ -17,8 +17,12 @@ use http_body::Full;
 use hyper::client::HttpConnector;
 use hyper_proxy::{Intercept, Proxy, ProxyConnector};
 use hyper_socks2::{Auth, SocksConnector};
+use qcs_api_client_common::backoff::{
+    backoff::Backoff, default_backoff, duration_from_response as duration_from_http_response,
+    ExponentialBackoff,
+};
 use qcs_api_client_common::configuration::TokenRefresher;
-use std::future::Future;
+use std::future::{poll_fn, Future};
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use std::time::Duration;
@@ -258,56 +262,79 @@ pub async fn get_wrapped_channel(
     wrap_channel(get_channel(uri)?).await
 }
 
-/// Set up the given [`Channel`] with QCS authentication.
+/// Set up the given `channel` with QCS authentication.
 #[must_use]
-pub fn wrap_channel_with(
-    channel: Channel,
+pub fn wrap_channel_with<C>(
+    channel: C,
     config: ClientConfiguration,
-) -> RefreshService<Channel, ClientConfiguration> {
+) -> RefreshService<C, ClientConfiguration>
+where
+    C: GrpcService<BoxBody>,
+{
     ServiceBuilder::new()
         .layer(RefreshLayer::with_config(config))
         .service(channel)
 }
 
-/// Set up the given [`Channel`] which will automatically
+/// Set up the given `channel` which will automatically
 /// attempt to refresh its access token when a request fails
 /// do to an expired token
-pub fn wrap_channel_with_token_refresher<T: TokenRefresher + Clone + Send + Sync>(
-    channel: Channel,
+pub fn wrap_channel_with_token_refresher<C, T>(
+    channel: C,
     token_refresher: T,
-) -> RefreshService<Channel, T> {
+) -> RefreshService<C, T>
+where
+    C: GrpcService<BoxBody>,
+    T: TokenRefresher + Clone + Send + Sync,
+{
     ServiceBuilder::new()
         .layer(RefreshLayer::with_refresher(token_refresher))
         .service(channel)
 }
 
-/// Set up the given [`Channel`] with QCS authentication.
+/// Set up the given `channel` with QCS authentication.
 ///
 /// # Errors
 ///
 /// See [`Error`]
-pub async fn wrap_channel(
-    channel: Channel,
-) -> Result<RefreshService<Channel, ClientConfiguration>, Error<RefreshError>> {
+pub async fn wrap_channel<C>(
+    channel: C,
+) -> Result<RefreshService<C, ClientConfiguration>, Error<RefreshError>>
+where
+    C: GrpcService<BoxBody>,
+{
     Ok(wrap_channel_with(
         channel,
         ClientConfiguration::load_default().await?,
     ))
 }
 
-/// Set up the given [`Channel`] with QCS authentication.
+/// Set up the given `channel` with QCS authentication.
 ///
 /// # Errors
 ///
 /// See [`Error`]
-pub async fn wrap_channel_with_profile(
-    channel: Channel,
+pub async fn wrap_channel_with_profile<C>(
+    channel: C,
     profile: String,
-) -> Result<RefreshService<Channel, ClientConfiguration>, Error<RefreshError>> {
+) -> Result<RefreshService<C, ClientConfiguration>, Error<RefreshError>>
+where
+    C: GrpcService<BoxBody>,
+{
     Ok(wrap_channel_with(
         channel,
         ClientConfiguration::load_profile(profile).await?,
     ))
+}
+
+/// Add exponential backoff retry logic to the `channel`.
+pub fn wrap_channel_with_retry<C>(channel: C) -> RetryService<C>
+where
+    C: GrpcService<BoxBody>,
+{
+    ServiceBuilder::new()
+        .layer(RetryLayer::default())
+        .service(channel)
 }
 
 /// The [`Layer`] used to apply QCS authentication to all gRPC calls.
@@ -368,9 +395,7 @@ pub struct RefreshService<S: GrpcService<BoxBody>, T: TokenRefresher> {
     token_refresher: T,
 }
 
-type CloneBodyError = <BoxBody as Body>::Error;
-
-async fn clone_body(body: Request<BoxBody>) -> Result<(BoxBody, BoxBody), CloneBodyError> {
+async fn clone_body(body: Request<BoxBody>) -> (BoxBody, BoxBody) {
     let mut bytes = Vec::new();
     let mut body = body.into_body();
     while let Some(result) = body.data().await {
@@ -378,7 +403,7 @@ async fn clone_body(body: Request<BoxBody>) -> Result<(BoxBody, BoxBody), CloneB
     }
     let bytes =
         Full::from(bytes).map_err(|_| Status::internal("this will never happen from Infallible"));
-    Ok((BoxBody::new(bytes.clone()), BoxBody::new(bytes)))
+    (BoxBody::new(bytes.clone()), BoxBody::new(bytes))
 }
 
 async fn clone_request(req: Request<BoxBody>) -> (Request<BoxBody>, Request<BoxBody>) {
@@ -397,7 +422,7 @@ async fn clone_request(req: Request<BoxBody>) -> (Request<BoxBody>, Request<BoxB
         builder_2 = builder_2.header(key.clone(), val.clone());
     }
 
-    let (body_1, body_2) = clone_body(req).await.unwrap();
+    let (body_1, body_2) = clone_body(req).await;
 
     let req_1 = builder_1
         .body(body_1)
@@ -644,9 +669,183 @@ fn make_grpc_request_span(
     )
 }
 
+/// The [`Layer`] used to apply exponential backoff retry logic to requests.
+#[derive(Debug, Clone)]
+pub struct RetryLayer {
+    backoff: backoff::ExponentialBackoff,
+}
+
+impl Default for RetryLayer {
+    fn default() -> Self {
+        Self {
+            backoff: default_backoff(),
+        }
+    }
+}
+
+impl<S: GrpcService<BoxBody>> Layer<S> for RetryLayer {
+    type Service = RetryService<S>;
+
+    fn layer(&self, service: S) -> Self::Service {
+        Self::Service {
+            backoff: self.backoff.clone(),
+            service,
+        }
+    }
+}
+
+/// The [`GrpcService`] that wraps the gRPC client in order to provide exponential backoff retry
+/// logic.
+///
+/// See also: [`RetryLayer`].
+#[derive(Clone)]
+pub struct RetryService<S: GrpcService<BoxBody>> {
+    backoff: backoff::ExponentialBackoff,
+    service: S,
+}
+
+fn duration_from_response<T>(
+    response: &http::Response<T>,
+    backoff: &mut ExponentialBackoff,
+) -> Option<Duration> {
+    if let Some(grpc_status) = Status::from_header_map(response.headers()) {
+        match grpc_status.code() {
+            // gRPC has no equivalent to RETRY-AFTER, so just use the backoff
+            tonic::Code::Unavailable => backoff.next_backoff(),
+            _ => None,
+        }
+    } else {
+        duration_from_http_response(response.status(), response.headers(), backoff)
+    }
+}
+
+impl<S> GrpcService<BoxBody> for RetryService<S>
+where
+    S: GrpcService<BoxBody> + Send + Clone + 'static,
+    S::Future: Send,
+    S::ResponseBody: Send,
+{
+    type ResponseBody = <S as GrpcService<BoxBody>>::ResponseBody;
+    type Error = <S as GrpcService<BoxBody>>::Error;
+    type Future =
+        Pin<Box<dyn Future<Output = Result<Response<Self::ResponseBody>, Self::Error>> + Send>>;
+
+    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        self.service.poll_ready(cx)
+    }
+
+    fn call(&mut self, mut req: Request<BoxBody>) -> Self::Future {
+        // Clone the `backoff` so that new requests don't reuse it
+        // and so that the `backoff` can be moved into the async closure.
+        let mut backoff = self.backoff.clone();
+        let mut service = self.service.clone();
+        // It is necessary to replace self.service with the above clone
+        // because the cloned version may not be "ready".
+        //
+        // See this github issue for more context:
+        // https://github.com/tower-rs/tower/issues/547
+        std::mem::swap(&mut self.service, &mut service);
+
+        Box::pin(async move {
+            loop {
+                let (request, retained) = clone_request(req).await;
+                req = retained;
+
+                // Ensure that the service is ready before trying to use it.
+                // Failure to do this *will* cause a panic.
+                poll_fn(|cx| service.poll_ready(cx)).await?;
+
+                let duration = match service.call(request).await {
+                    Ok(response) => {
+                        if let Some(duration) = duration_from_response(&response, &mut backoff) {
+                            duration
+                        } else {
+                            break Ok(response);
+                        }
+                    }
+                    Err(error) => break Err(error),
+                };
+
+                tokio::time::sleep(duration).await;
+            }
+        })
+    }
+}
+
+/// This module manages a gRPC server-client connection over a Unix domain socket. Useful for unit testing
+/// servers or clients within unit tests - supports parallelization within same process and
+/// requires no port management.
+///
+/// Derived largely from  https://stackoverflow.com/a/71808401 and
+/// https://github.com/hyperium/tonic/tree/master/examples/src/uds
+#[cfg(test)]
+mod uds_grpc_stream {
+    use std::convert::Infallible;
+    use std::sync::Arc;
+    use tempfile::NamedTempFile;
+    use tokio::net::{UnixListener, UnixStream};
+    use tokio_stream::wrappers::UnixListenerStream;
+    use tonic::transport::{Channel, Endpoint, NamedService, Server, Uri};
+    use tower::service_fn;
+
+    /// The can be any valid URL. It is necessary to initialize an [`Endpoint`].
+    #[allow(dead_code)]
+    static FAUX_URL: &str = "http://api.example.rigetti.com";
+
+    async fn build_uds_stream() -> Result<(UnixListenerStream, Channel), String> {
+        let socket = NamedTempFile::new().unwrap();
+        let socket = Arc::new(socket.into_temp_path());
+        std::fs::remove_file(&*socket).unwrap();
+
+        let uds = UnixListener::bind(&*socket).unwrap();
+        let stream = UnixListenerStream::new(uds);
+
+        let socket = Arc::clone(&socket);
+        // Connect to the server over a Unix socket
+        // The URL will be ignored.
+        let channel = Endpoint::try_from(FAUX_URL)
+            .unwrap()
+            .connect_with_connector(service_fn(move |_: Uri| {
+                let socket = Arc::clone(&socket);
+                async move { UnixStream::connect(&*socket).await }
+            }))
+            .await
+            .map_err(|e| format!("failed to connect to server: {}", e))?;
+
+        Ok((stream, channel))
+    }
+
+    /// Serve the provide gRPC service over a Unix domain socket for the duration of the
+    /// provided callback.
+    pub async fn serve<S, F, R>(service: S, f: F) -> Result<(), String>
+    where
+        S: tower::Service<
+                http::Request<hyper::body::Body>,
+                Response = http::Response<tonic::body::BoxBody>,
+                Error = Infallible,
+            > + NamedService
+            + Clone
+            + Send
+            + 'static,
+        S::Future: Send + 'static,
+        F: FnOnce(Channel) -> R,
+        R: std::future::Future<Output = ()>,
+    {
+        let (stream, channel) = build_uds_stream().await.unwrap();
+        let serve_future = Server::builder()
+            .add_service(service)
+            .serve_with_incoming(stream);
+
+        tokio::select! {
+           result = serve_future => result.map_err(|e| format!("server unexpectedly exited with error: {}", e)),
+           _ = f(channel) => Ok(()),
+        }
+    }
+}
+
 #[cfg(test)]
 #[cfg(feature = "tracing-opentelemetry")]
-mod tests {
+mod otel_tests {
     use opentelemetry::propagation::TextMapPropagator;
     use opentelemetry::sdk::propagation::TraceContextPropagator;
     use opentelemetry::trace::{TraceContextExt, TraceId};
@@ -661,6 +860,8 @@ mod tests {
     use tonic_health::pb::health_check_response::ServingStatus;
     use tonic_health::pb::health_server::{Health, HealthServer};
     use tonic_health::{pb::health_client::HealthClient, server::HealthService};
+
+    use crate::channel::uds_grpc_stream;
 
     use super::wrap_channel_with;
 
@@ -1015,76 +1216,6 @@ mod tests {
         }
     }
 
-    /// This module manages a gRPC server-client connection over a Unix domain socket. Useful for unit testing
-    /// servers or clients within unit tests - supports parallelization within same process and
-    /// requires no port management.
-    ///
-    /// Derived largely from  https://stackoverflow.com/a/71808401 and
-    /// https://github.com/hyperium/tonic/tree/master/examples/src/uds
-    mod uds_grpc_stream {
-        use std::convert::Infallible;
-        use std::sync::Arc;
-        use tempfile::NamedTempFile;
-        use tokio::net::{UnixListener, UnixStream};
-        use tokio_stream::wrappers::UnixListenerStream;
-        use tonic::transport::{Channel, Endpoint, NamedService, Server, Uri};
-        use tower::service_fn;
-
-        /// The can be any valid URL. It is necessary to initialize an [`Endpoint`].
-        #[allow(dead_code)]
-        static FAUX_URL: &str = "http://api.example.com";
-
-        async fn build_uds_stream() -> Result<(UnixListenerStream, Channel), String> {
-            let socket = NamedTempFile::new().unwrap();
-            let socket = Arc::new(socket.into_temp_path());
-            std::fs::remove_file(&*socket).unwrap();
-
-            let uds = UnixListener::bind(&*socket).unwrap();
-            let stream = UnixListenerStream::new(uds);
-
-            let socket = Arc::clone(&socket);
-            // Connect to the server over a Unix socket
-            // The URL will be ignored.
-            let channel = Endpoint::try_from(FAUX_URL)
-                .unwrap()
-                .connect_with_connector(service_fn(move |_: Uri| {
-                    let socket = Arc::clone(&socket);
-                    async move { UnixStream::connect(&*socket).await }
-                }))
-                .await
-                .map_err(|e| format!("failed to connect to server: {}", e))?;
-
-            Ok((stream, channel))
-        }
-
-        /// Serve the provide gRPC service over a Unix domain socket for the duration of the
-        /// provided callback.
-        pub async fn serve<S, F, R>(service: S, f: F) -> Result<(), String>
-        where
-            S: tower::Service<
-                    http::Request<hyper::body::Body>,
-                    Response = http::Response<tonic::body::BoxBody>,
-                    Error = Infallible,
-                > + NamedService
-                + Clone
-                + Send
-                + 'static,
-            S::Future: Send + 'static,
-            F: FnOnce(Channel) -> R,
-            R: std::future::Future<Output = ()>,
-        {
-            let (stream, channel) = build_uds_stream().await.unwrap();
-            let serve_future = Server::builder()
-                .add_service(service)
-                .serve_with_incoming(stream);
-
-            tokio::select! {
-               result = serve_future => result.map_err(|e| format!("server unexpectedly exited with error: {}", e)),
-               _ = f(channel) => Ok(()),
-            }
-        }
-    }
-
     /// We need a single global SpanProcessor because these tests have to work using
     /// opentelemetry::global and tracing_subscriber::set_global_default. Otherwise,
     /// we can't make guarantees about where the spans are processed and therefore could
@@ -1228,5 +1359,115 @@ mod tests {
                 Ok(())
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    use super::*;
+    use backoff::ExponentialBackoffBuilder;
+    use tonic::transport::NamedService;
+    use tonic::Request;
+    use tonic_health::pb::health_check_response::ServingStatus;
+    use tonic_health::pb::health_server::{Health, HealthServer};
+    use tonic_health::{pb::health_client::HealthClient, server::HealthService};
+
+    struct FlakyHealthService {
+        required_tries_count: AtomicUsize,
+    }
+
+    impl FlakyHealthService {
+        fn new(required_tries_count: usize) -> Self {
+            Self {
+                required_tries_count: AtomicUsize::new(required_tries_count),
+            }
+        }
+
+        fn make_response(&self) -> Result<tonic_health::pb::HealthCheckResponse, tonic::Status> {
+            let remaining = self.required_tries_count.fetch_sub(1, Ordering::SeqCst);
+            if remaining == 0 {
+                let response = tonic_health::pb::HealthCheckResponse {
+                    status: ServingStatus::Serving as i32,
+                };
+                Ok(response)
+            } else {
+                self.required_tries_count
+                    .store(remaining - 1, Ordering::SeqCst);
+                Err(tonic::Status::unavailable("unavailable"))
+            }
+        }
+    }
+
+    impl Default for FlakyHealthService {
+        fn default() -> Self {
+            Self::new(3)
+        }
+    }
+
+    #[tonic::async_trait]
+    impl Health for FlakyHealthService {
+        type WatchStream = tokio_stream::wrappers::ReceiverStream<
+            Result<tonic_health::pb::HealthCheckResponse, tonic::Status>,
+        >;
+
+        async fn check(
+            &self,
+            _request: Request<tonic_health::pb::HealthCheckRequest>,
+        ) -> Result<tonic::Response<tonic_health::pb::HealthCheckResponse>, tonic::Status> {
+            self.make_response().map(tonic::Response::new)
+        }
+
+        async fn watch(
+            &self,
+            _request: Request<tonic_health::pb::HealthCheckRequest>,
+        ) -> Result<tonic::Response<Self::WatchStream>, tonic::Status> {
+            let (tx, rx) = tokio::sync::mpsc::channel(1);
+            tx.send(self.make_response()).await.unwrap();
+            Ok(tonic::Response::new(
+                tokio_stream::wrappers::ReceiverStream::new(rx),
+            ))
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_retry_logic() {
+        let health_server = HealthServer::new(FlakyHealthService::default());
+
+        uds_grpc_stream::serve(health_server, |channel| async {
+            let retry_client = wrap_channel_with_retry(channel);
+            let mut client = HealthClient::new(retry_client);
+            let response = client.check(Request::new(tonic_health::pb::HealthCheckRequest {
+                service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),
+            }));
+            let response = response.await.unwrap();
+            assert_eq!(response.into_inner().status(), ServingStatus::Serving);
+        })
+        .await
+        .unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_retry_is_not_infinite_long() {
+        let health_server = HealthServer::new(FlakyHealthService::new(50));
+
+        uds_grpc_stream::serve(health_server, |channel| async {
+            // Don't use the wrapping function so tests don't take so long 
+            let retry_client = RetryLayer {
+                backoff: ExponentialBackoffBuilder::new()
+                    .with_max_interval(Duration::from_millis(100))
+                    .with_max_elapsed_time(Some(Duration::from_secs(1)))
+                    .build()
+            }.layer(channel);
+            let mut client = HealthClient::new(retry_client);
+            let response = client.check(Request::new(tonic_health::pb::HealthCheckRequest {
+                service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),
+            }));
+            let status = response.await.unwrap_err();
+            assert_eq!(status.code(), tonic::Code::Unavailable);
+        })
+        .await
+        .unwrap();
     }
 }

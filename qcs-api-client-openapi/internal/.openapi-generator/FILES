@@ -20,6 +20,7 @@ src/models/account_billing_customer_update_request.rs
 src/models/account_type.rs
 src/models/active_reset.rs
 src/models/add_group_user_request.rs
+src/models/address.rs
 src/models/amplifier_settings.rs
 src/models/app__api__translation__models__parameter_spec.rs
 src/models/arbitrary_readout_kernel.rs
@@ -57,7 +58,10 @@ src/models/component_options.rs
 src/models/component_parameters.rs
 src/models/components.rs
 src/models/control_settings.rs
+src/models/controller_address.rs
+src/models/controller_addresses.rs
 src/models/controller_component.rs
+src/models/controller_instrument_type.rs
 src/models/create_endpoint_parameters.rs
 src/models/create_engagement_request.rs
 src/models/create_reservation_request.rs
@@ -150,10 +154,15 @@ src/models/list_quantum_processor_accessors_response.rs
 src/models/list_quantum_processors_response.rs
 src/models/list_reservations_response.rs
 src/models/logging_target.rs
+src/models/magneto_instrument_configuration.rs
+src/models/magneto_simulator_component.rs
+src/models/magneto_startup_configuration.rs
 src/models/mnio_connection.rs
 src/models/mod.rs
 src/models/node.rs
+src/models/nomad_dynamic_port.rs
 src/models/nomad_job_datacenters.rs
+src/models/nomad_reserved_port.rs
 src/models/operation.rs
 src/models/operation_site.rs
 src/models/orchestrator_component.rs
@@ -163,6 +172,7 @@ src/models/parameter_expression.rs
 src/models/parameter_operator.rs
 src/models/parameter_type.rs
 src/models/phase.rs
+src/models/port.rs
 src/models/product.rs
 src/models/propagation_direction.rs
 src/models/pulse.rs
@@ -209,6 +219,8 @@ src/models/shift_phase.rs
 src/models/slow_flux_settings.rs
 src/models/soft_delete_info.rs
 src/models/specs.rs
+src/models/startup_configuration.rs
+src/models/startup_configuration_1.rs
 src/models/startup_configuration_source.rs
 src/models/swap_phases.rs
 src/models/template_name.rs

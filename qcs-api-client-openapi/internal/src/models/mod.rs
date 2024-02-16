@@ -20,6 +20,9 @@ pub use self::active_reset::ActiveReset;
 pub mod add_group_user_request;
 pub use self::add_group_user_request::AddGroupUserRequest;
 #[allow(non_snake_case)]
+pub mod address;
+pub use self::address::Address;
+#[allow(non_snake_case)]
 pub mod amplifier_settings;
 pub use self::amplifier_settings::AmplifierSettings;
 #[allow(non_snake_case)]
@@ -131,8 +134,17 @@ pub use self::components::Components;
 pub mod control_settings;
 pub use self::control_settings::ControlSettings;
 #[allow(non_snake_case)]
+pub mod controller_address;
+pub use self::controller_address::ControllerAddress;
+#[allow(non_snake_case)]
+pub mod controller_addresses;
+pub use self::controller_addresses::ControllerAddresses;
+#[allow(non_snake_case)]
 pub mod controller_component;
 pub use self::controller_component::ControllerComponent;
+#[allow(non_snake_case)]
+pub mod controller_instrument_type;
+pub use self::controller_instrument_type::ControllerInstrumentType;
 #[allow(non_snake_case)]
 pub mod create_endpoint_parameters;
 pub use self::create_endpoint_parameters::CreateEndpointParameters;
@@ -410,14 +422,29 @@ pub use self::list_reservations_response::ListReservationsResponse;
 pub mod logging_target;
 pub use self::logging_target::LoggingTarget;
 #[allow(non_snake_case)]
+pub mod magneto_instrument_configuration;
+pub use self::magneto_instrument_configuration::MagnetoInstrumentConfiguration;
+#[allow(non_snake_case)]
+pub mod magneto_simulator_component;
+pub use self::magneto_simulator_component::MagnetoSimulatorComponent;
+#[allow(non_snake_case)]
+pub mod magneto_startup_configuration;
+pub use self::magneto_startup_configuration::MagnetoStartupConfiguration;
+#[allow(non_snake_case)]
 pub mod mnio_connection;
 pub use self::mnio_connection::MnioConnection;
 #[allow(non_snake_case)]
 pub mod node;
 pub use self::node::Node;
 #[allow(non_snake_case)]
+pub mod nomad_dynamic_port;
+pub use self::nomad_dynamic_port::NomadDynamicPort;
+#[allow(non_snake_case)]
 pub mod nomad_job_datacenters;
 pub use self::nomad_job_datacenters::NomadJobDatacenters;
+#[allow(non_snake_case)]
+pub mod nomad_reserved_port;
+pub use self::nomad_reserved_port::NomadReservedPort;
 #[allow(non_snake_case)]
 pub mod operation;
 pub use self::operation::Operation;
@@ -445,6 +472,9 @@ pub use self::parameter_type::ParameterType;
 #[allow(non_snake_case)]
 pub mod phase;
 pub use self::phase::Phase;
+#[allow(non_snake_case)]
+pub mod port;
+pub use self::port::Port;
 #[allow(non_snake_case)]
 pub mod product;
 pub use self::product::Product;
@@ -583,6 +613,12 @@ pub use self::soft_delete_info::SoftDeleteInfo;
 #[allow(non_snake_case)]
 pub mod specs;
 pub use self::specs::Specs;
+#[allow(non_snake_case)]
+pub mod startup_configuration;
+pub use self::startup_configuration::StartupConfiguration;
+#[allow(non_snake_case)]
+pub mod startup_configuration_1;
+pub use self::startup_configuration_1::StartupConfiguration1;
 #[allow(non_snake_case)]
 pub mod startup_configuration_source;
 pub use self::startup_configuration_source::StartupConfigurationSource;

@@ -55,6 +55,7 @@ cd "$WORKDIR"
 # information about the non-public crates.
 cat << EOF > "Cargo.toml"
 [workspace]
+resolver = "2"
 members = [
     "qcs-api-client-common",
     "qcs-api-client-grpc",

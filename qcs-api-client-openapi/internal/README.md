@@ -113,7 +113,8 @@ Class | Method | HTTP request | Description
 *ClientApplicationsApi* | [**get_client_application**](docs/ClientApplicationsApi.md#get_client_application) | **GET** /v1/clientApplications/{clientApplicationName} | Get Client Application
 *ClientApplicationsApi* | [**list_client_applications**](docs/ClientApplicationsApi.md#list_client_applications) | **GET** /v1/clientApplications | List Client Applications
 *DefaultApi* | [**get_health**](docs/DefaultApi.md#get_health) | **GET** / | 
-*DefaultApi* | [**health_check**](docs/DefaultApi.md#health_check) | **GET** /v1/ | Health Check
+*DefaultApi* | [**health_check**](docs/DefaultApi.md#health_check) | **GET** /v1/healthcheck | Health Check
+*DefaultApi* | [**health_check_deprecated**](docs/DefaultApi.md#health_check_deprecated) | **GET** /v1/ | Health Check
 *DefaultApi* | [**internal_create_product_billing_price**](docs/DefaultApi.md#internal_create_product_billing_price) | **POST** /v1/internal/products/{product}/billingPrices | 
 *DefaultApi* | [**internal_list_product_billing_prices**](docs/DefaultApi.md#internal_list_product_billing_prices) | **GET** /v1/internal/products/{product}/billingPrices | 
 *DefaultApi* | [**internal_update_group_billing_customer**](docs/DefaultApi.md#internal_update_group_billing_customer) | **PATCH** /v1/internal/groups/{groupName}/billingCustomer | 
@@ -213,6 +214,7 @@ Class | Method | HTTP request | Description
  - [AccountType](docs/AccountType.md)
  - [ActiveReset](docs/ActiveReset.md)
  - [AddGroupUserRequest](docs/AddGroupUserRequest.md)
+ - [Address](docs/Address.md)
  - [AmplifierSettings](docs/AmplifierSettings.md)
  - [AppApiTranslationModelsParameterSpec](docs/AppApiTranslationModelsParameterSpec.md)
  - [ArbitraryReadoutKernel](docs/ArbitraryReadoutKernel.md)
@@ -250,7 +252,10 @@ Class | Method | HTTP request | Description
  - [ComponentParameters](docs/ComponentParameters.md)
  - [Components](docs/Components.md)
  - [ControlSettings](docs/ControlSettings.md)
+ - [ControllerAddress](docs/ControllerAddress.md)
+ - [ControllerAddresses](docs/ControllerAddresses.md)
  - [ControllerComponent](docs/ControllerComponent.md)
+ - [ControllerInstrumentType](docs/ControllerInstrumentType.md)
  - [CreateEndpointParameters](docs/CreateEndpointParameters.md)
  - [CreateEngagementRequest](docs/CreateEngagementRequest.md)
  - [CreateReservationRequest](docs/CreateReservationRequest.md)
@@ -343,9 +348,14 @@ Class | Method | HTTP request | Description
  - [ListQuantumProcessorsResponse](docs/ListQuantumProcessorsResponse.md)
  - [ListReservationsResponse](docs/ListReservationsResponse.md)
  - [LoggingTarget](docs/LoggingTarget.md)
+ - [MagnetoInstrumentConfiguration](docs/MagnetoInstrumentConfiguration.md)
+ - [MagnetoSimulatorComponent](docs/MagnetoSimulatorComponent.md)
+ - [MagnetoStartupConfiguration](docs/MagnetoStartupConfiguration.md)
  - [MnioConnection](docs/MnioConnection.md)
  - [Node](docs/Node.md)
+ - [NomadDynamicPort](docs/NomadDynamicPort.md)
  - [NomadJobDatacenters](docs/NomadJobDatacenters.md)
+ - [NomadReservedPort](docs/NomadReservedPort.md)
  - [Operation](docs/Operation.md)
  - [OperationSite](docs/OperationSite.md)
  - [OrchestratorComponent](docs/OrchestratorComponent.md)
@@ -355,6 +365,7 @@ Class | Method | HTTP request | Description
  - [ParameterOperator](docs/ParameterOperator.md)
  - [ParameterType](docs/ParameterType.md)
  - [Phase](docs/Phase.md)
+ - [Port](docs/Port.md)
  - [Product](docs/Product.md)
  - [PropagationDirection](docs/PropagationDirection.md)
  - [Pulse](docs/Pulse.md)
@@ -401,6 +412,8 @@ Class | Method | HTTP request | Description
  - [SlowFluxSettings](docs/SlowFluxSettings.md)
  - [SoftDeleteInfo](docs/SoftDeleteInfo.md)
  - [Specs](docs/Specs.md)
+ - [StartupConfiguration](docs/StartupConfiguration.md)
+ - [StartupConfiguration1](docs/StartupConfiguration1.md)
  - [StartupConfigurationSource](docs/StartupConfigurationSource.md)
  - [SwapPhases](docs/SwapPhases.md)
  - [TemplateName](docs/TemplateName.md)

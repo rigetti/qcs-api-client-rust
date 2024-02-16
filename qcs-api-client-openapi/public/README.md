@@ -96,7 +96,8 @@ Class | Method | HTTP request | Description
 *ClientApplicationsApi* | [**get_client_application**](docs/ClientApplicationsApi.md#get_client_application) | **GET** /v1/clientApplications/{clientApplicationName} | Get Client Application
 *ClientApplicationsApi* | [**list_client_applications**](docs/ClientApplicationsApi.md#list_client_applications) | **GET** /v1/clientApplications | List Client Applications
 *DefaultApi* | [**get_health**](docs/DefaultApi.md#get_health) | **GET** / | 
-*DefaultApi* | [**health_check**](docs/DefaultApi.md#health_check) | **GET** /v1/ | Health Check
+*DefaultApi* | [**health_check**](docs/DefaultApi.md#health_check) | **GET** /v1/healthcheck | Health Check
+*DefaultApi* | [**health_check_deprecated**](docs/DefaultApi.md#health_check_deprecated) | **GET** /v1/ | Health Check
 *EndpointsApi* | [**create_endpoint**](docs/EndpointsApi.md#create_endpoint) | **POST** /v1/endpoints | Create Endpoint
 *EndpointsApi* | [**delete_endpoint**](docs/EndpointsApi.md#delete_endpoint) | **DELETE** /v1/endpoints/{endpointId} | Delete Endpoint
 *EndpointsApi* | [**get_default_endpoint**](docs/EndpointsApi.md#get_default_endpoint) | **GET** /v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault | Get Default Endpoint

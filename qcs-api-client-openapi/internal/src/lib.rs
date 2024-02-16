@@ -15,9 +15,10 @@
 //! ```
 
 #![allow(clippy::derive_partial_eq_without_eq)]
-#![allow(clippy::clone_double_ref)]
+#![allow(suspicious_double_ref_op)]
 #![allow(clippy::clone_on_copy)]
 #![allow(clippy::too_many_arguments)]
+#![allow(noop_method_call)]
 
 pub use reqwest;
 

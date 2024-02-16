@@ -3,6 +3,7 @@
 # be manually curated there to reflect the dependencies for the _public_ crates
 # only.
 [workspace]
+resolver = "2"
 members = [
     "proxy-test",
     "qcs-api-client-common",

@@ -59,17 +59,19 @@ mod test_in_process {
 
     use eyre::{eyre, Result};
     use socks5_server::{auth::NoAuth, Server};
+    use tokio::net::TcpListener;
 
     use super::*;
 
     /// Contains a socks5 proxy server.
-    struct Proxy(Server);
+    struct Proxy(Server<()>);
 
     impl Proxy {
         /// Create a new socks server that binds to an OS-assigned port.
         async fn new() -> Result<Self> {
             let auth = Arc::new(NoAuth);
-            let server = Server::bind("127.0.0.1:49818", auth).await?;
+            let listener = TcpListener::bind("127.0.0.1:49818").await?;
+            let server = Server::new(listener, auth);
             Ok(Self(server))
         }
 
@@ -79,7 +81,7 @@ mod test_in_process {
             tokio::time::timeout(Duration::from_secs(5), async {
                 match self.0.accept().await {
                     Ok((mut conn, _)) => {
-                        let _ = conn.shutdown().await;
+                        let _ = conn.close().await;
                         Ok(())
                     }
                     Err(err) => Err(eyre!("Server could not accept connections: {}", err)),

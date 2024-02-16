@@ -10,6 +10,7 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
+use ::qcs_api_client_common::backoff::{duration_from_response, ExponentialBackoff};
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
@@ -333,6 +334,7 @@ pub enum UpdateUserError {
 
 async fn add_group_user_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     add_group_user_request: crate::models::AddGroupUserRequest,
 ) -> Result<(), Error<AddGroupUserError>> {
     let local_var_configuration = configuration;
@@ -380,17 +382,19 @@ async fn add_group_user_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<AddGroupUserError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -401,19 +405,38 @@ pub async fn add_group_user(
     configuration: &configuration::Configuration,
     add_group_user_request: crate::models::AddGroupUserRequest,
 ) -> Result<(), Error<AddGroupUserError>> {
-    match add_group_user_inner(configuration, add_group_user_request.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                add_group_user_inner(configuration, add_group_user_request).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result =
+            add_group_user_inner(configuration, &mut backoff, add_group_user_request.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn create_user_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     create_user_request: Option<crate::models::CreateUserRequest>,
 ) -> Result<crate::models::User, Error<CreateUserError>> {
     let local_var_configuration = configuration;
@@ -458,17 +481,20 @@ async fn create_user_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<CreateUserError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -479,19 +505,38 @@ pub async fn create_user(
     configuration: &configuration::Configuration,
     create_user_request: Option<crate::models::CreateUserRequest>,
 ) -> Result<crate::models::User, Error<CreateUserError>> {
-    match create_user_inner(configuration, create_user_request.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                create_user_inner(configuration, create_user_request).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result =
+            create_user_inner(configuration, &mut backoff, create_user_request.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn get_group_balance_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     group_name: &str,
 ) -> Result<crate::models::AccountBalance, Error<GetGroupBalanceError>> {
     let local_var_configuration = configuration;
@@ -538,17 +583,20 @@ async fn get_group_balance_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<GetGroupBalanceError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -559,19 +607,37 @@ pub async fn get_group_balance(
     configuration: &configuration::Configuration,
     group_name: &str,
 ) -> Result<crate::models::AccountBalance, Error<GetGroupBalanceError>> {
-    match get_group_balance_inner(configuration, group_name.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                get_group_balance_inner(configuration, group_name).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = get_group_balance_inner(configuration, &mut backoff, group_name.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn get_group_billing_customer_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     group_name: &str,
 ) -> Result<crate::models::BillingCustomer, Error<GetGroupBillingCustomerError>> {
     let local_var_configuration = configuration;
@@ -618,17 +684,20 @@ async fn get_group_billing_customer_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<GetGroupBillingCustomerError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -639,19 +708,38 @@ pub async fn get_group_billing_customer(
     configuration: &configuration::Configuration,
     group_name: &str,
 ) -> Result<crate::models::BillingCustomer, Error<GetGroupBillingCustomerError>> {
-    match get_group_billing_customer_inner(configuration, group_name.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                get_group_billing_customer_inner(configuration, group_name).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result =
+            get_group_billing_customer_inner(configuration, &mut backoff, group_name.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn get_group_upcoming_billing_invoice_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     group_name: &str,
 ) -> Result<crate::models::BillingUpcomingInvoice, Error<GetGroupUpcomingBillingInvoiceError>> {
     let local_var_configuration = configuration;
@@ -698,17 +786,20 @@ async fn get_group_upcoming_billing_invoice_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<GetGroupUpcomingBillingInvoiceError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -719,19 +810,42 @@ pub async fn get_group_upcoming_billing_invoice(
     configuration: &configuration::Configuration,
     group_name: &str,
 ) -> Result<crate::models::BillingUpcomingInvoice, Error<GetGroupUpcomingBillingInvoiceError>> {
-    match get_group_upcoming_billing_invoice_inner(configuration, group_name.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                get_group_upcoming_billing_invoice_inner(configuration, group_name).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = get_group_upcoming_billing_invoice_inner(
+            configuration,
+            &mut backoff,
+            group_name.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn get_user_balance_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     user_id: &str,
 ) -> Result<crate::models::AccountBalance, Error<GetUserBalanceError>> {
     let local_var_configuration = configuration;
@@ -778,17 +892,20 @@ async fn get_user_balance_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<GetUserBalanceError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -799,19 +916,37 @@ pub async fn get_user_balance(
     configuration: &configuration::Configuration,
     user_id: &str,
 ) -> Result<crate::models::AccountBalance, Error<GetUserBalanceError>> {
-    match get_user_balance_inner(configuration, user_id.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                get_user_balance_inner(configuration, user_id).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = get_user_balance_inner(configuration, &mut backoff, user_id.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn get_user_billing_customer_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     user_id: &str,
 ) -> Result<crate::models::BillingCustomer, Error<GetUserBillingCustomerError>> {
     let local_var_configuration = configuration;
@@ -858,17 +993,20 @@ async fn get_user_billing_customer_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<GetUserBillingCustomerError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -879,19 +1017,38 @@ pub async fn get_user_billing_customer(
     configuration: &configuration::Configuration,
     user_id: &str,
 ) -> Result<crate::models::BillingCustomer, Error<GetUserBillingCustomerError>> {
-    match get_user_billing_customer_inner(configuration, user_id.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                get_user_billing_customer_inner(configuration, user_id).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result =
+            get_user_billing_customer_inner(configuration, &mut backoff, user_id.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn get_user_upcoming_billing_invoice_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     user_id: &str,
 ) -> Result<crate::models::BillingUpcomingInvoice, Error<GetUserUpcomingBillingInvoiceError>> {
     let local_var_configuration = configuration;
@@ -938,17 +1095,20 @@ async fn get_user_upcoming_billing_invoice_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<GetUserUpcomingBillingInvoiceError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -959,19 +1119,39 @@ pub async fn get_user_upcoming_billing_invoice(
     configuration: &configuration::Configuration,
     user_id: &str,
 ) -> Result<crate::models::BillingUpcomingInvoice, Error<GetUserUpcomingBillingInvoiceError>> {
-    match get_user_upcoming_billing_invoice_inner(configuration, user_id.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                get_user_upcoming_billing_invoice_inner(configuration, user_id).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result =
+            get_user_upcoming_billing_invoice_inner(configuration, &mut backoff, user_id.clone())
+                .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_create_event_billing_price_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     internal_create_event_billing_price_request: crate::models::InternalCreateEventBillingPriceRequest,
 ) -> Result<crate::models::EventBillingPrice, Error<InternalCreateEventBillingPriceError>> {
     let local_var_configuration = configuration;
@@ -1020,17 +1200,20 @@ async fn internal_create_event_billing_price_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalCreateEventBillingPriceError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -1041,28 +1224,42 @@ pub async fn internal_create_event_billing_price(
     configuration: &configuration::Configuration,
     internal_create_event_billing_price_request: crate::models::InternalCreateEventBillingPriceRequest,
 ) -> Result<crate::models::EventBillingPrice, Error<InternalCreateEventBillingPriceError>> {
-    match internal_create_event_billing_price_inner(
-        configuration,
-        internal_create_event_billing_price_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_create_event_billing_price_inner(
-                    configuration,
-                    internal_create_event_billing_price_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_create_event_billing_price_inner(
+            configuration,
+            &mut backoff,
+            internal_create_event_billing_price_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_create_group_billing_customer_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     group_name: &str,
     account_billing_customer_create_request: Option<
         crate::models::AccountBillingCustomerCreateRequest,
@@ -1114,17 +1311,20 @@ async fn internal_create_group_billing_customer_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalCreateGroupBillingCustomerError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -1138,30 +1338,43 @@ pub async fn internal_create_group_billing_customer(
         crate::models::AccountBillingCustomerCreateRequest,
     >,
 ) -> Result<crate::models::BillingCustomer, Error<InternalCreateGroupBillingCustomerError>> {
-    match internal_create_group_billing_customer_inner(
-        configuration,
-        group_name.clone(),
-        account_billing_customer_create_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_create_group_billing_customer_inner(
-                    configuration,
-                    group_name,
-                    account_billing_customer_create_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_create_group_billing_customer_inner(
+            configuration,
+            &mut backoff,
+            group_name.clone(),
+            account_billing_customer_create_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_create_group_metered_usage_record_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     group_name: &str,
     x_qcs_idempotency_key: &str,
     internal_create_metered_usage_record_request: crate::models::InternalCreateMeteredUsageRecordRequest,
@@ -1219,17 +1432,20 @@ async fn internal_create_group_metered_usage_record_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalCreateGroupMeteredUsageRecordError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -1245,32 +1461,44 @@ pub async fn internal_create_group_metered_usage_record(
     crate::models::InternalMeteredUsageRecord,
     Error<InternalCreateGroupMeteredUsageRecordError>,
 > {
-    match internal_create_group_metered_usage_record_inner(
-        configuration,
-        group_name.clone(),
-        x_qcs_idempotency_key.clone(),
-        internal_create_metered_usage_record_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_create_group_metered_usage_record_inner(
-                    configuration,
-                    group_name,
-                    x_qcs_idempotency_key,
-                    internal_create_metered_usage_record_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_create_group_metered_usage_record_inner(
+            configuration,
+            &mut backoff,
+            group_name.clone(),
+            x_qcs_idempotency_key.clone(),
+            internal_create_metered_usage_record_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_create_user_billing_customer_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     user_id: &str,
     account_billing_customer_create_request: Option<
         crate::models::AccountBillingCustomerCreateRequest,
@@ -1322,17 +1550,20 @@ async fn internal_create_user_billing_customer_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalCreateUserBillingCustomerError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -1346,30 +1577,43 @@ pub async fn internal_create_user_billing_customer(
         crate::models::AccountBillingCustomerCreateRequest,
     >,
 ) -> Result<crate::models::BillingCustomer, Error<InternalCreateUserBillingCustomerError>> {
-    match internal_create_user_billing_customer_inner(
-        configuration,
-        user_id.clone(),
-        account_billing_customer_create_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_create_user_billing_customer_inner(
-                    configuration,
-                    user_id,
-                    account_billing_customer_create_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_create_user_billing_customer_inner(
+            configuration,
+            &mut backoff,
+            user_id.clone(),
+            account_billing_customer_create_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_create_user_metered_usage_record_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     user_id: &str,
     internal_create_metered_usage_record_request: crate::models::InternalCreateMeteredUsageRecordRequest,
 ) -> Result<
@@ -1423,17 +1667,20 @@ async fn internal_create_user_metered_usage_record_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalCreateUserMeteredUsageRecordError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -1448,30 +1695,43 @@ pub async fn internal_create_user_metered_usage_record(
     crate::models::InternalMeteredUsageRecord,
     Error<InternalCreateUserMeteredUsageRecordError>,
 > {
-    match internal_create_user_metered_usage_record_inner(
-        configuration,
-        user_id.clone(),
-        internal_create_metered_usage_record_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_create_user_metered_usage_record_inner(
-                    configuration,
-                    user_id,
-                    internal_create_metered_usage_record_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_create_user_metered_usage_record_inner(
+            configuration,
+            &mut backoff,
+            user_id.clone(),
+            internal_create_metered_usage_record_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_delete_event_billing_price_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     event_billing_price_id: i64,
 ) -> Result<crate::models::EventBillingPrice, Error<InternalDeleteEventBillingPriceError>> {
     let local_var_configuration = configuration;
@@ -1518,17 +1778,20 @@ async fn internal_delete_event_billing_price_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalDeleteEventBillingPriceError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -1539,22 +1802,42 @@ pub async fn internal_delete_event_billing_price(
     configuration: &configuration::Configuration,
     event_billing_price_id: i64,
 ) -> Result<crate::models::EventBillingPrice, Error<InternalDeleteEventBillingPriceError>> {
-    match internal_delete_event_billing_price_inner(configuration, event_billing_price_id.clone())
-        .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_delete_event_billing_price_inner(configuration, event_billing_price_id)
-                    .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_delete_event_billing_price_inner(
+            configuration,
+            &mut backoff,
+            event_billing_price_id.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_get_group_event_billing_price_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     group_name: &str,
     internal_get_account_event_billing_price_request: crate::models::InternalGetAccountEventBillingPriceRequest,
 ) -> Result<crate::models::EventBillingPrice, Error<InternalGetGroupEventBillingPriceError>> {
@@ -1605,17 +1888,20 @@ async fn internal_get_group_event_billing_price_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalGetGroupEventBillingPriceError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -1627,30 +1913,43 @@ pub async fn internal_get_group_event_billing_price(
     group_name: &str,
     internal_get_account_event_billing_price_request: crate::models::InternalGetAccountEventBillingPriceRequest,
 ) -> Result<crate::models::EventBillingPrice, Error<InternalGetGroupEventBillingPriceError>> {
-    match internal_get_group_event_billing_price_inner(
-        configuration,
-        group_name.clone(),
-        internal_get_account_event_billing_price_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_get_group_event_billing_price_inner(
-                    configuration,
-                    group_name,
-                    internal_get_account_event_billing_price_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_get_group_event_billing_price_inner(
+            configuration,
+            &mut backoff,
+            group_name.clone(),
+            internal_get_account_event_billing_price_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_get_user_event_billing_price_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     user_id: &str,
     internal_get_account_event_billing_price_request: crate::models::InternalGetAccountEventBillingPriceRequest,
 ) -> Result<crate::models::EventBillingPrice, Error<InternalGetUserEventBillingPriceError>> {
@@ -1701,17 +2000,20 @@ async fn internal_get_user_event_billing_price_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalGetUserEventBillingPriceError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -1723,30 +2025,43 @@ pub async fn internal_get_user_event_billing_price(
     user_id: &str,
     internal_get_account_event_billing_price_request: crate::models::InternalGetAccountEventBillingPriceRequest,
 ) -> Result<crate::models::EventBillingPrice, Error<InternalGetUserEventBillingPriceError>> {
-    match internal_get_user_event_billing_price_inner(
-        configuration,
-        user_id.clone(),
-        internal_get_account_event_billing_price_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_get_user_event_billing_price_inner(
-                    configuration,
-                    user_id,
-                    internal_get_account_event_billing_price_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_get_user_event_billing_price_inner(
+            configuration,
+            &mut backoff,
+            user_id.clone(),
+            internal_get_account_event_billing_price_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_get_user_profile_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     user_id: &str,
 ) -> Result<crate::models::UserProfile, Error<InternalGetUserProfileError>> {
     let local_var_configuration = configuration;
@@ -1793,17 +2108,20 @@ async fn internal_get_user_profile_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalGetUserProfileError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -1814,19 +2132,38 @@ pub async fn internal_get_user_profile(
     configuration: &configuration::Configuration,
     user_id: &str,
 ) -> Result<crate::models::UserProfile, Error<InternalGetUserProfileError>> {
-    match internal_get_user_profile_inner(configuration, user_id.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_get_user_profile_inner(configuration, user_id).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result =
+            internal_get_user_profile_inner(configuration, &mut backoff, user_id.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_list_event_billing_prices_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     filter: Option<&str>,
     order: Option<&str>,
     page_size: Option<i64>,
@@ -1898,17 +2235,20 @@ async fn internal_list_event_billing_prices_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalListEventBillingPricesError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -1924,36 +2264,46 @@ pub async fn internal_list_event_billing_prices(
     show_deleted: Option<&str>,
 ) -> Result<crate::models::ListEventBillingPricesResponse, Error<InternalListEventBillingPricesError>>
 {
-    match internal_list_event_billing_prices_inner(
-        configuration,
-        filter.clone(),
-        order.clone(),
-        page_size.clone(),
-        page_token.clone(),
-        show_deleted.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_list_event_billing_prices_inner(
-                    configuration,
-                    filter,
-                    order,
-                    page_size,
-                    page_token,
-                    show_deleted,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_list_event_billing_prices_inner(
+            configuration,
+            &mut backoff,
+            filter.clone(),
+            order.clone(),
+            page_size.clone(),
+            page_token.clone(),
+            show_deleted.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_list_groups_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListGroupsResponse, Error<InternalListGroupsError>> {
@@ -2009,17 +2359,20 @@ async fn internal_list_groups_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalListGroupsError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -2031,19 +2384,43 @@ pub async fn internal_list_groups(
     page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListGroupsResponse, Error<InternalListGroupsError>> {
-    match internal_list_groups_inner(configuration, page_size.clone(), page_token.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_list_groups_inner(configuration, page_size, page_token).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_list_groups_inner(
+            configuration,
+            &mut backoff,
+            page_size.clone(),
+            page_token.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_list_users_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     filter: &str,
     order: Option<&str>,
     page_size: Option<i64>,
@@ -2106,17 +2483,20 @@ async fn internal_list_users_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalListUsersError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -2130,27 +2510,45 @@ pub async fn internal_list_users(
     page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::InternalListUsersResponse, Error<InternalListUsersError>> {
-    match internal_list_users_inner(
-        configuration,
-        filter.clone(),
-        order.clone(),
-        page_size.clone(),
-        page_token.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_list_users_inner(configuration, filter, order, page_size, page_token).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_list_users_inner(
+            configuration,
+            &mut backoff,
+            filter.clone(),
+            order.clone(),
+            page_size.clone(),
+            page_token.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn internal_update_event_billing_price_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     event_billing_price_id: i64,
     internal_update_event_billing_price_request: crate::models::InternalUpdateEventBillingPriceRequest,
 ) -> Result<crate::models::EventBillingPrice, Error<InternalUpdateEventBillingPriceError>> {
@@ -2201,17 +2599,20 @@ async fn internal_update_event_billing_price_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InternalUpdateEventBillingPriceError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -2223,30 +2624,43 @@ pub async fn internal_update_event_billing_price(
     event_billing_price_id: i64,
     internal_update_event_billing_price_request: crate::models::InternalUpdateEventBillingPriceRequest,
 ) -> Result<crate::models::EventBillingPrice, Error<InternalUpdateEventBillingPriceError>> {
-    match internal_update_event_billing_price_inner(
-        configuration,
-        event_billing_price_id.clone(),
-        internal_update_event_billing_price_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                internal_update_event_billing_price_inner(
-                    configuration,
-                    event_billing_price_id,
-                    internal_update_event_billing_price_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = internal_update_event_billing_price_inner(
+            configuration,
+            &mut backoff,
+            event_billing_price_id.clone(),
+            internal_update_event_billing_price_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn invite_user_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     invite_user_request: Option<crate::models::InviteUserRequest>,
 ) -> Result<(), Error<InviteUserError>> {
     let local_var_configuration = configuration;
@@ -2294,17 +2708,19 @@ async fn invite_user_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<InviteUserError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -2315,19 +2731,38 @@ pub async fn invite_user(
     configuration: &configuration::Configuration,
     invite_user_request: Option<crate::models::InviteUserRequest>,
 ) -> Result<(), Error<InviteUserError>> {
-    match invite_user_inner(configuration, invite_user_request.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                invite_user_inner(configuration, invite_user_request).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result =
+            invite_user_inner(configuration, &mut backoff, invite_user_request.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn list_group_billing_invoice_lines_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     group_name: &str,
     billing_invoice_id: &str,
     page_token: Option<&str>,
@@ -2390,17 +2825,20 @@ async fn list_group_billing_invoice_lines_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<ListGroupBillingInvoiceLinesError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -2417,34 +2855,45 @@ pub async fn list_group_billing_invoice_lines(
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListGroupBillingInvoiceLinesError>,
 > {
-    match list_group_billing_invoice_lines_inner(
-        configuration,
-        group_name.clone(),
-        billing_invoice_id.clone(),
-        page_token.clone(),
-        page_size.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                list_group_billing_invoice_lines_inner(
-                    configuration,
-                    group_name,
-                    billing_invoice_id,
-                    page_token,
-                    page_size,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = list_group_billing_invoice_lines_inner(
+            configuration,
+            &mut backoff,
+            group_name.clone(),
+            billing_invoice_id.clone(),
+            page_token.clone(),
+            page_size.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn list_group_billing_invoices_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     group_name: &str,
     page_token: Option<&str>,
     page_size: Option<i64>,
@@ -2503,17 +2952,20 @@ async fn list_group_billing_invoices_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<ListGroupBillingInvoicesError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -2527,27 +2979,44 @@ pub async fn list_group_billing_invoices(
     page_size: Option<i64>,
 ) -> Result<crate::models::ListAccountBillingInvoicesResponse, Error<ListGroupBillingInvoicesError>>
 {
-    match list_group_billing_invoices_inner(
-        configuration,
-        group_name.clone(),
-        page_token.clone(),
-        page_size.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                list_group_billing_invoices_inner(configuration, group_name, page_token, page_size)
-                    .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = list_group_billing_invoices_inner(
+            configuration,
+            &mut backoff,
+            group_name.clone(),
+            page_token.clone(),
+            page_size.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn list_group_upcoming_billing_invoice_lines_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     group_name: &str,
     page_token: Option<&str>,
     page_size: Option<i64>,
@@ -2608,17 +3077,20 @@ async fn list_group_upcoming_billing_invoice_lines_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<ListGroupUpcomingBillingInvoiceLinesError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -2634,32 +3106,44 @@ pub async fn list_group_upcoming_billing_invoice_lines(
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListGroupUpcomingBillingInvoiceLinesError>,
 > {
-    match list_group_upcoming_billing_invoice_lines_inner(
-        configuration,
-        group_name.clone(),
-        page_token.clone(),
-        page_size.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                list_group_upcoming_billing_invoice_lines_inner(
-                    configuration,
-                    group_name,
-                    page_token,
-                    page_size,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = list_group_upcoming_billing_invoice_lines_inner(
+            configuration,
+            &mut backoff,
+            group_name.clone(),
+            page_token.clone(),
+            page_size.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn list_group_users_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     group_name: &str,
     page_size: Option<i64>,
     page_token: Option<&str>,
@@ -2717,17 +3201,20 @@ async fn list_group_users_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<ListGroupUsersError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -2740,26 +3227,44 @@ pub async fn list_group_users(
     page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListGroupUsersResponse, Error<ListGroupUsersError>> {
-    match list_group_users_inner(
-        configuration,
-        group_name.clone(),
-        page_size.clone(),
-        page_token.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                list_group_users_inner(configuration, group_name, page_size, page_token).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = list_group_users_inner(
+            configuration,
+            &mut backoff,
+            group_name.clone(),
+            page_size.clone(),
+            page_token.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn list_user_billing_invoice_lines_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     user_id: &str,
     billing_invoice_id: &str,
     page_token: Option<&str>,
@@ -2822,17 +3327,20 @@ async fn list_user_billing_invoice_lines_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<ListUserBillingInvoiceLinesError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -2849,34 +3357,45 @@ pub async fn list_user_billing_invoice_lines(
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListUserBillingInvoiceLinesError>,
 > {
-    match list_user_billing_invoice_lines_inner(
-        configuration,
-        user_id.clone(),
-        billing_invoice_id.clone(),
-        page_token.clone(),
-        page_size.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                list_user_billing_invoice_lines_inner(
-                    configuration,
-                    user_id,
-                    billing_invoice_id,
-                    page_token,
-                    page_size,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = list_user_billing_invoice_lines_inner(
+            configuration,
+            &mut backoff,
+            user_id.clone(),
+            billing_invoice_id.clone(),
+            page_token.clone(),
+            page_size.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn list_user_billing_invoices_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     user_id: &str,
     page_token: Option<&str>,
     page_size: Option<i64>,
@@ -2935,17 +3454,20 @@ async fn list_user_billing_invoices_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<ListUserBillingInvoicesError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -2959,27 +3481,44 @@ pub async fn list_user_billing_invoices(
     page_size: Option<i64>,
 ) -> Result<crate::models::ListAccountBillingInvoicesResponse, Error<ListUserBillingInvoicesError>>
 {
-    match list_user_billing_invoices_inner(
-        configuration,
-        user_id.clone(),
-        page_token.clone(),
-        page_size.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                list_user_billing_invoices_inner(configuration, user_id, page_token, page_size)
-                    .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = list_user_billing_invoices_inner(
+            configuration,
+            &mut backoff,
+            user_id.clone(),
+            page_token.clone(),
+            page_size.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn list_user_groups_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     user_id: &str,
     page_size: Option<i64>,
     page_token: Option<&str>,
@@ -3037,17 +3576,20 @@ async fn list_user_groups_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<ListUserGroupsError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -3060,26 +3602,44 @@ pub async fn list_user_groups(
     page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListGroupsResponse, Error<ListUserGroupsError>> {
-    match list_user_groups_inner(
-        configuration,
-        user_id.clone(),
-        page_size.clone(),
-        page_token.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                list_user_groups_inner(configuration, user_id, page_size, page_token).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = list_user_groups_inner(
+            configuration,
+            &mut backoff,
+            user_id.clone(),
+            page_size.clone(),
+            page_token.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn list_user_upcoming_billing_invoice_lines_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     user_id: &str,
     page_token: Option<&str>,
     page_size: Option<i64>,
@@ -3140,17 +3700,20 @@ async fn list_user_upcoming_billing_invoice_lines_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<ListUserUpcomingBillingInvoiceLinesError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -3166,32 +3729,44 @@ pub async fn list_user_upcoming_billing_invoice_lines(
     crate::models::ListAccountBillingInvoiceLinesResponse,
     Error<ListUserUpcomingBillingInvoiceLinesError>,
 > {
-    match list_user_upcoming_billing_invoice_lines_inner(
-        configuration,
-        user_id.clone(),
-        page_token.clone(),
-        page_size.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                list_user_upcoming_billing_invoice_lines_inner(
-                    configuration,
-                    user_id,
-                    page_token,
-                    page_size,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = list_user_upcoming_billing_invoice_lines_inner(
+            configuration,
+            &mut backoff,
+            user_id.clone(),
+            page_token.clone(),
+            page_size.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn receive_stripe_webhook_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
 ) -> Result<(), Error<ReceiveStripeWebhookError>> {
     let local_var_configuration = configuration;
 
@@ -3236,17 +3811,19 @@ async fn receive_stripe_webhook_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<ReceiveStripeWebhookError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -3256,19 +3833,37 @@ async fn receive_stripe_webhook_inner(
 pub async fn receive_stripe_webhook(
     configuration: &configuration::Configuration,
 ) -> Result<(), Error<ReceiveStripeWebhookError>> {
-    match receive_stripe_webhook_inner(configuration).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                receive_stripe_webhook_inner(configuration).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = receive_stripe_webhook_inner(configuration, &mut backoff).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn remove_group_user_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     remove_group_user_request: crate::models::RemoveGroupUserRequest,
 ) -> Result<(), Error<RemoveGroupUserError>> {
     let local_var_configuration = configuration;
@@ -3316,17 +3911,19 @@ async fn remove_group_user_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<RemoveGroupUserError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -3337,19 +3934,42 @@ pub async fn remove_group_user(
     configuration: &configuration::Configuration,
     remove_group_user_request: crate::models::RemoveGroupUserRequest,
 ) -> Result<(), Error<RemoveGroupUserError>> {
-    match remove_group_user_inner(configuration, remove_group_user_request.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                remove_group_user_inner(configuration, remove_group_user_request).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = remove_group_user_inner(
+            configuration,
+            &mut backoff,
+            remove_group_user_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn update_user_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     idp_id: &str,
     update_user_request: Option<crate::models::UpdateUserRequest>,
 ) -> Result<crate::models::User, Error<UpdateUserError>> {
@@ -3399,17 +4019,20 @@ async fn update_user_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<UpdateUserError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -3421,14 +4044,37 @@ pub async fn update_user(
     idp_id: &str,
     update_user_request: Option<crate::models::UpdateUserRequest>,
 ) -> Result<crate::models::User, Error<UpdateUserError>> {
-    match update_user_inner(configuration, idp_id.clone(), update_user_request.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                update_user_inner(configuration, idp_id, update_user_request).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = update_user_inner(
+            configuration,
+            &mut backoff,
+            idp_id.clone(),
+            update_user_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }

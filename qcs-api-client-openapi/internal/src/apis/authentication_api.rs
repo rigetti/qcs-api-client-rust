@@ -10,6 +10,7 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
+use ::qcs_api_client_common::backoff::{duration_from_response, ExponentialBackoff};
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
@@ -52,6 +53,7 @@ pub enum AuthResetPasswordWithTokenError {
 
 async fn auth_email_password_reset_token_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     auth_email_password_reset_token_request: Option<
         crate::models::AuthEmailPasswordResetTokenRequest,
     >,
@@ -101,17 +103,19 @@ async fn auth_email_password_reset_token_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<AuthEmailPasswordResetTokenError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -124,28 +128,42 @@ pub async fn auth_email_password_reset_token(
         crate::models::AuthEmailPasswordResetTokenRequest,
     >,
 ) -> Result<(), Error<AuthEmailPasswordResetTokenError>> {
-    match auth_email_password_reset_token_inner(
-        configuration,
-        auth_email_password_reset_token_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                auth_email_password_reset_token_inner(
-                    configuration,
-                    auth_email_password_reset_token_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = auth_email_password_reset_token_inner(
+            configuration,
+            &mut backoff,
+            auth_email_password_reset_token_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn auth_get_user_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
 ) -> Result<crate::models::User, Error<AuthGetUserError>> {
     let local_var_configuration = configuration;
 
@@ -190,17 +208,20 @@ async fn auth_get_user_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<AuthGetUserError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -210,19 +231,37 @@ async fn auth_get_user_inner(
 pub async fn auth_get_user(
     configuration: &configuration::Configuration,
 ) -> Result<crate::models::User, Error<AuthGetUserError>> {
-    match auth_get_user_inner(configuration).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                auth_get_user_inner(configuration).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = auth_get_user_inner(configuration, &mut backoff).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn auth_reset_password_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     auth_reset_password_request: crate::models::AuthResetPasswordRequest,
 ) -> Result<(), Error<AuthResetPasswordError>> {
     let local_var_configuration = configuration;
@@ -270,17 +309,19 @@ async fn auth_reset_password_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<AuthResetPasswordError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -291,19 +332,42 @@ pub async fn auth_reset_password(
     configuration: &configuration::Configuration,
     auth_reset_password_request: crate::models::AuthResetPasswordRequest,
 ) -> Result<(), Error<AuthResetPasswordError>> {
-    match auth_reset_password_inner(configuration, auth_reset_password_request.clone()).await {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                auth_reset_password_inner(configuration, auth_reset_password_request).await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = auth_reset_password_inner(
+            configuration,
+            &mut backoff,
+            auth_reset_password_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }
 async fn auth_reset_password_with_token_inner(
     configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
     auth_reset_password_with_token_request: crate::models::AuthResetPasswordWithTokenRequest,
 ) -> Result<(), Error<AuthResetPasswordWithTokenError>> {
     let local_var_configuration = configuration;
@@ -351,17 +415,19 @@ async fn auth_reset_password_with_token_inner(
 
     let local_var_status = local_var_resp.status();
 
-    let local_var_content = local_var_resp.text().await?;
-
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
     } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
         let local_var_entity: Option<AuthResetPasswordWithTokenError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
             content: local_var_content,
             entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
         };
         Err(Error::ResponseError(local_var_error))
     }
@@ -372,23 +438,36 @@ pub async fn auth_reset_password_with_token(
     configuration: &configuration::Configuration,
     auth_reset_password_with_token_request: crate::models::AuthResetPasswordWithTokenRequest,
 ) -> Result<(), Error<AuthResetPasswordWithTokenError>> {
-    match auth_reset_password_with_token_inner(
-        configuration,
-        auth_reset_password_with_token_request.clone(),
-    )
-    .await
-    {
-        Ok(result) => Ok(result),
-        Err(err) => match err.status_code() {
-            Some(StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED) => {
-                configuration.qcs_config.refresh().await?;
-                auth_reset_password_with_token_inner(
-                    configuration,
-                    auth_reset_password_with_token_request,
-                )
-                .await
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    loop {
+        let result = auth_reset_password_with_token_inner(
+            configuration,
+            &mut backoff,
+            auth_reset_password_with_token_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
             }
-            _ => Err(err),
-        },
+            Err(error) => return Err(error),
+        }
     }
 }

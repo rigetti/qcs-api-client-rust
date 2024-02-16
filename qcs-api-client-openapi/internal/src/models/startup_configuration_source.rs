@@ -18,6 +18,8 @@ pub enum StartupConfigurationSource {
     DeployedRack,
     #[serde(rename = "blackpine")]
     Blackpine,
+    #[serde(rename = "explicit")]
+    Explicit,
     #[serde(rename = "treeline")]
     Treeline,
 }
@@ -27,6 +29,7 @@ impl std::fmt::Display for StartupConfigurationSource {
         match self {
             Self::DeployedRack => write!(f, "deployedRack"),
             Self::Blackpine => write!(f, "blackpine"),
+            Self::Explicit => write!(f, "explicit"),
             Self::Treeline => write!(f, "treeline"),
         }
     }
