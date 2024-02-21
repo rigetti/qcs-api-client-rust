@@ -6191,7 +6191,6 @@ components:
       enum:
         - berkeley-775
         - fremont-fab
-        - oxford-instruments
       title: NomadJobDatacenters
       type: string
     NomadReservedPort:
