@@ -29,7 +29,13 @@ pub struct BatchExecuteControllerJobsResponse {
     pub responses: ::prost::alloc::vec::Vec<ExecuteControllerJobResponse>,
 }
 /// A request to execute a given ControllerJob on a specific target with one or more configurations.
-/// Note that a request to execute a job with zero configurations will result in an error.
+///
+/// This action is *atomic* in that a job for each configuration will be queued, or none of them will.
+/// On success, the response will contain a sequence of job IDs where the number and order of IDs returned
+/// will correspond to the number and order of configurations given. However, note that execution in the
+/// order of the given configurations is not guaranteed. If there is a failure to queue any of the jobs,
+/// then none will be queued. A request must have at least one configuration, otherwise an error will be
+/// returned.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ExecuteControllerJobRequest {
