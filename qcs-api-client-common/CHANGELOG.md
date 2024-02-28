@@ -1,3 +1,9 @@
+## 0.7.11 (2024-02-28)
+
+### Fixes
+
+#### Update ExecuteControllerJobRequest documentation
+
 ## 0.7.10 (2024-02-16)
 
 ### Features

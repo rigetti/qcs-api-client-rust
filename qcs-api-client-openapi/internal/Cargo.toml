@@ -1,14 +1,14 @@
 [package]
 name = "qcs-api-client-openapi-internal"
 description = "Auto-generated bindings to the QCS OpenAPI"
-version = "0.8.11"
+version = "0.8.12"
 edition = "2021"
 keywords = ["API", "QCS", "Rigetti"]
 categories = ["api-bindings"]
 publish = false
 
 [dependencies]
-qcs-api-client-common = { path = "../../qcs-api-client-common", version = "0.7.10" }
+qcs-api-client-common = { path = "../../qcs-api-client-common", version = "0.7.11" }
 # Before updating `serde`, check for the following:
 #
 # 1. Has support been added for retaining the tag field for internally tagged enums?
