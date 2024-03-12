@@ -70,12 +70,12 @@ impl<'de> serde::Deserialize<'de> for BackendV1Options {
                 formatter.write_str("struct services.translation.BackendV1Options")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<BackendV1Options, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<BackendV1Options, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                while map.next_key::<GeneratedField>()?.is_some() {
-                    let _ = map.next_value::<serde::de::IgnoredAny>()?;
+                while map_.next_key::<GeneratedField>()?.is_some() {
+                    let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
                 Ok(BackendV1Options {
                 })
@@ -183,7 +183,7 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
                 formatter.write_str("struct services.translation.BackendV2Options")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<BackendV2Options, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<BackendV2Options, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -191,33 +191,33 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
                 let mut passive_reset_delay_seconds__ = None;
                 let mut allow_unchecked_pointer_arithmetic__ = None;
                 let mut allow_frame_redefinition__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::PrependDefaultCalibrations => {
                             if prepend_default_calibrations__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("prependDefaultCalibrations"));
                             }
-                            prepend_default_calibrations__ = map.next_value()?;
+                            prepend_default_calibrations__ = map_.next_value()?;
                         }
                         GeneratedField::PassiveResetDelaySeconds => {
                             if passive_reset_delay_seconds__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("passiveResetDelaySeconds"));
                             }
                             passive_reset_delay_seconds__ = 
-                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                                map_.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
                         GeneratedField::AllowUncheckedPointerArithmetic => {
                             if allow_unchecked_pointer_arithmetic__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("allowUncheckedPointerArithmetic"));
                             }
-                            allow_unchecked_pointer_arithmetic__ = map.next_value()?;
+                            allow_unchecked_pointer_arithmetic__ = map_.next_value()?;
                         }
                         GeneratedField::AllowFrameRedefinition => {
                             if allow_frame_redefinition__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("allowFrameRedefinition"));
                             }
-                            allow_frame_redefinition__ = map.next_value()?;
+                            allow_frame_redefinition__ = map_.next_value()?;
                         }
                     }
                 }
@@ -301,18 +301,18 @@ impl<'de> serde::Deserialize<'de> for GetQuantumProcessorQuilCalibrationProgramR
                 formatter.write_str("struct services.translation.GetQuantumProcessorQuilCalibrationProgramRequest")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<GetQuantumProcessorQuilCalibrationProgramRequest, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<GetQuantumProcessorQuilCalibrationProgramRequest, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut quantum_processor_id__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::QuantumProcessorId => {
                             if quantum_processor_id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("quantumProcessorId"));
                             }
-                            quantum_processor_id__ = Some(map.next_value()?);
+                            quantum_processor_id__ = Some(map_.next_value()?);
                         }
                     }
                 }
@@ -393,18 +393,18 @@ impl<'de> serde::Deserialize<'de> for QuantumProcessorQuilCalibrationProgram {
                 formatter.write_str("struct services.translation.QuantumProcessorQuilCalibrationProgram")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<QuantumProcessorQuilCalibrationProgram, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<QuantumProcessorQuilCalibrationProgram, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut quil_calibration_program__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::QuilCalibrationProgram => {
                             if quil_calibration_program__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("quilCalibrationProgram"));
                             }
-                            quil_calibration_program__ = Some(map.next_value()?);
+                            quil_calibration_program__ = Some(map_.next_value()?);
                         }
                     }
                 }
@@ -518,7 +518,7 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobReque
                 formatter.write_str("struct services.translation.TranslateQuilToEncryptedControllerJobRequest")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<TranslateQuilToEncryptedControllerJobRequest, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<TranslateQuilToEncryptedControllerJobRequest, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -526,31 +526,31 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobReque
                 let mut quil_program__ = None;
                 let mut options__ = None;
                 let mut num_shots__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::QuantumProcessorId => {
                             if quantum_processor_id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("quantumProcessorId"));
                             }
-                            quantum_processor_id__ = Some(map.next_value()?);
+                            quantum_processor_id__ = Some(map_.next_value()?);
                         }
                         GeneratedField::QuilProgram => {
                             if quil_program__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("quilProgram"));
                             }
-                            quil_program__ = Some(map.next_value()?);
+                            quil_program__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Options => {
                             if options__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("options"));
                             }
-                            options__ = map.next_value()?;
+                            options__ = map_.next_value()?;
                         }
                         GeneratedField::NumShotsValue => {
                             if num_shots__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("numShotsValue"));
                             }
-                            num_shots__ = map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| translate_quil_to_encrypted_controller_job_request::NumShots::NumShotsValue(x.0));
+                            num_shots__ = map_.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| translate_quil_to_encrypted_controller_job_request::NumShots::NumShotsValue(x.0));
                         }
                     }
                 }
@@ -642,25 +642,25 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobRespo
                 formatter.write_str("struct services.translation.TranslateQuilToEncryptedControllerJobResponse")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<TranslateQuilToEncryptedControllerJobResponse, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<TranslateQuilToEncryptedControllerJobResponse, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut job__ = None;
                 let mut metadata__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Job => {
                             if job__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("job"));
                             }
-                            job__ = map.next_value()?;
+                            job__ = map_.next_value()?;
                         }
                         GeneratedField::Metadata => {
                             if metadata__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("metadata"));
                             }
-                            metadata__ = map.next_value()?;
+                            metadata__ = map_.next_value()?;
                         }
                     }
                 }
@@ -751,25 +751,25 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                 formatter.write_str("struct services.translation.TranslationOptions")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<TranslationOptions, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<TranslationOptions, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut translation_backend__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::V1 => {
                             if translation_backend__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("v1"));
                             }
-                            translation_backend__ = map.next_value::<::std::option::Option<_>>()?.map(translation_options::TranslationBackend::V1)
+                            translation_backend__ = map_.next_value::<::std::option::Option<_>>()?.map(translation_options::TranslationBackend::V1)
 ;
                         }
                         GeneratedField::V2 => {
                             if translation_backend__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("v2"));
                             }
-                            translation_backend__ = map.next_value::<::std::option::Option<_>>()?.map(translation_options::TranslationBackend::V2)
+                            translation_backend__ = map_.next_value::<::std::option::Option<_>>()?.map(translation_options::TranslationBackend::V2)
 ;
                         }
                     }

@@ -26,6 +26,7 @@ impl serde::Serialize for BinaryDataValue {
         }
         let mut struct_ser = serializer.serialize_struct("models.controller.BinaryDataValue", len)?;
         if !self.data.is_empty() {
+            #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("data", pbjson::private::base64::encode(&self.data).as_str())?;
         }
         struct_ser.end()
@@ -81,19 +82,19 @@ impl<'de> serde::Deserialize<'de> for BinaryDataValue {
                 formatter.write_str("struct models.controller.BinaryDataValue")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<BinaryDataValue, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<BinaryDataValue, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut data__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Data => {
                             if data__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("data"));
                             }
                             data__ = 
-                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
                             ;
                         }
                     }
@@ -183,20 +184,20 @@ impl<'de> serde::Deserialize<'de> for Complex64 {
                 formatter.write_str("struct models.controller.Complex64")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<Complex64, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<Complex64, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut real__ = None;
                 let mut imaginary__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Real => {
                             if real__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("real"));
                             }
                             real__ = 
-                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
                         GeneratedField::Imaginary => {
@@ -204,7 +205,7 @@ impl<'de> serde::Deserialize<'de> for Complex64 {
                                 return Err(serde::de::Error::duplicate_field("imaginary"));
                             }
                             imaginary__ = 
-                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
                     }
@@ -286,18 +287,18 @@ impl<'de> serde::Deserialize<'de> for Complex64ReadoutValues {
                 formatter.write_str("struct models.controller.Complex64ReadoutValues")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<Complex64ReadoutValues, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<Complex64ReadoutValues, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut values__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Values => {
                             if values__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("values"));
                             }
-                            values__ = Some(map.next_value()?);
+                            values__ = Some(map_.next_value()?);
                         }
                     }
                 }
@@ -340,14 +341,15 @@ impl serde::Serialize for ControllerJobExecutionResult {
             struct_ser.serialize_field("readoutValues", &self.readout_values)?;
         }
         if self.status != 0 {
-            let v = controller_job_execution_result::Status::from_i32(self.status)
-                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.status)))?;
+            let v = controller_job_execution_result::Status::try_from(self.status)
+                .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.status)))?;
             struct_ser.serialize_field("status", &v)?;
         }
         if let Some(v) = self.status_message.as_ref() {
             struct_ser.serialize_field("statusMessage", v)?;
         }
         if self.execution_duration_microseconds != 0 {
+            #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("executionDurationMicroseconds", ToString::to_string(&self.execution_duration_microseconds).as_str())?;
         }
         struct_ser.end()
@@ -419,7 +421,7 @@ impl<'de> serde::Deserialize<'de> for ControllerJobExecutionResult {
                 formatter.write_str("struct models.controller.ControllerJobExecutionResult")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ControllerJobExecutionResult, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<ControllerJobExecutionResult, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -428,14 +430,14 @@ impl<'de> serde::Deserialize<'de> for ControllerJobExecutionResult {
                 let mut status__ = None;
                 let mut status_message__ = None;
                 let mut execution_duration_microseconds__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::MemoryValues => {
                             if memory_values__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("memoryValues"));
                             }
                             memory_values__ = Some(
-                                map.next_value::<std::collections::HashMap<_, _>>()?
+                                map_.next_value::<std::collections::HashMap<_, _>>()?
                             );
                         }
                         GeneratedField::ReadoutValues => {
@@ -443,27 +445,27 @@ impl<'de> serde::Deserialize<'de> for ControllerJobExecutionResult {
                                 return Err(serde::de::Error::duplicate_field("readoutValues"));
                             }
                             readout_values__ = Some(
-                                map.next_value::<std::collections::HashMap<_, _>>()?
+                                map_.next_value::<std::collections::HashMap<_, _>>()?
                             );
                         }
                         GeneratedField::Status => {
                             if status__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("status"));
                             }
-                            status__ = Some(map.next_value::<controller_job_execution_result::Status>()? as i32);
+                            status__ = Some(map_.next_value::<controller_job_execution_result::Status>()? as i32);
                         }
                         GeneratedField::StatusMessage => {
                             if status_message__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("statusMessage"));
                             }
-                            status_message__ = map.next_value()?;
+                            status_message__ = map_.next_value()?;
                         }
                         GeneratedField::ExecutionDurationMicroseconds => {
                             if execution_duration_microseconds__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("executionDurationMicroseconds"));
                             }
                             execution_duration_microseconds__ = 
-                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
                     }
@@ -523,10 +525,9 @@ impl<'de> serde::Deserialize<'de> for controller_job_execution_result::Status {
             where
                 E: serde::de::Error,
             {
-                use std::convert::TryFrom;
                 i32::try_from(v)
                     .ok()
-                    .and_then(controller_job_execution_result::Status::from_i32)
+                    .and_then(|x| x.try_into().ok())
                     .ok_or_else(|| {
                         serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
                     })
@@ -536,10 +537,9 @@ impl<'de> serde::Deserialize<'de> for controller_job_execution_result::Status {
             where
                 E: serde::de::Error,
             {
-                use std::convert::TryFrom;
                 i32::try_from(v)
                     .ok()
-                    .and_then(controller_job_execution_result::Status::from_i32)
+                    .and_then(|x| x.try_into().ok())
                     .ok_or_else(|| {
                         serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
                     })
@@ -646,32 +646,32 @@ impl<'de> serde::Deserialize<'de> for DataValue {
                 formatter.write_str("struct models.controller.DataValue")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<DataValue, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<DataValue, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut value__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Binary => {
                             if value__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("binary"));
                             }
-                            value__ = map.next_value::<::std::option::Option<_>>()?.map(data_value::Value::Binary)
+                            value__ = map_.next_value::<::std::option::Option<_>>()?.map(data_value::Value::Binary)
 ;
                         }
                         GeneratedField::Integer => {
                             if value__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("integer"));
                             }
-                            value__ = map.next_value::<::std::option::Option<_>>()?.map(data_value::Value::Integer)
+                            value__ = map_.next_value::<::std::option::Option<_>>()?.map(data_value::Value::Integer)
 ;
                         }
                         GeneratedField::Real => {
                             if value__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("real"));
                             }
-                            value__ = map.next_value::<::std::option::Option<_>>()?.map(data_value::Value::Real)
+                            value__ = map_.next_value::<::std::option::Option<_>>()?.map(data_value::Value::Real)
 ;
                         }
                     }
@@ -700,6 +700,7 @@ impl serde::Serialize for EncryptedControllerJob {
         }
         let mut struct_ser = serializer.serialize_struct("models.controller.EncryptedControllerJob", len)?;
         if !self.job.is_empty() {
+            #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("job", pbjson::private::base64::encode(&self.job).as_str())?;
         }
         if let Some(v) = self.encryption.as_ref() {
@@ -761,27 +762,27 @@ impl<'de> serde::Deserialize<'de> for EncryptedControllerJob {
                 formatter.write_str("struct models.controller.EncryptedControllerJob")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<EncryptedControllerJob, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<EncryptedControllerJob, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut job__ = None;
                 let mut encryption__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Job => {
                             if job__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("job"));
                             }
                             job__ = 
-                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
                             ;
                         }
                         GeneratedField::Encryption => {
                             if encryption__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("encryption"));
                             }
-                            encryption__ = map.next_value()?;
+                            encryption__ = map_.next_value()?;
                         }
                     }
                 }
@@ -862,19 +863,19 @@ impl<'de> serde::Deserialize<'de> for IntegerDataValue {
                 formatter.write_str("struct models.controller.IntegerDataValue")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<IntegerDataValue, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<IntegerDataValue, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut data__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Data => {
                             if data__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("data"));
                             }
                             data__ = 
-                                Some(map.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
                                     .into_iter().map(|x| x.0).collect())
                             ;
                         }
@@ -956,19 +957,19 @@ impl<'de> serde::Deserialize<'de> for IntegerReadoutValues {
                 formatter.write_str("struct models.controller.IntegerReadoutValues")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<IntegerReadoutValues, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<IntegerReadoutValues, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut values__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Values => {
                             if values__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("values"));
                             }
                             values__ = 
-                                Some(map.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
                                     .into_iter().map(|x| x.0).collect())
                             ;
                         }
@@ -1001,6 +1002,7 @@ impl serde::Serialize for JobEncryption {
             struct_ser.serialize_field("keyId", &self.key_id)?;
         }
         if !self.nonce.is_empty() {
+            #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("nonce", pbjson::private::base64::encode(&self.nonce).as_str())?;
         }
         struct_ser.end()
@@ -1060,26 +1062,26 @@ impl<'de> serde::Deserialize<'de> for JobEncryption {
                 formatter.write_str("struct models.controller.JobEncryption")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<JobEncryption, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<JobEncryption, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut key_id__ = None;
                 let mut nonce__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::KeyId => {
                             if key_id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("keyId"));
                             }
-                            key_id__ = Some(map.next_value()?);
+                            key_id__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Nonce => {
                             if nonce__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("nonce"));
                             }
                             nonce__ = 
-                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
                             ;
                         }
                     }
@@ -1162,19 +1164,19 @@ impl<'de> serde::Deserialize<'de> for JobExecutionConfiguration {
                 formatter.write_str("struct models.controller.JobExecutionConfiguration")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<JobExecutionConfiguration, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<JobExecutionConfiguration, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut memory_values__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::MemoryValues => {
                             if memory_values__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("memoryValues"));
                             }
                             memory_values__ = Some(
-                                map.next_value::<std::collections::HashMap<_, _>>()?
+                                map_.next_value::<std::collections::HashMap<_, _>>()?
                             );
                         }
                     }
@@ -1267,25 +1269,25 @@ impl<'de> serde::Deserialize<'de> for ReadoutValues {
                 formatter.write_str("struct models.controller.ReadoutValues")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ReadoutValues, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<ReadoutValues, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut values__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::IntegerValues => {
                             if values__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("integerValues"));
                             }
-                            values__ = map.next_value::<::std::option::Option<_>>()?.map(readout_values::Values::IntegerValues)
+                            values__ = map_.next_value::<::std::option::Option<_>>()?.map(readout_values::Values::IntegerValues)
 ;
                         }
                         GeneratedField::ComplexValues => {
                             if values__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("complexValues"));
                             }
-                            values__ = map.next_value::<::std::option::Option<_>>()?.map(readout_values::Values::ComplexValues)
+                            values__ = map_.next_value::<::std::option::Option<_>>()?.map(readout_values::Values::ComplexValues)
 ;
                         }
                     }
@@ -1366,19 +1368,19 @@ impl<'de> serde::Deserialize<'de> for RealDataValue {
                 formatter.write_str("struct models.controller.RealDataValue")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<RealDataValue, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<RealDataValue, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut data__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Data => {
                             if data__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("data"));
                             }
                             data__ = 
-                                Some(map.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
                                     .into_iter().map(|x| x.0).collect())
                             ;
                         }

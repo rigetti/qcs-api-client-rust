@@ -396,8 +396,10 @@ pub mod translation_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner)
-                                    .translate_quil_to_encrypted_controller_job(request)
+                                <T as Translation>::translate_quil_to_encrypted_controller_job(
+                                        &inner,
+                                        request,
+                                    )
                                     .await
                             };
                             Box::pin(fut)
@@ -449,8 +451,10 @@ pub mod translation_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner)
-                                    .get_quantum_processor_quil_calibration_program(request)
+                                <T as Translation>::get_quantum_processor_quil_calibration_program(
+                                        &inner,
+                                        request,
+                                    )
                                     .await
                             };
                             Box::pin(fut)

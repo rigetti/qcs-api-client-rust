@@ -785,7 +785,8 @@ mod uds_grpc_stream {
     use tempfile::NamedTempFile;
     use tokio::net::{UnixListener, UnixStream};
     use tokio_stream::wrappers::UnixListenerStream;
-    use tonic::transport::{Channel, Endpoint, NamedService, Server, Uri};
+    use tonic::transport::{Channel, Endpoint, Server, Uri};
+    use tonic::server::NamedService;
     use tower::service_fn;
 
     /// The can be any valid URL. It is necessary to initialize an [`Endpoint`].
@@ -855,7 +856,7 @@ mod otel_tests {
     use serde::{Deserialize, Serialize};
     use std::time::{Duration, SystemTime};
     use tonic::codegen::http::{HeaderMap, HeaderValue};
-    use tonic::transport::NamedService;
+    use tonic::server::NamedService;
     use tonic::Request;
     use tonic_health::pb::health_check_response::ServingStatus;
     use tonic_health::pb::health_server::{Health, HealthServer};
@@ -1368,7 +1369,7 @@ mod tests {
 
     use super::*;
     use backoff::ExponentialBackoffBuilder;
-    use tonic::transport::NamedService;
+    use tonic::server::NamedService;
     use tonic::Request;
     use tonic_health::pb::health_check_response::ServingStatus;
     use tonic_health::pb::health_server::{Health, HealthServer};

@@ -25,7 +25,7 @@ include:
   - apt-get install -y zip curl git
   - ldd --version
 
-Check:
+Lint:
   stage: test
   image: 216842466810.dkr.ecr.us-west-1.amazonaws.com/qcs-rust-ci:latest
   before_script:
@@ -35,6 +35,16 @@ Check:
   script:
     - cargo --version
     - cargo make clippy
+
+Test:
+  stage: test
+  image: 216842466810.dkr.ecr.us-west-1.amazonaws.com/qcs-rust-ci:latest
+  before_script:
+    - *install_deps
+    - !reference [.install_protoc]
+    - !reference [.setup_qcs]
+  script:
+    - cargo --version
     - cargo make test
 
 Release:
