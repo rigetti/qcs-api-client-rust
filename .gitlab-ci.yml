@@ -1,5 +1,5 @@
 default:
-  image: debian:stable
+  image: registry.gitlab.com/rigetti/qcs/utilities/rust-ci-image:latest
   tags:
     - ec2-docker
 
@@ -27,7 +27,6 @@ include:
 
 Lint:
   stage: test
-  image: 216842466810.dkr.ecr.us-west-1.amazonaws.com/qcs-rust-ci:latest
   before_script:
     - *install_deps
     - !reference [.install_protoc]
@@ -38,7 +37,6 @@ Lint:
 
 Test:
   stage: test
-  image: 216842466810.dkr.ecr.us-west-1.amazonaws.com/qcs-rust-ci:latest
   before_script:
     - *install_deps
     - !reference [.install_protoc]
@@ -47,9 +45,28 @@ Test:
     - cargo --version
     - cargo make test
 
+Check Proxy:
+  stage: test
+  services:
+    - name: serjs/go-socks5-proxy
+      alias: socks5
+    - name: ubuntu/squid
+      alias: squid
+  variables:
+    SOCKS5_URL: socks5://socks5:1080
+    SQUID_URL: http://squid:3128
+  before_script:
+    - *install_deps
+    - !reference [.install_protoc]
+    - !reference [.setup_qcs]
+  script:
+    - cargo --version
+    - cargo test -F docker -p proxy-test
+  when: manual
+
+
 Release:
   stage: publish
-  image: 216842466810.dkr.ecr.us-west-1.amazonaws.com/qcs-rust-ci:latest
   variables:
     GIT_DEPTH: 0
   before_script:
@@ -69,9 +86,28 @@ Release:
       # We cut new releases manually to avoid unnecessary versions & releases from immaterial changes
       when: manual
 
+Release RC:
+  stage: publish
+  variables:
+    GIT_DEPTH: 0
+  before_script:
+    - *install_deps
+    - !reference [.setup_git]
+    - git_config_insteadof "${CI_PROJECT_PATH}" "${API_CLIENT_PUSH_TOKEN}"
+    - git remote set-url origin "https://git:${API_CLIENT_PUSH_TOKEN}@gitlab.com/${CI_PROJECT_PATH}"
+    - !reference [.install_protoc]
+    - !reference [.install_knope]
+  script:
+    - git checkout $CI_COMMIT_BRANCH  # Have to be on branch to push back
+    - knope prerelease --verbose
+  needs: []
+  rules:
+    - if: "$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH"
+      when: manual
+
+
 Release Dry Run:
   stage: publish
-  image: 216842466810.dkr.ecr.us-west-1.amazonaws.com/qcs-rust-ci:latest
   variables:
     GIT_DEPTH: 0
   before_script:

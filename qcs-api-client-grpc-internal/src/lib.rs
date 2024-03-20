@@ -33,7 +33,7 @@ pub mod channel {
     //! # Ok(())
     //! # }
     //! ```
-    include!("../../qcs-api-client-grpc/src/channel.rs");
+    include!("../../qcs-api-client-grpc/src/channel/mod.rs");
 }
 pub use channel::{get_channel, wrap_channel, wrap_channel_with_token_refresher};
 pub use qcs_api_client_common::configuration as client_configuration;

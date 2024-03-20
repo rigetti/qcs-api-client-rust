@@ -13,15 +13,23 @@
 // limitations under the License.
 
 use qcs_api_client_common::ClientConfiguration;
-use qcs_api_client_grpc::channel::{get_channel, parse_uri, wrap_channel_with, Error};
+use qcs_api_client_grpc::channel::{
+    get_channel, parse_uri, wrap_channel_with, wrap_channel_with_retry, Error,
+};
 use qcs_api_client_grpc::client_configuration::RefreshError;
 use qcs_api_client_grpc::services::translation::translation_client::TranslationClient;
+
+#[cfg(feature = "grpc-web")]
+use qcs_api_client_grpc::channel::wrap_channel_with_grpc_web;
 
 #[allow(dead_code)]
 async fn build_client() -> Result<(), Error<RefreshError>> {
     let config = ClientConfiguration::load_default().await?;
 
-    let service = wrap_channel_with(get_channel(parse_uri("")?)?, config);
+    let service = wrap_channel_with_retry(wrap_channel_with(get_channel(parse_uri("")?)?, config));
+
+    #[cfg(feature = "grpc-web")]
+    let service = wrap_channel_with_grpc_web(service);
 
     let _client = TranslationClient::new(service);
 

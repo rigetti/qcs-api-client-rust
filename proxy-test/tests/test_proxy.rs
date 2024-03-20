@@ -3,9 +3,7 @@ use qcs_api_client_grpc::{
     channel::{get_channel, parse_uri, wrap_channel_with},
     client_configuration::ClientConfiguration,
     services::translation::{
-        translate_quil_to_encrypted_controller_job_request::NumShots,
-        translation_client::TranslationClient, TranslateQuilToEncryptedControllerJobRequest,
-        TranslateQuilToEncryptedControllerJobResponse,
+        translation_client::TranslationClient, GetQuantumProcessorQuilCalibrationProgramRequest,
     },
 };
 use qcs_api_client_openapi::{
@@ -14,46 +12,41 @@ use qcs_api_client_openapi::{
 };
 use serial_test::serial;
 
-fn set_https_proxy() {
-    std::env::set_var("HTTPS_PROXY", "socks5://127.0.0.1:49818");
+/// Fetch the calibration program for the given QPU,
+/// optionally wrapping the client with additional channel wrappers.
+macro_rules! get_calibration_program_with_client_channels {
+    ($qpu_id:expr $(, $channel_wrapper_fn:ident)*) => {async {
+        let config = ClientConfiguration::load_default().await?;
+        let uri = parse_uri(config.grpc_api_url())?;
+        let channel = wrap_channel_with(get_channel(uri)?, config);
+
+        $(let channel = $channel_wrapper_fn(channel);)*
+
+        let mut client = TranslationClient::new(channel);
+
+        let response = client
+            .get_quantum_processor_quil_calibration_program(
+                GetQuantumProcessorQuilCalibrationProgramRequest {
+                    quantum_processor_id: String::from($qpu_id),
+                },
+            )
+            .await?;
+
+        Ok::<_, eyre::Report>(response)
+    }};
 }
 
-/// Make a gRPC translation request to the live QCS API using proxy configuration.
-///
-/// Loads a default [`ClientConfiguration`] and thus relies on the presence of
-/// QCS configuration files.
-async fn request_translation() -> Result<TranslateQuilToEncryptedControllerJobResponse> {
-    let config = ClientConfiguration::load_default().await?;
-
-    let uri = parse_uri(config.grpc_api_url())?;
-    let mut client = TranslationClient::new(wrap_channel_with(get_channel(uri)?, config));
-
-    let request = TranslateQuilToEncryptedControllerJobRequest {
-        num_shots: Some(NumShots::NumShotsValue(1)),
-        quantum_processor_id: String::from("Aspen-M-3"),
-        quil_program: String::from("DECLARE ro BIT"),
-        options: None,
-    };
-
-    let response = client
-        .translate_quil_to_encrypted_controller_job(request)
-        .await?
-        .into_inner();
-
-    Ok(response)
-}
-
-/// Make an https request to list quantum processors.
+/// Fetch the publicly available list of quantum processors.
 async fn request_list_quantum_processors() -> Result<ListQuantumProcessorsResponse> {
     let config = Configuration::new().await?;
-
     let response = list_quantum_processors(&config, None, None).await?;
-
     Ok(response)
 }
 
 #[cfg(not(feature = "docker"))]
 mod test_in_process {
+    use super::*;
+
     use std::sync::Arc;
     use std::time::Duration;
 
@@ -61,95 +54,128 @@ mod test_in_process {
     use socks5_server::{auth::NoAuth, Server};
     use tokio::net::TcpListener;
 
-    use super::*;
+    async fn with_proxy<F, O>(f: F) -> Result<()>
+    where
+        F: FnOnce() -> O,
+        O: std::future::Future<Output = Result<()>>,
+    {
+        let auth = Arc::new(NoAuth);
+        let listener = TcpListener::bind("127.0.0.1:1080").await?;
 
-    /// Contains a socks5 proxy server.
-    struct Proxy(Server<()>);
+        let server = Server::new(listener, auth);
+        let proxy_host = server.local_addr()?.to_string();
 
-    impl Proxy {
-        /// Create a new socks server that binds to an OS-assigned port.
-        async fn new() -> Result<Self> {
-            let auth = Arc::new(NoAuth);
-            let listener = TcpListener::bind("127.0.0.1:49818").await?;
-            let server = Server::new(listener, auth);
-            Ok(Self(server))
-        }
-
-        /// Returns `Ok(())` if a connection was successfully made to the service.
-        /// Waits for 5 seconds maximum.
-        async fn accept_one_connection(self) -> Result<()> {
-            tokio::time::timeout(Duration::from_secs(5), async {
-                match self.0.accept().await {
-                    Ok((mut conn, _)) => {
-                        let _ = conn.close().await;
-                        Ok(())
-                    }
-                    Err(err) => Err(eyre!("Server could not accept connections: {}", err)),
+        // spawn a background task to accept a single connection
+        let handle = tokio::spawn(tokio::time::timeout(Duration::from_secs(5), async move {
+            match server.accept().await {
+                Ok((mut conn, _)) => {
+                    let _ = conn.close().await;
+                    Ok(())
                 }
-            })
-            .await
-            .map_err(|err| eyre!("{}", err.to_string()))?
-        }
+                Err(err) => Err(eyre!("server could not accept connections: {}", err)),
+            }
+        }));
+
+        let https_proxy = format!("socks5://{proxy_host}");
+        std::env::set_var("HTTPS_PROXY", https_proxy);
+
+        f().await?;
+
+        handle.await??
     }
 
     /// The proxy should be called if system proxy variables are set.
     #[tokio::test]
     #[serial]
     async fn test_openapi_proxy_connects() -> Result<()> {
-        set_https_proxy();
-        let proxy = Proxy::new().await?;
-        let serve = tokio::spawn(proxy.accept_one_connection());
+        with_proxy(|| async {
+            // make request but don't care about the response,
+            // only that the proxy receives the request.
+            let _ = request_list_quantum_processors().await;
 
-        // make request but do not expect it to fulfill, only that proxy receives it
-        let _ = request_list_quantum_processors().await;
-
-        // check that the proxy received a connection.
-        serve.await??;
-
-        Ok(())
+            Ok(())
+        })
+        .await
     }
 
     /// The proxy should be called if system proxy variables are set.
     #[tokio::test]
     #[serial]
     async fn test_grpc_proxy_connects() -> Result<()> {
-        set_https_proxy();
-        let proxy = Proxy::new().await?;
-        let serve = tokio::spawn(proxy.accept_one_connection());
+        with_proxy(|| async {
+            // make request but don't care about the response,
+            // only that the proxy receives the request.
+            let _ = get_calibration_program_with_client_channels!("Aspen-11").await;
 
-        // make request but do not expect it to fulfill, only that proxy receives it
-        let _ = request_translation().await;
-
-        // check that the proxy received a connection.
-        serve.await??;
-
-        Ok(())
+            Ok(())
+        })
+        .await
     }
 }
 
 #[cfg(feature = "docker")]
-mod test_docker {
+mod test_in_docker {
+    use qcs_api_client_grpc::channel::wrap_channel_with_grpc_web;
+
     use super::*;
 
-    #[tokio::test]
-    #[serial]
-    async fn test_grpc_proxy() -> Result<()> {
-        set_https_proxy();
-        // the translation result comes back correctly
-        let _ = request_translation()
-            .await
-            .expect_err("bad program should fail translation.");
+    fn set_socks5_proxy() {
+        let socks5_url =
+            std::env::var("SOCKS5_URL").unwrap_or_else(|_| "socks5://localhost:1080".to_string());
+        std::env::set_var("HTTP_PROXY", &socks5_url);
+        std::env::set_var("HTTPS_PROXY", &socks5_url);
+    }
 
-        Ok(())
+    fn set_squid_proxy() {
+        let squid_url =
+            std::env::var("SQUID_URL").unwrap_or_else(|_| "http://localhost:3128".to_string());
+        std::env::set_var("HTTP_PROXY", &squid_url);
+        std::env::set_var("HTTPS_PROXY", &squid_url);
     }
 
     #[tokio::test]
     #[serial]
-    async fn test_openapi_proxy() -> Result<()> {
-        set_https_proxy();
-        // the translation result comes back correctly
-        let _ = request_list_quantum_processors().await?;
+    async fn test_grpc_proxy_socks5() {
+        set_socks5_proxy();
+        match get_calibration_program_with_client_channels!("Aspen-11").await {
+            Ok(_) => {}
+            Err(err) if err.to_string().contains("no calibration found") => {
+                // the only acceptable error, the request completed but
+                // the env doesn't recognize the QPU.
+            },
+            Err(err) => panic!("{err}")
+        };
+    }
 
-        Ok(())
+    #[tokio::test]
+    #[serial]
+    async fn test_grpc_proxy_squid() {
+        set_squid_proxy();
+        match get_calibration_program_with_client_channels!("Aspen-11", wrap_channel_with_grpc_web).await {
+            Ok(_) => {}
+            Err(err) if err.to_string().contains("no calibration found") => {
+                // the only acceptable error, the request completed but
+                // the env doesn't recognize the QPU.
+            },
+            Err(err) => panic!("{err}")
+        };
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_openapi_proxy_socks5() {
+        set_socks5_proxy();
+        let _ = request_list_quantum_processors()
+            .await
+            .expect("request should complete through proxy");
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_openapi_proxy_squid() {
+        set_squid_proxy();
+        let _ = request_list_quantum_processors()
+            .await
+            .expect("request should complete through proxy");
     }
 }

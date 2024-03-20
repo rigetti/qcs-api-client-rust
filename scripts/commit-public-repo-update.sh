@@ -33,6 +33,11 @@ git clone "https://$GITHUB_USER_NAME:$GITHUB_TOKEN@github.com/rigetti/qcs-api-cl
 PUBLIC_DIRS=("qcs-api-client-common" "qcs-api-client-grpc" "qcs-api-client-openapi/public")
 PUBLIC_DIRS_RENAME=("qcs-api-client-common" "qcs-api-client-grpc" "qcs-api-client-openapi")
 
+# Ensure we are on the proper branch - necessary for RC releases.
+if [[ -n $CI ]] && [[ $CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH ]]; then
+  (cd "$WORKDIR"; git checkout "$CI_COMMIT_REF_NAME" || git checkout -b "$CI_COMMIT_REF_NAME")
+fi
+
 # Delete all files except the hidden directories (.git/ and .github/).
 (cd "$WORKDIR"; git rm -r -- *)
 
@@ -63,6 +68,7 @@ members = [
 ]
 
 [workspace.dependencies]
+jsonwebtoken = "9.2.0"
 opentelemetry = "0.20.0"
 opentelemetry_api = "0.20.0"
 opentelemetry_sdk = "0.20.0"
@@ -87,7 +93,7 @@ git --no-pager diff --staged
 git status
 
 git commit -m "$COMMIT_MESSAGE"
-git push
+git push -u origin HEAD
 
 echo "Adding tags: $TAGS"
 for t in $TAGS; do

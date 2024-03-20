@@ -1,8 +1,8 @@
 extend = ".rust-ci/defaults/Makefile.toml"
 
 [env]
-    # Removed --optional-deps from default flags, as only explicit features should be used
-    CARGO_HACK_COMMON_FLAGS = "--feature-powerset --exclude-features docker"
+# Removed --optional-deps from default flags, as only explicit features should be used
+CARGO_HACK_COMMON_FLAGS = "--feature-powerset --exclude-features docker"
 
 [config]
 default_to_workspace = false
@@ -37,7 +37,7 @@ args = ["compose", "logs"]
 
 [tasks.docker-tests]
 command = "cargo"
-args = ["test", "-F", "docker"]
+args = ["test", "-F", "docker", "-p", "proxy-test"]
 
 [tasks.docker-test-flow]
 dependencies = ["docker-up", "docker-tests", "docker-logs", "docker-down"]
