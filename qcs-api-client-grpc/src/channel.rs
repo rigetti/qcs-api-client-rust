@@ -106,9 +106,15 @@ pub fn get_endpoint(uri: Uri) -> Endpoint {
 }
 
 /// Get an [`Endpoint`] for the given [`Uri`] and timeout.
-pub fn get_endpoint_with_timeout(uri: Uri, timeout: Option<Duration>) -> Endpoint {
+pub fn get_endpoint_with_timeout(
+    uri: Uri,
+    timeout: Option<Duration>,
+    connection_timeout: Option<Duration>,
+) -> Endpoint {
     if let Some(duration) = timeout {
-        get_endpoint(uri).timeout(duration)
+        get_endpoint(uri)
+            .timeout(duration)
+            .connect_timeout(connection_timeout.unwrap_or_default())
     } else {
         get_endpoint(uri)
     }
@@ -153,7 +159,7 @@ pub fn get_channel(uri: Uri) -> Result<Channel, ChannelError> {
     get_channel_with_endpoint(endpoint)
 }
 
-/// Get a [`Channel`] to the given [`Uri`], with an optional timeout. If set to [`None`], no timeout is
+/// Get a [`Channel`] to the given [`Uri`], with optional timeouts. If set to [`None`], no timeouts are
 /// used.
 /// Sets up things like user agent without setting up QCS credentials.
 ///
@@ -168,8 +174,9 @@ pub fn get_channel(uri: Uri) -> Result<Channel, ChannelError> {
 pub fn get_channel_with_timeout(
     uri: Uri,
     timeout: Option<Duration>,
+    connection_timeout: Option<Duration>,
 ) -> Result<Channel, ChannelError> {
-    let endpoint = get_endpoint_with_timeout(uri, timeout);
+    let endpoint = get_endpoint_with_timeout(uri, timeout, connection_timeout);
     get_channel_with_endpoint(endpoint)
 }
 
