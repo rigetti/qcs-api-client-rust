@@ -603,7 +603,8 @@ pub mod controller_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).execute_controller_job(request).await
+                                <T as Controller>::execute_controller_job(&inner, request)
+                                    .await
                             };
                             Box::pin(fut)
                         }
@@ -652,7 +653,11 @@ pub mod controller_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).batch_execute_controller_jobs(request).await
+                                <T as Controller>::batch_execute_controller_jobs(
+                                        &inner,
+                                        request,
+                                    )
+                                    .await
                             };
                             Box::pin(fut)
                         }
@@ -700,7 +705,11 @@ pub mod controller_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).get_controller_job_results(request).await
+                                <T as Controller>::get_controller_job_results(
+                                        &inner,
+                                        request,
+                                    )
+                                    .await
                             };
                             Box::pin(fut)
                         }
@@ -746,7 +755,8 @@ pub mod controller_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).cancel_controller_jobs(request).await
+                                <T as Controller>::cancel_controller_jobs(&inner, request)
+                                    .await
                             };
                             Box::pin(fut)
                         }
@@ -792,7 +802,11 @@ pub mod controller_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).get_controller_job_status(request).await
+                                <T as Controller>::get_controller_job_status(
+                                        &inner,
+                                        request,
+                                    )
+                                    .await
                             };
                             Box::pin(fut)
                         }

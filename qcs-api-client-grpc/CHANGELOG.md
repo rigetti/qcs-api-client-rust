@@ -1,3 +1,9 @@
+## 0.7.14 (2024-03-21)
+
+### Features
+
+#### support http1.1 requests via optional grpc-web feature
+
 ## 0.7.13 (2024-02-28)
 
 ### Fixes

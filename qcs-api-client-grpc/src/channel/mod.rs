@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use crate::client_configuration::{ClientConfiguration, LoadError, RefreshError};
+use http::uri::Scheme;
 use http_body::Full;
 use hyper::client::HttpConnector;
 use hyper_proxy::{Intercept, Proxy, ProxyConnector};
@@ -35,6 +36,15 @@ use tonic::transport::{Channel, Endpoint, Error as TransportError, Uri};
 use tonic::Status;
 use tower::{Layer, ServiceBuilder};
 use url::Url;
+
+#[cfg(feature = "grpc-web")]
+mod grpc_web;
+
+#[cfg(feature = "grpc-web")]
+pub use grpc_web::{
+    wrap_channel_with_grpc_web, GrpcWebWrapperLayer, GrpcWebWrapperLayerService,
+    GrpcWebWrapperService,
+};
 
 #[cfg(feature = "tracing")]
 use urlpattern::UrlPatternMatchInput;
@@ -61,6 +71,9 @@ pub enum Error<E: std::error::Error> {
     /// The proxy configuration caused an error
     #[error("The channel configuration caused an error: {0}")]
     ChannelError(#[from] ChannelError),
+    #[cfg(feature = "grpc-web")]
+    #[error("The hyper grpc-web client returned an error: {0}")]
+    HyperError(#[from] hyper::Error),
 }
 
 /// Errors that may occur when configuring a channel connection
@@ -206,8 +219,12 @@ pub fn get_channel_with_endpoint(endpoint: Endpoint) -> Result<Channel, ChannelE
                 Ok(endpoint.connect_with_connector_lazy(socks_connector))
             }
             Some("https" | "http") => {
+                let is_http = uri.scheme() == Some(&Scheme::HTTP);
                 let proxy = Proxy::new(intercept, uri);
-                let proxy_connector = ProxyConnector::from_proxy(connector, proxy)?;
+                let mut proxy_connector = ProxyConnector::from_proxy(connector, proxy)?;
+                if is_http {
+                    proxy_connector.set_tls(None);
+                }
                 Ok(endpoint.connect_with_connector_lazy(proxy_connector))
             }
             scheme => Err(ChannelError::UnsupportedProtocol(scheme.map(String::from))),
@@ -435,11 +452,15 @@ async fn clone_request(req: Request<BoxBody>) -> (Request<BoxBody>, Request<BoxB
     (req_1, req_2)
 }
 
-async fn make_request<E: std::error::Error>(
-    service: &mut Channel,
+async fn make_request<C, E: std::error::Error>(
+    service: &mut C,
     mut request: Request<BoxBody>,
     token: String,
-) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error<E>> {
+) -> Result<Response<<C as GrpcService<BoxBody>>::ResponseBody>, Error<E>>
+where
+    C: GrpcService<BoxBody>,
+    Error<E>: From<C::Error>,
+{
     let header_val = format!("Bearer {token}")
         .try_into()
         .map_err(Error::InvalidAccessToken)?;
@@ -448,11 +469,15 @@ async fn make_request<E: std::error::Error>(
 }
 
 #[cfg(feature = "tracing-opentelemetry")]
-async fn make_traced_request<E: std::error::Error>(
-    service: &mut Channel,
+async fn make_traced_request<C, E: std::error::Error>(
+    service: &mut C,
     mut request: Request<BoxBody>,
     token: String,
-) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error<E>> {
+) -> Result<Response<<C as GrpcService<BoxBody>>::ResponseBody>, Error<E>>
+where
+    C: GrpcService<BoxBody>,
+    Error<E>: From<C::Error>,
+{
     let header_val = format!("Bearer {token}")
         .try_into()
         .map_err(Error::InvalidAccessToken)?;
@@ -469,12 +494,16 @@ async fn make_traced_request<E: std::error::Error>(
         .map_err(Error::from)
 }
 
-impl<T> GrpcService<BoxBody> for RefreshService<Channel, T>
+impl<S, T> GrpcService<BoxBody> for RefreshService<S, T>
 where
+    S: GrpcService<BoxBody> + Clone + Send + 'static,
+    <S as GrpcService<BoxBody>>::Future: Send,
+    <S as GrpcService<BoxBody>>::ResponseBody: Send,
     T: TokenRefresher + Clone + Send + Sync + 'static,
     T::Error: std::error::Error + Send + Sync,
+    Error<T::Error>: From<S::Error>,
 {
-    type ResponseBody = <Channel as GrpcService<BoxBody>>::ResponseBody;
+    type ResponseBody = <S as GrpcService<BoxBody>>::ResponseBody;
     type Error = Error<T::Error>;
     type Future =
         Pin<Box<dyn Future<Output = Result<Response<Self::ResponseBody>, Self::Error>> + Send>>;
@@ -521,14 +550,16 @@ fn should_trace<T: TokenRefresher>(token_refresher: &T, url_str: &str, default: 
     })
 }
 
-async fn service_call<T>(
+async fn service_call<C, T>(
     req: Request<BoxBody>,
     token_refresher: T,
-    mut channel: Channel,
-) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error<T::Error>>
+    mut channel: C,
+) -> Result<Response<<C as GrpcService<BoxBody>>::ResponseBody>, Error<T::Error>>
 where
+    C: GrpcService<BoxBody>,
     T: TokenRefresher,
     T::Error: std::error::Error,
+    Error<T::Error>: From<C::Error>,
 {
     #[cfg(feature = "tracing")]
     {
@@ -561,13 +592,15 @@ where
 }
 
 #[cfg(feature = "tracing-opentelemetry")]
-async fn traced_service_call<T: TokenRefresher>(
+async fn traced_service_call<C, T: TokenRefresher>(
     original_req: Request<BoxBody>,
     config: T,
-    mut channel: Channel,
-) -> Result<Response<<Channel as GrpcService<BoxBody>>::ResponseBody>, Error<T::Error>>
+    mut channel: C,
+) -> Result<Response<<C as GrpcService<BoxBody>>::ResponseBody>, Error<T::Error>>
 where
+    C: GrpcService<BoxBody>,
     T::Error: std::error::Error,
+    Error<T::Error>: From<C::Error>,
 {
     use opentelemetry::{propagation::TextMapPropagator, sdk::propagation::TraceContextPropagator};
     use opentelemetry_api::trace::FutureExt;
@@ -785,7 +818,8 @@ mod uds_grpc_stream {
     use tempfile::NamedTempFile;
     use tokio::net::{UnixListener, UnixStream};
     use tokio_stream::wrappers::UnixListenerStream;
-    use tonic::transport::{Channel, Endpoint, NamedService, Server, Uri};
+    use tonic::server::NamedService;
+    use tonic::transport::{Channel, Endpoint, Server, Uri};
     use tower::service_fn;
 
     /// The can be any valid URL. It is necessary to initialize an [`Endpoint`].
@@ -855,7 +889,7 @@ mod otel_tests {
     use serde::{Deserialize, Serialize};
     use std::time::{Duration, SystemTime};
     use tonic::codegen::http::{HeaderMap, HeaderValue};
-    use tonic::transport::NamedService;
+    use tonic::server::NamedService;
     use tonic::Request;
     use tonic_health::pb::health_check_response::ServingStatus;
     use tonic_health::pb::health_server::{Health, HealthServer};
@@ -1368,7 +1402,7 @@ mod tests {
 
     use super::*;
     use backoff::ExponentialBackoffBuilder;
-    use tonic::transport::NamedService;
+    use tonic::server::NamedService;
     use tonic::Request;
     use tonic_health::pb::health_check_response::ServingStatus;
     use tonic_health::pb::health_server::{Health, HealthServer};
@@ -1453,13 +1487,14 @@ mod tests {
         let health_server = HealthServer::new(FlakyHealthService::new(50));
 
         uds_grpc_stream::serve(health_server, |channel| async {
-            // Don't use the wrapping function so tests don't take so long 
+            // Don't use the wrapping function so tests don't take so long
             let retry_client = RetryLayer {
                 backoff: ExponentialBackoffBuilder::new()
                     .with_max_interval(Duration::from_millis(100))
                     .with_max_elapsed_time(Some(Duration::from_secs(1)))
-                    .build()
-            }.layer(channel);
+                    .build(),
+            }
+            .layer(channel);
             let mut client = HealthClient::new(retry_client);
             let response = client.check(Request::new(tonic_health::pb::HealthCheckRequest {
                 service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),

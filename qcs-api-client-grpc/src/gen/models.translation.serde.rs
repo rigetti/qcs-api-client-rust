@@ -82,19 +82,19 @@ impl<'de> serde::Deserialize<'de> for QuilTranslationMetadata {
                 formatter.write_str("struct models.translation.QuilTranslationMetadata")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<QuilTranslationMetadata, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<QuilTranslationMetadata, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut readout_mappings__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::ReadoutMappings => {
                             if readout_mappings__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("readoutMappings"));
                             }
                             readout_mappings__ = Some(
-                                map.next_value::<std::collections::HashMap<_, _>>()?
+                                map_.next_value::<std::collections::HashMap<_, _>>()?
                             );
                         }
                     }

@@ -81,18 +81,18 @@ impl<'de> serde::Deserialize<'de> for BatchExecuteControllerJobsRequest {
                 formatter.write_str("struct services.controller.BatchExecuteControllerJobsRequest")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<BatchExecuteControllerJobsRequest, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<BatchExecuteControllerJobsRequest, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Requests => {
                             if requests__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("requests"));
                             }
-                            requests__ = Some(map.next_value()?);
+                            requests__ = Some(map_.next_value()?);
                         }
                     }
                 }
@@ -172,18 +172,18 @@ impl<'de> serde::Deserialize<'de> for BatchExecuteControllerJobsResponse {
                 formatter.write_str("struct services.controller.BatchExecuteControllerJobsResponse")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<BatchExecuteControllerJobsResponse, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<BatchExecuteControllerJobsResponse, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut responses__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Responses => {
                             if responses__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("responses"));
                             }
-                            responses__ = Some(map.next_value()?);
+                            responses__ = Some(map_.next_value()?);
                         }
                     }
                 }
@@ -285,31 +285,31 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsRequest {
                 formatter.write_str("struct services.controller.CancelControllerJobsRequest")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<CancelControllerJobsRequest, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CancelControllerJobsRequest, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut job_ids__ = None;
                 let mut target__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::JobIds => {
                             if job_ids__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("jobIds"));
                             }
-                            job_ids__ = Some(map.next_value()?);
+                            job_ids__ = Some(map_.next_value()?);
                         }
                         GeneratedField::QuantumProcessorId => {
                             if target__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("quantumProcessorId"));
                             }
-                            target__ = map.next_value::<::std::option::Option<_>>()?.map(cancel_controller_jobs_request::Target::QuantumProcessorId);
+                            target__ = map_.next_value::<::std::option::Option<_>>()?.map(cancel_controller_jobs_request::Target::QuantumProcessorId);
                         }
                         GeneratedField::EndpointId => {
                             if target__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("endpointId"));
                             }
-                            target__ = map.next_value::<::std::option::Option<_>>()?.map(cancel_controller_jobs_request::Target::EndpointId);
+                            target__ = map_.next_value::<::std::option::Option<_>>()?.map(cancel_controller_jobs_request::Target::EndpointId);
                         }
                     }
                 }
@@ -379,12 +379,12 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsResponse {
                 formatter.write_str("struct services.controller.CancelControllerJobsResponse")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<CancelControllerJobsResponse, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CancelControllerJobsResponse, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                while map.next_key::<GeneratedField>()?.is_some() {
-                    let _ = map.next_value::<serde::de::IgnoredAny>()?;
+                while map_.next_key::<GeneratedField>()?.is_some() {
+                    let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
                 Ok(CancelControllerJobsResponse {
                 })
@@ -505,7 +505,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                 formatter.write_str("struct services.controller.ExecuteControllerJobRequest")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ExecuteControllerJobRequest, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<ExecuteControllerJobRequest, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -513,38 +513,38 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                 let mut options__ = None;
                 let mut job__ = None;
                 let mut target__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::ExecutionConfigurations => {
                             if execution_configurations__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("executionConfigurations"));
                             }
-                            execution_configurations__ = Some(map.next_value()?);
+                            execution_configurations__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Options => {
                             if options__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("options"));
                             }
-                            options__ = map.next_value()?;
+                            options__ = map_.next_value()?;
                         }
                         GeneratedField::Encrypted => {
                             if job__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("encrypted"));
                             }
-                            job__ = map.next_value::<::std::option::Option<_>>()?.map(execute_controller_job_request::Job::Encrypted)
+                            job__ = map_.next_value::<::std::option::Option<_>>()?.map(execute_controller_job_request::Job::Encrypted)
 ;
                         }
                         GeneratedField::QuantumProcessorId => {
                             if target__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("quantumProcessorId"));
                             }
-                            target__ = map.next_value::<::std::option::Option<_>>()?.map(execute_controller_job_request::Target::QuantumProcessorId);
+                            target__ = map_.next_value::<::std::option::Option<_>>()?.map(execute_controller_job_request::Target::QuantumProcessorId);
                         }
                         GeneratedField::EndpointId => {
                             if target__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("endpointId"));
                             }
-                            target__ = map.next_value::<::std::option::Option<_>>()?.map(execute_controller_job_request::Target::EndpointId);
+                            target__ = map_.next_value::<::std::option::Option<_>>()?.map(execute_controller_job_request::Target::EndpointId);
                         }
                     }
                 }
@@ -628,18 +628,18 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobResponse {
                 formatter.write_str("struct services.controller.ExecuteControllerJobResponse")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ExecuteControllerJobResponse, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<ExecuteControllerJobResponse, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut job_execution_ids__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::JobExecutionIds => {
                             if job_execution_ids__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("jobExecutionIds"));
                             }
-                            job_execution_ids__ = Some(map.next_value()?);
+                            job_execution_ids__ = Some(map_.next_value()?);
                         }
                     }
                 }
@@ -729,25 +729,25 @@ impl<'de> serde::Deserialize<'de> for ExecutionOptions {
                 formatter.write_str("struct services.controller.ExecutionOptions")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ExecutionOptions, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<ExecutionOptions, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut bypass_settings_protection__ = None;
                 let mut timeout__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::BypassSettingsProtection => {
                             if bypass_settings_protection__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("bypassSettingsProtection"));
                             }
-                            bypass_settings_protection__ = Some(map.next_value()?);
+                            bypass_settings_protection__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Timeout => {
                             if timeout__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("timeout"));
                             }
-                            timeout__ = map.next_value()?;
+                            timeout__ = map_.next_value()?;
                         }
                     }
                 }
@@ -850,31 +850,31 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobResultsRequest {
                 formatter.write_str("struct services.controller.GetControllerJobResultsRequest")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<GetControllerJobResultsRequest, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<GetControllerJobResultsRequest, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut job_execution_id__ = None;
                 let mut target__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::JobExecutionId => {
                             if job_execution_id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("jobExecutionId"));
                             }
-                            job_execution_id__ = Some(map.next_value()?);
+                            job_execution_id__ = Some(map_.next_value()?);
                         }
                         GeneratedField::QuantumProcessorId => {
                             if target__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("quantumProcessorId"));
                             }
-                            target__ = map.next_value::<::std::option::Option<_>>()?.map(get_controller_job_results_request::Target::QuantumProcessorId);
+                            target__ = map_.next_value::<::std::option::Option<_>>()?.map(get_controller_job_results_request::Target::QuantumProcessorId);
                         }
                         GeneratedField::EndpointId => {
                             if target__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("endpointId"));
                             }
-                            target__ = map.next_value::<::std::option::Option<_>>()?.map(get_controller_job_results_request::Target::EndpointId);
+                            target__ = map_.next_value::<::std::option::Option<_>>()?.map(get_controller_job_results_request::Target::EndpointId);
                         }
                     }
                 }
@@ -955,18 +955,18 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobResultsResponse {
                 formatter.write_str("struct services.controller.GetControllerJobResultsResponse")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<GetControllerJobResultsResponse, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<GetControllerJobResultsResponse, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut result__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Result => {
                             if result__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("result"));
                             }
-                            result__ = map.next_value()?;
+                            result__ = map_.next_value()?;
                         }
                     }
                 }
@@ -1047,18 +1047,18 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusRequest {
                 formatter.write_str("struct services.controller.GetControllerJobStatusRequest")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<GetControllerJobStatusRequest, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<GetControllerJobStatusRequest, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut job_id__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::JobId => {
                             if job_id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("jobId"));
                             }
-                            job_id__ = Some(map.next_value()?);
+                            job_id__ = Some(map_.next_value()?);
                         }
                     }
                 }
@@ -1083,8 +1083,8 @@ impl serde::Serialize for GetControllerJobStatusResponse {
         }
         let mut struct_ser = serializer.serialize_struct("services.controller.GetControllerJobStatusResponse", len)?;
         if self.status != 0 {
-            let v = get_controller_job_status_response::Status::from_i32(self.status)
-                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.status)))?;
+            let v = get_controller_job_status_response::Status::try_from(self.status)
+                .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.status)))?;
             struct_ser.serialize_field("status", &v)?;
         }
         struct_ser.end()
@@ -1140,18 +1140,18 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusResponse {
                 formatter.write_str("struct services.controller.GetControllerJobStatusResponse")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<GetControllerJobStatusResponse, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<GetControllerJobStatusResponse, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut status__ = None;
-                while let Some(k) = map.next_key()? {
+                while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Status => {
                             if status__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("status"));
                             }
-                            status__ = Some(map.next_value::<get_controller_job_status_response::Status>()? as i32);
+                            status__ = Some(map_.next_value::<get_controller_job_status_response::Status>()? as i32);
                         }
                     }
                 }
@@ -1208,10 +1208,9 @@ impl<'de> serde::Deserialize<'de> for get_controller_job_status_response::Status
             where
                 E: serde::de::Error,
             {
-                use std::convert::TryFrom;
                 i32::try_from(v)
                     .ok()
-                    .and_then(get_controller_job_status_response::Status::from_i32)
+                    .and_then(|x| x.try_into().ok())
                     .ok_or_else(|| {
                         serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
                     })
@@ -1221,10 +1220,9 @@ impl<'de> serde::Deserialize<'de> for get_controller_job_status_response::Status
             where
                 E: serde::de::Error,
             {
-                use std::convert::TryFrom;
                 i32::try_from(v)
                     .ok()
-                    .and_then(get_controller_job_status_response::Status::from_i32)
+                    .and_then(|x| x.try_into().ok())
                     .ok_or_else(|| {
                         serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
                     })
