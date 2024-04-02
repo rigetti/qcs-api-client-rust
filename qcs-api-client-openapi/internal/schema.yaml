@@ -4578,6 +4578,11 @@ components:
             branch.
           title: Git Branch
           type: string
+        isSidecar:
+          default: false
+          description: Whether this component is a sidecar or not.
+          title: Is Sidecar
+          type: boolean
         listenPort:
           description: The port on which this component will listen for inbound HTTPS
             requests
@@ -4739,6 +4744,11 @@ components:
             branch.
           title: Git Branch
           type: string
+        isSidecar:
+          default: false
+          description: Whether this component is a sidecar or not.
+          title: Is Sidecar
+          type: boolean
         kafkaEventProducerTypes:
           default:
             - log
@@ -5457,6 +5467,11 @@ components:
             branch.
           title: Git Branch
           type: string
+        isSidecar:
+          default: false
+          description: Whether this component is a sidecar or not.
+          title: Is Sidecar
+          type: boolean
         memorySoftLimit:
           description: Memory allocation in MB required by this component.
           title: Memory Soft Limit
@@ -6127,6 +6142,11 @@ components:
             branch.
           title: Git Branch
           type: string
+        isSidecar:
+          default: false
+          description: Whether this component is a sidecar or not.
+          title: Is Sidecar
+          type: boolean
         memorySoftLimit:
           description: Memory allocation in MB required by this component.
           title: Memory Soft Limit
@@ -6323,6 +6343,11 @@ components:
             branch.
           title: Git Branch
           type: string
+        isSidecar:
+          default: false
+          description: Whether this component is a sidecar or not.
+          title: Is Sidecar
+          type: boolean
         listenPorts:
           additionalProperties:
             type: integer
