@@ -1,3 +1,9 @@
+## 0.6.13 (2024-04-16)
+
+### Fixes
+
+#### resolve linting errors
+
 ## 0.6.12 (2024-03-21)
 
 ### Features
