@@ -30,6 +30,8 @@
 #![warn(clippy::nursery)]
 // Has false positives that conflict with unreachable_pub
 #![allow(clippy::redundant_pub_crate)]
+// Allowed in deny.layer.toml
+#![allow(clippy::multiple_crate_versions)]
 #![deny(
 absolute_paths_not_starting_with_crate,
 anonymous_parameters,

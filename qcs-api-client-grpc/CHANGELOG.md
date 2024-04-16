@@ -1,3 +1,9 @@
+## 0.7.15 (2024-04-16)
+
+### Fixes
+
+#### resolve linting errors
+
 ## 0.7.14 (2024-03-21)
 
 ### Features
