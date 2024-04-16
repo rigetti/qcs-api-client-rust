@@ -23,8 +23,6 @@ pub struct OAuthClientCredentials {
 /// Errors encountered when loading a [`ClientConfiguration`]
 #[derive(Debug, thiserror::Error)]
 pub enum LoadError {
-    #[error("failed to load settings: {0}")]
-    Settings(#[from] config::ConfigError),
     #[error("failed to get access token manager: {0}")]
     AccessTokenManager(#[from] AccessTokenError),
 }

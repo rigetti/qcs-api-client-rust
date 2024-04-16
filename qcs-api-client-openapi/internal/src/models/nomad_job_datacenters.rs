@@ -18,8 +18,6 @@ pub enum NomadJobDatacenters {
     Berkeley775,
     #[serde(rename = "fremont-fab")]
     FremontFab,
-    #[serde(rename = "oxford-instruments")]
-    OxfordInstruments,
 }
 
 impl std::fmt::Display for NomadJobDatacenters {
@@ -27,7 +25,6 @@ impl std::fmt::Display for NomadJobDatacenters {
         match self {
             Self::Berkeley775 => write!(f, "berkeley-775"),
             Self::FremontFab => write!(f, "fremont-fab"),
-            Self::OxfordInstruments => write!(f, "oxford-instruments"),
         }
     }
 }

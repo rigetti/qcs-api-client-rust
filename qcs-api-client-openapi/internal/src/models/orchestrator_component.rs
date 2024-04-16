@@ -42,6 +42,9 @@ pub struct OrchestratorComponent {
     /// Which branch of the relevant repository to associate with this endpoint. May be used for automatic upgrades on updates to the git branch.
     #[serde(rename = "gitBranch", skip_serializing_if = "Option::is_none")]
     pub git_branch: Option<String>,
+    /// Whether this component is a sidecar or not.
+    #[serde(rename = "isSidecar", skip_serializing_if = "Option::is_none")]
+    pub is_sidecar: Option<bool>,
     /// Fixed network ports keyed on port name
     #[serde(rename = "listenPorts", skip_serializing_if = "Option::is_none")]
     pub listen_ports: Option<::std::collections::HashMap<String, i64>>,
@@ -82,6 +85,7 @@ impl OrchestratorComponent {
             environment: None,
             environment_variables: None,
             git_branch: None,
+            is_sidecar: None,
             listen_ports: None,
             logging_provider: None,
             memory_soft_limit: None,

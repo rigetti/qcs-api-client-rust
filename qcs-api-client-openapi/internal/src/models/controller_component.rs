@@ -45,6 +45,9 @@ pub struct ControllerComponent {
     /// Which branch of the relevant repository to associate with this endpoint. May be used for automatic upgrades on updates to the git branch.
     #[serde(rename = "gitBranch", skip_serializing_if = "Option::is_none")]
     pub git_branch: Option<String>,
+    /// Whether this component is a sidecar or not.
+    #[serde(rename = "isSidecar", skip_serializing_if = "Option::is_none")]
+    pub is_sidecar: Option<bool>,
     /// Determines whether events are produced to Kafka, logged to stdout, or ignored
     #[serde(
         rename = "kafkaEventProducerTypes",
@@ -116,6 +119,7 @@ impl ControllerComponent {
             environment_variables: None,
             fridge_id: None,
             git_branch: None,
+            is_sidecar: None,
             kafka_event_producer_types: None,
             listen_ports: None,
             memory_soft_limit: None,

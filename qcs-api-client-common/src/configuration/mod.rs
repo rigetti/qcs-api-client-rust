@@ -263,6 +263,7 @@ impl ClientConfiguration {
     /// # Errors
     ///
     /// See [`RefreshError`].
+    #[allow(clippy::significant_drop_tightening)]
     pub async fn get_bearer_access_token(&self) -> Result<String, RefreshError> {
         let mut lock = self.tokens.lock().await;
         // clippy warns about possible deadlock without this `let`

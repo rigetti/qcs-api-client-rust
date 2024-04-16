@@ -142,8 +142,8 @@ mod test_in_docker {
             Err(err) if err.to_string().contains("no calibration found") => {
                 // the only acceptable error, the request completed but
                 // the env doesn't recognize the QPU.
-            },
-            Err(err) => panic!("{err}")
+            }
+            Err(err) => panic!("{err}"),
         };
     }
 
@@ -151,13 +151,15 @@ mod test_in_docker {
     #[serial]
     async fn test_grpc_proxy_squid() {
         set_squid_proxy();
-        match get_calibration_program_with_client_channels!("Aspen-11", wrap_channel_with_grpc_web).await {
+        match get_calibration_program_with_client_channels!("Aspen-11", wrap_channel_with_grpc_web)
+            .await
+        {
             Ok(_) => {}
             Err(err) if err.to_string().contains("no calibration found") => {
                 // the only acceptable error, the request completed but
                 // the env doesn't recognize the QPU.
-            },
-            Err(err) => panic!("{err}")
+            }
+            Err(err) => panic!("{err}"),
         };
     }
 

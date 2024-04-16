@@ -27,6 +27,9 @@ pub struct MagnetoSimulatorComponent {
     /// Which branch of the relevant repository to associate with this endpoint. May be used for automatic upgrades on updates to the git branch.
     #[serde(rename = "gitBranch", skip_serializing_if = "Option::is_none")]
     pub git_branch: Option<String>,
+    /// Whether this component is a sidecar or not.
+    #[serde(rename = "isSidecar", skip_serializing_if = "Option::is_none")]
+    pub is_sidecar: Option<bool>,
     /// Memory allocation in MB required by this component.
     #[serde(rename = "memorySoftLimit", skip_serializing_if = "Option::is_none")]
     pub memory_soft_limit: Option<i64>,
@@ -44,6 +47,7 @@ impl MagnetoSimulatorComponent {
             docker_tag: None,
             environment_variables: None,
             git_branch: None,
+            is_sidecar: None,
             memory_soft_limit: None,
             startup_configuration: None,
         }

@@ -30,6 +30,9 @@ pub struct CertificateProxyComponent {
     /// Which branch of the relevant repository to associate with this endpoint. May be used for automatic upgrades on updates to the git branch.
     #[serde(rename = "gitBranch", skip_serializing_if = "Option::is_none")]
     pub git_branch: Option<String>,
+    /// Whether this component is a sidecar or not.
+    #[serde(rename = "isSidecar", skip_serializing_if = "Option::is_none")]
+    pub is_sidecar: Option<bool>,
     /// The port on which this component will listen for inbound HTTPS requests
     #[serde(rename = "listenPort", skip_serializing_if = "Option::is_none")]
     pub listen_port: Option<i64>,
@@ -46,6 +49,7 @@ impl CertificateProxyComponent {
             environment: None,
             environment_variables: None,
             git_branch: None,
+            is_sidecar: None,
             listen_port: None,
             memory_soft_limit: None,
         }
