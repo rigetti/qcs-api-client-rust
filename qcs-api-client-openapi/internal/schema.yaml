@@ -6919,6 +6919,7 @@ components:
         - integration
         - controllerMigration
         - test.magneto-backed-controller.v1
+        - test.virtual-controller.v1
       title: TemplateName
       type: string
     USICardSequencer:
