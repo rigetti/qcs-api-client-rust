@@ -4777,6 +4777,12 @@ components:
             delta is empty.
           title: Only Apply Tsunami Instrument Channel Settings Delta
           type: boolean
+        otelService:
+          allOf:
+            - $ref: "#/components/schemas/OtelService"
+          default: honeycomb
+          description: Service to which OTEL traces should be sent
+          title: OTEL trace service
         protectedTsunamiInstrumentChannelSettings:
           default: []
           description: A list of glob patterns that match protected settings for a given
@@ -6395,6 +6401,14 @@ components:
           type: boolean
       title: Orchestrator Component
       type: object
+    OtelService:
+      description: The service to which OTEL traces should be sent.
+      enum:
+        - collector
+        - honeycomb
+        - none
+      title: OtelService
+      type: string
     Parameter:
       additionalProperties: false
       description: A parameter to an operation.
