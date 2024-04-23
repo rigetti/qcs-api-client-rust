@@ -6928,6 +6928,7 @@ components:
       description: An enumeration.
       enum:
         - production.controller-service.v1
+        - quantum-engineering.controller-service.v1
         - production.lodgepole.v1
         - production
         - integration
