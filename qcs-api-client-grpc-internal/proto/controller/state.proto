@@ -21,12 +21,42 @@ message ControllerSettings {
     map<string, .models.controller.InstrumentSettings> instrument_settings = 1;
 }
 
+// Finite Impulse Response (FIR) Filter Coefficients
+//
+// Implementation defined at
+// https://gitlab.com/rigetti/control-system/som_software/-/blob/13910d4f8550ca039b784c0d21d0e36e3369a1aa/source/server/docs/fir_filter_set.md
+//
+// Described at https://en.wikipedia.org/wiki/Finite_impulse_response
+message FiniteImpulseResponseFilter {
+
+    // feed-forward coefficients
+    repeated double b = 1;
+}
+
 // Settings for a given instrument
 message InstrumentSettings {
     oneof settings {
         .models.controller.TsunamiInstrumentSettings tsunami_settings = 101;
         .models.controller.YokogawaGS200InstrumentSettings yokogawa_gs200_settings = 102;
     }
+}
+
+// Single-Pole Infinite Impulse Response (IIR) Filter Coefficients
+//
+// Implementation defined at
+// https://gitlab.com/rigetti/control-system/som_software/-/blob/13910d4f8550ca039b784c0d21d0e36e3369a1aa/source/server/docs/iir_filter_set.md
+//
+// Described at https://en.wikipedia.org/wiki/Infinite_impulse_response
+message SinglePoleInfiniteImpulseResponseFilter {
+
+    // feedback coefficient `a[1]`
+    double a_1 = 1;
+
+    // feedforward coefficient `b[0]`
+    double b_0 = 2;
+
+    // feedforward coefficient `b[1]``
+    double b_1 = 3;
 }
 message TsunamiInstrumentSettings {
 
@@ -64,9 +94,11 @@ message TsunamiQDOSlowFluxChannelSettings {
 
 }
 message TsunamiQDOFastFluxChannelSettings {
-    optional int32 dac_dc_offset = 1;
-    // DC offset of the RF DAC, as a (dimensionless) 16-bit signed value.
 
+    // DC offset of the RF DAC, as a (dimensionless) 16-bit signed value.
+    optional int32 dac_dc_offset = 1;
+    repeated .models.controller.SinglePoleInfiniteImpulseResponseFilter iir_filters = 2;
+    .models.controller.FiniteImpulseResponseFilter fir_filter = 3;
 }
 message TsunamiQFDCardSettings {
     map<uint32, .models.controller.TsunamiQFDChannelSettings> channel_settings = 1;

@@ -455,6 +455,9 @@ pub use self::operation_site::OperationSite;
 pub mod orchestrator_component;
 pub use self::orchestrator_component::OrchestratorComponent;
 #[allow(non_snake_case)]
+pub mod otel_service;
+pub use self::otel_service::OtelService;
+#[allow(non_snake_case)]
 pub mod parameter;
 pub use self::parameter::Parameter;
 #[allow(non_snake_case)]

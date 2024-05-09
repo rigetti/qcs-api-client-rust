@@ -1,9 +1,9 @@
 syntax = "proto3";
 package models.controller;
 option go_package = "gitlab.com/rigetti/share/service-model/golang/controller";
+import "controller/job_metadata.proto";
 import "controller/readout.proto";
 import "controller/state.proto";
-import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
 // Internal-only representation of the current phase in a job's lifecycle; this
@@ -155,38 +155,6 @@ message JobExecutionMetadata {
     }
 }
 
-// Metadata about a ControllerJob which cannot be derived from the job itself easily (or at all).
-message JobMetadata {
-
-    // How long (in wall-clock time) the job is expected to take in execution
-    // after triggered. If unset, job execution time cannot be predetermined.
-    .google.protobuf.Duration duration = 1;
-
-    // The quantum processor ID for which this job was compiled
-    //
-    // Note: this field is not required (i.e. the string may be empty), and is
-    // being deprecated in favor of `quantum_processor_ids` below. It will be
-    // marked `optional` in a future release, which will be a breaking change for
-    // some generated libraries (but not for the wire format).
-    //
-    // See the ConServ user guide for how this field is used:
-    // https://gitlab.com/rigetti/qcs/services/controller/-/blob/master/docs/user-guide.md
-    string quantum_processor_id = 2;
-
-    // Metadata about the translation process that may be useful for metric reporting or results post-processing.
-    .models.controller.TranslationMetadata translation_metadata = 3;
-
-    // The quantum processor IDs for which this job was compiled
-    //
-    // Providing a single QPU ID in this list is equivalent to setting the
-    // `quantum_processor_id` field. If both this field and `quantum_processor_id`
-    // are set, `quantum_processor_id` will be ignored.
-    //
-    // This field is not required to run jobs. See the ConServ user guide for this field is used:
-    // https://gitlab.com/rigetti/qcs/services/controller/-/blob/master/docs/user-guide.md
-    repeated string quantum_processor_ids = 4;
-}
-
 // The JobSignature is used to assert integrity of a ControllerJob
 // (i.e. that it was translated by a Rigetti-trusted entity).
 message JobSignature {
@@ -206,19 +174,32 @@ message MemoryRegion {
     // The type of data expected for patch values
     .models.controller.MemoryRegion.DataType data_type = 1;
 
-    // The count of elements within the region
-    uint32 length = 2;
+    // The number of bytes to be read and written from the memory region at runtime.
+    // The ratio of `length_bytes` to `length_count` varies by datatype and alignment.
+    uint32 length_bytes = 2;
 
-    // The byte offset of the value within sequencer shared memory. This is used
+    // The word (8-byte) offset of the value within sequencer shared memory. This is used
     // for both patching of memory prior to execution and retrieval of the memory
     // following execution.
     //
     // An empty value indicates that the memory region is not patched into sequencer
     // shared memory.
-    optional uint32 memory_offset_bytes = 3;
+    optional uint32 memory_offset_words = 3;
 
     // How to pack the user-provided value to binary format
     .models.controller.MemoryFormat format = 4;
+
+    // Whether a patch value is optional for this memory region.
+    // If true, the memory region is write-only and a default value will be patched in
+    // if one is not provided by the user.
+    bool patch_value_is_optional = 5;
+
+    // The count of elements within the region.
+    //
+    // This is not inherently words or bytes! It depends on the memory format of the target
+    // type. As of March 2024, all data types are packed to one item / word (even the binary datatype),
+    // and thus length is the same as the number of memory words, but that stands to change in the future. 
+    uint32 length_count = 6;
 
     // The different types of data available for patching
     enum DataType {
@@ -367,6 +348,9 @@ message TsunamiSequencerProgram {
     // service prior to patching into memory. They are applied in order, so
     // earlier substitutions will be clobbered by later ones.
     repeated .models.controller.MemorySubstitution memory_substitutions = 3;
+
+    // Optional metadata describing the program for inspection and debugging
+    .models.controller.QuercusSequencerProgramMetadata metadata = 4;
 }
 
 // A ControllerJobExecutionResult includes the result data from a single
@@ -412,30 +396,4 @@ message JobPhaseChange {
     // The instant when the job entered the new phase
     .google.protobuf.Timestamp timestamp = 1;
     .models.controller.JobPhase new_phase = 2;
-}
-
-// Information about the translation process, especially custom features, that may be useful for reporting,
-// job execution, or results post-processing. In contrast to `.models.translation.QuilTranslationMetadata`
-// this information is intended for Controller service rather than the client.
-message TranslationMetadata {
-
-    // Set when the program has been pre-processed through Q-CTRL's API.
-    .models.controller.TranslationMetadata.QCtrl q_ctrl = 1;
-
-    // The raw program input as received from the client.
-    .models.controller.TranslationMetadata.ProgramInput program_input = 2;
-    message ProgramInput {
-        oneof value {
-            string quil_text = 101;
-            string quil_digest_sha256 = 102;
-        }
-    }
-    message QCtrl {
-
-        // The program identifier returned by Q-CTRL's pre-processing API.
-        string program_identifier = 1;
-
-        // The program input returned by Q-CTRL's pre-processing API.
-        .models.controller.TranslationMetadata.ProgramInput program_input = 2;
-    }
 }

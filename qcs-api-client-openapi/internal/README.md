@@ -359,6 +359,7 @@ Class | Method | HTTP request | Description
  - [Operation](docs/Operation.md)
  - [OperationSite](docs/OperationSite.md)
  - [OrchestratorComponent](docs/OrchestratorComponent.md)
+ - [OtelService](docs/OtelService.md)
  - [Parameter](docs/Parameter.md)
  - [ParameterAref](docs/ParameterAref.md)
  - [ParameterExpression](docs/ParameterExpression.md)

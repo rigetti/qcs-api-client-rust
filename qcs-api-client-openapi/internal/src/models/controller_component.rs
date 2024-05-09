@@ -66,6 +66,9 @@ pub struct ControllerComponent {
         skip_serializing_if = "Option::is_none"
     )]
     pub only_apply_tsunami_instrument_channel_settings_delta: Option<bool>,
+    /// Service to which OTEL traces should be sent
+    #[serde(rename = "otelService", skip_serializing_if = "Option::is_none")]
+    pub otel_service: Option<Box<crate::models::OtelService>>,
     /// A list of glob patterns that match protected settings for a given card type. Each pattern is a colon-separated pair of card type and setting name in the form '<card_type>:<setting_name>' where each can be a specific calue or a wildcard '*'. For example, qfd:attenuation would match the `attenuation` settings for qfd cards, or *:center_frequency would match the `center_frequency` settings for all cards.
     #[serde(
         rename = "protectedTsunamiInstrumentChannelSettings",
@@ -124,6 +127,7 @@ impl ControllerComponent {
             listen_ports: None,
             memory_soft_limit: None,
             only_apply_tsunami_instrument_channel_settings_delta: None,
+            otel_service: None,
             protected_tsunami_instrument_channel_settings: None,
             queue_policy_type: None,
             settings_publication_topic: None,
