@@ -185,6 +185,7 @@ mod describe_load {
     use super::{load, Settings, SETTINGS_PATH_VAR};
 
     #[tokio::test]
+    #[serial_test::serial]
     async fn it_returns_default_if_missing_path() {
         std::env::set_var(SETTINGS_PATH_VAR, "/blah/doesnt_exist.toml");
 
@@ -196,6 +197,7 @@ mod describe_load {
     }
 
     #[tokio::test]
+    #[serial_test::serial]
     async fn it_uses_defaults_incomplete_settings() {
         let file = NamedTempFile::new().expect("should be able to create temporary file");
         std::env::set_var(SETTINGS_PATH_VAR, file.path());
@@ -206,6 +208,7 @@ mod describe_load {
     }
 
     #[tokio::test]
+    #[serial_test::serial]
     async fn it_loads_from_env_var_path() {
         let mut file = NamedTempFile::new().expect("should be able to create temporary file");
         let settings = Settings {

@@ -1,3 +1,9 @@
+## 0.7.16 (2024-05-09)
+
+### Fixes
+
+#### refresh JWT only when expired, not before every request
+
 ## 0.7.15 (2024-04-16)
 
 ### Fixes

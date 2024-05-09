@@ -80,6 +80,7 @@ mod describe_load {
     use super::{load, Credential, Secrets, SECRETS_PATH_VAR};
 
     #[tokio::test]
+    #[serial_test::serial]
     async fn it_returns_default_if_missing_path() {
         std::env::set_var(SECRETS_PATH_VAR, "/blah/doesnt_exist.toml");
 
@@ -90,6 +91,7 @@ mod describe_load {
     }
 
     #[tokio::test]
+    #[serial_test::serial]
     async fn it_loads_from_env_var_path() {
         let mut file = NamedTempFile::new().expect("Failed to create temporary settings file");
         let mut secrets = Secrets::default();

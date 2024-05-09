@@ -7,7 +7,9 @@ members = [
 ]
 
 [workspace.dependencies]
-jsonwebtoken = "9.2.0"
+# jsonwebtoken should always be validated after upgrading. Changes to the validation logic can cause the client to
+# believe JWTs are always invalid, which causes the client to refresh them before every request. See #83.
+jsonwebtoken = "8.3.0"
 opentelemetry = "0.20.0"
 opentelemetry_api = "0.20.0"
 opentelemetry_sdk = "0.20.0"
