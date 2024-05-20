@@ -4519,6 +4519,17 @@ components:
         - edges
       title: Architecture
       type: object
+    Backplane:
+      properties:
+        identity:
+          $ref: "#/components/schemas/Identity"
+        software:
+          $ref: "#/components/schemas/SoftwareVersion"
+      required:
+        - software
+        - identity
+      title: Backplane
+      type: object
     CWChannel:
       description: Configuration for a single CW Generator Channel.
       properties:
@@ -4817,7 +4828,7 @@ components:
           allOf:
             - $ref: "#/components/schemas/StartupConfigurationSource"
           default: deployedRack
-          description: Select the data source from which the endpoint's startup
+          description: Selet the data soure from which the endpoint's startup
             configuration should be retrieved
           title: Startup Configuration Source
         storageBackend:
@@ -5335,6 +5346,15 @@ components:
         - Ankaa
       title: Family
       type: string
+    Identity:
+      properties:
+        revision:
+          title: Revision
+          type: string
+      required:
+        - revision
+      title: Identity
+      type: object
     InstructionSetArchitecture:
       additionalProperties: false
       description: >-
@@ -6109,6 +6129,8 @@ components:
       type: object
     MagnetoInstrumentConfiguration:
       properties:
+        configuration:
+          $ref: "#/components/schemas/QuercusConfiguration"
         port:
           anyOf:
             - type: integer
@@ -6162,6 +6184,13 @@ components:
             - $ref: "#/components/schemas/MagnetoStartupConfiguration"
           description: Configuration used by Magneto simulator on startup.
           title: Startup Configuration
+        startupConfigurationSource:
+          allOf:
+            - $ref: "#/components/schemas/StartupConfigurationSource"
+          default: deployedRack
+          description: Selet the data soure from which the endpoint's startup
+            configuration should be retrieved
+          title: Startup Configuration Source
       title: Magneto Simulator Component
       type: object
     MagnetoStartupConfiguration:
@@ -6297,6 +6326,15 @@ components:
         - node_ids
         - characteristics
       title: OperationSite
+      type: object
+    OptionCard:
+      properties:
+        type:
+          title: Type
+          type: string
+      required:
+        - type
+      title: OptionCard
       type: object
     OrchestratorComponent:
       properties:
@@ -6861,6 +6899,20 @@ components:
       properties: {}
       title: QuantumProcessorParameters
       type: object
+    QuercusConfiguration:
+      properties:
+        backplane:
+          $ref: "#/components/schemas/Backplane"
+        option_cards:
+          items:
+            $ref: "#/components/schemas/OptionCard"
+          title: Option Cards
+          type: array
+      required:
+        - backplane
+        - option_cards
+      title: QuercusConfiguration
+      type: object
     QueuePolicyType:
       description: Which queue policy to use when prioritizing queued jobs.
       enum:
@@ -6915,6 +6967,19 @@ components:
           type: string
       title: SetDefaultEndpointRequest
       type: object
+    SoftwareVersion:
+      properties:
+        git_hash:
+          title: Git Hash
+          type: string
+        version:
+          title: Version
+          type: string
+      required:
+        - git_hash
+        - version
+      title: SoftwareVersion
+      type: object
     StartupConfigurationSource:
       description: Where to pull the service's startup configuration from.
       enum:
@@ -6934,6 +6999,7 @@ components:
         - integration
         - controllerMigration
         - test.magneto-backed-controller.v1
+        - test.magneto-backed-controller.v2
         - test.virtual-controller.v1
       title: TemplateName
       type: string
