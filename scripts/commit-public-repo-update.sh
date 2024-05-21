@@ -89,6 +89,10 @@ ex '+%s/path = "..\/../path = "../g' -scwq qcs-api-client-openapi/Cargo.toml
 cargo update && cargo check
 
 git add --all
+if git --no-pager diff --staged --cached --quiet; then
+    echo "No changes to commit"
+    exit 0
+fi
 
 # Print the diff and status in the log to aid debugging.
 git --no-pager diff --staged
