@@ -56,6 +56,9 @@ pub use self::available_reservation::AvailableReservation;
 pub mod b;
 pub use self::b::B;
 #[allow(non_snake_case)]
+pub mod backplane;
+pub use self::backplane::Backplane;
+#[allow(non_snake_case)]
 pub mod billing_customer;
 pub use self::billing_customer::BillingCustomer;
 #[allow(non_snake_case)]
@@ -263,6 +266,9 @@ pub use self::health::Health;
 pub mod hermite_gaussian_waveform;
 pub use self::hermite_gaussian_waveform::HermiteGaussianWaveform;
 #[allow(non_snake_case)]
+pub mod identity;
+pub use self::identity::Identity;
+#[allow(non_snake_case)]
 pub mod instruction_set_architecture;
 pub use self::instruction_set_architecture::InstructionSetArchitecture;
 #[allow(non_snake_case)]
@@ -452,6 +458,9 @@ pub use self::operation::Operation;
 pub mod operation_site;
 pub use self::operation_site::OperationSite;
 #[allow(non_snake_case)]
+pub mod option_card;
+pub use self::option_card::OptionCard;
+#[allow(non_snake_case)]
 pub mod orchestrator_component;
 pub use self::orchestrator_component::OrchestratorComponent;
 #[allow(non_snake_case)]
@@ -560,6 +569,9 @@ pub use self::quantum_processor_accessor_type::QuantumProcessorAccessorType;
 pub mod qubit_settings;
 pub use self::qubit_settings::QubitSettings;
 #[allow(non_snake_case)]
+pub mod quercus_configuration;
+pub use self::quercus_configuration::QuercusConfiguration;
+#[allow(non_snake_case)]
 pub mod queue_policy_type;
 pub use self::queue_policy_type::QueuePolicyType;
 #[allow(non_snake_case)]
@@ -613,6 +625,9 @@ pub use self::slow_flux_settings::SlowFluxSettings;
 #[allow(non_snake_case)]
 pub mod soft_delete_info;
 pub use self::soft_delete_info::SoftDeleteInfo;
+#[allow(non_snake_case)]
+pub mod software_version;
+pub use self::software_version::SoftwareVersion;
 #[allow(non_snake_case)]
 pub mod specs;
 pub use self::specs::Specs;

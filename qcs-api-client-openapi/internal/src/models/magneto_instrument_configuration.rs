@@ -12,6 +12,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct MagnetoInstrumentConfiguration {
+    #[serde(rename = "configuration", skip_serializing_if = "Option::is_none")]
+    pub configuration: Option<Box<crate::models::QuercusConfiguration>>,
     #[serde(rename = "port")]
     pub port: Box<crate::models::Port>,
 }
@@ -19,6 +21,7 @@ pub struct MagnetoInstrumentConfiguration {
 impl MagnetoInstrumentConfiguration {
     pub fn new(port: crate::models::Port) -> MagnetoInstrumentConfiguration {
         MagnetoInstrumentConfiguration {
+            configuration: None,
             port: Box::new(port),
         }
     }

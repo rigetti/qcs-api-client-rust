@@ -38,6 +38,12 @@ pub struct MagnetoSimulatorComponent {
         skip_serializing_if = "Option::is_none"
     )]
     pub startup_configuration: Option<Box<crate::models::StartupConfiguration1>>,
+    /// Selet the data soure from which the endpoint's startup configuration should be retrieved
+    #[serde(
+        rename = "startupConfigurationSource",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub startup_configuration_source: Option<Box<crate::models::StartupConfigurationSource>>,
 }
 
 impl MagnetoSimulatorComponent {
@@ -50,6 +56,7 @@ impl MagnetoSimulatorComponent {
             is_sidecar: None,
             memory_soft_limit: None,
             startup_configuration: None,
+            startup_configuration_source: None,
         }
     }
 }

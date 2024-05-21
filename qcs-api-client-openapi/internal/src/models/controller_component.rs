@@ -89,7 +89,7 @@ pub struct ControllerComponent {
         skip_serializing_if = "Option::is_none"
     )]
     pub startup_configuration: Option<Box<crate::models::StartupConfiguration>>,
-    /// Select the data source from which the endpoint's startup configuration should be retrieved
+    /// Selet the data soure from which the endpoint's startup configuration should be retrieved
     #[serde(
         rename = "startupConfigurationSource",
         skip_serializing_if = "Option::is_none"

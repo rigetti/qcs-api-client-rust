@@ -32,6 +32,7 @@ src/models/auth_reset_password_request.rs
 src/models/auth_reset_password_with_token_request.rs
 src/models/available_reservation.rs
 src/models/b.rs
+src/models/backplane.rs
 src/models/billing_customer.rs
 src/models/billing_invoice.rs
 src/models/billing_invoice_all_of.rs
@@ -101,6 +102,7 @@ src/models/get_quilt_calibrations_response.rs
 src/models/group.rs
 src/models/health.rs
 src/models/hermite_gaussian_waveform.rs
+src/models/identity.rs
 src/models/instruction_set_architecture.rs
 src/models/instrument.rs
 src/models/instrument_mock_component.rs
@@ -165,6 +167,7 @@ src/models/nomad_job_datacenters.rs
 src/models/nomad_reserved_port.rs
 src/models/operation.rs
 src/models/operation_site.rs
+src/models/option_card.rs
 src/models/orchestrator_component.rs
 src/models/otel_service.rs
 src/models/parameter.rs
@@ -201,6 +204,7 @@ src/models/quantum_processor.rs
 src/models/quantum_processor_accessor.rs
 src/models/quantum_processor_accessor_type.rs
 src/models/qubit_settings.rs
+src/models/quercus_configuration.rs
 src/models/queue_policy_type.rs
 src/models/rack_meta.rs
 src/models/rdm_legacy__schedule_ir__instruction_parameters__parameter_spec.rs
@@ -219,6 +223,7 @@ src/models/shift_frequency.rs
 src/models/shift_phase.rs
 src/models/slow_flux_settings.rs
 src/models/soft_delete_info.rs
+src/models/software_version.rs
 src/models/specs.rs
 src/models/startup_configuration.rs
 src/models/startup_configuration_1.rs
