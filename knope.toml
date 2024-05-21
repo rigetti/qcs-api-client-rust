@@ -36,6 +36,7 @@ type = "PrepareRelease"
 
 [[workflows.steps]]
 type = "Command"
+shell = true
 command = """
 COMMON_VERSION=$(cargo metadata --format-version 1 --no-deps | jq '.packages[] | select(.name=="qcs-api-client-common") | .version' -r)
 # Specifying the @VERSION here is required for cargo upgrade to ignore the `path` field for the package.
@@ -45,6 +46,7 @@ git add qcs-api-client-grpc/Cargo.toml qcs-api-client-grpc-internal/Cargo.toml q
 
 [[workflows.steps]]
 type = "Command"
+shell = true
 # Fail the workflow if there are no staged changes added from the previous `cargo upgrade`
 command = "! git diff --cached --quiet"
 
@@ -56,6 +58,7 @@ command = "cargo update -w"
 type = "Command"
 # git diff --cached --quiet exits with 0 if there are *no* staged changes.
 # So if it exits with any other code, commit the staged changes
+shell = true
 command = "git add Cargo.lock && (git diff --cached --quiet || git commit -m \"chore: prepare new release(s)\")"
 
 [[workflows.steps]]
@@ -63,6 +66,7 @@ type = "Release"
 
 [[workflows.steps]]
 type = "Command"
+shell = true
 command = """
 # These are the _unpushed_ tags, i.e., the tags knope has just created, for the public repos.
 TAGS=$(git show-ref --tags | grep -v -F "$(git ls-remote --tags origin | grep -v '\\^{}' | cut -f 2)" | cut -d" " -f 2 | sed 's%refs/tags/%%g' | egrep '(common/|grpc/|openapi/)')
@@ -73,6 +77,7 @@ TAGS="$(echo "$TAGS" | tr '\n' ' ')"
 
 [[workflows.steps]]
 type = "Command"
+shell = true
 command = """
 git push 
 git push --tags 
@@ -87,6 +92,7 @@ prerelease_label = "rc"
 
 [[workflows.steps]]
 type = "Command"
+shell = true
 command = """
 COMMON_VERSION=$(cargo metadata --format-version 1 --no-deps | jq '.packages[] | select(.name=="qcs-api-client-common") | .version' -r)
 # Specifying the @VERSION here is required for cargo upgrade to ignore the `path` field for the package.
@@ -96,6 +102,7 @@ git add qcs-api-client-grpc/Cargo.toml qcs-api-client-grpc-internal/Cargo.toml q
 
 [[workflows.steps]]
 type = "Command"
+shell = true
 # Fail the workflow if there are no staged changes added from the previous `cargo upgrade`
 command = "! git diff --cached --quiet"
 
@@ -105,6 +112,7 @@ command = "cargo update -w"
 
 [[workflows.steps]]
 type = "Command"
+shell = true
 # git diff --cached --quiet exits with 0 if there are *no* staged changes.
 # So if it exits with any other code, commit the staged changes
 command = "git add Cargo.lock && (git diff --cached --quiet || git commit -m \"chore: prepare new prerelease(s)\")"
@@ -114,6 +122,7 @@ type = "Release"
 
 [[workflows.steps]]
 type = "Command"
+shell = true
 command = """
 # These are the _unpushed_ tags, i.e., the tags knope has just created, for the public repos.
 TAGS=$(git show-ref --tags | grep -v -F "$(git ls-remote --tags origin | grep -v '\\^{}' | cut -f 2)" | cut -d" " -f 2 | sed 's%refs/tags/%%g' | egrep '(common/|grpc/|openapi/)')
@@ -124,6 +133,7 @@ TAGS="$(echo "$TAGS" | tr '\n' ' ')"
 
 [[workflows.steps]]
 type = "Command"
+shell = true
 command = """
 git push
 git push --tags
