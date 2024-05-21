@@ -5,7 +5,7 @@
 #
 # Usage: ./commit-public-repo-update.sh {GitHub commit message} {space-separated git tags to push}
 
-set -euo pipefail
+set -euxo pipefail
 
 COMMIT_MESSAGE="${1:?"Must specify a commit message"}"
 TAGS="${*:2}"
