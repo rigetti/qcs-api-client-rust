@@ -24,7 +24,9 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
-use ::qcs_api_client_common::backoff::{duration_from_response, ExponentialBackoff};
+use ::qcs_api_client_common::backoff::{
+    duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
+};
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
@@ -124,6 +126,7 @@ pub async fn get_quilt_calibrations(
 ) -> Result<crate::models::GetQuiltCalibrationsResponse, Error<GetQuiltCalibrationsError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result =
             get_quilt_calibrations_inner(configuration, &mut backoff, quantum_processor_id.clone())
@@ -147,6 +150,22 @@ pub async fn get_quilt_calibrations(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -238,6 +257,7 @@ pub async fn translate_native_quil_to_encrypted_binary(
 > {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
     loop {
         let result = translate_native_quil_to_encrypted_binary_inner(
             configuration,
@@ -265,6 +285,22 @@ pub async fn translate_native_quil_to_encrypted_binary(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }

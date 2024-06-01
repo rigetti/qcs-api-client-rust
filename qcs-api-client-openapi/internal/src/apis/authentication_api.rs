@@ -10,7 +10,9 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
-use ::qcs_api_client_common::backoff::{duration_from_response, ExponentialBackoff};
+use ::qcs_api_client_common::backoff::{
+    duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
+};
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
@@ -130,6 +132,7 @@ pub async fn auth_email_password_reset_token(
 ) -> Result<(), Error<AuthEmailPasswordResetTokenError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
     loop {
         let result = auth_email_password_reset_token_inner(
             configuration,
@@ -156,6 +159,22 @@ pub async fn auth_email_password_reset_token(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -233,6 +252,7 @@ pub async fn auth_get_user(
 ) -> Result<crate::models::User, Error<AuthGetUserError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = auth_get_user_inner(configuration, &mut backoff).await;
 
@@ -254,6 +274,22 @@ pub async fn auth_get_user(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -334,6 +370,7 @@ pub async fn auth_reset_password(
 ) -> Result<(), Error<AuthResetPasswordError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
     loop {
         let result = auth_reset_password_inner(
             configuration,
@@ -360,6 +397,22 @@ pub async fn auth_reset_password(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -440,6 +493,7 @@ pub async fn auth_reset_password_with_token(
 ) -> Result<(), Error<AuthResetPasswordWithTokenError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
     loop {
         let result = auth_reset_password_with_token_inner(
             configuration,
@@ -466,6 +520,22 @@ pub async fn auth_reset_password_with_token(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }

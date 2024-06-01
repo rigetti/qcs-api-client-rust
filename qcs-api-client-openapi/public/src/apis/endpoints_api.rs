@@ -24,7 +24,9 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
-use ::qcs_api_client_common::backoff::{duration_from_response, ExponentialBackoff};
+use ::qcs_api_client_common::backoff::{
+    duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
+};
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
@@ -161,6 +163,7 @@ pub async fn create_endpoint(
 ) -> Result<crate::models::Endpoint, Error<CreateEndpointError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
     loop {
         let result = create_endpoint_inner(
             configuration,
@@ -187,6 +190,22 @@ pub async fn create_endpoint(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -266,6 +285,7 @@ pub async fn delete_endpoint(
 ) -> Result<(), Error<DeleteEndpointError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::DELETE;
     loop {
         let result = delete_endpoint_inner(configuration, &mut backoff, endpoint_id.clone()).await;
 
@@ -287,6 +307,22 @@ pub async fn delete_endpoint(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -367,6 +403,7 @@ pub async fn get_default_endpoint(
 ) -> Result<crate::models::Endpoint, Error<GetDefaultEndpointError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result =
             get_default_endpoint_inner(configuration, &mut backoff, quantum_processor_id.clone())
@@ -390,6 +427,22 @@ pub async fn get_default_endpoint(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -470,6 +523,7 @@ pub async fn get_endpoint(
 ) -> Result<crate::models::Endpoint, Error<GetEndpointError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = get_endpoint_inner(configuration, &mut backoff, endpoint_id.clone()).await;
 
@@ -491,6 +545,22 @@ pub async fn get_endpoint(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -587,6 +657,7 @@ pub async fn list_endpoints(
 ) -> Result<crate::models::ListEndpointsResponse, Error<ListEndpointsError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = list_endpoints_inner(
             configuration,
@@ -615,6 +686,22 @@ pub async fn list_endpoints(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -698,6 +785,7 @@ pub async fn restart_endpoint(
 ) -> Result<(), Error<RestartEndpointError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
     loop {
         let result = restart_endpoint_inner(
             configuration,
@@ -725,6 +813,22 @@ pub async fn restart_endpoint(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }

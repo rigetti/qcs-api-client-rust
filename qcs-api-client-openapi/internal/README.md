@@ -79,6 +79,7 @@ Class | Method | HTTP request | Description
 *AccountApi* | [**get_group_upcoming_billing_invoice**](docs/AccountApi.md#get_group_upcoming_billing_invoice) | **GET** /v1/groups/{groupName}/billingInvoices:getUpcoming | 
 *AccountApi* | [**get_user_balance**](docs/AccountApi.md#get_user_balance) | **GET** /v1/users/{userId}/balance | Get User Balance
 *AccountApi* | [**get_user_billing_customer**](docs/AccountApi.md#get_user_billing_customer) | **GET** /v1/users/{userId}/billingCustomer | 
+*AccountApi* | [**get_user_event_billing_price**](docs/AccountApi.md#get_user_event_billing_price) | **POST** /v1/users/{userId}/eventBillingPrices:get | 
 *AccountApi* | [**get_user_upcoming_billing_invoice**](docs/AccountApi.md#get_user_upcoming_billing_invoice) | **GET** /v1/users/{userId}/billingInvoices:getUpcoming | 
 *AccountApi* | [**internal_create_event_billing_price**](docs/AccountApi.md#internal_create_event_billing_price) | **POST** /v1/internal/eventBillingPrices | Internal Create Event Billing Price
 *AccountApi* | [**internal_create_group_billing_customer**](docs/AccountApi.md#internal_create_group_billing_customer) | **POST** /v1/internal/groups/{groupName}/billingCustomer | 
@@ -280,6 +281,7 @@ Class | Method | HTTP request | Description
  - [ErfSquareWaveform](docs/ErfSquareWaveform.md)
  - [Error](docs/Error.md)
  - [EventBillingPrice](docs/EventBillingPrice.md)
+ - [EventBillingPriceRate](docs/EventBillingPriceRate.md)
  - [EventBillingPriceUpdate](docs/EventBillingPriceUpdate.md)
  - [ExecutionBackend](docs/ExecutionBackend.md)
  - [Family](docs/Family.md)
@@ -292,6 +294,7 @@ Class | Method | HTTP request | Description
  - [FrameSettings](docs/FrameSettings.md)
  - [GateSettings](docs/GateSettings.md)
  - [GaussianWaveform](docs/GaussianWaveform.md)
+ - [GetAccountEventBillingPriceRequest](docs/GetAccountEventBillingPriceRequest.md)
  - [GetQuiltCalibrationsResponse](docs/GetQuiltCalibrationsResponse.md)
  - [Group](docs/Group.md)
  - [Health](docs/Health.md)

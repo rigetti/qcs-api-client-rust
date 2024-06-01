@@ -24,7 +24,9 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
-use ::qcs_api_client_common::backoff::{duration_from_response, ExponentialBackoff};
+use ::qcs_api_client_common::backoff::{
+    duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
+};
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
@@ -168,6 +170,7 @@ pub async fn create_reservation(
 ) -> Result<crate::models::Reservation, Error<CreateReservationError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
     loop {
         let result = create_reservation_inner(
             configuration,
@@ -196,6 +199,22 @@ pub async fn create_reservation(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -276,6 +295,7 @@ pub async fn delete_reservation(
 ) -> Result<crate::models::Reservation, Error<DeleteReservationError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::DELETE;
     loop {
         let result =
             delete_reservation_inner(configuration, &mut backoff, reservation_id.clone()).await;
@@ -298,6 +318,22 @@ pub async fn delete_reservation(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -401,6 +437,7 @@ pub async fn find_available_reservations(
 {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = find_available_reservations_inner(
             configuration,
@@ -431,6 +468,22 @@ pub async fn find_available_reservations(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -542,6 +595,7 @@ pub async fn list_group_reservations(
 ) -> Result<crate::models::ListReservationsResponse, Error<ListGroupReservationsError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = list_group_reservations_inner(
             configuration,
@@ -573,6 +627,22 @@ pub async fn list_group_reservations(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -693,6 +763,7 @@ pub async fn list_reservations(
 ) -> Result<crate::models::ListReservationsResponse, Error<ListReservationsError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = list_reservations_inner(
             configuration,
@@ -725,6 +796,22 @@ pub async fn list_reservations(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }

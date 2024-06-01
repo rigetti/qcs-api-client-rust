@@ -10,7 +10,9 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
-use ::qcs_api_client_common::backoff::{duration_from_response, ExponentialBackoff};
+use ::qcs_api_client_common::backoff::{
+    duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
+};
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
@@ -157,6 +159,7 @@ pub async fn get_health(
 ) -> Result<crate::models::Health, Error<GetHealthError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = get_health_inner(configuration, &mut backoff).await;
 
@@ -178,6 +181,22 @@ pub async fn get_health(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -255,6 +274,7 @@ pub async fn health_check(
 ) -> Result<serde_json::Value, Error<HealthCheckError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = health_check_inner(configuration, &mut backoff).await;
 
@@ -276,6 +296,22 @@ pub async fn health_check(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -350,6 +386,7 @@ pub async fn health_check_deprecated(
 ) -> Result<serde_json::Value, Error<HealthCheckDeprecatedError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = health_check_deprecated_inner(configuration, &mut backoff).await;
 
@@ -371,6 +408,22 @@ pub async fn health_check_deprecated(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -455,6 +508,7 @@ pub async fn internal_create_product_billing_price(
 ) -> Result<crate::models::BillingPrice, Error<InternalCreateProductBillingPriceError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
     loop {
         let result = internal_create_product_billing_price_inner(
             configuration,
@@ -482,6 +536,22 @@ pub async fn internal_create_product_billing_price(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -593,6 +663,7 @@ pub async fn internal_list_product_billing_prices(
 > {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = internal_list_product_billing_prices_inner(
             configuration,
@@ -623,6 +694,22 @@ pub async fn internal_list_product_billing_prices(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -711,6 +798,7 @@ pub async fn internal_update_group_billing_customer(
 ) -> Result<crate::models::BillingCustomer, Error<InternalUpdateGroupBillingCustomerError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::PATCH;
     loop {
         let result = internal_update_group_billing_customer_inner(
             configuration,
@@ -738,6 +826,22 @@ pub async fn internal_update_group_billing_customer(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -822,6 +926,7 @@ pub async fn internal_update_product_billing_price(
 ) -> Result<crate::models::BillingPrice, Error<InternalUpdateProductBillingPriceError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::PATCH;
     loop {
         let result = internal_update_product_billing_price_inner(
             configuration,
@@ -849,6 +954,22 @@ pub async fn internal_update_product_billing_price(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -937,6 +1058,7 @@ pub async fn internal_update_user_billing_customer(
 ) -> Result<crate::models::BillingCustomer, Error<InternalUpdateUserBillingCustomerError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::PATCH;
     loop {
         let result = internal_update_user_billing_customer_inner(
             configuration,
@@ -964,6 +1086,22 @@ pub async fn internal_update_user_billing_customer(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }

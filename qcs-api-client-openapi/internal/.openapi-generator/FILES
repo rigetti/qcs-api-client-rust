@@ -86,6 +86,7 @@ src/models/engagement_with_credentials.rs
 src/models/erf_square_waveform.rs
 src/models/error.rs
 src/models/event_billing_price.rs
+src/models/event_billing_price_rate.rs
 src/models/event_billing_price_update.rs
 src/models/execution_backend.rs
 src/models/family.rs
@@ -98,6 +99,7 @@ src/models/flat_waveform.rs
 src/models/frame_settings.rs
 src/models/gate_settings.rs
 src/models/gaussian_waveform.rs
+src/models/get_account_event_billing_price_request.rs
 src/models/get_quilt_calibrations_response.rs
 src/models/group.rs
 src/models/health.rs

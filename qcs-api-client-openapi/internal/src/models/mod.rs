@@ -218,6 +218,9 @@ pub use self::error::Error;
 pub mod event_billing_price;
 pub use self::event_billing_price::EventBillingPrice;
 #[allow(non_snake_case)]
+pub mod event_billing_price_rate;
+pub use self::event_billing_price_rate::EventBillingPriceRate;
+#[allow(non_snake_case)]
 pub mod event_billing_price_update;
 pub use self::event_billing_price_update::EventBillingPriceUpdate;
 #[allow(non_snake_case)]
@@ -253,6 +256,9 @@ pub use self::gate_settings::GateSettings;
 #[allow(non_snake_case)]
 pub mod gaussian_waveform;
 pub use self::gaussian_waveform::GaussianWaveform;
+#[allow(non_snake_case)]
+pub mod get_account_event_billing_price_request;
+pub use self::get_account_event_billing_price_request::GetAccountEventBillingPriceRequest;
 #[allow(non_snake_case)]
 pub mod get_quilt_calibrations_response;
 pub use self::get_quilt_calibrations_response::GetQuiltCalibrationsResponse;

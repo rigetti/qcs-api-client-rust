@@ -78,6 +78,7 @@ Class | Method | HTTP request | Description
 *AccountApi* | [**get_group_upcoming_billing_invoice**](docs/AccountApi.md#get_group_upcoming_billing_invoice) | **GET** /v1/groups/{groupName}/billingInvoices:getUpcoming | 
 *AccountApi* | [**get_user_balance**](docs/AccountApi.md#get_user_balance) | **GET** /v1/users/{userId}/balance | Get User Balance
 *AccountApi* | [**get_user_billing_customer**](docs/AccountApi.md#get_user_billing_customer) | **GET** /v1/users/{userId}/billingCustomer | 
+*AccountApi* | [**get_user_event_billing_price**](docs/AccountApi.md#get_user_event_billing_price) | **POST** /v1/users/{userId}/eventBillingPrices:get | 
 *AccountApi* | [**get_user_upcoming_billing_invoice**](docs/AccountApi.md#get_user_upcoming_billing_invoice) | **GET** /v1/users/{userId}/billingInvoices:getUpcoming | 
 *AccountApi* | [**list_group_billing_invoice_lines**](docs/AccountApi.md#list_group_billing_invoice_lines) | **GET** /v1/groups/{groupName}/billingInvoices/{billingInvoiceId}/lines | 
 *AccountApi* | [**list_group_billing_invoices**](docs/AccountApi.md#list_group_billing_invoices) | **GET** /v1/groups/{groupName}/billingInvoices | 
@@ -156,8 +157,10 @@ Class | Method | HTTP request | Description
  - [EngagementCredentials](docs/EngagementCredentials.md)
  - [EngagementWithCredentials](docs/EngagementWithCredentials.md)
  - [Error](docs/Error.md)
+ - [EventBillingPriceRate](docs/EventBillingPriceRate.md)
  - [Family](docs/Family.md)
  - [FindAvailableReservationsResponse](docs/FindAvailableReservationsResponse.md)
+ - [GetAccountEventBillingPriceRequest](docs/GetAccountEventBillingPriceRequest.md)
  - [GetQuiltCalibrationsResponse](docs/GetQuiltCalibrationsResponse.md)
  - [Group](docs/Group.md)
  - [Health](docs/Health.md)
@@ -178,6 +181,7 @@ Class | Method | HTTP request | Description
  - [OperationSite](docs/OperationSite.md)
  - [Parameter](docs/Parameter.md)
  - [ParameterSpec](docs/ParameterSpec.md)
+ - [Product](docs/Product.md)
  - [QuantumProcessor](docs/QuantumProcessor.md)
  - [QuantumProcessorAccessor](docs/QuantumProcessorAccessor.md)
  - [QuantumProcessorAccessorType](docs/QuantumProcessorAccessorType.md)
