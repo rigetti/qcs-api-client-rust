@@ -1,3 +1,9 @@
+## 0.7.18 (2024-06-02)
+
+### Features
+
+#### implement retries on disconnect for methods that are safe/idempotent
+
 ## 0.7.17 (2024-05-21)
 
 ### Fixes
