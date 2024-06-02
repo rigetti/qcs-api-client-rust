@@ -121,11 +121,17 @@ pub use self::engagement_with_credentials::EngagementWithCredentials;
 pub mod error;
 pub use self::error::Error;
 #[allow(non_snake_case)]
+pub mod event_billing_price_rate;
+pub use self::event_billing_price_rate::EventBillingPriceRate;
+#[allow(non_snake_case)]
 pub mod family;
 pub use self::family::Family;
 #[allow(non_snake_case)]
 pub mod find_available_reservations_response;
 pub use self::find_available_reservations_response::FindAvailableReservationsResponse;
+#[allow(non_snake_case)]
+pub mod get_account_event_billing_price_request;
+pub use self::get_account_event_billing_price_request::GetAccountEventBillingPriceRequest;
 #[allow(non_snake_case)]
 pub mod get_quilt_calibrations_response;
 pub use self::get_quilt_calibrations_response::GetQuiltCalibrationsResponse;
@@ -186,6 +192,9 @@ pub use self::parameter::Parameter;
 #[allow(non_snake_case)]
 pub mod parameter_spec;
 pub use self::parameter_spec::ParameterSpec;
+#[allow(non_snake_case)]
+pub mod product;
+pub use self::product::Product;
 #[allow(non_snake_case)]
 pub mod quantum_processor;
 pub use self::quantum_processor::QuantumProcessor;

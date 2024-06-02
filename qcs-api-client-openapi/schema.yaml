@@ -1754,6 +1754,57 @@ paths:
         - JWTBearer: []
       tags:
         - account
+  "/v1/users/{userId}/eventBillingPrices:get":
+    post:
+      description: Retrieve `EventBillingPrice` for a user for a specific event. If no
+        price is configured this operation will return a default
+        `EventBillingPrice` for the specified `product`.
+      operationId: GetUserEventBillingPrice
+      parameters:
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+            call.
+          in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetAccountEventBillingPriceRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventBillingPriceRate"
+          description: Retrieved `EventBillingPrice` successfully.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client is not authorized to retrieve the `EventBillingPrice`.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: The `EventBillingPrice` does not exist for the specified event.
+            Because the server guarantees prices for events, the server will
+            trigger alerts whenever returning this response.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request parameter validation error.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
   "/v1/users/{userId}/groups":
     get:
       description: List QCS groups for the requested user
@@ -2715,15 +2766,15 @@ components:
       description: The price schedule for a particular service applied to an invoice
         line item.
       properties:
+        active:
+          description: Whether the price can be used for new purchases.
+          type: boolean
         billingScheme:
           $ref: "#/components/schemas/BillingPriceScheme"
         id:
           description: Unique identifier for the object.
           maxLength: 5000
           type: string
-        active:
-          description: Whether the price can be used for new purchases.
-          type: boolean
         object:
           description: String representing the object's type. Objects of the same type
             share the same value.
@@ -2753,8 +2804,8 @@ components:
         unitAmountDecimal:
           description: The unit amount in `currency` to be charged. Only set if
             `billingScheme=per_unit`.
-          type: number
           format: double
+          type: number
       required:
         - id
       title: Billing Price
@@ -2777,8 +2828,8 @@ components:
             - year
           type: string
         intervalCount:
-          type: integer
           format: int64
+          type: integer
         usageType:
           enum:
             - licensed
@@ -2803,21 +2854,21 @@ components:
     BillingPriceTier:
       properties:
         flatAmount:
-          type: integer
           format: int64
+          type: integer
         flatAmountDecimal:
-          type: number
           format: double
+          type: number
         unitAmount:
-          type: integer
           format: int64
+          type: integer
         unitAmountDecimal:
-          type: number
           format: double
+          type: number
         upTo:
           description: A value of `-1` will imply that this tier is up to Infinity.
-          type: integer
           format: int64
+          type: integer
       required:
         - upTo
       title: tier
@@ -2851,9 +2902,9 @@ components:
             share the same value.
           enum:
             - product
+          type: string
           x-enum-varnames:
             - productObject
-          type: string
         unitLabel:
           description: A label that represents units of this product. When set, this will
             be included in associated invoice line item descriptions.
@@ -2986,6 +3037,26 @@ components:
         - startTime
         - endTime
       type: object
+    EventBillingPriceRate:
+      description: Event price rate information.
+      properties:
+        id:
+          type: integer
+        product:
+          $ref: "#/components/schemas/Product"
+        quantumProcessorId:
+          type: string
+        unitAmountDecimal:
+          description: The unit amount in currency to be charged.
+          type: number
+          format: double
+        unitLabel:
+          description: Human-readable unit label infomation.
+          type: string
+      required:
+        - id
+        - product
+      type: object
     Filter:
       description: >
         A string conforming to a *limited* set of the filtering operations
@@ -3017,6 +3088,19 @@ components:
           type: string
       required:
         - availableReservations
+      type: object
+    GetAccountEventBillingPriceRequest:
+      description: Property `quantumProcessorId` is currently required for all
+        `product`s, however in the future there may be `product`s that do not
+        require a `quantumProcessorId`.
+      properties:
+        product:
+          $ref: "#/components/schemas/Product"
+        quantumProcessorId:
+          maxLength: 1000
+          type: string
+      required:
+        - product
       type: object
     Group:
       properties:
@@ -3134,6 +3218,12 @@ components:
 
 
         For example, `quantumProcessorId, startTime DESC`.
+      type: string
+    Product:
+      enum:
+        - reservationCreation
+        - qpuJobCompletion
+        - qpuJobTime
       type: string
     RemoveGroupUserRequest:
       description: Must provide either `userId` or `userEmail` and `groupId` or `groupName`.

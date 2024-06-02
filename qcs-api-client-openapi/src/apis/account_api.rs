@@ -24,7 +24,9 @@
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
-use ::qcs_api_client_common::backoff::{duration_from_response, ExponentialBackoff};
+use ::qcs_api_client_common::backoff::{
+    duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
+};
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
@@ -83,6 +85,16 @@ pub enum GetUserBalanceError {
 pub enum GetUserBillingCustomerError {
     Status403(crate::models::Error),
     Status404(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`get_user_event_billing_price`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GetUserEventBillingPriceError {
+    Status403(crate::models::Error),
+    Status404(crate::models::Error),
+    Status422(crate::models::Error),
     UnknownValue(serde_json::Value),
 }
 
@@ -250,6 +262,7 @@ pub async fn add_group_user(
 ) -> Result<(), Error<AddGroupUserError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
     loop {
         let result =
             add_group_user_inner(configuration, &mut backoff, add_group_user_request.clone()).await;
@@ -272,6 +285,22 @@ pub async fn add_group_user(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -352,6 +381,7 @@ pub async fn get_group_balance(
 ) -> Result<crate::models::AccountBalance, Error<GetGroupBalanceError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = get_group_balance_inner(configuration, &mut backoff, group_name.clone()).await;
 
@@ -373,6 +403,22 @@ pub async fn get_group_balance(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -453,6 +499,7 @@ pub async fn get_group_billing_customer(
 ) -> Result<crate::models::BillingCustomer, Error<GetGroupBillingCustomerError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result =
             get_group_billing_customer_inner(configuration, &mut backoff, group_name.clone()).await;
@@ -475,6 +522,22 @@ pub async fn get_group_billing_customer(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -555,6 +618,7 @@ pub async fn get_group_upcoming_billing_invoice(
 ) -> Result<crate::models::BillingUpcomingInvoice, Error<GetGroupUpcomingBillingInvoiceError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = get_group_upcoming_billing_invoice_inner(
             configuration,
@@ -581,6 +645,22 @@ pub async fn get_group_upcoming_billing_invoice(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -661,6 +741,7 @@ pub async fn get_user_balance(
 ) -> Result<crate::models::AccountBalance, Error<GetUserBalanceError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = get_user_balance_inner(configuration, &mut backoff, user_id.clone()).await;
 
@@ -682,6 +763,22 @@ pub async fn get_user_balance(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -762,6 +859,7 @@ pub async fn get_user_billing_customer(
 ) -> Result<crate::models::BillingCustomer, Error<GetUserBillingCustomerError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result =
             get_user_billing_customer_inner(configuration, &mut backoff, user_id.clone()).await;
@@ -784,6 +882,150 @@ pub async fn get_user_billing_customer(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn get_user_event_billing_price_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    user_id: &str,
+    get_account_event_billing_price_request: crate::models::GetAccountEventBillingPriceRequest,
+) -> Result<crate::models::EventBillingPriceRate, Error<GetUserEventBillingPriceError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/users/{userId}/eventBillingPrices:get",
+        local_var_configuration.qcs_config.api_url(),
+        userId = crate::apis::urlencode(user_id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="POST",
+                "making get_user_event_billing_price request",
+            );
+        }
+    }
+
+    // Use QCS Bearer token
+    let token = configuration.qcs_config.get_bearer_access_token().await?;
+    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+
+    local_var_req_builder = local_var_req_builder.json(&get_account_event_billing_price_request);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<GetUserEventBillingPriceError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Retrieve `EventBillingPrice` for a user for a specific event. If no price is configured this operation will return a default `EventBillingPrice` for the specified `product`.
+pub async fn get_user_event_billing_price(
+    configuration: &configuration::Configuration,
+    user_id: &str,
+    get_account_event_billing_price_request: crate::models::GetAccountEventBillingPriceRequest,
+) -> Result<crate::models::EventBillingPriceRate, Error<GetUserEventBillingPriceError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
+    loop {
+        let result = get_user_event_billing_price_inner(
+            configuration,
+            &mut backoff,
+            user_id.clone(),
+            get_account_event_billing_price_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -864,6 +1106,7 @@ pub async fn get_user_upcoming_billing_invoice(
 ) -> Result<crate::models::BillingUpcomingInvoice, Error<GetUserUpcomingBillingInvoiceError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result =
             get_user_upcoming_billing_invoice_inner(configuration, &mut backoff, user_id.clone())
@@ -887,6 +1130,22 @@ pub async fn get_user_upcoming_billing_invoice(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -989,6 +1248,7 @@ pub async fn list_group_billing_invoice_lines(
 > {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = list_group_billing_invoice_lines_inner(
             configuration,
@@ -1018,6 +1278,22 @@ pub async fn list_group_billing_invoice_lines(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -1113,6 +1389,7 @@ pub async fn list_group_billing_invoices(
 {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = list_group_billing_invoices_inner(
             configuration,
@@ -1141,6 +1418,22 @@ pub async fn list_group_billing_invoices(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -1240,6 +1533,7 @@ pub async fn list_group_upcoming_billing_invoice_lines(
 > {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = list_group_upcoming_billing_invoice_lines_inner(
             configuration,
@@ -1268,6 +1562,22 @@ pub async fn list_group_upcoming_billing_invoice_lines(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -1361,6 +1671,7 @@ pub async fn list_group_users(
 ) -> Result<crate::models::ListGroupUsersResponse, Error<ListGroupUsersError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = list_group_users_inner(
             configuration,
@@ -1389,6 +1700,22 @@ pub async fn list_group_users(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -1491,6 +1818,7 @@ pub async fn list_user_billing_invoice_lines(
 > {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = list_user_billing_invoice_lines_inner(
             configuration,
@@ -1520,6 +1848,22 @@ pub async fn list_user_billing_invoice_lines(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -1615,6 +1959,7 @@ pub async fn list_user_billing_invoices(
 {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = list_user_billing_invoices_inner(
             configuration,
@@ -1643,6 +1988,22 @@ pub async fn list_user_billing_invoices(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -1736,6 +2097,7 @@ pub async fn list_user_groups(
 ) -> Result<crate::models::ListGroupsResponse, Error<ListUserGroupsError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = list_user_groups_inner(
             configuration,
@@ -1764,6 +2126,22 @@ pub async fn list_user_groups(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -1863,6 +2241,7 @@ pub async fn list_user_upcoming_billing_invoice_lines(
 > {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
     loop {
         let result = list_user_upcoming_billing_invoice_lines_inner(
             configuration,
@@ -1891,6 +2270,22 @@ pub async fn list_user_upcoming_billing_invoice_lines(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
@@ -1971,6 +2366,7 @@ pub async fn remove_group_user(
 ) -> Result<(), Error<RemoveGroupUserError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
     loop {
         let result = remove_group_user_inner(
             configuration,
@@ -1997,6 +2393,22 @@ pub async fn remove_group_user(
                 }
 
                 return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
             }
             Err(error) => return Err(error),
         }
