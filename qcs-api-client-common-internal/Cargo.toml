@@ -17,7 +17,7 @@ async-trait = "0.1"
 futures = "0.3.26"
 http = { version = "0.2.8" }
 jsonwebtoken = { workspace = true }
-reqwest = { version = "0.11.11", default-features = false, features = ["json", "rustls-tls-native-roots", "socks"] }
+reqwest = { workspace = true, default-features = false, features = ["json", "rustls-tls-native-roots", "socks"] }
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0.32"
 tokio = { version = "1.20.1", features = ["fs"] }

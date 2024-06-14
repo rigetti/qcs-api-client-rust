@@ -128,33 +128,6 @@ pub enum RefreshError {
     GetAccessToken(#[from] AccessTokenError),
 }
 
-#[async_trait::async_trait]
-impl TokenRefresher for ClientConfiguration {
-    type Error = RefreshError;
-
-    async fn get_access_token(&self) -> Result<String, Self::Error> {
-        self.internal_get_access_token(false)
-            .await
-            .map_err(Into::into)
-    }
-
-    async fn refresh_access_token(&self) -> Result<String, Self::Error> {
-        self.internal_get_access_token(true)
-            .await
-            .map_err(Into::into)
-    }
-
-    #[cfg(feature = "tracing")]
-    fn base_url(&self) -> &str {
-        unimplemented!()
-    }
-
-    #[cfg(feature = "tracing-config")]
-    fn tracing_configuration(&self) -> Option<&TracingConfiguration> {
-        unimplemented!()
-    }
-}
-
 #[derive(Debug, thiserror::Error)]
 pub enum AccessTokenError {
     #[error("could not parse URL: {0}")]

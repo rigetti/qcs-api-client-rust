@@ -1,0 +1,141 @@
+[project]
+name = "qcs-api-client-common"
+version = "0.7.0"
+description = "Contains core QCS client functionality and middleware implementations."
+readme = "README-py.md"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "Rigetti Computing", email = "softapps@rigetti.com" },
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+    "grpcio>=1.63.0",
+    "grpc-interceptor>=0.15.0",
+    "httpx>=0.27.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "grpcio-testing >= 1.63.0",
+    "pytest >= 8.1.1",
+    "pytest-asyncio >= 0.23.6",
+    "pytest-mock >= 3.14.0",
+    "pytest-sugar >= 1.0.0",
+    "pytest-clarity >= 1.0.1",
+    "mypy >= 1.4.1",
+    "ruff >= 0.3.5",
+    "syrupy >= 4.0.0",
+    "watchdog[watchmedo] >= 4.0.0",
+    "maturin >= 1.5.1",
+    "sphinx >= 7.3.7",
+    "sphinx-autoapi >= 3.0.0",
+    "furo >= 2024.5.6",
+]
+
+[build-system]
+requires = ["maturin>=1.0.0,<2.0.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+bindings = "pyo3"
+compatibility = "linux"
+sdist-include = ["README.md"]
+features = ["python", "pyo3/extension-module"]
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "docs",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+line-length = 120
+indent-width = 4
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["D", "E4", "E7", "E9", "F", "I", "B", "S", "UP", "W"]
+ignore = []
+fixable = ["ALL"]
+unfixable = []
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+"tests_py/**/*.py" = [
+    "D",    # docstrings are not enforced in tests
+    "S101", # asserts are allowed in tests
+    "S105", # hardcoded test passwords are o.k.
+]
+"qcs_api_client_common/**/*.pyi" = [
+    "B008"  # In type hints, a function call in a default argument serves as documentation, and doesn't cause a bug.
+]
+
+[tool.ruff.format]
+# Like Black,  use double quotes for strings.
+quote-style = "double"
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pyright]
+# This diagnostic is raised when a type stub is found without a corresponding source file. This is
+# necessarily the case for a pure Rust pyo3 module, so disabling it.
+reportMissingModuleSource = false
+
+[[tool.mypy.overrides]]
+module = [
+    "qcs_api_client_common.*",
+    "grpc.*",
+]
+ignore_missing_imports = true
+disable_error_code = [
+    "import-untyped"
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: mark a test as an integration test.",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning::",
+]
+

@@ -1,7 +1,5 @@
 default:
   image: registry.gitlab.com/rigetti/qcs/utilities/rust-ci-image:latest
-  tags:
-    - ec2-docker
 
 stages:
   - test
@@ -22,8 +20,25 @@ include:
 
 .install_deps: &install_deps
   - apt-get update -y
-  - apt-get install -y zip curl git
+  - apt-get install -y zip curl git python3.11 libpython3.11 libpython3.11-dev
   - ldd --version
+
+.install-pyenv-and-python: &install-pyenv-and-python
+  - curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+  - export PATH="$HOME/.pyenv/bin:$PATH"
+  - eval "$(pyenv init -)"
+  - env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install "$PYTHON_VERSION"
+  - pyenv global "$PYTHON_VERSION"
+  - export LD_LIBRARY_PATH="$HOME/.pyenv/versions/$PYTHON_VERSION/lib:LD_LIBRARY_PATH"
+
+variables:
+  PYTHON_VERSION: 3.11.9
+
+.activate-venv: &activate-venv
+  - *install-pyenv-and-python
+  - pyenv virtualenv $PYTHON_VERSION qcs-api-client-common
+  - pyenv activate qcs-api-client-common
+  - export PATH=$VIRTUAL_ENV/bin:$PATH
 
 Lint:
   stage: test
@@ -35,6 +50,18 @@ Lint:
     - cargo --version
     - cargo make clippy
 
+Lint (Python):
+  stage: test
+  before_script:
+    - *install_deps
+    - !reference [.install_protoc]
+    - !reference [.setup_qcs]
+  script:
+    - cd qcs-api-client-common
+    - *activate-venv
+    - cargo make stubtest
+    - ruff check
+
 Test:
   stage: test
   before_script:
@@ -43,7 +70,20 @@ Test:
     - !reference [.setup_qcs]
   script:
     - cargo --version
-    - cargo make test
+    # This excludes integration tests without having to enumerate each test in the command.
+    - cargo make test-with-args --lib
+    - cargo make test-with-args --doc
+
+Test (Python):
+  stage: test
+  before_script:
+    - *install_deps
+    - !reference [.install_protoc]
+    - !reference [.setup_qcs]
+  script:
+    - cd qcs-api-client-common
+    - *activate-venv
+    - cargo make pytest
 
 Check Proxy:
   stage: test
@@ -99,8 +139,56 @@ Release RC:
     - if: "$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH"
       when: manual
 
-
 Release Dry Run:
   extends: [.release]
   variables:
     KNOPE_ARGS: release --dry-run
+
+Build Rust Docs:
+  stage: publish
+  script:
+    - cargo doc --no-deps
+    - mv target/doc public/rust
+  artifacts:
+    paths:
+      - public
+
+Build Python Docs:
+  stage: publish
+  script:
+    - *activate-venv
+    - (cd qcs-api-client-common && cargo make build-python-docs)
+    - mv qcs-api-client-common/docs/build/html public/python
+  artifacts:
+    paths:
+      - public
+  
+pages:
+  stage: publish
+  only:
+    - main
+  dependencies:
+    - Build Rust Docs
+    - Build Python Docs
+  script:
+    - echo "Deploying documentation for qcs-api-client-common"
+  artifacts:
+    paths:
+      - public
+
+pages-preview:
+  stage: publish
+  except:
+    refs:
+      - main
+  dependencies:
+    - Build Rust Docs
+    - Build Python Docs
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    url: https://rigetti.gitlab.io/-/qcs/clients/qcs-api-client-rust/-/jobs/$CI_JOB_ID/artifacts/public/index.html
+  script:
+    - echo "Deploying review app for $CI_COMMIT_REF_NAME"
+  artifacts:
+    paths:
+      - public

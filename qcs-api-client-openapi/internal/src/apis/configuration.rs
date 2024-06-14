@@ -38,9 +38,7 @@ static USER_AGENT: &str = "QCS OpenAPI Client (Rust)/2020-07-31";
 
 impl Configuration {
     pub async fn new() -> Result<Self, crate::common::configuration::LoadError> {
-        crate::common::ClientConfiguration::load_default()
-            .await
-            .map(Self::with_qcs_config)
+        crate::common::ClientConfiguration::load_default().map(Self::with_qcs_config)
     }
 
     pub fn with_qcs_config(qcs_config: crate::common::ClientConfiguration) -> Configuration {

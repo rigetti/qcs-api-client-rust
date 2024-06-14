@@ -1,7 +1,12 @@
 [packages.common]
-versioned_files = ["qcs-api-client-common/Cargo.toml"]
+versioned_files = ["qcs-api-client-common/Cargo.toml", "qcs-api-client-common/pyproject.toml"]
 changelog = "qcs-api-client-common/CHANGELOG.md"
 scopes = ["common", "common-public"]
+
+[packages.common-py]
+versioned_files = ["qcs-api-client-common/pyproject.toml"]
+changelog = "qcs-api-client-common/CHANGELOG-py.md"
+scopes = ["common-py", "common-public-py"]
 
 [packages.common-internal]
 versioned_files = ["qcs-api-client-common-internal/Cargo.toml"]

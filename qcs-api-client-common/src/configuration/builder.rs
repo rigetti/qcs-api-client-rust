@@ -118,7 +118,10 @@ impl ClientConfigurationBuilder {
     pub fn build(self) -> Result<ClientConfiguration, BuildError> {
         Ok(ClientConfiguration {
             tokens: self.tokens.unwrap_or_default(),
-            api_url: self.api_url.unwrap_or_else(|| DEFAULT_API_URL.to_string()),
+            api_url: self
+                .api_url
+                .or_else(|| std::env::var(API_URL_VAR).ok())
+                .unwrap_or_else(|| DEFAULT_API_URL.to_string()),
             auth_server: self.auth_server.unwrap_or_default(),
             grpc_api_url: self
                 .grpc_api_url
@@ -147,15 +150,15 @@ mod tests {
 
     fn get_tokens() -> Tokens {
         Tokens {
-            bearer_access_token: Some(String::from("custom access")),
-            refresh_token: Some(String::from("custom refresh")),
+            bearer_access_token: String::from("custom access"),
+            refresh_token: String::from("custom refresh"),
         }
     }
 
     fn get_tokens_arc() -> Arc<Mutex<Tokens>> {
         Arc::new(Mutex::new(Tokens {
-            bearer_access_token: Some(String::from("custom access")),
-            refresh_token: Some(String::from("custom refresh")),
+            bearer_access_token: String::from("custom access"),
+            refresh_token: String::from("custom refresh"),
         }))
     }
 

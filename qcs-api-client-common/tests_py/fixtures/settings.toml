@@ -1,0 +1,22 @@
+default_profile_name = "production"
+
+[profiles]
+[profiles.production]
+auth_server_name = "production"
+api_url = "https://api.qcs.rigetti.com"
+credentials_name = "production"
+
+[profiles.test]
+auth_server_name = "test"
+api_url = "https://test.qcs.rigetti.com"
+grpc_api_url = "https://grpc.test.qcs.rigetti.com" 
+credentials_name = "test"
+
+[auth_servers]
+[auth_servers.production]
+client_id = "client_id_production"
+issuer = "https://auth.qcs.rigetti.com/oauth2/production"
+
+[auth_servers.test]
+client_id = "client_id_test"
+issuer = "https://auth.test.qcs.rigetti.com/oauth2/test"

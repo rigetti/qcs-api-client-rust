@@ -17,11 +17,12 @@ members = [
 [workspace.dependencies]
 # jsonwebtoken should always be validated after upgrading. Changes to the validation logic can cause the client to
 # believe JWTs are always invalid, which causes the client to refresh them before every request. See #83.
-jsonwebtoken = "8.3.0"
+jsonwebtoken = "9.3.0"
 opentelemetry = "0.20.0"
 opentelemetry_api = "0.20.0"
 opentelemetry_sdk = "0.20.0"
 opentelemetry-http = "0.9.0"
+reqwest = {version = "0.11.27", default-features = false, features = ["json", "rustls-tls-native-roots"]}
 reqwest-middleware = "0.2.0"
 reqwest-tracing = { version = "0.4.6", features = ["opentelemetry_0_20"] }
 tracing-opentelemetry = "0.20.0"

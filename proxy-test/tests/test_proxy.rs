@@ -1,10 +1,10 @@
 use eyre::Result;
 use qcs_api_client_grpc::{
-    channel::{get_channel, parse_uri, wrap_channel_with},
     client_configuration::ClientConfiguration,
     services::translation::{
         translation_client::TranslationClient, GetQuantumProcessorQuilCalibrationProgramRequest,
     },
+    tonic::{get_channel, parse_uri, wrap_channel_with},
 };
 use qcs_api_client_openapi::{
     apis::configuration::Configuration, apis::quantum_processors_api::list_quantum_processors,
@@ -16,7 +16,7 @@ use serial_test::serial;
 /// optionally wrapping the client with additional channel wrappers.
 macro_rules! get_calibration_program_with_client_channels {
     ($qpu_id:expr $(, $channel_wrapper_fn:ident)*) => {async {
-        let config = ClientConfiguration::load_default().await?;
+        let config = ClientConfiguration::load_default()?;
         let uri = parse_uri(config.grpc_api_url())?;
         let channel = wrap_channel_with(get_channel(uri)?, config);
 
@@ -115,7 +115,7 @@ mod test_in_process {
 
 #[cfg(feature = "docker")]
 mod test_in_docker {
-    use qcs_api_client_grpc::channel::wrap_channel_with_grpc_web;
+    use qcs_api_client_grpc::tonic::wrap_channel_with_grpc_web;
 
     use super::*;
 

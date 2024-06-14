@@ -22,55 +22,26 @@
 //! - `tracing`: enables `tracing` support in [`ClientConfiguration`].
 //! - `tracing-config`: enables [`TracingConfiguration`] support for enabling/disabling traces per-URL.
 //!   Requires the `tracing` feature.
-
-// Covers correctness, suspicious, style, complexity, and perf
-#![deny(clippy::all)]
-#![deny(clippy::pedantic)]
-#![deny(clippy::cargo)]
-#![warn(clippy::nursery)]
-// Has false positives that conflict with unreachable_pub
-#![allow(clippy::redundant_pub_crate)]
-// Allowed in deny.layer.toml
-#![allow(clippy::multiple_crate_versions)]
-#![deny(
-absolute_paths_not_starting_with_crate,
-anonymous_parameters,
-bad_style,
-dead_code,
-keyword_idents,
-improper_ctypes,
-macro_use_extern_crate,
-meta_variable_misuse, // May have false positives
-missing_abi,
-missing_debug_implementations, // can affect compile time/code size
-missing_docs,
-no_mangle_generic_items,
-non_shorthand_field_patterns,
-noop_method_call,
-overflowing_literals,
-path_statements,
-patterns_in_fns_without_body,
-pointer_structural_match,
-semicolon_in_expressions_from_macros,
-trivial_casts,
-trivial_numeric_casts,
-unconditional_recursion,
-unreachable_pub,
-unsafe_code,
-unused,
-unused_allocation,
-unused_comparisons,
-unused_extern_crates,
-unused_import_braces,
-unused_lifetimes,
-unused_parens,
-unused_qualifications,
-variant_size_differences,
-while_true
-)]
-
+//! - `python`: enables Python bindings for the client.
 pub mod backoff;
 pub mod configuration;
 pub use configuration::ClientConfiguration;
 #[cfg(feature = "tracing-config")]
 pub mod tracing_configuration;
+
+#[cfg(feature = "python")]
+pub(crate) mod py;
+
+#[cfg(feature = "python")]
+use pyo3::prelude::*;
+
+#[cfg(feature = "python")]
+rigetti_pyo3::create_init_submodule! {
+    submodules: ["configuration": configuration::init_submodule],
+}
+
+#[cfg(feature = "python")]
+#[pymodule]
+fn qcs_api_client_common(py: Python<'_>, module: &PyModule) -> PyResult<()> {
+    init_submodule("qcs_api_client_common", py, module)
+}
