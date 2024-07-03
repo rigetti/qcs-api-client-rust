@@ -69,22 +69,22 @@
 /// ```no_run
 /// # #[tokio::main]
 /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use qcs_api_client_grpc::channel::parse_uri;
-/// use qcs_api_client_grpc::channel::get_channel;
-/// use qcs_api_client_grpc::channel::wrap_channel;
-/// use qcs_api_client_grpc::channel::wrap_channel_with_retry;
+/// use qcs_api_client_grpc::tonic::parse_uri;
+/// use qcs_api_client_grpc::tonic::get_channel;
+/// use qcs_api_client_grpc::tonic::wrap_channel;
+/// use qcs_api_client_grpc::tonic::wrap_channel_with_retry;
 ///
 /// let uri = parse_uri("https://api.qcs.rigetti.com")?;
 /// let channel = get_channel(uri)?;
-/// let with_creds = wrap_channel(channel).await?;
+/// let with_creds = wrap_channel(channel)?;
 /// let with_creds_and_retry = wrap_channel_with_retry(with_creds);
 /// // Use with_creds_and_retry as a gRPC client
 /// # Ok(())
 /// # }
 /// ```
-pub mod channel;
+pub mod tonic;
 
-pub use channel::{
+pub use crate::tonic::{
     get_channel, get_channel_with_timeout, get_endpoint, get_endpoint_with_timeout,
     get_wrapped_channel, wrap_channel,
 };

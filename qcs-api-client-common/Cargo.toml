@@ -1,6 +1,6 @@
 [package]
 name = "qcs-api-client-common"
-version = "0.7.16"
+version = "0.8.0"
 edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
@@ -10,30 +10,96 @@ categories = ["api-bindings", "authentication"]
 keywords = ["qcs", "quantum", "rigetti", "api"]
 description = "Common code for QCS API clients"
 
+[package.metadata.docs.rs]
+features = ["python", "tracing"]
+
+[lib]
+# The name of the native library. This is the name which will be used in Python to import the
+# library. If you change this, you must also change the name of the
+# `#[pymodule]` in `src/lib.rs`.
+name = "qcs_api_client_common"
+crate-type = ["cdylib", "rlib"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
 tracing = ["dep:tracing", "url", "urlpattern"]
 tracing-config = ["tracing"]
+python = ["dep:pyo3", "dep:pyo3-asyncio", "dep:paste", "dep:rigetti-pyo3", "tokio/macros"]
 
 [dependencies]
 async-trait = "0.1"
 backoff = { version = "0.4.0", features = ["tokio"] }
+derive_builder = "0.20.0"
 futures = "0.3.26"
 home = "0.5.5"
 http = "0.2.8"
+figment = {version = "0.10.18", features = ["env", "toml"]}
 jsonwebtoken = { workspace = true }
-reqwest = { version = "0.11.11", default-features = false, features = ["json", "rustls-tls-native-roots", "socks"] }
+paste = { version = "1.0.15", optional = true }
+pyo3 = { version = "0.20.3", features = ["multiple-pymethods"], optional = true }
+rigetti-pyo3 = { version = "0.3.6", optional = true }
+reqwest = { workspace = true, default-features = false, features = ["socks"] }
+pyo3-asyncio = { version = "0.20.0", features = ["tokio-runtime"], optional = true }
 serde = { version = "1.0", features = ["derive"] }
+shellexpand = "3.1.0"
 thiserror = "1.0.32"
 time = { version = "0.3.34", features = ["parsing"] }
-tokio = { version = "1.20.1", features = ["fs"] }
-toml = "0.7.3"
+tokio = { version = "1.20.1", features = ["sync"] }
+toml = "0.8.14"
 tracing = { version = "0.1.37", optional = true }
 url = { version = "2.3.1", optional = true }
 urlpattern = { version = "0.2.0", optional = true }
 
 [dev-dependencies]
-rstest = "0.17.0"
-serial_test = "2.0.0"
-tempfile = "3.3.0"
+chrono = "0.4.38"
+figment = {version = "0.10.18", features = ["env", "toml", "test"]}
+httpmock = "0.7.0"
+rstest = "0.21.0"
+serial_test = "3.1.1"
 tokio = { version = "1.20.1", features = ["fs", "macros"] }
+
+[lints.clippy]
+# Covers correctness, suspicious, style, complexity, and perf
+all = "deny"
+# negative 'priority' makes overriding specific lints easier
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -2 }
+module_name_repetitions = "allow"    # This lint just seems silly
+redundant_pub_crate = "allow"        # Has false positives that conflict with unreachable_pub
+unsafe_derive_deserialize = "allow"  # Deriving `Deserialize` on a `pyclass` triggers this lint, but is not an issue.
+
+[lints.rust]
+# Extra non-clippy lints
+absolute_paths_not_starting_with_crate = "warn"
+anonymous_parameters = "warn"
+bad_style = "warn"
+dead_code = "warn"
+keyword_idents = "warn"
+improper_ctypes = "warn"
+macro_use_extern_crate = "warn"
+meta_variable_misuse = "warn"
+missing_abi = "warn"
+missing_debug_implementations = "warn"
+missing_docs = "warn"
+no_mangle_generic_items = "warn"
+non_shorthand_field_patterns = "warn"
+noop_method_call = "warn"
+overflowing_literals = "warn"
+path_statements = "warn"
+patterns_in_fns_without_body = "warn"
+pointer_structural_match = "warn"
+semicolon_in_expressions_from_macros = "warn"
+trivial_casts = "warn"
+trivial_numeric_casts = "warn"
+unconditional_recursion = "warn"
+unreachable_pub = "warn"
+unsafe_code = "warn"
+unused = "warn"
+unused_allocation = "warn"
+unused_comparisons = "warn"
+unused_extern_crates = "warn"
+unused_import_braces = "warn"
+unused_lifetimes = "warn"
+unused_parens = "warn"
+unused_qualifications = "warn"
+while_true = "warn"

@@ -1,52 +1,57 @@
-// Copyright 2022 Rigetti Computing
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 //! This module is used for loading configuration that will be used to connect either to real QPUs
 //! (and supporting services) or the QVM.
 //!
-//! By default, all settings are loaded from files located
-//! under your home directory in a `.qcs` folder. `settings.toml` will be used to load general
-//! settings (e.g. which URLs to connect to) and `secrets.toml` will be used to load tokens for
-//! authentication. Both "settings" and "secrets" files should contain profiles. The
-//! `default_profile_name` in settings sets the profile to be used when there is no override. You
-//! can set the [`PROFILE_NAME_VAR`] to select a different profile. You can also use
-//! [`SECRETS_PATH_VAR`] and [`SETTINGS_PATH_VAR`] to change which files are loaded.
+//! By default, all settings are loaded from files located under your home directory in the
+//! `.qcs` folder. Within that folder:
+//!
+//! * `settings.toml` will be used to load general settings (e.g. which URLs to connect to).
+//! * `secrets.toml` will be used to load tokens for authentication.
+//!
+//! Both files should contain profiles. Your settings should contain a `default_profile_name`
+//! that determines which profile is loaded when no other profile is explicitly provided.
+//!
+//! If you don't have either of these files, see [the QCS credentials guide](https://docs.rigetti.com/qcs/guides/qcs-credentials) for details on how to obtain them.
+//!
+//! You can use environment variables to override values in your configuration:
+//!
+//! * [`SETTINGS_PATH_VAR`]: Set the path of the `settings.toml` file to load.
+//! * [`SECRETS_PATH_VAR`]: Set the path of the `secrets.toml` file to load.
+//! * [`PROFILE_NAME_VAR`]: Override the profile that is loaded by default
+//! * [`QUILC_URL_VAR`]: Override the URL used for requests to the quilc server.
+//! * [`QVM_URL_VAR`]: Override the URL used for requests to the QVM server.
+//! * [`API_URL_VAR`]: Override the URL used for requests to the QCS REST API server.
+//! * [`GRPC_API_URL_VAR`]: Override the URL used for requests to the QCS gRPC API.
+//!
+//! The [`ClientConfiguration`] exposes an API for loading and accessing your
+//! configuration.
 
-use std::path::PathBuf;
-use std::sync::Arc;
-
-use futures::future::try_join;
-use jsonwebtoken::{decode, errors::Error as JWTError, Algorithm, DecodingKey, Validation};
-use serde::{Deserialize, Serialize};
-use tokio::sync::{Mutex, MutexGuard};
-#[cfg(feature = "tracing")]
-use urlpattern::UrlPatternMatchInput;
-
-pub use builder::{BuildError, ClientConfigurationBuilder};
-use secrets::Secrets;
-pub use secrets::SECRETS_PATH_VAR;
-use settings::Settings;
-pub use settings::{AuthServer, SETTINGS_PATH_VAR};
-
-use crate::configuration::LoadError::AuthServerNotFound;
 #[cfg(feature = "tracing-config")]
-use crate::tracing_configuration::{TracingConfiguration, TracingFilterError};
+use crate::tracing_configuration::TracingConfiguration;
+use derive_builder::Builder;
+use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
+use std::{env, path::PathBuf};
 
-mod builder;
-mod path;
+#[cfg(feature = "python")]
+use pyo3::prelude::*;
+
+use self::{
+    secrets::{Credential, Secrets},
+    settings::Settings,
+};
+
+mod error;
+#[cfg(feature = "python")]
+mod py;
 mod secrets;
 mod settings;
+mod tokens;
+
+pub use error::{LoadError, TokenError};
+#[cfg(feature = "python")]
+pub(crate) use py::*;
+pub use secrets::{DEFAULT_SECRETS_PATH, SECRETS_PATH_VAR};
+pub use settings::{AuthServer, DEFAULT_SETTINGS_PATH, SETTINGS_PATH_VAR};
+pub use tokens::{TokenDispatcher, TokenRefresher, Tokens};
 
 /// Default URL to access the QCS API.
 pub const DEFAULT_API_URL: &str = "https://api.qcs.rigetti.com";
@@ -58,262 +63,79 @@ pub const DEFAULT_QVM_URL: &str = "http://127.0.0.1:5000";
 pub const DEFAULT_QUILC_URL: &str = "tcp://127.0.0.1:5555";
 /// Default profile name.
 pub const DEFAULT_PROFILE_NAME: &str = "default";
+/// Setting this environment variable will change which profile is used from the loaded config files
+pub const PROFILE_NAME_VAR: &str = "QCS_PROFILE_NAME";
 /// Setting this environment variable will override the URL used to access quilc.
 pub const QUILC_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_QUILC_URL";
 /// Setting this environment variable will override the URL used to access the QVM.
 pub const QVM_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_QVM_URL";
 /// Setting this environment variable will override the URL used to connect to the GRPC server.
+pub const API_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_API_URL";
+/// Setting this environment variable will override the URL used to connect to the GRPC server.
 pub const GRPC_API_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_GRPC_URL";
 
-/// A single type containing an access token and an associated refresh token.
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct Tokens {
-    /// The `Bearer` token to include in the `Authorization` header.
-    pub bearer_access_token: Option<String>,
-    /// The token used to refresh the access token.
-    pub refresh_token: Option<String>,
-}
+const QCS_AUDIENCE: &str = "api://qcs";
 
-/// All the config data that's parsed from config sources
-#[derive(Clone, Debug)]
-#[allow(clippy::module_name_repetitions)]
+/// A configuration suitable for use as a QCS API Client.
+///
+/// This configuration can be constructed in a few ways.
+///
+/// The most common way is to use [`ClientConfiguration::load_default`]. This will load the
+/// configuration associated with your default QCS profile.
+///
+/// When loading your config, any values set by environment variables will override the values in
+/// your configuration files.
+///
+/// You can also build a configuration from scratch using [`ClientConfigurationBuilder`]. Using a
+/// builder bypasses configuration files and environment overrides.
+#[derive(Clone, Debug, Builder)]
+#[cfg_attr(feature = "python", pyclass)]
 pub struct ClientConfiguration {
-    /// Provides a single, semi-shared access to user credential tokens.
-    ///
-    /// The use of `Arc` helps reduce excess token refreshes by sharing the
-    /// tokens among all clones of the `ClientConfiguration`.
-    ///
-    /// Note that the tokens are *not* shared when the `ClientConfiguration` is created multiple
-    /// times, e.g. through `load()`.
-    tokens: Arc<Mutex<Tokens>>,
+    #[builder(private, default = "DEFAULT_PROFILE_NAME.to_string()")]
+    profile: String,
 
-    /// Base URL of the QCS JSON HTTP API
+    #[doc = "The URL for the QCS REST API."]
+    #[builder(default = "DEFAULT_API_URL.to_string()")]
     api_url: String,
 
-    /// Information required for the refreshing of authentication tokens
-    auth_server: AuthServer,
-
-    /// Base URL of the QCS gRPC API
+    #[doc = "The URL for the QCS gRPC API."]
+    #[builder(default = "DEFAULT_GRPC_API_URL.to_string()")]
     grpc_api_url: String,
 
+    #[doc = "The URL of the quilc server."]
+    #[builder(default = "DEFAULT_QUILC_URL.to_string()")]
     quilc_url: String,
+
+    #[doc = "The URL of the QVM server."]
+    #[builder(default = "DEFAULT_QVM_URL.to_string()")]
     qvm_url: String,
+
+    #[doc = "The Okta Authorization server."]
+    #[builder(default)]
+    auth_server: AuthServer,
+
+    /// Provides a single, semi-shared access to user credential tokens.
+    ///
+    /// Note that the tokens are *not* shared when the `ClientConfiguration` is created multiple
+    /// times, e.g. through [`ClientConfiguration::load_default`].
+    #[builder(default, setter(custom))]
+    pub(crate) tokens: Option<TokenDispatcher>,
 
     /// Configuration for tracing of network API calls. If `None`, tracing is disabled.
     #[cfg(feature = "tracing-config")]
+    #[builder(default)]
     tracing_configuration: Option<TracingConfiguration>,
 }
 
-impl ClientConfiguration {
-    /// Create a new configuration builder with the given tokens.
-    #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
-    pub fn builder() -> ClientConfigurationBuilder {
-        ClientConfigurationBuilder::default()
+impl ClientConfigurationBuilder {
+    /// Set the access and refresh tokens.
+    pub fn tokens(&mut self, tokens: Option<Tokens>) -> &mut Self {
+        self.tokens = Some(tokens.map(Into::into));
+        self
     }
-
-    /// URL to access the QCS API. Defaults to [`DEFAULT_API_URL`].
-    #[must_use]
-    pub fn api_url(&self) -> &str {
-        &self.api_url
-    }
-
-    /// URL to access the gRPC API. Defaults to the value of the `QCS_SETTINGS_APPLICATIONS_GRPC_URL` environment variable if set, [`DEFAULT_GRPC_API_URL`] otherwise.
-    #[must_use]
-    pub fn grpc_api_url(&self) -> &str {
-        &self.grpc_api_url
-    }
-
-    /// URL to access `quilc`. Defaults to the value of the ``QCS_SETTINGS_APPLICATIONS_QUILC_URL`` environment variable if set, [`DEFAULT_QUILC_URL`] otherwise.
-    #[must_use]
-    pub fn quilc_url(&self) -> &str {
-        &self.quilc_url
-    }
-
-    /// URL to access QVM. Defaults to the value of the ``QCS_SETTINGS_APPLICATIONS_QVM_URL`` environment variable if set, [`DEFAULT_QVM_URL`] otherwise.
-    #[must_use]
-    pub fn qvm_url(&self) -> &str {
-        &self.qvm_url
-    }
-
-    /// Returns the configured [`TracingConfiguration`], if present.
-    #[cfg(feature = "tracing-config")]
-    #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
-    pub fn tracing_configuration(&self) -> Option<&TracingConfiguration> {
-        self.tracing_configuration.as_ref()
-    }
-}
-
-/// Setting this environment variable will change which profile is used from the loaded config files
-pub const PROFILE_NAME_VAR: &str = "QCS_PROFILE_NAME";
-
-/// Errors that may occur while refreshing the access token.
-#[derive(Debug, thiserror::Error)]
-pub enum RefreshError {
-    /// No refresh token to do the refresh with.
-    #[error("No refresh token is configured within selected QCS credential")]
-    NoRefreshToken,
-
-    /// Failed to fetch new token.
-    #[error("Error fetching new token")]
-    FetchError(#[from] reqwest::Error),
-
-    /// Error occurred while validating token.
-    #[error("Error validating existing token: {0}")]
-    ValidationError(#[from] JWTError),
-}
-
-/// Errors that may occur while loading a `Configuration`.
-#[derive(Debug, thiserror::Error)]
-pub enum LoadError {
-    /// Configuration does not contain the expected profile.
-    #[error("Expected profile {0} in settings.profiles but it didn't exist")]
-    ProfileNotFound(String),
-
-    /// Configuration does not contain the expected auth server name.
-    #[error("Expected auth server {0} in settings.auth_servers but it didn't exist")]
-    AuthServerNotFound(String),
-
-    /// Could not determine user home directory.
-    #[error("Failed to determine home directory. You can use an explicit path by setting the {env} environment variable")]
-    HomeDirError {
-        /// An environment variable that indicates the user home directory when set.
-        env: String,
-    },
-
-    /// Failed to open configuration file.
-    #[error("Could not open file at {path}: {source}")]
-    FileOpenError {
-        /// The file the could not be opened.
-        path: PathBuf,
-        /// The error from trying to open it.
-        source: std::io::Error,
-    },
-
-    /// Failed to parse configuration file as TOML.
-    #[error("Could not parse TOML file at {path}: {source}")]
-    FileParseError {
-        /// The file that failed to parse.
-        path: PathBuf,
-        /// The error from parsing.
-        source: toml::de::Error,
-    },
-
-    #[cfg(feature = "tracing-config")]
-    /// Failed to parse tracing filter. These should be a comma separated list of URL patterns. See
-    /// <https://wicg.github.io/urlpattern> for reference.
-    #[error("Could not parse tracing filter: {0}")]
-    TracingFilterParseError(TracingFilterError),
 }
 
 impl ClientConfiguration {
-    /// Attempt to load config files from `~/.qcs` and create a Configuration object
-    /// for use with the QCS API using the default profile.
-    ///
-    /// See <https://docs.rigetti.com/qcs/references/qcs-client-configuration> for details.
-    ///
-    /// # Errors
-    ///
-    /// See [`LoadError`].
-    pub async fn load_default() -> Result<Self, LoadError> {
-        Self::load(None).await
-    }
-
-    /// Attempt to load config files from `~/.qcs` and create a Configuration object
-    /// for use with the QCS API using the specified profile.
-    ///
-    /// See <https://docs.rigetti.com/qcs/references/qcs-client-configuration> for details.
-    ///
-    /// # Errors
-    ///
-    /// See [`LoadError`].
-    pub async fn load_profile(profile_name: String) -> Result<Self, LoadError> {
-        Self::load(Some(profile_name)).await
-    }
-
-    #[inline]
-    async fn load(profile_name: Option<String>) -> Result<Self, LoadError> {
-        #[cfg(feature = "tracing")]
-        #[allow(clippy::option_if_let_else)]
-        match profile_name.as_ref() {
-            None => tracing::debug!("loading default QCS profile"),
-            Some(profile) => tracing::debug!("loading QCS profile {:?}", profile),
-        }
-        let (settings, secrets) = try_join(settings::load(), secrets::load()).await?;
-        Self::new(settings, secrets, profile_name)
-    }
-
-    fn validated_bearer_access_token(lock: &MutexGuard<Tokens>) -> Option<String> {
-        #[allow(clippy::option_if_let_else)]
-        lock.bearer_access_token.as_ref().and_then(|token| {
-            let dummy_key = DecodingKey::from_secret(&[]);
-            let mut validation = Validation::new(Algorithm::RS256);
-            validation.validate_exp = true;
-            validation.leeway = 0;
-            validation.insecure_disable_signature_validation();
-            decode::<toml::Value>(token, &dummy_key, &validation)
-                .map(|_| token.clone())
-                .ok()
-        })
-    }
-
-    /// Gets the `Bearer` access token, refreshing it if expired.
-    ///
-    /// # Errors
-    ///
-    /// See [`RefreshError`].
-    #[allow(clippy::significant_drop_tightening)]
-    pub async fn get_bearer_access_token(&self) -> Result<String, RefreshError> {
-        let mut lock = self.tokens.lock().await;
-        // clippy warns about possible deadlock without this `let`
-        let validation = Self::validated_bearer_access_token(&lock);
-        match validation {
-            Some(token) => Ok(token),
-            None => self.internal_refresh(&mut lock).await,
-        }
-    }
-
-    /// Refresh the authentication tokens and return the new access token if successful.
-    ///
-    /// # Errors
-    ///
-    /// See [`RefreshError`].
-    pub async fn refresh(&self) -> Result<String, RefreshError> {
-        let mut lock = self.tokens.lock().await;
-        self.internal_refresh(&mut lock).await
-    }
-
-    async fn internal_refresh<'a>(
-        &'a self,
-        lock: &mut MutexGuard<'a, Tokens>,
-    ) -> Result<String, RefreshError> {
-        #[cfg(feature = "tracing")]
-        tracing::trace!("refreshing QCS access token");
-
-        let refresh_token = lock
-            .refresh_token
-            .as_deref()
-            .ok_or(RefreshError::NoRefreshToken)?;
-        let token_url = format!("{}/v1/token", &self.auth_server.issuer());
-        let data = TokenRequest::new(self.auth_server.client_id(), refresh_token);
-        let resp = reqwest::Client::builder()
-            .user_agent(format!(
-                "QCS API Client (Rust)/{}",
-                env!("CARGO_PKG_VERSION")
-            ))
-            .timeout(std::time::Duration::from_secs(10))
-            .build()?
-            .post(token_url)
-            .form(&data)
-            .send()
-            .await?;
-        let response_data: TokenResponse = resp.error_for_status()?.json().await?;
-        lock.bearer_access_token = Some(response_data.access_token.clone());
-        lock.refresh_token = Some(response_data.refresh_token);
-        Ok(response_data.access_token)
-    }
-
     fn new(
         settings: Settings,
         mut secrets: Secrets,
@@ -325,31 +147,37 @@ impl ClientConfiguration {
             mut auth_servers,
         } = settings;
         let profile_name = profile_name
-            .or_else(|| std::env::var(PROFILE_NAME_VAR).ok())
+            .or_else(|| env::var(PROFILE_NAME_VAR).ok())
             .unwrap_or(default_profile_name);
         let profile = profiles
             .remove(&profile_name)
-            .ok_or(LoadError::ProfileNotFound(profile_name))?;
+            .ok_or(LoadError::ProfileNotFound(profile_name.clone()))?;
         let auth_server = auth_servers
             .remove(&profile.auth_server_name)
-            .ok_or_else(|| AuthServerNotFound(profile.auth_server_name.clone()))?;
+            .ok_or_else(|| LoadError::AuthServerNotFound(profile.auth_server_name.clone()))?;
 
         let credential = secrets.credentials.remove(&profile.credentials_name);
         let (access_token, refresh_token) = match credential {
-            Some(secrets::Credential {
+            Some(Credential {
                 token_payload: Some(token_payload),
             }) => (token_payload.access_token, token_payload.refresh_token),
             _ => (None, None),
         };
 
-        let quilc_url =
-            std::env::var(QUILC_URL_VAR).unwrap_or(profile.applications.pyquil.quilc_url);
-        let qvm_url = std::env::var(QVM_URL_VAR).unwrap_or(profile.applications.pyquil.qvm_url);
-        let grpc_api_url = std::env::var(GRPC_API_URL_VAR).unwrap_or(profile.grpc_api_url);
+        let quilc_url = env::var(QUILC_URL_VAR).unwrap_or(profile.applications.pyquil.quilc_url);
+        let qvm_url = env::var(QVM_URL_VAR).unwrap_or(profile.applications.pyquil.qvm_url);
+        let grpc_api_url = env::var(GRPC_API_URL_VAR).unwrap_or(profile.grpc_api_url);
 
-        let tokens = Tokens {
-            bearer_access_token: access_token,
-            refresh_token,
+        let tokens = if let (Some(bearer_access_token), Some(refresh_token)) =
+            (access_token, refresh_token)
+        {
+            Some(Tokens {
+                bearer_access_token,
+                refresh_token,
+                auth_server: auth_server.clone(),
+            })
+        } else {
+            None
         };
 
         #[cfg(feature = "tracing-config")]
@@ -357,17 +185,18 @@ impl ClientConfiguration {
             TracingConfiguration::from_env().map_err(LoadError::TracingFilterParseError)?;
 
         let mut builder = Self::builder();
-        builder = builder
-            .set_tokens(tokens)
-            .set_auth_server(auth_server)
-            .set_api_url(profile.api_url)
-            .set_quilc_url(quilc_url)
-            .set_qvm_url(qvm_url)
-            .set_grpc_api_url(grpc_api_url);
+        builder
+            .profile(profile_name)
+            .tokens(tokens)
+            .auth_server(auth_server)
+            .api_url(profile.api_url)
+            .quilc_url(quilc_url)
+            .qvm_url(qvm_url)
+            .grpc_api_url(grpc_api_url);
 
         #[cfg(feature = "tracing-config")]
         {
-            builder = builder.set_tracing_configuration(tracing_configuration);
+            builder.tracing_configuration(tracing_configuration);
         };
 
         Ok({
@@ -376,140 +205,330 @@ impl ClientConfiguration {
                 .expect("curated build process should not fail")
         })
     }
-}
 
-#[derive(Debug, Serialize)]
-struct TokenRequest<'a> {
-    grant_type: &'static str,
-    client_id: &'a str,
-    refresh_token: &'a str,
-}
-
-impl<'a> TokenRequest<'a> {
-    const fn new(client_id: &'a str, refresh_token: &'a str) -> TokenRequest<'a> {
-        Self {
-            grant_type: "refresh_token",
-            client_id,
-            refresh_token,
-        }
+    /// Attempts to load config files
+    ///
+    /// # Errors
+    ///
+    /// See [`LoadError`]
+    pub fn load_default() -> Result<Self, LoadError> {
+        let base_config = Self::load(None)?;
+        Ok(base_config)
     }
-}
 
-#[derive(Deserialize, Debug)]
-struct TokenResponse {
-    refresh_token: String,
-    access_token: String,
-}
-
-impl Default for ClientConfiguration {
-    fn default() -> Self {
-        Self::builder()
-            .build()
-            .expect("a builder without anything set should build without error")
+    /// Attempts to load a QCS configuration and creates a [`ClientConfiguration`] using the
+    /// specified profile.
+    ///
+    /// # Errors
+    ///
+    /// See [`LoadError`]
+    pub fn load_profile(profile_name: String) -> Result<Self, LoadError> {
+        Self::load(Some(profile_name))
     }
-}
 
-/// Get and refresh access tokens
-#[async_trait::async_trait]
-pub trait TokenRefresher: Clone {
-    /// The type to be returned in the event of a error during getting or
-    /// refreshing an access token
-    type Error;
-
-    /// Get the current access token
-    async fn get_access_token(&self) -> Result<String, Self::Error>;
-
-    /// Get a fresh access token
-    async fn refresh_access_token(&self) -> Result<String, Self::Error>;
-
-    /// Get the base URL for requests
-    #[cfg(feature = "tracing")]
-    fn base_url(&self) -> &str;
-
-    /// Get the tracing configuration
-    #[cfg(feature = "tracing-config")]
-    fn tracing_configuration(&self) -> Option<&TracingConfiguration>;
-
-    /// Returns whether the given URL should be traced. Following
-    /// [`TracingConfiguration::is_enabled`], this defaults to `true`.
-    #[cfg(feature = "tracing")]
-    #[allow(clippy::needless_return)]
-    fn should_trace(&self, url: &UrlPatternMatchInput) -> bool {
-        #[cfg(not(feature = "tracing-config"))]
-        {
-            let _ = url;
-            return true;
-        }
-
+    /// Attempts to load a QCS configuration and creates a [`ClientConfiguration`] using the
+    /// specified profile. If no `profile_name` is provided, then a default configuration is
+    /// loaded.
+    ///
+    /// # Errors
+    ///
+    /// See [`LoadError`]
+    fn load(profile_name: Option<String>) -> Result<Self, LoadError> {
         #[cfg(feature = "tracing-config")]
-        self.tracing_configuration()
-            .map_or(true, |config| config.is_enabled(url))
-    }
-}
+        match profile_name.as_ref() {
+            None => tracing::debug!("loading default QCS profile"),
+            Some(profile) => tracing::debug!("loading QCS profile {profile}"),
+        }
+        let settings = Settings::load()?;
+        let secrets = Secrets::load()?;
 
-#[async_trait::async_trait]
-impl TokenRefresher for ClientConfiguration {
-    type Error = RefreshError;
-
-    async fn refresh_access_token(&self) -> Result<String, Self::Error> {
-        self.refresh().await
+        Self::new(settings, secrets, profile_name)
     }
 
-    async fn get_access_token(&self) -> Result<String, Self::Error> {
-        self.get_bearer_access_token().await
+    /// Get a [`ClientConfigurationBuilder`]
+    #[must_use]
+    pub fn builder() -> ClientConfigurationBuilder {
+        ClientConfigurationBuilder::default()
     }
 
-    #[cfg(feature = "tracing")]
-    fn base_url(&self) -> &str {
+    /// Get the name of the profile that was loaded, if any.
+    #[must_use]
+    pub fn profile(&self) -> &str {
+        &self.profile
+    }
+
+    /// Get the URL of the QCS REST API.
+    #[must_use]
+    pub fn api_url(&self) -> &str {
+        &self.api_url
+    }
+
+    /// Get the URL of the QCS gRPC API.
+    #[must_use]
+    pub fn grpc_api_url(&self) -> &str {
         &self.grpc_api_url
     }
 
+    /// Get the URL of the quilc server.
+    #[must_use]
+    pub fn quilc_url(&self) -> &str {
+        &self.quilc_url
+    }
+
+    /// Get the URL of the QVM server.
+    #[must_use]
+    pub fn qvm_url(&self) -> &str {
+        &self.qvm_url
+    }
+
+    /// Get the [`AuthServer`].
+    #[must_use]
+    pub const fn auth_server(&self) -> &AuthServer {
+        &self.auth_server
+    }
+
+    /// Get the [`TracingConfiguration`].
     #[cfg(feature = "tracing-config")]
-    fn tracing_configuration(&self) -> Option<&TracingConfiguration> {
-        self.tracing_configuration()
+    #[must_use]
+    pub const fn tracing_configuration(&self) -> Option<&TracingConfiguration> {
+        self.tracing_configuration.as_ref()
+    }
+
+    /// Get a copy of the current [`Tokens`] in use.
+    ///
+    /// Note: This is a _copy_, the tokens will become stale when the tokens are refreshed.
+    ///
+    /// # Errors
+    ///
+    /// See [`TokenError`]
+    pub async fn tokens(&self) -> Result<Tokens, TokenError> {
+        Ok(self
+            .tokens
+            .as_ref()
+            .ok_or(TokenError::NoRefreshToken)?
+            .tokens()
+            .await)
+    }
+
+    /// Gets the `Bearer` access token, refreshing it if it is expired.
+    ///
+    /// # Errors
+    ///
+    /// See [`TokenError`].
+    pub async fn get_bearer_access_token(&self) -> Result<String, TokenError> {
+        let tokens = self.tokens().await?;
+        let validation = Self::validated_bearer_access_token(&tokens);
+        match validation {
+            Some(token) => Ok(token),
+            None => self
+                .refresh()
+                .await
+                .map(|tokens| tokens.bearer_access_token),
+        }
+    }
+
+    fn validated_bearer_access_token(tokens: &Tokens) -> Option<String> {
+        let token = &tokens.bearer_access_token;
+        let placeholder_key = DecodingKey::from_secret(&[]);
+        let mut validation = Validation::new(Algorithm::RS256);
+        validation.validate_exp = true;
+        validation.leeway = 60;
+        validation.set_audience(&[QCS_AUDIENCE]);
+        validation.insecure_disable_signature_validation();
+        decode::<toml::Value>(token, &placeholder_key, &validation)
+            .map(|_| token.clone())
+            .ok()
+    }
+
+    /// Refreshes the [`Tokens`] in use and returns the new bearer access token.
+    ///
+    /// # Errors
+    ///
+    /// See [`TokenError`]
+    pub async fn refresh(&self) -> Result<Tokens, TokenError> {
+        self.tokens
+            .as_ref()
+            .ok_or(TokenError::NoRefreshToken)?
+            .refresh()
+            .await
+    }
+}
+
+fn expand_path_from_env_or_default(
+    env_var_name: &str,
+    default: &str,
+) -> Result<PathBuf, LoadError> {
+    match env::var(env_var_name) {
+        Ok(path) => {
+            let expanded_path = shellexpand::env(&path).map_err(LoadError::from)?;
+            let path_buf: PathBuf = expanded_path.as_ref().into();
+            if !path_buf.exists() {
+                return Err(LoadError::Path {
+                    path: path_buf,
+                    message: format!("The given path does not exist: {path}"),
+                });
+            }
+            Ok(path_buf)
+        }
+        Err(env::VarError::NotPresent) => {
+            let expanded_path = shellexpand::tilde(default);
+            let path_buf: PathBuf = expanded_path.as_ref().into();
+            if !path_buf.exists() {
+                return Err(LoadError::Path {
+                    path: path_buf,
+                    message: format!(
+                        "Could not find a QCS configuration at the default path: {default}"
+                    ),
+                });
+            }
+            Ok(path_buf)
+        }
+        Err(other_error) => Err(LoadError::EnvVar {
+            variable_name: env_var_name.to_string(),
+            message: other_error.to_string(),
+        }),
     }
 }
 
 #[cfg(test)]
-mod describe_client_configuration_load {
-    use serial_test::serial;
+mod test {
 
-    #[allow(clippy::wildcard_imports)]
-    use crate::configuration::*;
+    use jsonwebtoken::{encode, EncodingKey, Header};
+    use serde::Serialize;
 
-    #[tokio::test]
-    #[serial]
-    async fn it_uses_env_var_overrides() {
-        let quilc_url = "tcp://quilc:5555";
-        let qvm_url = "http://qvm:5000";
-        let grpc_url = "http://grpc:80";
+    use crate::configuration::{
+        expand_path_from_env_or_default, secrets::Secrets, settings::Settings, AuthServer,
+        ClientConfiguration, Tokens, API_URL_VAR, GRPC_API_URL_VAR, QUILC_URL_VAR, QVM_URL_VAR,
+    };
 
-        std::env::set_var(QUILC_URL_VAR, quilc_url);
-        std::env::set_var(QVM_URL_VAR, qvm_url);
-        std::env::set_var(GRPC_API_URL_VAR, grpc_url);
+    use super::{settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, QCS_AUDIENCE};
 
-        let config = ClientConfiguration::new(Settings::default(), Secrets::default(), None)
-            .expect("config should load successfully");
+    #[test]
+    fn expands_env_var() {
+        figment::Jail::expect_with(|jail| {
+            let dir = jail.create_dir("~/blah/blah/")?;
+            jail.create_file(dir.join("file.toml"), "")?;
+            jail.set_env("SOME_PATH", "blah/blah");
+            jail.set_env("SOME_VAR", "~/$SOME_PATH/file.toml");
+            let secrets_path = expand_path_from_env_or_default("SOME_VAR", "default").unwrap();
+            assert_eq!(secrets_path.to_str().unwrap(), "~/blah/blah/file.toml");
 
-        assert_eq!(config.quilc_url, quilc_url);
-        assert_eq!(config.qvm_url, qvm_url);
-        assert_eq!(config.grpc_api_url, grpc_url);
+            Ok(())
+        });
     }
 
     #[test]
-    #[serial]
+    fn uses_env_var_overrides() {
+        figment::Jail::expect_with(|jail| {
+            let quilc_url = "tcp://quilc:5555";
+            let qvm_url = "http://qvm:5000";
+            let grpc_url = "http://grpc:80";
+            let api_url = "http://api:80";
+
+            jail.set_env(QUILC_URL_VAR, quilc_url);
+            jail.set_env(QVM_URL_VAR, qvm_url);
+            jail.set_env(API_URL_VAR, api_url);
+            jail.set_env(GRPC_API_URL_VAR, grpc_url);
+
+            let config = ClientConfiguration::new(
+                Settings::default(),
+                Secrets::default(),
+                Some("default".to_string()),
+            )
+            .expect("Should be able to build default config.");
+
+            assert_eq!(config.quilc_url, quilc_url);
+            assert_eq!(config.qvm_url, qvm_url);
+            assert_eq!(config.grpc_api_url, grpc_url);
+
+            Ok(())
+        });
+    }
+
+    #[test]
     fn test_default_uses_env_var_overrides() {
-        let quilc_url = "quilc_url";
-        let qvm_url = "qvm_url";
-        let grpc_url = "grpc_url";
+        figment::Jail::expect_with(|jail| {
+            let quilc_url = "quilc_url";
+            let qvm_url = "qvm_url";
+            let grpc_url = "grpc_url";
 
-        std::env::set_var(QUILC_URL_VAR, quilc_url);
-        std::env::set_var(QVM_URL_VAR, qvm_url);
-        std::env::set_var(GRPC_API_URL_VAR, grpc_url);
+            jail.set_env(QUILC_URL_VAR, quilc_url);
+            jail.set_env(QVM_URL_VAR, qvm_url);
+            jail.set_env(GRPC_API_URL_VAR, grpc_url);
 
-        let config = ClientConfiguration::default();
-        assert_eq!(config.quilc_url, quilc_url);
-        assert_eq!(config.qvm_url, qvm_url);
-        assert_eq!(config.grpc_api_url, grpc_url);
+            let config = ClientConfiguration::load_default().unwrap();
+            assert_eq!(config.quilc_url, quilc_url);
+            assert_eq!(config.qvm_url, qvm_url);
+            assert_eq!(config.grpc_api_url, grpc_url);
+
+            Ok(())
+        });
+    }
+
+    #[derive(Clone, Debug, Serialize)]
+    struct Claims {
+        exp: i64,
+        aud: String,
+        iss: String,
+        sub: String,
+    }
+
+    impl Default for Claims {
+        fn default() -> Self {
+            Self {
+                exp: 0,
+                aud: QCS_AUDIENCE.to_string(),
+                iss: QCS_DEFAULT_AUTH_ISSUER_PRODUCTION.to_string(),
+                sub: "qcs@rigetti.com".to_string(),
+            }
+        }
+    }
+
+    impl Claims {
+        fn new_valid() -> Self {
+            Self {
+                exp: (chrono::Utc::now() + chrono::Duration::seconds(100)).timestamp(),
+                ..Self::default()
+            }
+        }
+
+        fn new_expired() -> Self {
+            Self {
+                exp: (chrono::Utc::now() - chrono::Duration::seconds(100)).timestamp(),
+                ..Self::default()
+            }
+        }
+
+        fn to_encoded(&self) -> String {
+            encode(&Header::default(), &self, &EncodingKey::from_secret(&[])).unwrap()
+        }
+    }
+
+    #[test]
+    fn test_valid_token() {
+        let valid_token = Claims::new_valid().to_encoded();
+        let tokens = Tokens {
+            bearer_access_token: valid_token.clone(),
+            refresh_token: "refresh".to_string(),
+            auth_server: AuthServer::default(),
+        };
+        assert_eq!(
+            ClientConfiguration::validated_bearer_access_token(&tokens),
+            Some(valid_token)
+        );
+    }
+
+    #[test]
+    fn test_expired_token() {
+        let invalid_token = Claims::new_expired().to_encoded();
+        let tokens = Tokens {
+            bearer_access_token: invalid_token,
+            refresh_token: "refresh".to_string(),
+            auth_server: AuthServer::default(),
+        };
+        assert_eq!(
+            ClientConfiguration::validated_bearer_access_token(&tokens),
+            None
+        );
     }
 }

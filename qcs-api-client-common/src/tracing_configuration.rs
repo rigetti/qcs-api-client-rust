@@ -57,7 +57,7 @@
 
 use std::str::FromStr;
 
-use urlpattern::{UrlPatternInit, UrlPatternMatchInput, UrlPatternResult};
+pub use urlpattern::{UrlPatternInit, UrlPatternMatchInput, UrlPatternResult};
 
 use {std::env, thiserror::Error, urlpattern::UrlPattern};
 

@@ -1,0 +1,92 @@
+[tasks.check-venv]
+description = "Check if a virtual environment is activated"
+script = [
+    '''
+    if [ -z "$VIRTUAL_ENV" ]; then
+        echo "No virtual environment activated. Please activate one."
+        exit 1
+    else
+        echo "Virtual environment is active."
+    fi
+    '''
+]
+
+[tasks.install-uv]
+dependencies = ["check-venv"]
+description = "Install dependencies using uv"
+command = "pip"
+args = ["install", "uv"]
+
+[tasks.install-deps]
+dependencies = ["install-uv"]
+description = "Install dependencies using uv"
+command = "uv"
+args = ["pip", "install", ".[dev]"]
+
+[tasks.install-python-package]
+dependencies = ["install-deps"]
+description = "Build the qcs-api-client-common python package and install it in the current virtual environment."
+command = "maturin"
+args = ["develop"]
+
+[tasks.stubtest]
+dependencies = ["install-python-package"]
+description = "Validate type stubs using stubtest"
+command = "stubtest"
+args = ["--allowlist", ".stubtest-allowlist", "qcs_api_client_common"]
+
+[tasks.stubtest-watch]
+dependencies = ["install-python-package"]
+description = "Validate type stubs using stubtest in watch mode, re-validating when the stubs are updated."
+command = "watchmedo"
+args = [
+  "shell-command",
+  "--command",
+  "sh ./scripts/watchmedo_helper.sh ${watch_src_path} 'stubtest qcs_api_client_common --allowlist .stubtest-allowlist'",
+  "--pattern",
+  "*.py;*.pyi;*.rs;.stubtest-allowlist", 
+  "--recursive",
+  ".",
+]
+
+[tasks.pytest]
+dependencies = ["install-python-package"]
+description = "Run the Python unit test suite."
+command = "pytest"
+args = ["tests_py", "-vv"]
+
+[tasks.pytest-watch]
+dependencies = ["install-python-package"]
+command = "pytest"
+args = [
+  "watchmedo",
+  "shell-command",
+  "--command",
+  "sh ./scripts/watchmedo_helper.sh ${watch_src_path} 'cargo make pytest'",
+  "--pattern",
+  "*.py;*.pyi;*.rs", 
+  "--recursive",
+  "./",
+]
+
+[tasks.pytest-integration]
+dependencies = ["install-python-package"]
+description = "Run the integration tests in the Python test suite. Requires a valid QCS configuration."
+command = "poetry"
+args = ["run", "pytest", "tests_py", "--integration"]
+
+[tasks.build-python-docs]
+dependencies = ["install-python-package"]
+description = "Build the Sphinx documentation."
+cwd = "docs"
+script = [
+    '''
+    make html
+    '''
+]
+
+[tasks.dev-flow]
+dependencies = ["dev-test-flow", "pytest", "stubtest"]
+
+[tasks.default]
+alias = "dev-flow"

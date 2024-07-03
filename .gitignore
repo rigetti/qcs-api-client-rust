@@ -12,3 +12,10 @@
 # https://github.com/Canop/bacon.
 bacon.toml
 .rust-ci
+# Python related artifacts
+**/.venv
+**/__pycache__
+**/*.pyc
+**/*.so
+# sphinx build artifacts
+qcs_api_client_common/docs/build

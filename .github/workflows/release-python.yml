@@ -1,0 +1,68 @@
+name: Release Python Package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "common-py/v**"
+
+jobs:
+  macos-wheels:
+    name: Build macos wheels
+    runs-on: macos-12
+    env:
+      CXXFLAGS: "-std=c++11 -stdlib=libc++"
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/action-common-python-release
+      with:
+        maturin-target: universal2-apple-darwin
+
+  linux-wheels:
+    name: Build linux wheels
+    runs-on: ubuntu-latest
+    env:
+      CXXFLAGS: "-std=c++11"
+    strategy:
+      matrix:
+        target: [x86_64, aarch64]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/action-common-python-release
+      with:
+        maturin-target: ${{ matrix.target }}
+
+  windows-wheels: 
+    name: Build windows wheels
+    runs-on: windows-latest 
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/action-common-python-release
+      with:
+        python-architecture: x64
+        rust-target: x86_64-pc-windows-msvc
+
+  sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    env:
+      CXXFLAGS: "-std=c++11"
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/action-common-python-release
+      with:
+        maturin-command: sdist
+
+  publish-python:
+    name: Publish package to PyPI
+    runs-on: ubuntu-latest
+    needs: [ macos-wheels, linux-wheels, windows-wheels, sdist ]
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@v3
+    - name: Publish to PyPI
+      uses: messense/maturin-action@v1
+      with:
+        command: upload
+        args: --skip-existing wheels

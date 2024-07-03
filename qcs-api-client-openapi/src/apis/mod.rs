@@ -28,7 +28,7 @@ pub enum Error<T> {
     Reqwest(reqwest::Error),
     Serde(serde_json::Error),
     Io(std::io::Error),
-    QcsRefresh(crate::common::configuration::RefreshError),
+    QcsRefresh(crate::common::configuration::TokenError),
     ResponseError(ResponseContent<T>),
     #[cfg(feature = "otel-tracing")]
     ReqwestMiddleware(anyhow::Error),
@@ -103,8 +103,8 @@ impl<T> From<std::io::Error> for Error<T> {
     }
 }
 
-impl<T> From<crate::common::configuration::RefreshError> for Error<T> {
-    fn from(e: crate::common::configuration::RefreshError) -> Self {
+impl<T> From<crate::common::configuration::TokenError> for Error<T> {
+    fn from(e: crate::common::configuration::TokenError) -> Self {
         Error::QcsRefresh(e)
     }
 }

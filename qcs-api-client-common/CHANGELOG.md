@@ -1,3 +1,9 @@
+## 0.8.0 (2024-07-03)
+
+### Breaking Changes
+
+#### Add Python API, the builder setters no longer use the `set_` prefix, rename the `channel` module to `tonic`
+
 ## 0.7.16 (2024-06-02)
 
 ### Features

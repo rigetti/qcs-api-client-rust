@@ -33,6 +33,7 @@
 #![allow(clippy::clone_on_copy)]
 #![allow(clippy::too_many_arguments)]
 #![allow(noop_method_call)]
+#![allow(clippy::empty_docs)]
 
 pub use reqwest;
 
