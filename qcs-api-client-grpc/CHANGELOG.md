@@ -1,3 +1,9 @@
+## 0.8.1 (2024-07-03)
+
+### Fixes
+
+#### Add reqwest to workspace dependencies
+
 ## 0.8.0 (2024-07-03)
 
 ### Breaking Changes

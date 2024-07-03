@@ -1,3 +1,9 @@
+## 0.7.1 (2024-07-03)
+
+### Fixes
+
+#### Add reqwest to workspace dependencies
+
 ## 0.7.0 (2024-07-03)
 
 ### Breaking Changes
