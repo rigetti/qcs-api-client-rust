@@ -14,6 +14,7 @@ opentelemetry = "0.20.0"
 opentelemetry_api = "0.20.0"
 opentelemetry_sdk = "0.20.0"
 opentelemetry-http = "0.9.0"
+reqwest = {version = "0.11.27", default-features = false, features = ["json", "rustls-tls-native-roots"]}
 reqwest-middleware = "0.2.0"
 reqwest-tracing = { version = "0.4.6", features = ["opentelemetry_0_20"] }
 tracing-opentelemetry = "0.20.0"
