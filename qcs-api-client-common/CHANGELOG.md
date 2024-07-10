@@ -1,3 +1,9 @@
+## 0.8.4 (2024-07-10)
+
+### Fixes
+
+#### jsonwebtoken is now version 9.3.0
+
 ## 0.8.3 (2024-07-10)
 
 ### Fixes
