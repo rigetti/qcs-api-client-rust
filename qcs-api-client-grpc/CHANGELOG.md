@@ -1,3 +1,11 @@
+## 0.8.3 (2024-07-10)
+
+### Fixes
+
+#### common Python action takes a GitHub token as a parameter
+
+#### common Python action takes a GitHub token as a parameter
+
 ## 0.8.2 (2024-07-10)
 
 ### Fixes
