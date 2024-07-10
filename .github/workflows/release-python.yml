@@ -31,6 +31,7 @@ jobs:
     - uses: ./.github/action-common-python-release
       with:
         maturin-target: ${{ matrix.target }}
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   windows-wheels: 
     name: Build windows wheels
@@ -41,6 +42,7 @@ jobs:
       with:
         python-architecture: x64
         rust-target: x86_64-pc-windows-msvc
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   sdist:
     name: Build source distribution
@@ -52,6 +54,7 @@ jobs:
     - uses: ./.github/action-common-python-release
       with:
         maturin-command: sdist
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   publish-python:
     name: Publish package to PyPI
