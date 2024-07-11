@@ -57,7 +57,7 @@ runs:
       args: --manifest-path qcs-api-client-common/Cargo.toml --out dist
 
   # host will not be able to install wheel in this case
-  - if: inputs.maturin-target != 'ppc64le' && inputs.maturin-target != aarch64
+  - if: inputs.maturin-target != 'ppc64le' && inputs.maturin-target != 'aarch64'
     name: Install wheel
     shell: bash
     run: |
