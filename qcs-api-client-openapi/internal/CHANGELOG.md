@@ -1,3 +1,9 @@
+## 0.9.5 (2024-07-11)
+
+### Fixes
+
+#### Python workflow accepts GitHub token as an argument.
+
 ## 0.9.4 (2024-07-10)
 
 ### Fixes
