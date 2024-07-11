@@ -1,3 +1,9 @@
+## 0.7.6 (2024-07-11)
+
+### Fixes
+
+#### Remove example that broke release action.
+
 ## 0.7.5 (2024-07-11)
 
 ### Fixes
