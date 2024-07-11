@@ -2411,6 +2411,45 @@ paths:
       tags:
         - account
   "/v1/internal/billingPrices/{billingPriceId}":
+    get:
+      operationId: InternalGetProductBillingPrice
+      description: Get a product billing price, which specifies a per-unit price for a
+        product/specific mode of execution.
+      parameters:
+        - description: The billing price id.
+          in: path
+          name: billingPriceId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingPrice"
+          description: Successfully found `BillingPrice`.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Not authorized to get `BillingPrice`.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      x-internal: true
     patch:
       operationId: InternalUpdateProductBillingPrice
       parameters:
@@ -2448,7 +2487,7 @@ paths:
           description: Request validation failed.
       security:
         - JWTBearer: []
-    x-internal: true
+      x-internal: true
   /v1/internal/eventBillingPrices:
     get:
       description: >
@@ -2565,6 +2604,47 @@ paths:
         - account
       x-internal: true
   "/v1/internal/eventBillingPrices/{eventBillingPriceId}":
+    get:
+      description: Get an event billing price, which is used to associate a price with
+        (optionally) a specific account and/or quantum processor.
+      operationId: InternalGetEventBillingPrice
+      parameters:
+        - in: path
+          name: eventBillingPriceId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventBillingPrice"
+          description: Event billing price successfully found.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: User not authorized to get the requested event billing price.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: The requested event billing price does not exist.
+      security:
+        - JWTBearer: []
+      summary: Internal Get Event Billing Price
+      tags:
+        - account
+      x-internal: true
     delete:
       description: Delete an event billing price.
       operationId: InternalDeleteEventBillingPrice
