@@ -1,3 +1,9 @@
+## 0.7.9 (2024-07-11)
+
+### Fixes
+
+#### Remove extra character in build step.
+
 ## 0.7.8 (2024-07-11)
 
 ### Fixes
