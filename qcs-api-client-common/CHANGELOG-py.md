@@ -1,3 +1,9 @@
+## 0.8.9 (2024-07-11)
+
+### Fixes
+
+#### explicitly set artifact path name
+
 ## 0.8.8 (2024-07-11)
 
 ### Fixes
