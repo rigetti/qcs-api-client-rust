@@ -1,3 +1,9 @@
+## 0.8.8 (2024-07-11)
+
+### Fixes
+
+#### Fix condition preventing build.
+
 ## 0.8.7 (2024-07-11)
 
 ### Fixes
