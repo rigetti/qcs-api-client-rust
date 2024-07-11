@@ -1,3 +1,9 @@
+## 0.8.7 (2024-07-11)
+
+### Fixes
+
+#### common Python action will not test installation for an architecture that is different from the host
+
 ## 0.8.6 (2024-07-11)
 
 ### Fixes
