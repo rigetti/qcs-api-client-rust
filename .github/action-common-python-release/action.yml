@@ -14,7 +14,7 @@ inputs:
   maturin-target:
     description: "Rust target used for maturin compilation. Example: 'x86_64-unknown-linux-gnu'"
   repo-token:
-    description: "A valid GitHub token. Example: '${{ secrets.GITHUB_TOKEN }}'"
+    description: "A valid GitHub token."
 
 
 runs:
