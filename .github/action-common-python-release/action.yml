@@ -63,7 +63,7 @@ runs:
     run: |
       pip install qcs-api-client-common --find-links dist --force-reinstall
   - name: Upload wheels 
-    uses: actions/upload-artifact@v2 
-    with: 
+    uses: actions/upload-artifact@v3
+    with:
       name: wheels
-      path: dist 
+      path: dist/
