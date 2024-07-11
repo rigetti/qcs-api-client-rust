@@ -1,3 +1,9 @@
+## 0.7.8 (2024-07-11)
+
+### Fixes
+
+#### Sync package versions
+
 ## 0.7.7 (2024-07-11)
 
 ### Fixes
