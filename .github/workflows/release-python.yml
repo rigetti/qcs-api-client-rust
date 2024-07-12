@@ -67,8 +67,10 @@ jobs:
       with:
         name: wheels
         path: wheels
+    - name: List wheels to upload
+      run: ls wheels/
     - name: Publish to PyPI
       uses: messense/maturin-action@v1
       with:
         command: upload
-        args: --skip-existing wheels
+        args: --skip-existing wheels/*
