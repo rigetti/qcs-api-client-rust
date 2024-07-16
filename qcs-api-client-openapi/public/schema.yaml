@@ -511,6 +511,44 @@ paths:
                 $ref: "#/components/schemas/ValidationError"
           description: Unprocessable Entity
       summary: Health Check
+  /v1/instructionSetArchitectures:
+    get:
+      description: Retrieve all Instruction Set Architectures available to the user.
+      operationId: ListInstructionSetArchitectures
+      parameters:
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            default: 5
+            exclusiveMinimum: 0
+            maximum: 5
+            title: Pagesize
+            type: integer
+        - in: query
+          name: pageToken
+          required: false
+          schema:
+            title: Pagetoken
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListInstructionSetArchitectureResponse"
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+          description: Unprocessable Entity
+      security:
+        - JWTBearer: []
+      summary: List Instruction Set Architectures
+      tags:
+        - quantumProcessors
   /v1/quantumProcessors:
     get:
       description: List all QuantumProcessors available to the user.
@@ -2400,6 +2438,21 @@ components:
         - endpoints
       title: ListEndpointsResponse
       type: object
+    ListInstructionSetArchitectureResponse:
+      properties:
+        instructionSetArchitectures:
+          items:
+            $ref: "#/components/schemas/InstructionSetArchitecture"
+          title: Instruction Set Architectures
+          type: array
+        nextPageToken:
+          description: Send an opaque page token returned from a prior request
+          title: Next Page Token
+          type: string
+      required:
+        - instructionSetArchitectures
+      title: ListInstructionSetArchitectureResponse
+      type: object
     ListQuantumProcessorAccessorsResponse:
       properties:
         accessors:
@@ -2686,8 +2739,7 @@ components:
         - price
       type: object
     BillingCustomer:
-      description: A representation of a QCS's account billing customer. Note,
-        `balance` does not account for the upcoming invoice.
+      description: Billing account information of a particular QCS account.
       properties:
         email:
           type: string
@@ -2763,8 +2815,10 @@ components:
         - void
       type: string
     BillingPrice:
-      description: The price schedule for a particular service applied to an invoice
-        line item.
+      description: |
+        A configuration for calculating the cost of `BillingProduct` usage
+        based on quantity,
+        and when that cost should be added as an invoice item.
       properties:
         active:
           description: Whether the price can be used for new purchases.
@@ -2776,14 +2830,19 @@ components:
           maxLength: 5000
           type: string
         object:
-          description: String representing the object's type. Objects of the same type
-            share the same value.
+          description: This object's type, which is always `price`.
           enum:
             - price
           type: string
         priceType:
-          description: One of `one_time` or `recurring` depending on whether the price is
-            for a one-time purchase or a recurring (subscription) purchase.
+          description: >
+            Use `one_time` to invoice immediately based on a single usage
+
+            report, e.g. purchasing a QPU reservation.
+
+            Use `recurring` to aggregate usage reports over an interval and then invoice
+
+            once based on `BillingPriceRecurrence`, e.g. on-demand QPU usage.
           enum:
             - one_time
             - recurring
@@ -2793,17 +2852,19 @@ components:
         recurring:
           $ref: "#/components/schemas/BillingPriceRecurrence"
         tiers:
-          description: Each element represents a pricing tier. This parameter requires
-            `billingScheme` to be set to `tiered`. See also the documentation
-            for `billingScheme`.
+          description: |
+            Configure how price should be calculated based on quantity
+            when `billingScheme=tiered`.
+            Requires at least two tiers.
           items:
             $ref: "#/components/schemas/BillingPriceTier"
           type: array
         tiersMode:
           $ref: "#/components/schemas/BillingPriceTiersMode"
         unitAmountDecimal:
-          description: The unit amount in `currency` to be charged. Only set if
-            `billingScheme=per_unit`.
+          description: |
+            The amount of `currency` to charge per quantity used.
+            Requires that `billingScheme=per_unit`.
           format: double
           type: number
       required:
@@ -2811,9 +2872,15 @@ components:
       title: Billing Price
       type: object
     BillingPriceRecurrence:
-      description: The recurring components of a price such as `interval` and `usageType`.
+      description: |
+        How to invoice for the usage of a product that has a recurring
+        (subscription) price.
       properties:
         aggregateUsage:
+          description: |
+            How to determine the aggregate usage over the `interval` when
+            `usageType=metered`.
+            Using `sum` is recommended.
           enum:
             - last_during_period
             - last_ever
@@ -2821,6 +2888,9 @@ components:
             - sum
           type: string
         interval:
+          description: |
+            The frequency at which recurring usage should be billed.
+            Using `month` is recommended.
           enum:
             - day
             - month
@@ -2828,9 +2898,21 @@ components:
             - year
           type: string
         intervalCount:
+          description: >
+            The number of `interval` units between each billing cycle.
+
+            For example, `interval=month` and `intervalCount=1` means every month
+
+            (recommended).
           format: int64
           type: integer
         usageType:
+          description: >
+            Use `metered` to calculate a dynamic quantity based on reported
+
+            usage records (recommended).
+
+            Use `licensed` when you provide a fixed quantity, e.g. a TV subscription.
           enum:
             - licensed
             - metered
@@ -2840,18 +2922,29 @@ components:
       title: Billing Price Recurrence
       type: object
     BillingPriceScheme:
-      description: Describes how to compute the price per period. Either `per_unit` or
-        `tiered`. `per_unit` indicates that the fixed amount (specified in
-        `unitAmount` or `unitAmountDecimal`) will be charged per unit in
-        `quantity` (for prices with `usageType=licensed`), or per unit of total
-        usage (for prices with `usageType=metered`). `tiered` indicates that the
-        unit pricing will be computed using a tiering strategy as defined using
-        the `tiers` and `tiersMode` attributes.
+      description: >
+        Use `per_unit` to charge a linear rate per quantity (recommended).
+
+        Use `tiered` to charge a dynamic rate based on quantity as defined in the
+
+        `tiers` of a `BillingPice`.
       enum:
         - per_unit
         - tiered
       type: string
     BillingPriceTier:
+      description: >
+        Use `flatAmount` to charge a fixed amount for the quantity relevant
+
+        to the tier.
+
+        Use `unitAmount` to charge a linear rate for the quantity relevant to the
+
+        tier.
+
+        Only one field between `flatAmount`, `flatAmountDecimal`, `unitAmount`, or
+
+        `unitAmountDecimal` should be set.
       properties:
         flatAmount:
           format: int64
@@ -2866,7 +2959,12 @@ components:
           format: double
           type: number
         upTo:
-          description: A value of `-1` will imply that this tier is up to Infinity.
+          description: >
+            The upper bound of product quantity relevant to this tier.
+
+            The highest tier should be open ended, represented by an `upTo` value
+
+            of `-1`.
           format: int64
           type: integer
       required:
@@ -2874,17 +2972,21 @@ components:
       title: tier
       type: object
     BillingPriceTiersMode:
-      description: Defines if the tiering price should be `graduated` or `volume`
-        based. In `volume`-based tiering, the maximum quantity within a period
-        determines the per unit price, in `graduated` tiering pricing can
-        successively change as the quantity grows.
+      description: |
+        Use `graduated` to apply each tier calculation to the portion
+        of relevant quantity, e.g. how US federal tax brackets work.
+        Use `volume` to apply the highest relevant tier to the entire quantity.
       enum:
         - graduated
         - volume
       type: string
     BillingProduct:
-      description: A QCS service product. This may represent one time (such as
-        reservations) or metered services.
+      description: >
+        A QCS service product, such as reservation time or on-demand execution.
+
+        One product can be associated with multiple prices, which may be associated
+
+        to particular resources or customers.
       properties:
         description:
           maxLength: 5000
@@ -2898,16 +3000,19 @@ components:
           maxLength: 5000
           type: string
         object:
-          description: String representing the object's type. Objects of the same type
-            share the same value.
+          description: This object's type, which is always `product`.
           enum:
             - product
           type: string
           x-enum-varnames:
             - productObject
         unitLabel:
-          description: A label that represents units of this product. When set, this will
-            be included in associated invoice line item descriptions.
+          description: >
+            A label for units of this product which appears on customer
+
+            invoices, e.g. "microseconds" for on-demand execution or "minutes" for
+
+            qpu reservations.
           maxLength: 5000
           type: string
       required:
@@ -3038,18 +3143,21 @@ components:
         - endTime
       type: object
     EventBillingPriceRate:
-      description: Event price rate information.
+      description: |
+        The per-unit price associated with a particular QCS service product,
+        and (optionally) with a particular quantum processor.
       properties:
         id:
           type: integer
         product:
           $ref: "#/components/schemas/Product"
         quantumProcessorId:
+          description: If unset, this per-unit price applies to any quantum processor.
           type: string
         unitAmountDecimal:
           description: The unit amount in currency to be charged.
-          type: number
           format: double
+          type: number
         unitLabel:
           description: Human-readable unit label infomation.
           type: string
@@ -3220,6 +3328,7 @@ components:
         For example, `quantumProcessorId, startTime DESC`.
       type: string
     Product:
+      description: The set of known QCS service products.
       enum:
         - reservationCreation
         - qpuJobCompletion
