@@ -1,3 +1,9 @@
+## 0.8.7 (2024-07-18)
+
+### Fixes
+
+#### Version number consistency
+
 ## 0.8.6 (2024-07-11)
 
 ### Fixes

@@ -2203,7 +2203,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-common"
-version = "0.8.13"
+version = "0.8.14"
 dependencies = [
  "async-trait",
  "backoff",
@@ -2236,7 +2236,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc"
-version = "0.8.6"
+version = "0.8.7"
 dependencies = [
  "async-std",
  "backoff",
@@ -2279,7 +2279,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-openapi"
-version = "0.9.6"
+version = "0.9.7"
 dependencies = [
  "anyhow",
  "qcs-api-client-common",
