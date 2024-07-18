@@ -1,3 +1,9 @@
+## 0.8.13 (2024-07-18)
+
+### Fixes
+
+#### Build script updates linker flags when building with the python feature enabled
+
 ## 0.8.12 (2024-07-12)
 
 ### Fixes

@@ -1,6 +1,6 @@
 [package]
 name = "qcs-api-client-common"
-version = "0.8.12"
+version = "0.8.13"
 edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
@@ -24,7 +24,7 @@ crate-type = ["cdylib", "rlib"]
 [features]
 tracing = ["dep:tracing", "url", "urlpattern"]
 tracing-config = ["tracing"]
-python = ["dep:pyo3", "dep:pyo3-asyncio", "dep:paste", "dep:rigetti-pyo3", "tokio/macros"]
+python = ["dep:pyo3", "dep:pyo3-asyncio", "dep:paste", "dep:rigetti-pyo3", "tokio/macros", "pyo3-build-config"]
 
 [dependencies]
 async-trait = "0.1"
@@ -57,6 +57,9 @@ httpmock = "0.7.0"
 rstest = "0.21.0"
 serial_test = "3.1.1"
 tokio = { version = "1.20.1", features = ["fs", "macros"] }
+
+[build-dependencies]
+pyo3-build-config = { version = "0.22.1", optional = true }
 
 [lints.clippy]
 # Covers correctness, suspicious, style, complexity, and perf

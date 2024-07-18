@@ -115,7 +115,12 @@ impl ClientConfiguration {
         py_get_bearer_access_token_async(py, self.clone())
     }
 
-    fn get_tokens(&self, py: Python<'_>) -> PyResult<Tokens> {
+    /// Get the configured tokens.
+    ///
+    /// # Errors
+    ///
+    /// - Raises a TokenError if there is a problem fetching the tokens
+    pub fn get_tokens(&self, py: Python<'_>) -> PyResult<Tokens> {
         py_get_tokens(py, self.tokens.clone())
     }
 
