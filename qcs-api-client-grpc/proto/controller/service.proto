@@ -58,6 +58,8 @@ message ExecutionOptions {
     // The service may also enforce a maximum value for this field.
     optional .google.protobuf.Duration timeout = 4;
 
+    reserved 1;
+
     reserved 2;
 }
 message ExecuteControllerJobResponse {
@@ -104,6 +106,10 @@ message GetControllerJobStatusRequest {
 }
 message GetControllerJobStatusResponse {
     .services.controller.GetControllerJobStatusResponse.Status status = 1;
+
+    // Best-effort estimate of how long it will be (from the time the response is
+    // generated) until the job is finished executing.
+    .services.controller.EstimatedDelay estimated_job_completion_delay = 2;
     enum Status {
         UNKNOWN = 0;
         QUEUED = 1;
@@ -112,6 +118,14 @@ message GetControllerJobStatusResponse {
         FAILED = 4;
         CANCELED = 5;
     }
+}
+
+// An estimation of the delay before a specific event, such as when a queued job
+// is expected to be dequeued and run.
+message EstimatedDelay {
+
+    // The shortest possible delay before the event
+    .google.protobuf.Duration minimum = 1;
 }
 
 service Controller {

@@ -104,6 +104,9 @@ impl serde::Serialize for BackendV2Options {
         if self.allow_frame_redefinition.is_some() {
             len += 1;
         }
+        if self.store_all_readout_values.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("services.translation.BackendV2Options", len)?;
         if let Some(v) = self.prepend_default_calibrations.as_ref() {
             struct_ser.serialize_field("prependDefaultCalibrations", v)?;
@@ -116,6 +119,9 @@ impl serde::Serialize for BackendV2Options {
         }
         if let Some(v) = self.allow_frame_redefinition.as_ref() {
             struct_ser.serialize_field("allowFrameRedefinition", v)?;
+        }
+        if let Some(v) = self.store_all_readout_values.as_ref() {
+            struct_ser.serialize_field("storeAllReadoutValues", v)?;
         }
         struct_ser.end()
     }
@@ -135,6 +141,8 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
             "allowUncheckedPointerArithmetic",
             "allow_frame_redefinition",
             "allowFrameRedefinition",
+            "store_all_readout_values",
+            "storeAllReadoutValues",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -143,6 +151,7 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
             PassiveResetDelaySeconds,
             AllowUncheckedPointerArithmetic,
             AllowFrameRedefinition,
+            StoreAllReadoutValues,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -168,6 +177,7 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
                             "passiveResetDelaySeconds" | "passive_reset_delay_seconds" => Ok(GeneratedField::PassiveResetDelaySeconds),
                             "allowUncheckedPointerArithmetic" | "allow_unchecked_pointer_arithmetic" => Ok(GeneratedField::AllowUncheckedPointerArithmetic),
                             "allowFrameRedefinition" | "allow_frame_redefinition" => Ok(GeneratedField::AllowFrameRedefinition),
+                            "storeAllReadoutValues" | "store_all_readout_values" => Ok(GeneratedField::StoreAllReadoutValues),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -191,6 +201,7 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
                 let mut passive_reset_delay_seconds__ = None;
                 let mut allow_unchecked_pointer_arithmetic__ = None;
                 let mut allow_frame_redefinition__ = None;
+                let mut store_all_readout_values__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::PrependDefaultCalibrations => {
@@ -219,6 +230,12 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
                             }
                             allow_frame_redefinition__ = map_.next_value()?;
                         }
+                        GeneratedField::StoreAllReadoutValues => {
+                            if store_all_readout_values__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("storeAllReadoutValues"));
+                            }
+                            store_all_readout_values__ = map_.next_value()?;
+                        }
                     }
                 }
                 Ok(BackendV2Options {
@@ -226,6 +243,7 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
                     passive_reset_delay_seconds: passive_reset_delay_seconds__,
                     allow_unchecked_pointer_arithmetic: allow_unchecked_pointer_arithmetic__,
                     allow_frame_redefinition: allow_frame_redefinition__,
+                    store_all_readout_values: store_all_readout_values__,
                 })
             }
         }

@@ -1,3 +1,9 @@
+## 0.8.8 (2024-07-25)
+
+### Fixes
+
+#### update and regenerate clients
+
 ## 0.8.7 (2024-07-18)
 
 ### Fixes
