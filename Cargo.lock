@@ -2333,7 +2333,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc"
-version = "0.8.7"
+version = "0.8.8"
 dependencies = [
  "async-std",
  "backoff",
@@ -2376,7 +2376,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc-internal"
-version = "0.9.7"
+version = "0.9.8"
 dependencies = [
  "async-std",
  "backoff",
