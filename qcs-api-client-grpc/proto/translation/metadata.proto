@@ -11,4 +11,6 @@ message QuilTranslationMetadata {
     // while being able to interpret the readout results for one of the post-processed
     // readout streams as representing the result of the `MEASURE`.
     map<string, string> readout_mappings = 1;
-}
+
+    reserved 2;
+    reserved "q_ctrl";}

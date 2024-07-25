@@ -46,11 +46,6 @@ message ExecuteControllerJobRequest {
 // Options specified on execution requests describing any features or processes requested before or after job execution.
 message ExecutionOptions {
 
-    // When specified, Controller service will submit job execution results to the Q-CTRL API for post-processing. If the
-    // client specifies this option but Q-CTRL translation metadata is not specified in the JobMetadata, the server will
-    // return a validation error to the client.
-    .services.controller.ExecutionOptions.QCtrl q_ctrl = 1;
-
     // If jobs contain settings that would cause managed settings to change values,
     // that job will be rejected unless this field is set to true and the submitter has the appropriate authorization.
     bool bypass_settings_protection = 3;
@@ -64,16 +59,17 @@ message ExecutionOptions {
     //
     // The service may also enforce a maximum value for this field.
     optional .google.protobuf.Duration timeout = 4;
+
+    // This message has been deprecated entirely. See reserved field 1 above.
     message QCtrl {
 
-        // Mapping of (Quil memory address as string) to (readout stream)
-        // This enables Q-CTRL to map readout data to the appropriate bitstring, effectively specifying
-        // the appropriate ro_sources for extracting memory regions:
-        // https://github.com/rigetti/pyquil/blob/33a5e2cae34332eca8dd66ed3470a709454a3966/pyquil/api/_qpu.py#L50
-        map<string, string> readout_mappings = 1;
-    }
+        reserved 1;
+        reserved "readout_mappings";    }
+
+    reserved 1;
 
     reserved 2;
+    reserved "q_ctrl";
     reserved "bypass_instrument_channel_settings_protection";}
 message ExecuteControllerJobResponse {
 
@@ -125,6 +121,10 @@ message GetControllerJobStatusRequest {
 }
 message GetControllerJobStatusResponse {
     .services.controller.GetControllerJobStatusResponse.Status status = 1;
+
+    // Best-effort estimate of how long it will be (from the time the response is
+    // generated) until the job is finished executing.
+    .services.controller.EstimatedDelay estimated_job_completion_delay = 2;
     enum Status {
         UNKNOWN = 0;
         QUEUED = 1;
@@ -133,6 +133,14 @@ message GetControllerJobStatusResponse {
         FAILED = 4;
         CANCELED = 5;
     }
+}
+
+// An estimation of the delay before a specific event, such as when a queued job
+// is expected to be dequeued and run.
+message EstimatedDelay {
+
+    // The shortest possible delay before the event
+    .google.protobuf.Duration minimum = 1;
 }
 message GetRackManifestRequest {
 }

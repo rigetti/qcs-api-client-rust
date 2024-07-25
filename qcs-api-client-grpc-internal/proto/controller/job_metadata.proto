@@ -72,6 +72,15 @@ message TranslationMetadata {
 
         // The program input returned by Q-CTRL's pre-processing API.
         .models.controller.TranslationMetadata.ProgramInput program_input = 2;
+
+        // Mapping of (Quil memory address as string) to (readout stream)
+        // This allows a Quil program author to write and execute `MEASURE 0 ro`,
+        // while being able to interpret the readout results for one of the post-processed
+        // readout streams as representing the result of the `MEASURE`.
+        //
+        // Controller service will require this mapping to interpret readout results as
+        // bitstrings, which are required for Q-CTRL's post-processing API.
+        map<string, string> readout_mappings = 3;
     }
     message HardwareTranslator {
 

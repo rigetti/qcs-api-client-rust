@@ -49,6 +49,17 @@ message BackendV2Options {
 
     // Whether to skip program frame validation against Rigetti calibrations.
     optional bool allow_frame_redefinition = 5;
+
+    // Whether to force all real-time-classified readout values to be stored in sequencer memory. If false or unset, only readout values that are
+    // read by the program are written to sequencer memory following readout.
+    optional bool store_all_readout_values = 6;
+
+    // How to determine the readout propagation delay.
+    oneof readout_propagation_delay {
+
+        // The number of nanoseconds to wait for readout values to propagate.
+        uint32 nanoseconds = 101;
+    }
 }
 message TranslateQuilToSignedControllerJobRequest {
     string quantum_processor_id = 1;

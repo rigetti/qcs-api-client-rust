@@ -1,25 +1,13 @@
 syntax = "proto3";
 package models.translation;
 option go_package = "gitlab.com/rigetti/share/service-model/golang/translation";
-import "translation/quil.proto";
 
-// The Q-CTRL translation option will compile a Quil program to a native Quil program.
-// The client will never receive the resulting native Quil that is translated
-// and executed on the QPU. As such, the Translation service will need to explicitly pass the following
-// data to the client.
+// This message is entirely deprecated. See QuilTranslationMetadata reserved field 2.
 message QCtrlMetadata {
 
-    // An ordered list of arithmetic expressions, which are to be used when updating the program memory
-    // before execution. This is the recalculation table computed by the QCS Rust SDK:
-    // https://github.com/rigetti/qcs-sdk-rust/blob/7a96c0c6dba55b386761bb5e5900247ace32e471/crates/python/src/api.rs#L159
-    repeated string recalculation_table = 1;
-
-    // Final native Quil declaration instructions on the translated program. This may be used in pyQuil
-    // and other clients to derive memory declarations in order to cast readout data to bitstrings.
-    // Effectively, this defines the memory descriptors for extract_memory_regions:
-    // https://github.com/rigetti/pyquil/blob/33a5e2cae34332eca8dd66ed3470a709454a3966/pyquil/api/_qpu.py#L50
-    repeated .models.translation.Declaration declarations = 2;
-}
+    reserved 1 to 2;
+    reserved "recalculation_table";
+    reserved "declarations";}
 
 // Information about the result of Quil translation that may be useful for the client,
 // but which is not needed for execution of the translated `ControllerJob`.
@@ -31,8 +19,5 @@ message QuilTranslationMetadata {
     // readout streams as representing the result of the `MEASURE`.
     map<string, string> readout_mappings = 1;
 
-    // Metadata related to jobs that have been processed by Q-CTRL. Only present when
-    // the client submitted their translation request with the
-    // `.models.translation.TranslationOptions.q_ctrl` attribute set.
-    .models.translation.QCtrlMetadata q_ctrl = 2;
-}
+    reserved 2;
+    reserved "q_ctrl";}

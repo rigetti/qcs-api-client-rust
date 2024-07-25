@@ -63,6 +63,10 @@ pub struct BackendV2Options {
     /// Whether to skip program frame validation against Rigetti calibrations.
     #[prost(bool, optional, tag = "5")]
     pub allow_frame_redefinition: ::core::option::Option<bool>,
+    /// Whether to force all real-time-classified readout values to be stored in sequencer memory. If false or unset, only readout values that are
+    /// read by the program are written to sequencer memory following readout.
+    #[prost(bool, optional, tag = "6")]
+    pub store_all_readout_values: ::core::option::Option<bool>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

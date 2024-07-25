@@ -393,6 +393,97 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsResponse {
         deserializer.deserialize_struct("services.controller.CancelControllerJobsResponse", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for EstimatedDelay {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.minimum.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("services.controller.EstimatedDelay", len)?;
+        if let Some(v) = self.minimum.as_ref() {
+            struct_ser.serialize_field("minimum", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for EstimatedDelay {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "minimum",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Minimum,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "minimum" => Ok(GeneratedField::Minimum),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = EstimatedDelay;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct services.controller.EstimatedDelay")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<EstimatedDelay, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut minimum__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Minimum => {
+                            if minimum__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("minimum"));
+                            }
+                            minimum__ = map_.next_value()?;
+                        }
+                    }
+                }
+                Ok(EstimatedDelay {
+                    minimum: minimum__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("services.controller.EstimatedDelay", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for ExecuteControllerJobRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -1081,11 +1172,17 @@ impl serde::Serialize for GetControllerJobStatusResponse {
         if self.status != 0 {
             len += 1;
         }
+        if self.estimated_job_completion_delay.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("services.controller.GetControllerJobStatusResponse", len)?;
         if self.status != 0 {
             let v = get_controller_job_status_response::Status::try_from(self.status)
                 .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.status)))?;
             struct_ser.serialize_field("status", &v)?;
+        }
+        if let Some(v) = self.estimated_job_completion_delay.as_ref() {
+            struct_ser.serialize_field("estimatedJobCompletionDelay", v)?;
         }
         struct_ser.end()
     }
@@ -1098,11 +1195,14 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusResponse {
     {
         const FIELDS: &[&str] = &[
             "status",
+            "estimated_job_completion_delay",
+            "estimatedJobCompletionDelay",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Status,
+            EstimatedJobCompletionDelay,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1125,6 +1225,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusResponse {
                     {
                         match value {
                             "status" => Ok(GeneratedField::Status),
+                            "estimatedJobCompletionDelay" | "estimated_job_completion_delay" => Ok(GeneratedField::EstimatedJobCompletionDelay),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1145,6 +1246,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusResponse {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut status__ = None;
+                let mut estimated_job_completion_delay__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Status => {
@@ -1153,10 +1255,17 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusResponse {
                             }
                             status__ = Some(map_.next_value::<get_controller_job_status_response::Status>()? as i32);
                         }
+                        GeneratedField::EstimatedJobCompletionDelay => {
+                            if estimated_job_completion_delay__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("estimatedJobCompletionDelay"));
+                            }
+                            estimated_job_completion_delay__ = map_.next_value()?;
+                        }
                     }
                 }
                 Ok(GetControllerJobStatusResponse {
                     status: status__.unwrap_or_default(),
+                    estimated_job_completion_delay: estimated_job_completion_delay__,
                 })
             }
         }

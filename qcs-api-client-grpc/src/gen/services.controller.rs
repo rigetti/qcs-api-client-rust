@@ -174,6 +174,10 @@ pub struct GetControllerJobStatusRequest {
 pub struct GetControllerJobStatusResponse {
     #[prost(enumeration = "get_controller_job_status_response::Status", tag = "1")]
     pub status: i32,
+    /// Best-effort estimate of how long it will be (from the time the response is
+    /// generated) until the job is finished executing.
+    #[prost(message, optional, tag = "2")]
+    pub estimated_job_completion_delay: ::core::option::Option<EstimatedDelay>,
 }
 /// Nested message and enum types in `GetControllerJobStatusResponse`.
 pub mod get_controller_job_status_response {
@@ -225,6 +229,15 @@ pub mod get_controller_job_status_response {
             }
         }
     }
+}
+/// An estimation of the delay before a specific event, such as when a queued job
+/// is expected to be dequeued and run.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct EstimatedDelay {
+    /// The shortest possible delay before the event
+    #[prost(message, optional, tag = "1")]
+    pub minimum: ::core::option::Option<::pbjson_types::Duration>,
 }
 /// Generated client implementations.
 pub mod controller_client {
