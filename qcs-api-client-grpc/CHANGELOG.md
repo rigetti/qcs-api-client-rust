@@ -1,3 +1,9 @@
+## 0.8.9-rc.0 (2024-08-07)
+
+### Fixes
+
+#### drop dasel installation from public makefile
+
 ## 0.8.8 (2024-07-25)
 
 ### Fixes
