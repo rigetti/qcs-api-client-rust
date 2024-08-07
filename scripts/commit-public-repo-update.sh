@@ -52,35 +52,25 @@ cp .gitignore "$WORKDIR"
 cp -R .github "$WORKDIR"
 cp README.md "$WORKDIR"
 cp LICENSE "$WORKDIR"
+cp Cargo.toml "$WORKDIR"
 
 # Note: Everything below here is specifically for $WORKDIR.
 cd "$WORKDIR"
 
-# We don't just copy over the source Cargo.toml because it would leak
-# information about the non-public crates.
-cat << EOF > "Cargo.toml"
-[workspace]
-resolver = "2"
-members = [
-    "qcs-api-client-common",
-    "qcs-api-client-grpc",
-    "qcs-api-client-openapi",
-]
 
-[workspace.dependencies]
-# jsonwebtoken should always be validated after upgrading. Changes to the validation logic can cause the client to
-# believe JWTs are always invalid, which causes the client to refresh them before every request. See #83.
-jsonwebtoken = "9.3.0"
-opentelemetry = "0.20.0"
-opentelemetry_api = "0.20.0"
-opentelemetry_sdk = "0.20.0"
-opentelemetry-http = "0.9.0"
-reqwest = {version = "0.11.27", default-features = false, features = ["json", "rustls-tls-native-roots"]}
-reqwest-middleware = "0.2.0"
-reqwest-tracing = { version = "0.4.6", features = ["opentelemetry_0_20"] }
-tracing-opentelemetry = "0.20.0"
-tracing-subscriber = "0.3.17"
-EOF
+# Edit Cargo.toml for the public repo; this requires dasel.
+if ! command -v dasel &> /dev/null
+then
+    echo "dasel could not be found. Please install it from https://daseldocs.tomwright.me/installation"
+    exit 1
+fi
+# Remove all workspace members.
+dasel delete -f Cargo.toml "workspace.members"
+# restore the public crates only.
+for i in "${!PUBLIC_DIRS_RENAME[@]}"; do
+  public_dir_rename=${PUBLIC_DIRS_RENAME[$i]}
+  dasel put -t string -f Cargo.toml -v "$public_dir_rename" 'workspace.members.append()'
+done;
 
 # We use `ex` here because sed works differently between gnu/linux and macOS.
 ex '+%s/path = "..\/../path = "../g' -scwq qcs-api-client-openapi/Cargo.toml

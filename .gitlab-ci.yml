@@ -40,6 +40,12 @@ variables:
   - pyenv activate qcs-api-client-common
   - export PATH=$VIRTUAL_ENV/bin:$PATH
 
+  # Required for running ./scripts/commit-public-repo-update.sh, which uses Dasel to edit
+# Cargo.toml. See https://daseldocs.tomwright.me/installation.
+.install-dasel: &install-dasel
+  - curl -sSLf "$(curl -sSLf https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | grep -v .gz | cut -d\" -f 4)" -L -o dasel && chmod +x dasel
+  - mv ./dasel /usr/local/bin/dasel
+
 Lint:
   stage: test
   before_script:
@@ -115,6 +121,7 @@ Check Proxy:
     - git remote set-url origin "https://git:${API_CLIENT_PUSH_TOKEN}@gitlab.com/${CI_PROJECT_PATH}"
     - !reference [.install_protoc]
     - !reference [.install_knope]
+    - *install-dasel
   script:
     - git checkout $CI_COMMIT_BRANCH  # Have to be on branch to push back
     - knope -v $KNOPE_ARGS
