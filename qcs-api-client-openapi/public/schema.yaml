@@ -2547,6 +2547,7 @@ components:
       enum:
         - berkeley-775
         - fremont-fab
+        - rigetti-gb-1
       title: NomadJobDatacenters
       type: string
     Operation:
