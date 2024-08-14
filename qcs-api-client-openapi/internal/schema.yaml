@@ -5249,6 +5249,12 @@ components:
             - $ref: "#/components/schemas/EngagementPolicyOptions"
           description: Options for configuration of the selected engagement policy
           title: Engagement Policy Options
+        expiration:
+          description: The date and time after which this endpoint should be considered
+            'expired', and may be automatically deleted.
+          format: date-time
+          title: Expiration (creation or last update time, plus TTL seconds)
+          type: string
         fridgeId:
           description: Identifier for the dilution fridge system to which this endpoint
             has network access
@@ -5274,6 +5280,14 @@ components:
           description: The name of the template used to apply default values to this
             endpoint
           title: Template Name
+        ttl:
+          description: The number seconds following the endpoint creation or most recent
+            update time until the endpoint is considered 'expired'. Expired
+            endpoints may be automatically deleted. A zero, negative, NaN, or
+            'infinite' TTL indicates that the endpoint will never expire.
+            Otherwise, the TTL must be at least one minute (60 seconds).
+          title: TTL (seconds until expiration)
+          type: number
       title: EndpointConfiguration
       type: object
     EndpointDeployment:
@@ -5769,6 +5783,14 @@ components:
           description: The name of the template used to apply default values to this
             endpoint
           title: Template Name
+        ttl:
+          description: The number seconds following the endpoint creation or most recent
+            update time until the endpoint is considered 'expired'. Expired
+            endpoints may be automatically deleted. A zero, negative, NaN, or
+            'infinite' TTL indicates that the endpoint will never expire.
+            Otherwise, the TTL must be at least one minute (60 seconds).
+          title: TTL (seconds until expiration)
+          type: number
       title: InternalCreateEndpointParameters
       type: object
     InternalEndpoint:
@@ -5957,6 +5979,14 @@ components:
           description: The name of the template used to apply default values to this
             endpoint
           title: Template Name
+        ttl:
+          description: The number seconds following the endpoint creation or most recent
+            update time until the endpoint is considered 'expired'. Expired
+            endpoints may be automatically deleted. A zero, negative, NaN, or
+            'infinite' TTL indicates that the endpoint will never expire.
+            Otherwise, the TTL must be at least one minute (60 seconds).
+          title: TTL (seconds until expiration)
+          type: number
       title: InternalUpdateEndpointParameters
       type: object
     InternalUpdateLegacyQuantumProcessorRequest:
