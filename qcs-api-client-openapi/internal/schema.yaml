@@ -3139,6 +3139,56 @@ paths:
       security:
         - JWTBearer: []
     x-internal: true
+  /v1/internal/billingInvoices:
+    get:
+      operationId: InternalListBillingInvoices
+      description: >
+        List billing invoices using a search filter.
+
+
+        Available filter fields include the following:
+
+        * `total` - integer, the total amount in USD cents for the entire invoice. It is recommended to use `amount>0`.
+
+        * `userIdpId` - string, the QCS user ID to which the invoice is attached.
+
+        * `created` - time, RFC3339 date format of when the invoice was created.
+
+
+        Note that the filter clause is limited here:
+
+        - must be top-level, so no nesting with parenthesis
+
+        - must be all "and" OR "or", e.g. `a and b or c` is not supported
+      parameters:
+        - $ref: "#/components/parameters/filterRequiredParam"
+        - $ref: "#/components/parameters/pageSizeParam"
+        - $ref: "#/components/parameters/pageTokenParam"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalListBillingInvoicesResponse"
+          description: Request completed successfully.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Not authorized to list billing invoices.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      x-internal: true
+      tags:
+        - account
+    x-internal: true
   /v1/internal/reservations:
     get:
       description: |
@@ -7692,6 +7742,41 @@ components:
         - tax
         - total
       type: object
+    InternalListBillingInvoicesResponse:
+      description: Results from listing billing invoices.
+      properties:
+        invoices:
+          type: array
+          items:
+            $ref: "#/components/schemas/InternalListBillingInvoicesResponseItem"
+        nextPageToken:
+          type: string
+      required:
+        - invoices
+      type: object
+      x-internal: true
+    InternalListBillingInvoicesResponseItem:
+      description: A single item in an `InternalListBillingInvoicesResponse`.
+      properties:
+        accountId:
+          $ref: "#/components/schemas/AccountId"
+        accountType:
+          $ref: "#/components/schemas/AccountType"
+        billingCustomer:
+          $ref: "#/components/schemas/BillingCustomer"
+        userProfile:
+          $ref: "#/components/schemas/UserProfile"
+        invoice:
+          $ref: "#/components/schemas/BillingInvoice"
+        invoiceLineItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/BillingInvoiceLine"
+      required:
+        - invoice
+        - invoiceLineItems
+      type: object
+      x-internal: true
     CheckClientApplicationRequest:
       properties:
         name:
