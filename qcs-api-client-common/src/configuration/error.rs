@@ -63,6 +63,15 @@ pub enum TokenError {
     /// No QCS API refresh token to use.
     #[error("No refresh token is configured within the selected QCS credential.")]
     NoRefreshToken,
+    /// No access token to use.
+    #[error("No access token has been requested.")]
+    NoAccessToken,
+    /// No access token to use.
+    #[error("Requested an access token for a configuration without credentials.")]
+    NoCredentials,
+    /// Access token is invalid.
+    #[error("The access token is invalid: {0}")]
+    InvalidAccessToken(jsonwebtoken::errors::Error),
     /// No QCS API refresh token to use.
     #[error("No auth server is configured within the selected QCS credential.")]
     NoAuthServer,

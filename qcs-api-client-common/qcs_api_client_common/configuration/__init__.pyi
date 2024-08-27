@@ -56,14 +56,10 @@ class ClientConfiguration:
     def qvm_url(self) -> str:
         """The URL of the QCS QVM API."""
 
-    @property
-    def auth_server(self) -> AuthServer:
-        """The Okta auth server."""
-
-    def get_tokens(self) -> Tokens:
+    def get_oauth_session(self) -> OAuthSession:
         """Get the credentials used to authenticate with the QCS API."""
 
-    async def get_tokens_async(self) -> Tokens:
+    async def get_oauth_session_async(self) -> OAuthSession:
         """Get the credentials used to authenticate with the QCS API."""
 
     def get_bearer_access_token(self) -> str:
@@ -72,12 +68,9 @@ class ClientConfiguration:
     async def get_bearer_access_token_async(self) -> str:
         """Gets the `Bearer` access token, refreshing it if is expired."""
 
-
-
 @final
 class ClientConfigurationBuilder:
     def __new__(cls) -> ClientConfigurationBuilder: ...
-
     def build(self) -> ClientConfiguration:
         """Build a `ClientConfiguration` using the values provided to this builder."""
         ...
@@ -115,25 +108,16 @@ class ClientConfigurationBuilder:
         """Set the URL to use for the QVM server."""
 
     @property
-    def auth_server(self):
-        raise AttributeError("auth_server is not readable")
-
-    @auth_server.setter
-    def auth_server(self, auth_server: AuthServer):
-        """Set the `AuthServer` to use."""
-
-    @property
-    def tokens(self):
+    def oauth_session(self):
         raise AttributeError("tokens is not readable")
 
-    @tokens.setter
-    def tokens(self, tokens: Tokens):
-        """Set the QCS API access and refresh `Tokens` to use."""
+    @oauth_session.setter
+    def oauth_session(self, tokens: OAuthSession | None):
+        """Set the QCS API access and refresh `Credentials` to use."""
 
 @final
 class AuthServer:
     def __new__(cls, client_id: str, issuer: str) -> AuthServer: ...
-
     @staticmethod
     def default() -> AuthServer:
         """Get the default Okta auth server."""
@@ -147,14 +131,47 @@ class AuthServer:
         """The Okta issuer URL."""
 
 @final
-class Tokens:
-    def __new__(cls, bearer_access_token: str | None, refresh_token: str | None) -> Tokens:
-        ...
-
+class RefreshToken:
+    def __new__(cls, refresh_token: str) -> RefreshToken: ...
     @property
-    def bearer_access_token(self) -> str | None:
-        """The bearer access token."""
-
-    @property
-    def refresh_token(self) -> str | None:
+    def refresh_token(self) -> str:
         """The refresh token."""
+    @refresh_token.setter
+    def refresh_token(self, refresh_token: str):
+        """Set the refresh token."""
+
+@final
+class ClientCredentials:
+    def __new__(cls, client_id: str, client_secret: str) -> ClientCredentials: ...
+    @property
+    def client_id(self) -> str:
+        """The client ID."""
+    @property
+    def client_secret(self) -> str:
+        """The client secret."""
+
+@final
+class OAuthSession:
+    def __new__(
+        cls, grant_payload: RefreshToken | ClientCredentials, auth_server: AuthServer, access_token: str | None = None
+    ) -> OAuthSession: ...
+    @property
+    def access_token(self) -> str:
+        """Get the current access token.
+
+        This is an unvalidated copy of the access token. Meaning it can become stale, or may already be stale. See the `validate` `request_access_token` and methods.
+        """
+
+    @property
+    def auth_server(self) -> AuthServer:
+        """The refresh token."""
+
+    @property
+    def payload(self) -> RefreshToken | ClientCredentials:
+        """Get the payload used to request an access token."""
+
+    def validate(self) -> str:
+        """Validate the current access token, returning it if it is valid.
+
+        If the token is invalid, a `ValueError` will be raised with a description of why the token failed validation.
+        """

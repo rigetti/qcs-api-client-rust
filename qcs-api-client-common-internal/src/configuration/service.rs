@@ -1,7 +1,6 @@
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::async_http_client;
 use oauth2::{AuthUrl, ClientId, ClientSecret, Scope, TokenResponse, TokenUrl};
-use qcs_api_client_common::configuration::TokenRefresher;
 #[cfg(feature = "tracing-config")]
 use qcs_api_client_common::tracing_configuration::TracingConfiguration;
 use std::ops::Add;

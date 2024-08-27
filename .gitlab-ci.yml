@@ -14,7 +14,7 @@ include:
   - project: rigetti/qcs/utilities/qcs-ci-toolkit
     file: gitlab-ci/knope/install.yaml
   - project: rigetti/qcs/utilities/qcs-ci-toolkit
-    file: 
+    file:
       - gitlab-ci/protoc/install.yaml
       - gitlab-ci/qcs/setup-credentials.yaml
 
@@ -153,49 +153,49 @@ Release Dry Run:
 
 Build Rust Docs:
   stage: publish
+  needs: []
+  artifacts:
+    paths:
+      - public/rust
   script:
     - cargo doc --no-deps
     - mv target/doc public/rust
-  artifacts:
-    paths:
-      - public
 
 Build Python Docs:
   stage: publish
+  needs: []
+  artifacts:
+    paths:
+      - public/python
   script:
     - *activate-venv
     - (cd qcs-api-client-common && cargo make build-python-docs)
     - mv qcs-api-client-common/docs/build/html public/python
+
+.pages:
+  stage: publish
   artifacts:
     paths:
       - public
-  
-pages:
-  stage: publish
-  only:
-    - main
-  dependencies:
+  needs:
     - Build Rust Docs
     - Build Python Docs
+  before_script: []
+
+pages:
+  extends: .pages
+  only:
+    - main
   script:
     - echo "Deploying documentation for qcs-api-client-common"
-  artifacts:
-    paths:
-      - public
 
 pages-preview:
-  stage: publish
+  extends: .pages
   except:
     refs:
       - main
-  dependencies:
-    - Build Rust Docs
-    - Build Python Docs
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     url: https://rigetti.gitlab.io/-/qcs/clients/qcs-api-client-rust/-/jobs/$CI_JOB_ID/artifacts/public/index.html
   script:
     - echo "Deploying review app for $CI_COMMIT_REF_NAME"
-  artifacts:
-    paths:
-      - public
