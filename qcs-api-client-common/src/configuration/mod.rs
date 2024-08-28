@@ -66,7 +66,7 @@ pub const DEFAULT_API_URL: &str = "https://api.qcs.rigetti.com";
 /// Setting this environment variable will override the URL used to connect to the QCS REST API.
 pub const API_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_API_URL";
 fn env_or_default_api_url() -> String {
-    env::var(API_URL_VAR).unwrap_or_else(|_| DEFAULT_PROFILE_NAME.to_string())
+    env::var(API_URL_VAR).unwrap_or_else(|_| DEFAULT_API_URL.to_string())
 }
 
 /// Default URL to access the gRPC API.
