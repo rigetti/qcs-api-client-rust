@@ -1,5 +1,3 @@
-//! This module is used for loading configuration that will be used to connect either to real QPUs
-//! (and supporting services) or the QVM.
 //!
 //! By default, all settings are loaded from files located under your home directory in the
 //! `.qcs` folder. Within that folder:
@@ -28,7 +26,6 @@
 #[cfg(feature = "tracing-config")]
 use crate::tracing_configuration::TracingConfiguration;
 use derive_builder::Builder;
-use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use std::{env, path::PathBuf};
 
 #[cfg(feature = "python")]
@@ -37,6 +34,7 @@ use pyo3::prelude::*;
 use self::{
     secrets::{Credential, Secrets},
     settings::Settings,
+    tokens::OAuthGrant,
 };
 
 mod error;
@@ -51,30 +49,49 @@ pub use error::{LoadError, TokenError};
 pub(crate) use py::*;
 pub use secrets::{DEFAULT_SECRETS_PATH, SECRETS_PATH_VAR};
 pub use settings::{AuthServer, DEFAULT_SETTINGS_PATH, SETTINGS_PATH_VAR};
-pub use tokens::{TokenDispatcher, TokenRefresher, Tokens};
+pub use tokens::{OAuthSession, RefreshToken, TokenDispatcher, TokenRefresher};
 
-/// Default URL to access the QCS API.
-pub const DEFAULT_API_URL: &str = "https://api.qcs.rigetti.com";
-/// Default URL to access the gRPC API.
-pub const DEFAULT_GRPC_API_URL: &str = "https://grpc.qcs.rigetti.com";
-/// Default URL to access QVM.
-pub const DEFAULT_QVM_URL: &str = "http://127.0.0.1:5000";
-/// Default URL to access `quilc`.
-pub const DEFAULT_QUILC_URL: &str = "tcp://127.0.0.1:5555";
+const QCS_AUDIENCE: &str = "api://qcs";
+
 /// Default profile name.
 pub const DEFAULT_PROFILE_NAME: &str = "default";
 /// Setting this environment variable will change which profile is used from the loaded config files
 pub const PROFILE_NAME_VAR: &str = "QCS_PROFILE_NAME";
-/// Setting this environment variable will override the URL used to access quilc.
-pub const QUILC_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_QUILC_URL";
-/// Setting this environment variable will override the URL used to access the QVM.
-pub const QVM_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_QVM_URL";
-/// Setting this environment variable will override the URL used to connect to the GRPC server.
+fn env_or_default_profile_name() -> String {
+    env::var(PROFILE_NAME_VAR).unwrap_or_else(|_| DEFAULT_PROFILE_NAME.to_string())
+}
+
+/// Default URL to access the QCS API.
+pub const DEFAULT_API_URL: &str = "https://api.qcs.rigetti.com";
+/// Setting this environment variable will override the URL used to connect to the QCS REST API.
 pub const API_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_API_URL";
+fn env_or_default_api_url() -> String {
+    env::var(API_URL_VAR).unwrap_or_else(|_| DEFAULT_PROFILE_NAME.to_string())
+}
+
+/// Default URL to access the gRPC API.
+pub const DEFAULT_GRPC_API_URL: &str = "https://grpc.qcs.rigetti.com";
 /// Setting this environment variable will override the URL used to connect to the GRPC server.
 pub const GRPC_API_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_GRPC_URL";
+fn env_or_default_grpc_url() -> String {
+    env::var(GRPC_API_URL_VAR).unwrap_or_else(|_| DEFAULT_GRPC_API_URL.to_string())
+}
 
-const QCS_AUDIENCE: &str = "api://qcs";
+/// Default URL to access QVM.
+pub const DEFAULT_QVM_URL: &str = "http://127.0.0.1:5000";
+/// Setting this environment variable will override the URL used to access the QVM.
+pub const QVM_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_QVM_URL";
+fn env_or_default_qvm_url() -> String {
+    env::var(QVM_URL_VAR).unwrap_or_else(|_| DEFAULT_QVM_URL.to_string())
+}
+
+/// Default URL to access `quilc`.
+pub const DEFAULT_QUILC_URL: &str = "tcp://127.0.0.1:5555";
+/// Setting this environment variable will override the URL used to access quilc.
+pub const QUILC_URL_VAR: &str = "QCS_SETTINGS_APPLICATIONS_QUILC_URL";
+fn env_or_default_quilc_url() -> String {
+    env::var(QUILC_URL_VAR).unwrap_or_else(|_| DEFAULT_QUILC_URL.to_string())
+}
 
 /// A configuration suitable for use as a QCS API Client.
 ///
@@ -91,35 +108,33 @@ const QCS_AUDIENCE: &str = "api://qcs";
 #[derive(Clone, Debug, Builder)]
 #[cfg_attr(feature = "python", pyclass)]
 pub struct ClientConfiguration {
-    #[builder(private, default = "DEFAULT_PROFILE_NAME.to_string()")]
+    #[builder(private, default = "env_or_default_profile_name()")]
     profile: String,
 
     #[doc = "The URL for the QCS REST API."]
-    #[builder(default = "DEFAULT_API_URL.to_string()")]
+    #[builder(default = "env_or_default_api_url()")]
     api_url: String,
 
     #[doc = "The URL for the QCS gRPC API."]
-    #[builder(default = "DEFAULT_GRPC_API_URL.to_string()")]
+    #[builder(default = "env_or_default_grpc_url()")]
     grpc_api_url: String,
 
     #[doc = "The URL of the quilc server."]
-    #[builder(default = "DEFAULT_QUILC_URL.to_string()")]
+    #[builder(default = "env_or_default_quilc_url()")]
     quilc_url: String,
 
     #[doc = "The URL of the QVM server."]
-    #[builder(default = "DEFAULT_QVM_URL.to_string()")]
+    #[builder(default = "env_or_default_qvm_url()")]
     qvm_url: String,
-
-    #[doc = "The Okta Authorization server."]
-    #[builder(default)]
-    auth_server: AuthServer,
 
     /// Provides a single, semi-shared access to user credential tokens.
     ///
     /// Note that the tokens are *not* shared when the `ClientConfiguration` is created multiple
     /// times, e.g. through [`ClientConfiguration::load_default`].
+    ///
+    /// This is set in a builder via the [`ClientConfigurationBuilder::credentials`]
     #[builder(default, setter(custom))]
-    pub(crate) tokens: Option<TokenDispatcher>,
+    pub(crate) oauth_session: Option<TokenDispatcher>,
 
     /// Configuration for tracing of network API calls. If `None`, tracing is disabled.
     #[cfg(feature = "tracing-config")]
@@ -128,9 +143,9 @@ pub struct ClientConfiguration {
 }
 
 impl ClientConfigurationBuilder {
-    /// Set the access and refresh tokens.
-    pub fn tokens(&mut self, tokens: Option<Tokens>) -> &mut Self {
-        self.tokens = Some(tokens.map(Into::into));
+    /// The [`OAuthSession`] to use to authenticate with the QCS API.
+    pub fn oauth_session(&mut self, oauth_session: Option<OAuthSession>) -> &mut Self {
+        self.oauth_session = Some(oauth_session.map(Into::into));
         self
     }
 }
@@ -157,28 +172,24 @@ impl ClientConfiguration {
             .ok_or_else(|| LoadError::AuthServerNotFound(profile.auth_server_name.clone()))?;
 
         let credential = secrets.credentials.remove(&profile.credentials_name);
-        let (access_token, refresh_token) = match credential {
+        let refresh_token = match credential {
             Some(Credential {
                 token_payload: Some(token_payload),
-            }) => (token_payload.access_token, token_payload.refresh_token),
-            _ => (None, None),
+            }) => token_payload.refresh_token,
+            _ => None,
         };
 
         let quilc_url = env::var(QUILC_URL_VAR).unwrap_or(profile.applications.pyquil.quilc_url);
         let qvm_url = env::var(QVM_URL_VAR).unwrap_or(profile.applications.pyquil.qvm_url);
         let grpc_api_url = env::var(GRPC_API_URL_VAR).unwrap_or(profile.grpc_api_url);
 
-        let tokens = if let (Some(bearer_access_token), Some(refresh_token)) =
-            (access_token, refresh_token)
-        {
-            Some(Tokens {
-                bearer_access_token,
-                refresh_token,
-                auth_server: auth_server.clone(),
-            })
-        } else {
-            None
-        };
+        let oauth_session = refresh_token.map(|refresh_token| {
+            OAuthSession::new(
+                OAuthGrant::RefreshToken(RefreshToken::new(refresh_token)),
+                auth_server.clone(),
+                None,
+            )
+        });
 
         #[cfg(feature = "tracing-config")]
         let tracing_configuration =
@@ -187,8 +198,7 @@ impl ClientConfiguration {
         let mut builder = Self::builder();
         builder
             .profile(profile_name)
-            .tokens(tokens)
-            .auth_server(auth_server)
+            .oauth_session(oauth_session)
             .api_url(profile.api_url)
             .quilc_url(quilc_url)
             .qvm_url(qvm_url)
@@ -281,12 +291,6 @@ impl ClientConfiguration {
         &self.qvm_url
     }
 
-    /// Get the [`AuthServer`].
-    #[must_use]
-    pub const fn auth_server(&self) -> &AuthServer {
-        &self.auth_server
-    }
-
     /// Get the [`TracingConfiguration`].
     #[cfg(feature = "tracing-config")]
     #[must_use]
@@ -294,16 +298,16 @@ impl ClientConfiguration {
         self.tracing_configuration.as_ref()
     }
 
-    /// Get a copy of the current [`Tokens`] in use.
+    /// Get a copy of the current [`OAuthSession`].
     ///
-    /// Note: This is a _copy_, the tokens will become stale when the tokens are refreshed.
+    /// Note: This is a _copy_, the contained tokens will become stale once they expire.
     ///
     /// # Errors
     ///
     /// See [`TokenError`]
-    pub async fn tokens(&self) -> Result<Tokens, TokenError> {
+    pub async fn oauth_session(&self) -> Result<OAuthSession, TokenError> {
         Ok(self
-            .tokens
+            .oauth_session
             .as_ref()
             .ok_or(TokenError::NoRefreshToken)?
             .tokens()
@@ -316,28 +320,22 @@ impl ClientConfiguration {
     ///
     /// See [`TokenError`].
     pub async fn get_bearer_access_token(&self) -> Result<String, TokenError> {
-        let tokens = self.tokens().await?;
-        let validation = Self::validated_bearer_access_token(&tokens);
-        match validation {
-            Some(token) => Ok(token),
-            None => self
-                .refresh()
-                .await
-                .map(|tokens| tokens.bearer_access_token),
+        let dispatcher = self
+            .oauth_session
+            .as_ref()
+            .ok_or_else(|| TokenError::NoCredentials)?;
+        match dispatcher.validate().await {
+            Ok(tokens) => Ok(tokens),
+            #[allow(unused_variables)]
+            Err(e) => {
+                #[cfg(feature = "tracing-config")]
+                tracing::debug!("Refreshing access token because current one is invalid: {e}");
+                dispatcher
+                    .refresh()
+                    .await
+                    .map(|e| e.access_token().map(ToString::to_string))?
+            }
         }
-    }
-
-    fn validated_bearer_access_token(tokens: &Tokens) -> Option<String> {
-        let token = &tokens.bearer_access_token;
-        let placeholder_key = DecodingKey::from_secret(&[]);
-        let mut validation = Validation::new(Algorithm::RS256);
-        validation.validate_exp = true;
-        validation.leeway = 60;
-        validation.set_audience(&[QCS_AUDIENCE]);
-        validation.insecure_disable_signature_validation();
-        decode::<toml::Value>(token, &placeholder_key, &validation)
-            .map(|_| token.clone())
-            .ok()
     }
 
     /// Refreshes the [`Tokens`] in use and returns the new bearer access token.
@@ -345,8 +343,8 @@ impl ClientConfiguration {
     /// # Errors
     ///
     /// See [`TokenError`]
-    pub async fn refresh(&self) -> Result<Tokens, TokenError> {
-        self.tokens
+    pub async fn refresh(&self) -> Result<OAuthSession, TokenError> {
+        self.oauth_session
             .as_ref()
             .ok_or(TokenError::NoRefreshToken)?
             .refresh()
@@ -398,10 +396,13 @@ mod test {
 
     use crate::configuration::{
         expand_path_from_env_or_default, secrets::Secrets, settings::Settings, AuthServer,
-        ClientConfiguration, Tokens, API_URL_VAR, GRPC_API_URL_VAR, QUILC_URL_VAR, QVM_URL_VAR,
+        ClientConfiguration, OAuthSession, RefreshToken, API_URL_VAR, GRPC_API_URL_VAR,
+        QUILC_URL_VAR, QVM_URL_VAR,
     };
 
-    use super::{settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, QCS_AUDIENCE};
+    use super::{
+        settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, tokens::ClientCredentials, QCS_AUDIENCE,
+    };
 
     #[test]
     fn expands_env_var() {
@@ -507,28 +508,37 @@ mod test {
     #[test]
     fn test_valid_token() {
         let valid_token = Claims::new_valid().to_encoded();
-        let tokens = Tokens {
-            bearer_access_token: valid_token.clone(),
-            refresh_token: "refresh".to_string(),
-            auth_server: AuthServer::default(),
-        };
+        let tokens = OAuthSession::from_refresh_token(
+            RefreshToken::new(valid_token.clone()),
+            AuthServer::default(),
+            Some(valid_token.clone()),
+        );
         assert_eq!(
-            ClientConfiguration::validated_bearer_access_token(&tokens),
-            Some(valid_token)
+            tokens
+                .validate()
+                .expect("Token should not fail validation."),
+            valid_token
         );
     }
 
     #[test]
     fn test_expired_token() {
         let invalid_token = Claims::new_expired().to_encoded();
-        let tokens = Tokens {
-            bearer_access_token: invalid_token,
-            refresh_token: "refresh".to_string(),
-            auth_server: AuthServer::default(),
-        };
-        assert_eq!(
-            ClientConfiguration::validated_bearer_access_token(&tokens),
-            None
+        let tokens = OAuthSession::from_refresh_token(
+            RefreshToken::new(invalid_token),
+            AuthServer::default(),
+            None,
         );
+        assert!(tokens.validate().is_err());
+    }
+
+    #[test]
+    fn test_client_credentials_without_access_token() {
+        let tokens = OAuthSession::from_client_credentials(
+            ClientCredentials::new("client_id".to_string(), "client_secret".to_string()),
+            AuthServer::default(),
+            None,
+        );
+        assert!(tokens.validate().is_err());
     }
 }

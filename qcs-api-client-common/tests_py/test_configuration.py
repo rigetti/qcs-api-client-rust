@@ -1,6 +1,6 @@
 from syrupy.assertion import SnapshotAssertion
 
-from qcs_api_client_common.configuration import AuthServer, ClientConfiguration, Tokens
+from qcs_api_client_common.configuration import AuthServer, ClientConfiguration, OAuthSession, RefreshToken
 
 
 class TestClientConfiguration:
@@ -21,9 +21,9 @@ class TestClientConfigurationBuilder:
         builder.quilc_url = "builder_quilc_url"
         builder.qvm_url = "builder_qvm_url"
         auth_server = AuthServer("builder_client_id", "builder_issuer")
-        builder.auth_server = auth_server
-        builder.tokens = Tokens("builder_access_token", "builder_refresh_token", auth_server)
+        builder.oauth_session = OAuthSession(RefreshToken("builder_refresh_token"), auth_server, "builder_access_token")
         assert builder.build() == snapshot
+
 
 class TestAuthServer:
     def test_properties(self):
@@ -38,15 +38,21 @@ class TestAuthServer:
         assert auth_server != AuthServer("different_client_id", "issuer")
         assert auth_server != AuthServer("client_id", "different_issuer")
 
-class TestTokens:
+
+class TestCredentials:
     def test_properties(self):
-        tokens = Tokens("access", "refresh")
-        assert tokens.bearer_access_token == "access"
-        assert tokens.refresh_token == "refresh"
+        payload = RefreshToken("refresh")
+        auth_server = AuthServer("some_client_id", "some_issuer")
+        credentials = OAuthSession(payload, auth_server, "access")
+        assert credentials.access_token == "access"
+        assert credentials.auth_server == auth_server
+        assert credentials.payload == payload
 
     def test_eq(self):
-        tokens = Tokens("access", "refresh")
-        assert tokens == tokens
-        assert tokens == Tokens("access", "refresh")
-        assert tokens != Tokens("different_access", "refresh")
-        assert tokens != Tokens("access", "different_refresh")
+        payload = RefreshToken("refresh")
+        auth_server = AuthServer("some_client_id", "some_issuer")
+        credentials = OAuthSession(payload, auth_server, "access")
+        assert credentials == credentials
+        assert credentials == OAuthSession(payload, auth_server, "access")
+        assert credentials != OAuthSession(payload, auth_server, "different_access")
+        assert credentials != OAuthSession(RefreshToken("different_refresh"), auth_server, "access")

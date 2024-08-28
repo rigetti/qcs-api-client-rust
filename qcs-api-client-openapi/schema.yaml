@@ -855,6 +855,40 @@ paths:
       summary: Reset Password With Token
       tags:
         - authentication
+  "/v1/calendars/{quantumProcessorId}":
+    get:
+      description: Get calendar details for the requested quantum processor.
+      operationId: GetQuantumProcessorCalendar
+      parameters:
+        - in: path
+          name: quantumProcessorId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuantumProcessorCalendar"
+          description: Request completed successfully.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client not authorized to complete request.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: The requested quantum processor does not exist.
+      summary: Get Quantum Processor Calendar
+      tags:
+        - reservations
+      security:
+        - JWTBearer: []
   /v1/clientApplications:
     get:
       description: List supported clients of Rigetti system components along with
@@ -2513,6 +2547,7 @@ components:
       enum:
         - berkeley-775
         - fremont-fab
+        - rigetti-gb-1
       title: NomadJobDatacenters
       type: string
     Operation:
@@ -3334,6 +3369,14 @@ components:
         - qpuJobCompletion
         - qpuJobTime
       type: string
+    QuantumProcessorCalendar:
+      description: Details about calendars related to a quantum processor.
+      properties:
+        maintenanceICal:
+          description: This calendar's schedule contains maintenance events for the QPU,
+            during which execution is not available.
+          type: string
+      type: object
     RemoveGroupUserRequest:
       description: Must provide either `userId` or `userEmail` and `groupId` or `groupName`.
       properties:

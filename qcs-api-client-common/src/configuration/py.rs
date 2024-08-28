@@ -16,8 +16,8 @@ use crate::{
 };
 
 use super::{
-    error::TokenError, settings::AuthServer, ClientConfiguration, ClientConfigurationBuilder,
-    LoadError, TokenDispatcher, Tokens,
+    error::TokenError, settings::AuthServer, tokens::ClientCredentials, ClientConfiguration,
+    ClientConfigurationBuilder, LoadError, OAuthGrant, OAuthSession, RefreshToken, TokenDispatcher,
 };
 
 create_init_submodule! {
@@ -25,7 +25,9 @@ create_init_submodule! {
         ClientConfiguration,
         PyClientConfigurationBuilder,
         AuthServer,
-        Tokens
+        OAuthSession,
+        RefreshToken,
+        ClientCredentials
     ],
     consts: [
         DEFAULT_API_URL,
@@ -45,9 +47,95 @@ create_init_submodule! {
     ],
 }
 
+impl_eq!(RefreshToken);
+impl_repr!(RefreshToken);
+#[pymethods]
+impl RefreshToken {
+    #[new]
+    const fn __new__(refresh_token: String) -> Self {
+        Self::new(refresh_token)
+    }
+
+    #[getter]
+    #[pyo3(name = "refresh_token")]
+    fn py_refresh_token(&self) -> &str {
+        &self.refresh_token
+    }
+
+    #[setter]
+    #[pyo3(name = "refresh_token")]
+    fn py_set_refresh_token(&mut self, refresh_token: String) {
+        self.refresh_token = refresh_token;
+    }
+}
+
+impl_eq!(ClientCredentials);
+impl_repr!(ClientCredentials);
+#[pymethods]
+impl ClientCredentials {
+    #[new]
+    const fn __new__(client_id: String, client_secret: String) -> Self {
+        Self::new(client_id, client_secret)
+    }
+
+    #[getter]
+    #[pyo3(name = "client_id")]
+    fn py_client_id(&self) -> &str {
+        self.client_id()
+    }
+
+    #[getter]
+    #[pyo3(name = "client_secret")]
+    fn py_client_secret(&self) -> &str {
+        self.client_secret()
+    }
+}
+
+impl_eq!(OAuthSession);
+impl_repr!(OAuthSession);
+#[pymethods]
+impl OAuthSession {
+    #[new]
+    const fn __new__(
+        payload: OAuthGrant,
+        auth_server: AuthServer,
+        access_token: Option<String>,
+    ) -> Self {
+        Self::new(payload, auth_server, access_token)
+    }
+
+    #[getter]
+    #[pyo3(name = "access_token")]
+    fn py_access_token(&self) -> Result<&str, TokenError> {
+        self.access_token()
+    }
+
+    #[getter]
+    #[pyo3(name = "payload")]
+    fn py_payload(&self, py: Python<'_>) -> PyObject {
+        match self.payload() {
+            OAuthGrant::ClientCredentials(ref client_credentials) => {
+                client_credentials.clone().into_py(py)
+            }
+            OAuthGrant::RefreshToken(ref refresh_token) => refresh_token.clone().into_py(py),
+        }
+    }
+
+    #[getter]
+    #[pyo3(name = "auth_server")]
+    fn py_auth_server(&self) -> AuthServer {
+        self.auth_server().clone()
+    }
+
+    #[pyo3(name = "validate")]
+    fn py_validate(&self) -> Result<String, TokenError> {
+        self.validate()
+    }
+}
+
 py_function_sync_async! {
     #[pyfunction]
-    async fn get_tokens(tokens: Option<TokenDispatcher>) -> PyResult<Tokens> {
+    async fn get_oauth_session(tokens: Option<TokenDispatcher>) -> PyResult<OAuthSession> {
         Ok(tokens.ok_or(TokenError::NoRefreshToken)?.tokens().await)
     }
 }
@@ -100,11 +188,6 @@ impl ClientConfiguration {
         &self.qvm_url
     }
 
-    #[getter]
-    fn get_auth_server(&self) -> AuthServer {
-        self.auth_server.clone()
-    }
-
     #[pyo3(name = "get_bearer_access_token")]
     fn py_get_bearer_access_token(&self, py: Python<'_>) -> PyResult<String> {
         py_get_bearer_access_token(py, self.clone())
@@ -120,13 +203,16 @@ impl ClientConfiguration {
     /// # Errors
     ///
     /// - Raises a TokenError if there is a problem fetching the tokens
-    pub fn get_tokens(&self, py: Python<'_>) -> PyResult<Tokens> {
-        py_get_tokens(py, self.tokens.clone())
+    pub fn get_oauth_session(&self, py: Python<'_>) -> PyResult<OAuthSession> {
+        py_get_oauth_session(py, self.oauth_session.clone())
     }
 
     #[allow(clippy::needless_pass_by_value)] // self_ must be passed by value
-    fn get_tokens_async<'a>(self_: PyRefMut<'a, Self>, py: Python<'a>) -> PyResult<&'a PyAny> {
-        py_get_tokens_async(py, self_.tokens.clone())
+    fn get_oauth_session_async<'a>(
+        self_: PyRefMut<'a, Self>,
+        py: Python<'a>,
+    ) -> PyResult<&'a PyAny> {
+        py_get_oauth_session_async(py, self_.oauth_session.clone())
     }
 }
 
@@ -167,15 +253,8 @@ impl PyClientConfigurationBuilder {
     }
 
     #[setter]
-    fn auth_server(&mut self, auth_server: AuthServer) {
-        dbg!("setting auth server");
-        dbg!(&auth_server);
-        self.0.auth_server(auth_server);
-    }
-
-    #[setter]
-    fn tokens(&mut self, tokens: Option<Tokens>) {
-        self.0.tokens(tokens);
+    fn oauth_session(&mut self, oauth_session: Option<OAuthSession>) {
+        self.0.oauth_session(oauth_session);
     }
 }
 
@@ -221,41 +300,6 @@ impl AuthServer {
     }
 }
 
-impl_repr!(Tokens);
-impl_eq!(Tokens);
-#[pymethods]
-impl Tokens {
-    #[new]
-    #[pyo3(
-        signature = (
-            bearer_access_token,
-            refresh_token,
-            auth_server=AuthServer::default()
-        ),
-    )]
-    const fn new(
-        bearer_access_token: String,
-        refresh_token: String,
-        auth_server: AuthServer,
-    ) -> Self {
-        Self {
-            bearer_access_token,
-            refresh_token,
-            auth_server,
-        }
-    }
-
-    #[getter]
-    fn get_bearer_access_token(&self) -> &str {
-        &self.bearer_access_token
-    }
-
-    #[getter]
-    fn get_refresh_token(&self) -> &str {
-        &self.refresh_token
-    }
-}
-
 impl From<LoadError> for PyErr {
     fn from(value: LoadError) -> Self {
         let message = value.to_string();
@@ -276,7 +320,7 @@ impl From<TokenError> for PyErr {
     fn from(value: TokenError) -> Self {
         let message = value.to_string();
         match value {
-            TokenError::NoRefreshToken | TokenError::NoAuthServer | TokenError::Fetch(_) => {
+            TokenError::NoRefreshToken | TokenError::NoCredentials | TokenError::NoAccessToken | TokenError::NoAuthServer | TokenError::InvalidAccessToken(_) | TokenError::Fetch(_) => {
                 PyValueError::new_err(message)
             }
             #[cfg(feature = "tonic")]

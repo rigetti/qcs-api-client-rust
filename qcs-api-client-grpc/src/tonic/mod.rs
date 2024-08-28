@@ -1,5 +1,4 @@
 /// QCS Middleware for [`tonic`] clients.
-///
 use http::StatusCode;
 use http_body::{Body, Full};
 use tonic::{
@@ -378,8 +377,8 @@ mod otel_tests {
     use crate::tonic::uds_grpc_stream;
     use qcs_api_client_common::configuration::AuthServer;
     use qcs_api_client_common::configuration::ClientConfiguration;
-    use qcs_api_client_common::configuration::TokenRefresher;
-    use qcs_api_client_common::configuration::Tokens;
+    use qcs_api_client_common::configuration::OAuthSession;
+    use qcs_api_client_common::configuration::RefreshToken;
 
     use super::channel::{wrap_channel_with, wrap_channel_with_token_refresher};
 
@@ -395,11 +394,11 @@ mod otel_tests {
             .build();
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
-            .tokens(Some(Tokens {
-                bearer_access_token: create_jwt(),
-                refresh_token: "refresh_token".to_string(),
-                auth_server: AuthServer::default(),
-            }))
+            .oauth_session(Some(OAuthSession::from_refresh_token(
+                RefreshToken::new("refresh_token".to_string()),
+                AuthServer::default(),
+                Some(create_jwt()),
+            )))
             .build()
             .expect("should be able to build client config");
         assert_grpc_health_check_traced(client_config).await;
@@ -414,11 +413,11 @@ mod otel_tests {
         let tracing_configuration = TracingConfiguration::default();
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
-            .tokens(Some(Tokens {
-                bearer_access_token: create_jwt(),
-                refresh_token: "refresh_token".to_string(),
-                auth_server: AuthServer::default(),
-            }))
+            .oauth_session(Some(OAuthSession::from_refresh_token(
+                RefreshToken::new("refresh_token".to_string()),
+                AuthServer::default(),
+                Some(create_jwt()),
+            )))
             .build()
             .expect("failed to build client config");
         assert_grpc_health_check_traced(client_config).await;
@@ -442,11 +441,11 @@ mod otel_tests {
 
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
-            .tokens(Some(Tokens {
-                bearer_access_token: create_jwt(),
-                refresh_token: "refresh_token".to_string(),
-                auth_server: AuthServer::default(),
-            }))
+            .oauth_session(Some(OAuthSession::from_refresh_token(
+                RefreshToken::new("refresh_token".to_string()),
+                AuthServer::default(),
+                Some(create_jwt()),
+            )))
             .build()
             .expect("failed to build client config");
         assert_grpc_health_check_traced(client_config).await;
@@ -516,11 +515,11 @@ mod otel_tests {
     #[tokio::test]
     async fn test_tracing_disabled() {
         let client_config = ClientConfiguration::builder()
-            .tokens(Some(Tokens {
-                bearer_access_token: create_jwt(),
-                refresh_token: "refresh_token".to_string(),
-                auth_server: AuthServer::default(),
-            }))
+            .oauth_session(Some(OAuthSession::from_refresh_token(
+                RefreshToken::new("refresh_token".to_string()),
+                AuthServer::default(),
+                Some(create_jwt()),
+            )))
             .build()
             .expect("should not fail to build client config");
         assert_grpc_health_check_not_traced(client_config).await;
@@ -545,11 +544,11 @@ mod otel_tests {
 
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
-            .tokens(Some(Tokens {
-                bearer_access_token: create_jwt(),
-                refresh_token: "refresh_token".to_string(),
-                auth_server: AuthServer::default(),
-            }))
+            .oauth_session(Some(OAuthSession::from_refresh_token(
+                RefreshToken::new("refresh_token".to_string()),
+                AuthServer::default(),
+                Some(create_jwt()),
+            )))
             .build()
             .expect("should be able to build client config");
 
