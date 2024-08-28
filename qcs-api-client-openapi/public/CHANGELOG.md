@@ -1,3 +1,9 @@
+## 0.10.1 (2024-08-28)
+
+### Fixes
+
+#### Use correct default API URL when building a ClientConfiguration
+
 ## 0.10.0 (2024-08-28)
 
 ### Breaking Changes
