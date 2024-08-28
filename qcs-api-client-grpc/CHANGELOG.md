@@ -1,3 +1,9 @@
+## 0.9.0 (2024-08-28)
+
+### Breaking Changes
+
+#### Support the client credentials grant type
+
 ## 0.8.8 (2024-07-25)
 
 ### Fixes
