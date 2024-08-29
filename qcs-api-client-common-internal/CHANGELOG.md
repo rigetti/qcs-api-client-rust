@@ -1,3 +1,9 @@
+## 0.8.2 (2024-08-29)
+
+### Fixes
+
+#### add defaults to settings profile applications
+
 ## 0.8.1 (2024-08-28)
 
 ### Fixes
