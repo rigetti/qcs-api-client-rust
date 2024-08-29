@@ -396,8 +396,8 @@ mod test {
 
     use crate::configuration::{
         expand_path_from_env_or_default, secrets::Secrets, settings::Settings, AuthServer,
-        ClientConfiguration, OAuthSession, RefreshToken, API_URL_VAR, GRPC_API_URL_VAR,
-        QUILC_URL_VAR, QVM_URL_VAR,
+        ClientConfiguration, OAuthSession, RefreshToken, API_URL_VAR, DEFAULT_QUILC_URL,
+        GRPC_API_URL_VAR, QUILC_URL_VAR, QVM_URL_VAR,
     };
 
     use super::{
@@ -461,6 +461,106 @@ mod test {
             assert_eq!(config.quilc_url, quilc_url);
             assert_eq!(config.qvm_url, qvm_url);
             assert_eq!(config.grpc_api_url, grpc_url);
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_default_loads_settings_with_partial_profile_applications() {
+        figment::Jail::expect_with(|jail| {
+            let directory = jail.directory();
+            let settings_file_name = "settings.toml";
+            let settings_file_path = directory.join(settings_file_name);
+
+            let quilc_url_env_var = "env-var://quilc.url/after";
+
+            let settings_file_contents = r#"
+default_profile_name = "default"
+
+[profiles]
+[profiles.default]
+api_url = ""
+auth_server_name = "default"
+credentials_name = "default"
+applications = {}
+
+[auth_servers]
+[auth_servers.default]
+client_id = ""
+issuer = ""
+"#;
+            jail.create_file(settings_file_name, settings_file_contents)
+                .expect("should create test settings.toml");
+
+            jail.set_env(
+                "QCS_SETTINGS_FILE_PATH",
+                settings_file_path
+                    .to_str()
+                    .expect("settings file path should be a string"),
+            );
+
+            // before setting env var
+            let config = ClientConfiguration::load_default().unwrap();
+            assert_eq!(config.quilc_url, DEFAULT_QUILC_URL);
+
+            jail.set_env("QCS_SETTINGS_APPLICATIONS_QUILC_URL", quilc_url_env_var);
+
+            // after setting env var
+            let config = ClientConfiguration::load_default().unwrap();
+            assert_eq!(config.quilc_url, quilc_url_env_var);
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_default_loads_settings_with_partial_profile_applications_pyquil() {
+        figment::Jail::expect_with(|jail| {
+            let directory = jail.directory();
+            let settings_file_name = "settings.toml";
+            let settings_file_path = directory.join(settings_file_name);
+
+            let quilc_url_settings_toml = "settings-toml://quilc.url";
+            let quilc_url_env_var = "env-var://quilc.url/after";
+
+            let settings_file_contents = format!(
+                r#"
+default_profile_name = "default"
+
+[profiles]
+[profiles.default]
+api_url = ""
+auth_server_name = "default"
+credentials_name = "default"
+applications.pyquil.quilc_url = "{quilc_url_settings_toml}"
+
+[auth_servers]
+[auth_servers.default]
+client_id = ""
+issuer = ""
+"#
+            );
+
+            jail.create_file(settings_file_name, &settings_file_contents)
+                .expect("should create test settings.toml");
+
+            jail.set_env(
+                "QCS_SETTINGS_FILE_PATH",
+                settings_file_path
+                    .to_str()
+                    .expect("settings file path should be a string"),
+            );
+
+            // before setting env var
+            let config = ClientConfiguration::load_default().unwrap();
+            assert_eq!(config.quilc_url, quilc_url_settings_toml);
+
+            jail.set_env("QCS_SETTINGS_APPLICATIONS_QUILC_URL", quilc_url_env_var);
+
+            // after setting env var
+            let config = ClientConfiguration::load_default().unwrap();
+            assert_eq!(config.quilc_url, quilc_url_env_var);
 
             Ok(())
         });

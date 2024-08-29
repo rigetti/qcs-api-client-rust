@@ -5,8 +5,9 @@ use figment::{providers::Toml, Figment};
 use serde::{Deserialize, Serialize};
 
 use super::{
-    expand_path_from_env_or_default, LoadError, DEFAULT_API_URL, DEFAULT_GRPC_API_URL,
-    DEFAULT_PROFILE_NAME, DEFAULT_QUILC_URL, DEFAULT_QVM_URL,
+    env_or_default_quilc_url, env_or_default_qvm_url, expand_path_from_env_or_default, LoadError,
+    DEFAULT_API_URL, DEFAULT_GRPC_API_URL, DEFAULT_PROFILE_NAME, DEFAULT_QUILC_URL,
+    DEFAULT_QVM_URL,
 };
 
 /// Setting the `QCS_SETTINGS_FILE_PATH` environment variable will change which file is used for loading [`Settings`].
@@ -147,12 +148,16 @@ impl AuthServer {
 
 #[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
 pub(crate) struct Applications {
+    #[serde(default)]
     pub(crate) pyquil: Pyquil,
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub(crate) struct Pyquil {
+    #[serde(default = "env_or_default_quilc_url")]
     pub(crate) quilc_url: String,
+
+    #[serde(default = "env_or_default_qvm_url")]
     pub(crate) qvm_url: String,
 }
 
