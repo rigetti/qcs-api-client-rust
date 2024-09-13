@@ -1285,6 +1285,7 @@ impl serde::Serialize for get_controller_job_status_response::Status {
             Self::Succeeded => "SUCCEEDED",
             Self::Failed => "FAILED",
             Self::Canceled => "CANCELED",
+            Self::PostProcessing => "POST_PROCESSING",
         };
         serializer.serialize_str(variant)
     }
@@ -1302,6 +1303,7 @@ impl<'de> serde::Deserialize<'de> for get_controller_job_status_response::Status
             "SUCCEEDED",
             "FAILED",
             "CANCELED",
+            "POST_PROCESSING",
         ];
 
         struct GeneratedVisitor;
@@ -1348,6 +1350,7 @@ impl<'de> serde::Deserialize<'de> for get_controller_job_status_response::Status
                     "SUCCEEDED" => Ok(get_controller_job_status_response::Status::Succeeded),
                     "FAILED" => Ok(get_controller_job_status_response::Status::Failed),
                     "CANCELED" => Ok(get_controller_job_status_response::Status::Canceled),
+                    "POST_PROCESSING" => Ok(get_controller_job_status_response::Status::PostProcessing),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
