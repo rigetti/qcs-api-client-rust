@@ -1,4 +1,4 @@
-## 0.9.3-rc.0 (2024-09-13)
+## 0.9.3-rc.1 (2024-09-13)
 
 ### Features
 
@@ -7,6 +7,12 @@
 ### Fixes
 
 #### trying to force Knope to do a new prerelease
+
+## 0.9.3-rc.0 (2024-09-13)
+
+### Features
+
+#### add support for new 'post-processing' phase
 
 ## 0.9.2 (2024-08-29)
 
