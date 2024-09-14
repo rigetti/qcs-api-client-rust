@@ -15,6 +15,8 @@ import "google/protobuf/timestamp.proto";
 //   -> QUEUED
 // LOADING, TRIGGERING, and RUNNING:
 //   -> RUNNING
+// POST_PROCESSING:
+//   -> POST_PROCESSING
 // SUCCEEDED:
 //   -> SUCCEEDED
 // FAILED, RETRY_COUNT_EXCEEDED:
@@ -59,9 +61,14 @@ enum JobPhase {
 
     // RETRY_COUNT_EXCEEDED indicates that the job had a retryable failure but has exceeded its retry count.
     RETRY_COUNT_EXCEEDED = 11;
+
+    // POST_PROCESSING indicates that the job has finished executing on the quantum hardware, but is
+    // not ready to be returned to the user. In some cases the postprocessing step is trivial, but
+    // it may also include more complex operations that take a significant amount of time.
+    POST_PROCESSING = 12;
 }
 
-// A ControllerJob is the result of compiling and packaging a higher-level program 
+// A ControllerJob is the result of compiling and packaging a higher-level program
 // to run on a quantum processor. It may be parametric, allowing it to be modified
 // just prior to execution using externally-supplied parameter values and other configuration.
 message ControllerJob {
@@ -198,7 +205,7 @@ message MemoryRegion {
     //
     // This is not inherently words or bytes! It depends on the memory format of the target
     // type. As of March 2024, all data types are packed to one item / word (even the binary datatype),
-    // and thus length is the same as the number of memory words, but that stands to change in the future. 
+    // and thus length is the same as the number of memory words, but that stands to change in the future.
     uint32 length_count = 6;
 
     // The different types of data available for patching
@@ -220,7 +227,7 @@ message MemoryRegion {
 // based on a computation rather than a value provided directly by the user.
 //
 // It is used as follows:
-// 
+//
 // 1. The `computation` is evaluated within the scope of all values provided by the user,
 //   which produces a new value
 // 2. That value is packed into the format specified by `format`

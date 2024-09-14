@@ -1,3 +1,9 @@
+## 0.8.3-rc.0 (2024-09-13)
+
+### Features
+
+#### add support for new 'post-processing' phase
+
 ## 0.8.2 (2024-08-29)
 
 ### Fixes

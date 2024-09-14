@@ -200,6 +200,7 @@ pub mod get_controller_job_status_response {
         Succeeded = 3,
         Failed = 4,
         Canceled = 5,
+        PostProcessing = 6,
     }
     impl Status {
         /// String value of the enum field names used in the ProtoBuf definition.
@@ -214,6 +215,7 @@ pub mod get_controller_job_status_response {
                 Status::Succeeded => "SUCCEEDED",
                 Status::Failed => "FAILED",
                 Status::Canceled => "CANCELED",
+                Status::PostProcessing => "POST_PROCESSING",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -225,6 +227,7 @@ pub mod get_controller_job_status_response {
                 "SUCCEEDED" => Some(Self::Succeeded),
                 "FAILED" => Some(Self::Failed),
                 "CANCELED" => Some(Self::Canceled),
+                "POST_PROCESSING" => Some(Self::PostProcessing),
                 _ => None,
             }
         }

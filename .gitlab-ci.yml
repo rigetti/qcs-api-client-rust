@@ -1,22 +1,27 @@
 default:
   image: registry.gitlab.com/rigetti/qcs/utilities/rust-ci-image:latest
 
-stages:
-  - test
-  - publish
+workflow:
+  rules:
+    # Do not start a branch pipeline if a merge request is open
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"
+      when: never
+    # Run CI on merge requests rather than branches
+    - if: $CI_MERGE_REQUEST_IID
+    # Run on every push to the default branch
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  auto_cancel:
+    on_new_commit: interruptible
 
 include:
-  # Run all tasks on merge requests rather than branches
-  # See https://docs.gitlab.com/ee/ci/yaml/README.html#workflowrules-templates
-  - template: "Workflows/MergeRequest-Pipelines.gitlab-ci.yml"
-  - project: rigetti/qcs/utilities/qcs-ci-toolkit
-    file: gitlab-ci/git/setup.yaml
-  - project: rigetti/qcs/utilities/qcs-ci-toolkit
-    file: gitlab-ci/knope/install.yaml
-  - project: rigetti/qcs/utilities/qcs-ci-toolkit
+  - project: "rigetti/qcs/utilities/rust-ci-image"
+    file: "defaults/ci.yaml"
+  - project: "rigetti/qcs/utilities/qcs-ci-toolkit"
     file:
-      - gitlab-ci/protoc/install.yaml
-      - gitlab-ci/qcs/setup-credentials.yaml
+      - "gitlab-ci/git/setup.yaml"
+      - "gitlab-ci/knope/install.yaml"
+      - "gitlab-ci/protoc/install.yaml"
+      - "gitlab-ci/qcs/setup-credentials.yaml"
 
 .install_deps: &install_deps
   - apt-get update -y
@@ -30,6 +35,10 @@ include:
   - env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install "$PYTHON_VERSION"
   - pyenv global "$PYTHON_VERSION"
   - export LD_LIBRARY_PATH="$HOME/.pyenv/versions/$PYTHON_VERSION/lib:LD_LIBRARY_PATH"
+
+stages:
+  - test
+  - publish
 
 variables:
   PYTHON_VERSION: 3.11.9
@@ -45,6 +54,20 @@ variables:
 .install-dasel: &install-dasel
   - curl -sSLf "$(curl -sSLf https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | grep -v .gz | cut -d\" -f 4)" -L -o dasel && chmod +x dasel
   - mv ./dasel /usr/local/bin/dasel
+
+stable:deny:
+  extends: .cargo_deny
+  stage: test
+  before_script:
+    - !reference [ .cargo_deny, before_script ]
+    - !reference [ .install_protoc ]
+
+stable:fmt:
+  extends: .cargo_fmt
+  stage: test
+  before_script:
+    - !reference [ .cargo_fmt, before_script ]
+    - !reference [ .install_protoc ]
 
 Lint:
   stage: test

@@ -7,8 +7,8 @@ use std::time::Duration;
 
 use http::StatusCode;
 
-pub use ::backoff::*;
 use ::backoff::backoff::Backoff;
+pub use ::backoff::*;
 
 /// Create a default [`ExponentialBackoff`] for use with QCS.
 ///
@@ -85,7 +85,11 @@ pub fn duration_from_reqwest_error(
         // There is no exposed method to inspect the inner hyper error in the reqwest error, only
         // `is_*` methods. There is no reqwest method corresponding to the hyper `is_closed`, so we
         // inspect the debug string instead.
-        if error.is_timeout() || error.is_connect() || error.is_request() || format!("{error:?}").contains("source: hyper::Error(ChannelClosed)") {
+        if error.is_timeout()
+            || error.is_connect()
+            || error.is_request()
+            || format!("{error:?}").contains("source: hyper::Error(ChannelClosed)")
+        {
             backoff.next_backoff()
         } else {
             None
@@ -105,7 +109,10 @@ pub fn duration_from_io_error(
 ) -> Option<Duration> {
     use std::io::ErrorKind;
     if can_retry_method(method) {
-        if matches!(error.kind(), ErrorKind::ConnectionReset | ErrorKind::ConnectionAborted) {
+        if matches!(
+            error.kind(),
+            ErrorKind::ConnectionReset | ErrorKind::ConnectionAborted
+        ) {
             backoff.next_backoff()
         } else {
             None
