@@ -1,5 +1,6 @@
-use std::sync::Arc;
+use std::{pin::Pin, sync::Arc};
 
+use futures::Future;
 use http::{header::CONTENT_TYPE, HeaderMap, HeaderValue};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
@@ -53,12 +54,17 @@ impl RefreshToken {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "python", pyo3::pyclass)]
+/// A pair of Client ID and Client Secret, used to request an OAuth Client Credentials Grant
 pub struct ClientCredentials {
+    /// The client ID
     pub client_id: String,
+    /// The client secret.
     pub client_secret: String,
 }
 
 impl ClientCredentials {
+    #[must_use]
+    /// Construct a new [`ClientCredentials`]
     pub const fn new(client_id: String, client_secret: String) -> Self {
         Self {
             client_id,
@@ -84,7 +90,7 @@ impl ClientCredentials {
     ///
     /// See [`TokenError`]
     pub async fn request_access_token(
-        &mut self,
+        &self,
         auth_server: &AuthServer,
     ) -> Result<String, TokenError> {
         let request = ClientCredentialsRequest::new(&self.client_id, &self.client_secret);
@@ -119,7 +125,7 @@ impl ClientCredentials {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 #[cfg_attr(feature = "python", derive(pyo3::FromPyObject))]
 /// Specifies the [OAuth2 grant type](https://oauth.net/2/grant-types/) to use, along with the data
 /// needed to request said grant type.
@@ -128,6 +134,8 @@ pub enum OAuthGrant {
     RefreshToken(RefreshToken),
     /// Payload that can be used to use the [Client Credentials grant type](https://oauth.net/2/grant-types/client-credentials/).
     ClientCredentials(ClientCredentials),
+    /// Defers to a user provided function for access token requests.
+    ExternallyManaged(ExternallyManaged),
 }
 
 impl OAuthGrant {
@@ -139,6 +147,10 @@ impl OAuthGrant {
         match self {
             Self::RefreshToken(tokens) => tokens.request_access_token(auth_server).await,
             Self::ClientCredentials(tokens) => tokens.request_access_token(auth_server).await,
+            Self::ExternallyManaged(tokens) => tokens
+                .request_access_token(auth_server)
+                .await
+                .map_err(|e| TokenError::ExternallyManaged(e.to_string())),
         }
     }
 }
@@ -154,7 +166,7 @@ impl OAuthGrant {
 /// * `payload` - The OAuth2 grant type and associated data that will be used to request an access token.
 /// * `access_token` - The access token currently in use, if any. If no token has been provided or requested yet, this will be `None`.
 /// * `auth_server` - The authorization server responsible for issuing tokens.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 #[cfg_attr(feature = "python", pyo3::pyclass)]
 pub struct OAuthSession {
     /// The grant type to use to request an access token.
@@ -348,7 +360,7 @@ impl TokenDispatcher {
     async fn managed_refresh<F, Fut>(&self, refresh_fn: F) -> Result<OAuthSession, TokenError>
     where
         F: FnOnce(Arc<RwLock<OAuthSession>>) -> Fut + Send,
-        Fut: std::future::Future<Output = Result<OAuthSession, TokenError>> + Send,
+        Fut: Future<Output = Result<OAuthSession, TokenError>> + Send,
     {
         let mut is_refreshing = self.refreshing.lock().await;
 
@@ -382,6 +394,167 @@ impl TokenDispatcher {
     }
 }
 
+pub(crate) type RefreshResult =
+    Pin<Box<dyn Future<Output = Result<String, Box<dyn std::error::Error + Send + Sync>>> + Send>>;
+
+/// A function that asynchronously refreshes a token.
+pub type RefreshFunction = Box<dyn (Fn(AuthServer) -> RefreshResult) + Send + Sync>;
+
+/// A struct that manages access tokens by utilizing a user-provided refresh function.
+///
+/// The [`ExternallyManaged`] struct allows users to define custom logic for
+/// fetching or refreshing access tokens.
+#[derive(Clone)]
+#[cfg_attr(feature = "python", pyo3::pyclass)]
+pub struct ExternallyManaged {
+    refresh_function: Arc<RefreshFunction>,
+}
+
+impl ExternallyManaged {
+    /// Creates a new [`ExternallyManaged`] instance from a [`RefreshFunction`].
+    ///
+    /// Consider using [`ExternallyManaged::from_async`], and [`ExternallyManaged::from_sync`], if
+    /// they better fit your use case.
+    ///
+    /// # Arguments
+    ///
+    /// * `refresh_function` - A function or closure that asynchronously refreshes a token.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use qcs_api_client_common::configuration::{AuthServer, ExternallyManaged, TokenError};
+    /// use std::future::Future;
+    /// use std::pin::Pin;
+    /// use std::boxed::Box;
+    /// use std::error::Error;
+    ///
+    /// async fn example_refresh_function(_auth_server: AuthServer) -> Result<String, Box<dyn Error
+    /// + Send + Sync>> {
+    ///     Ok("new_token_value".to_string())
+    /// }
+    /// let token_manager = ExternallyManaged::new(|auth_server| Box::pin(example_refresh_function(auth_server)));
+    /// ```
+    pub fn new(
+        refresh_function: impl Fn(AuthServer) -> RefreshResult + Send + Sync + 'static,
+    ) -> Self {
+        Self {
+            refresh_function: Arc::new(Box::new(refresh_function)),
+        }
+    }
+
+    /// Constructs a new [`ExternallyManaged`] instance using an async function or closure.
+    ///
+    /// This method simplifies the creation of the [`ExternallyManaged`] instance by handling
+    /// the boxing and pinning of the future internally.
+    ///
+    /// # Arguments
+    ///
+    /// * `refresh_function` - An async function or closure that returns a [`Future`] which, when awaited,
+    ///   produces a [`Result<String, TokenError>`].
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use qcs_api_client_common::configuration::{AuthServer, ExternallyManaged, TokenError};
+    /// use tokio::runtime::Runtime;
+    /// use std::error::Error;
+    ///
+    /// async fn example_refresh_function(_auth_server: AuthServer) -> Result<String, Box<dyn Error
+    /// + Send + Sync>> {
+    ///     Ok("new_token_value".to_string())
+    /// }
+    ///
+    /// let token_manager = ExternallyManaged::from_async(example_refresh_function);
+    ///
+    /// let rt = Runtime::new().unwrap();
+    /// rt.block_on(async {
+    ///     match token_manager.request_access_token(&AuthServer::default()).await {
+    ///         Ok(token) => println!("Token: {}", token),
+    ///         Err(e) => println!("Failed to refresh token: {:?}", e),
+    ///     }
+    /// });
+    /// ```
+    pub fn from_async<F, Fut>(refresh_function: F) -> Self
+    where
+        F: Fn(AuthServer) -> Fut + Send + Sync + 'static,
+        Fut: Future<Output = Result<String, Box<dyn std::error::Error + Send + Sync>>>
+            + Send
+            + 'static,
+    {
+        Self {
+            refresh_function: Arc::new(Box::new(move |auth_server| {
+                Box::pin(refresh_function(auth_server))
+            })),
+        }
+    }
+
+    /// Constructs a new [`ExternallyManaged`] instance using a synchronous function.
+    ///
+    /// The synchronous function is wrapped in an async block to fit the expected signature.
+    ///
+    /// # Arguments
+    ///
+    /// * `refresh_function` - A synchronous function that returns a [`Result<String, TokenError>`].
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use qcs_api_client_common::configuration::{AuthServer, ExternallyManaged, TokenError};
+    /// use tokio::runtime::Runtime;
+    /// use std::error::Error;
+    ///
+    /// fn example_sync_refresh_function(_auth_server: AuthServer) -> Result<String, Box<dyn Error
+    /// + Send + Sync>> {
+    ///     Ok("sync_token_value".to_string())
+    /// }
+    ///
+    /// let token_manager = ExternallyManaged::from_sync(example_sync_refresh_function);
+    ///
+    /// let rt = Runtime::new().unwrap();
+    /// rt.block_on(async {
+    ///     match token_manager.request_access_token(&AuthServer::default()).await {
+    ///         Ok(token) => println!("Token: {}", token),
+    ///         Err(e) => println!("Failed to refresh token: {:?}", e),
+    ///     }
+    /// });
+    /// ```
+    pub fn from_sync(
+        refresh_function: fn(
+            AuthServer,
+        ) -> Result<String, Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self {
+        Self {
+            refresh_function: Arc::new(Box::new(move |auth_server| {
+                Box::pin(async move { refresh_function(auth_server) })
+            })),
+        }
+    }
+
+    /// Request an updated access token using the provided refresh function.
+    ///
+    /// # Errors
+    ///
+    /// Errors are propagated from the refresh function.
+    pub async fn request_access_token(
+        &self,
+        auth_server: &AuthServer,
+    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+        (self.refresh_function)(auth_server.clone()).await
+    }
+}
+
+impl std::fmt::Debug for ExternallyManaged {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ExternallyManaged")
+            .field(
+                "refresh_function",
+                &"Fn() -> Pin<Box<dyn Future<Output = Result<String, TokenError>> + Send>>",
+            )
+            .finish()
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub(super) struct TokenRefreshRequest<'a> {
     grant_type: &'static str,
@@ -390,7 +563,7 @@ pub(super) struct TokenRefreshRequest<'a> {
 }
 
 impl<'a> TokenRefreshRequest<'a> {
-    pub(super) const fn new(client_id: &'a str, refresh_token: &'a str) -> TokenRefreshRequest<'a> {
+    pub(super) const fn new(client_id: &'a str, refresh_token: &'a str) -> Self {
         Self {
             grant_type: "refresh_token",
             client_id,
@@ -407,10 +580,7 @@ pub(super) struct ClientCredentialsRequest<'a> {
 }
 
 impl<'a> ClientCredentialsRequest<'a> {
-    pub(super) const fn new(
-        client_id: &'a str,
-        client_secret: &'a str,
-    ) -> ClientCredentialsRequest<'a> {
+    pub(super) const fn new(client_id: &'a str, client_secret: &'a str) -> Self {
         Self {
             grant_type: "client_credentials",
             client_id,

@@ -78,4 +78,7 @@ pub enum TokenError {
     /// Failure fetching a refreshed access token from the QCS API.
     #[error("Error fetching new token from the QCS API: {0}")]
     Fetch(#[from] reqwest::Error),
+    /// Catch all for errors returned from an [`super::ExternallyManaged`] refresh function.
+    #[error("Failed to request an externally managed access token: {0}")]
+    ExternallyManaged(String),
 }

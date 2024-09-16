@@ -28,7 +28,7 @@ pub enum Error<T> {
     Reqwest(reqwest::Error),
     Serde(serde_json::Error),
     Io(std::io::Error),
-    QcsRefresh(crate::common::configuration::TokenError),
+    QcsToken(crate::common::configuration::TokenError),
     ResponseError(ResponseContent<T>),
     #[cfg(feature = "otel-tracing")]
     ReqwestMiddleware(anyhow::Error),
@@ -49,7 +49,7 @@ impl<T> fmt::Display for Error<T> {
             Error::Reqwest(e) => ("reqwest", e.to_string()),
             Error::Serde(e) => ("serde", e.to_string()),
             Error::Io(e) => ("IO", e.to_string()),
-            Error::QcsRefresh(e) => ("refresh_qcs_token", e.to_string()),
+            Error::QcsToken(e) => ("refresh_qcs_token", e.to_string()),
             Error::ResponseError(e) => (
                 "response",
                 format!("status code {}: {}", e.status, e.content),
@@ -67,7 +67,7 @@ impl<T: fmt::Debug> error::Error for Error<T> {
             Error::Reqwest(e) => e,
             Error::Serde(e) => e,
             Error::Io(e) => e,
-            Error::QcsRefresh(e) => e,
+            Error::QcsToken(e) => e,
             #[cfg(feature = "otel-tracing")]
             Error::ReqwestMiddleware(e) => e.source()?,
             Error::ResponseError(_) => return None,
@@ -105,7 +105,7 @@ impl<T> From<std::io::Error> for Error<T> {
 
 impl<T> From<crate::common::configuration::TokenError> for Error<T> {
     fn from(e: crate::common::configuration::TokenError) -> Self {
-        Error::QcsRefresh(e)
+        Error::QcsToken(e)
     }
 }
 

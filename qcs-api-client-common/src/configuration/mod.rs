@@ -49,7 +49,10 @@ pub use error::{LoadError, TokenError};
 pub(crate) use py::*;
 pub use secrets::{DEFAULT_SECRETS_PATH, SECRETS_PATH_VAR};
 pub use settings::{AuthServer, DEFAULT_SETTINGS_PATH, SETTINGS_PATH_VAR};
-pub use tokens::{OAuthSession, RefreshToken, TokenDispatcher, TokenRefresher};
+pub use tokens::{
+    ClientCredentials, ExternallyManaged, OAuthSession, RefreshFunction, RefreshToken,
+    TokenDispatcher, TokenRefresher,
+};
 
 const QCS_AUDIENCE: &str = "api://qcs";
 
