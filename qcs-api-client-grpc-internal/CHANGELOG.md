@@ -1,3 +1,13 @@
+## 0.11.0 (2024-09-16)
+
+### Breaking Changes
+
+#### enable 'unknown' enum variants
+
+### Features
+
+#### add support for new 'post-processing' phase
+
 ## 0.10.3-rc.0 (2024-09-13)
 
 ### Features

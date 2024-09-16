@@ -1,3 +1,15 @@
+## 0.9.0 (2024-09-16)
+
+### Breaking Changes
+
+#### enable 'unknown' enum variants
+
+### Features
+
+#### add support for new 'post-processing' phase
+
+#### Support externally managed access tokens
+
 ## 0.8.3-rc.0 (2024-09-13)
 
 ### Features
