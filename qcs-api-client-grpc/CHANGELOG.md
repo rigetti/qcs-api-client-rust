@@ -1,6 +1,8 @@
-## 0.10.0-rc.0 (2024-09-16)
+## 0.10.0-rc.1 (2024-09-16)
 
 ### Breaking Changes
+
+#### add an unknown datacenter variant
 
 #### add unknown variants for oneofs; fix TokenError conversion
 
