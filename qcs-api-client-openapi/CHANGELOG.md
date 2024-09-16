@@ -1,4 +1,8 @@
-## 0.10.3-rc.1 (2024-09-16)
+## 0.11.0-rc.0 (2024-09-16)
+
+### Breaking Changes
+
+#### add an unknown datacenter variant
 
 ### Features
 
