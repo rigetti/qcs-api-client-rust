@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 /// An enumeration.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum ControllerInstrumentType {
     #[serde(rename = "UNKNOWN_INSTRUMENT")]
     UNKNOWNINSTRUMENT,
@@ -20,6 +20,9 @@ pub enum ControllerInstrumentType {
     TSUNAMI,
     #[serde(rename = "YOKOGAWA_GS200")]
     YOKOGAWAGS200,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for ControllerInstrumentType {
@@ -28,6 +31,7 @@ impl std::fmt::Display for ControllerInstrumentType {
             Self::UNKNOWNINSTRUMENT => write!(f, "UNKNOWN_INSTRUMENT"),
             Self::TSUNAMI => write!(f, "TSUNAMI"),
             Self::YOKOGAWAGS200 => write!(f, "YOKOGAWA_GS200"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

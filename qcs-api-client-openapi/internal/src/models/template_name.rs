@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 /// An enumeration.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum TemplateName {
     #[serde(rename = "production.controller-service.v1")]
     ProductionControllerServiceV1,
@@ -32,6 +32,9 @@ pub enum TemplateName {
     TestMagnetoBackedControllerV2,
     #[serde(rename = "test.virtual-controller.v1")]
     TestVirtualControllerV1,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for TemplateName {
@@ -48,6 +51,7 @@ impl std::fmt::Display for TemplateName {
             Self::TestMagnetoBackedControllerV1 => write!(f, "test.magneto-backed-controller.v1"),
             Self::TestMagnetoBackedControllerV2 => write!(f, "test.magneto-backed-controller.v2"),
             Self::TestVirtualControllerV1 => write!(f, "test.virtual-controller.v1"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

@@ -12,12 +12,15 @@
 use serde::{Deserialize, Serialize};
 
 /// The controller's relationship to hardware controls.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum ExecutionBackend {
     #[serde(rename = "live")]
     Live,
     #[serde(rename = "virtual")]
     _Virtual,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for ExecutionBackend {
@@ -25,6 +28,7 @@ impl std::fmt::Display for ExecutionBackend {
         match self {
             Self::Live => write!(f, "live"),
             Self::_Virtual => write!(f, "virtual"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

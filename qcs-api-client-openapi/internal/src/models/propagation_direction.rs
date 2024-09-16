@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Direction of signal propagation.  Note that we sometimes sort by PropagationDirection, and in that case the ordering is given by the ``_order_`` defined here. Note also that the order of definition of entries must agree with ``_order_``.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum PropagationDirection {
     #[serde(rename = "tx")]
     Tx,
@@ -20,6 +20,9 @@ pub enum PropagationDirection {
     Trx,
     #[serde(rename = "rx")]
     Rx,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for PropagationDirection {
@@ -28,6 +31,7 @@ impl std::fmt::Display for PropagationDirection {
             Self::Tx => write!(f, "tx"),
             Self::Trx => write!(f, "trx"),
             Self::Rx => write!(f, "rx"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

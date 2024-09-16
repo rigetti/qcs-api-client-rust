@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 /// An enumeration.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum EngagementPolicyName {
     #[serde(rename = "allowAll")]
     AllowAll,
@@ -24,6 +24,9 @@ pub enum EngagementPolicyName {
     AllowInternalUser,
     #[serde(rename = "qcsReservation")]
     QcsReservation,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for EngagementPolicyName {
@@ -34,6 +37,7 @@ impl std::fmt::Display for EngagementPolicyName {
             Self::AllowCreator => write!(f, "allowCreator"),
             Self::AllowInternalUser => write!(f, "allowInternalUser"),
             Self::QcsReservation => write!(f, "qcsReservation"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

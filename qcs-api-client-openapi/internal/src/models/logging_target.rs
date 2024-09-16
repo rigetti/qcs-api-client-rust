@@ -12,16 +12,20 @@
 use serde::{Deserialize, Serialize};
 
 /// An enumeration.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum LoggingTarget {
     #[serde(rename = "loki")]
     Loki,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for LoggingTarget {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Loki => write!(f, "loki"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

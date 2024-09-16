@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Allowed operators for ParameterExpression.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum ParameterOperator {
     #[serde(rename = "+")]
     Plus,
@@ -20,6 +20,9 @@ pub enum ParameterOperator {
     Minus,
     #[serde(rename = "*")]
     Star,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for ParameterOperator {
@@ -28,6 +31,7 @@ impl std::fmt::Display for ParameterOperator {
             Self::Plus => write!(f, "+"),
             Self::Minus => write!(f, "-"),
             Self::Star => write!(f, "*"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

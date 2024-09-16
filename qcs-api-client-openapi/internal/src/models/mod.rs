@@ -314,6 +314,12 @@ pub use self::internal_event_billing_price::InternalEventBillingPrice;
 pub mod internal_get_account_event_billing_price_request;
 pub use self::internal_get_account_event_billing_price_request::InternalGetAccountEventBillingPriceRequest;
 #[allow(non_snake_case)]
+pub mod internal_list_billing_invoices_response;
+pub use self::internal_list_billing_invoices_response::InternalListBillingInvoicesResponse;
+#[allow(non_snake_case)]
+pub mod internal_list_billing_invoices_response_item;
+pub use self::internal_list_billing_invoices_response_item::InternalListBillingInvoicesResponseItem;
+#[allow(non_snake_case)]
 pub mod internal_list_endpoints_response;
 pub use self::internal_list_endpoints_response::InternalListEndpointsResponse;
 #[allow(non_snake_case)]
@@ -343,6 +349,9 @@ pub use self::internal_put_quantum_processor_accessor_request::InternalPutQuantu
 #[allow(non_snake_case)]
 pub mod internal_put_quantum_processor_request;
 pub use self::internal_put_quantum_processor_request::InternalPutQuantumProcessorRequest;
+#[allow(non_snake_case)]
+pub mod internal_quantum_processor_calendar;
+pub use self::internal_quantum_processor_calendar::InternalQuantumProcessorCalendar;
 #[allow(non_snake_case)]
 pub mod internal_update_endpoint_parameters;
 pub use self::internal_update_endpoint_parameters::InternalUpdateEndpointParameters;
@@ -571,6 +580,9 @@ pub use self::quantum_processor_accessor::QuantumProcessorAccessor;
 #[allow(non_snake_case)]
 pub mod quantum_processor_accessor_type;
 pub use self::quantum_processor_accessor_type::QuantumProcessorAccessorType;
+#[allow(non_snake_case)]
+pub mod quantum_processor_calendar;
+pub use self::quantum_processor_calendar::QuantumProcessorCalendar;
 #[allow(non_snake_case)]
 pub mod qubit_settings;
 pub use self::qubit_settings::QubitSettings;

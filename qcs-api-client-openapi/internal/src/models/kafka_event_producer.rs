@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 /// The type of Kafka event producer to use. This value will be used by Controller service to choose an implementation of `qcs_kafka.EventProducer`. See: https://gitlab.com/rigetti/qcs/services/controller/-/blob/dc2a205713c582b04bca868736c51b9b6966fefc/server/server.go#L272  As of this commit, Controller service only produces events for QPU job completion. See: https://gitlab.com/rigetti/infrastructure/msk_cluster/-/blob/c3252324039b148d91bb8715b3d7aa3da7c95b62/schemas/com_rigetti_qcs_qpu_job_completion_v0_pre_sr.avsc
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum KafkaEventProducer {
     #[serde(rename = "live")]
     Live,
@@ -20,6 +20,9 @@ pub enum KafkaEventProducer {
     Ignore,
     #[serde(rename = "log")]
     Log,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for KafkaEventProducer {
@@ -28,6 +31,7 @@ impl std::fmt::Display for KafkaEventProducer {
             Self::Live => write!(f, "live"),
             Self::Ignore => write!(f, "ignore"),
             Self::Log => write!(f, "log"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

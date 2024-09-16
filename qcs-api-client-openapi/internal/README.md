@@ -87,9 +87,11 @@ Class | Method | HTTP request | Description
 *AccountApi* | [**internal_create_user_billing_customer**](docs/AccountApi.md#internal_create_user_billing_customer) | **POST** /v1/internal/users/{userId}/billingCustomer | 
 *AccountApi* | [**internal_create_user_metered_usage_record**](docs/AccountApi.md#internal_create_user_metered_usage_record) | **POST** /v1/internal/users/{userId}/meteredUsageRecords | 
 *AccountApi* | [**internal_delete_event_billing_price**](docs/AccountApi.md#internal_delete_event_billing_price) | **DELETE** /v1/internal/eventBillingPrices/{eventBillingPriceId} | Internal Delete Event Billing Price
+*AccountApi* | [**internal_get_event_billing_price**](docs/AccountApi.md#internal_get_event_billing_price) | **GET** /v1/internal/eventBillingPrices/{eventBillingPriceId} | Internal Get Event Billing Price
 *AccountApi* | [**internal_get_group_event_billing_price**](docs/AccountApi.md#internal_get_group_event_billing_price) | **POST** /v1/internal/groups/{groupName}/eventBillingPrices:get | 
 *AccountApi* | [**internal_get_user_event_billing_price**](docs/AccountApi.md#internal_get_user_event_billing_price) | **POST** /v1/internal/users/{userId}/eventBillingPrices:get | 
 *AccountApi* | [**internal_get_user_profile**](docs/AccountApi.md#internal_get_user_profile) | **GET** /v1/internal/users/{userId}/profile | Get User Profile
+*AccountApi* | [**internal_list_billing_invoices**](docs/AccountApi.md#internal_list_billing_invoices) | **GET** /v1/internal/billingInvoices | 
 *AccountApi* | [**internal_list_event_billing_prices**](docs/AccountApi.md#internal_list_event_billing_prices) | **GET** /v1/internal/eventBillingPrices | Internal List Event Billing Prices
 *AccountApi* | [**internal_list_groups**](docs/AccountApi.md#internal_list_groups) | **GET** /v1/internal/groups | List all QCS groups
 *AccountApi* | [**internal_list_users**](docs/AccountApi.md#internal_list_users) | **GET** /v1/internal/users | Internal List Users
@@ -117,6 +119,7 @@ Class | Method | HTTP request | Description
 *DefaultApi* | [**health_check**](docs/DefaultApi.md#health_check) | **GET** /v1/healthcheck | Health Check
 *DefaultApi* | [**health_check_deprecated**](docs/DefaultApi.md#health_check_deprecated) | **GET** /v1/ | Health Check
 *DefaultApi* | [**internal_create_product_billing_price**](docs/DefaultApi.md#internal_create_product_billing_price) | **POST** /v1/internal/products/{product}/billingPrices | 
+*DefaultApi* | [**internal_get_product_billing_price**](docs/DefaultApi.md#internal_get_product_billing_price) | **GET** /v1/internal/billingPrices/{billingPriceId} | 
 *DefaultApi* | [**internal_list_product_billing_prices**](docs/DefaultApi.md#internal_list_product_billing_prices) | **GET** /v1/internal/products/{product}/billingPrices | 
 *DefaultApi* | [**internal_update_group_billing_customer**](docs/DefaultApi.md#internal_update_group_billing_customer) | **PATCH** /v1/internal/groups/{groupName}/billingCustomer | 
 *DefaultApi* | [**internal_update_product_billing_price**](docs/DefaultApi.md#internal_update_product_billing_price) | **PATCH** /v1/internal/billingPrices/{billingPriceId} | 
@@ -193,8 +196,10 @@ Class | Method | HTTP request | Description
 *ReservationsApi* | [**create_reservation**](docs/ReservationsApi.md#create_reservation) | **POST** /v1/reservations | Create Reservation
 *ReservationsApi* | [**delete_reservation**](docs/ReservationsApi.md#delete_reservation) | **DELETE** /v1/reservations/{reservationId} | Delete Reservation
 *ReservationsApi* | [**find_available_reservations**](docs/ReservationsApi.md#find_available_reservations) | **GET** /v1/reservations:findAvailable | Find Available Reservations
+*ReservationsApi* | [**get_quantum_processor_calendar**](docs/ReservationsApi.md#get_quantum_processor_calendar) | **GET** /v1/calendars/{quantumProcessorId} | Get Quantum Processor Calendar
 *ReservationsApi* | [**internal_create_reservation**](docs/ReservationsApi.md#internal_create_reservation) | **POST** /v1/internal/reservations | Internal Create Reservation
 *ReservationsApi* | [**internal_find_available_reservations**](docs/ReservationsApi.md#internal_find_available_reservations) | **GET** /v1/internal/reservations:findAvailable | Find Available Reservations
+*ReservationsApi* | [**internal_get_quantum_processor_calendar**](docs/ReservationsApi.md#internal_get_quantum_processor_calendar) | **GET** /v1/internal/calendars/{quantumProcessorId} | Internal Get Quantum Processor Calendar
 *ReservationsApi* | [**internal_list_reservations**](docs/ReservationsApi.md#internal_list_reservations) | **GET** /v1/internal/reservations | Internal List Reservations
 *ReservationsApi* | [**list_group_reservations**](docs/ReservationsApi.md#list_group_reservations) | **GET** /v1/groups/{groupName}/reservations | List Group Reservations
 *ReservationsApi* | [**list_reservations**](docs/ReservationsApi.md#list_reservations) | **GET** /v1/reservations | List Reservations
@@ -313,6 +318,8 @@ Class | Method | HTTP request | Description
  - [InternalEndpoint](docs/InternalEndpoint.md)
  - [InternalEventBillingPrice](docs/InternalEventBillingPrice.md)
  - [InternalGetAccountEventBillingPriceRequest](docs/InternalGetAccountEventBillingPriceRequest.md)
+ - [InternalListBillingInvoicesResponse](docs/InternalListBillingInvoicesResponse.md)
+ - [InternalListBillingInvoicesResponseItem](docs/InternalListBillingInvoicesResponseItem.md)
  - [InternalListEndpointsResponse](docs/InternalListEndpointsResponse.md)
  - [InternalListLegacyLatticesResponse](docs/InternalListLegacyLatticesResponse.md)
  - [InternalListLegacyQuantumProcessorsResponse](docs/InternalListLegacyQuantumProcessorsResponse.md)
@@ -323,6 +330,7 @@ Class | Method | HTTP request | Description
  - [InternalPutLegacyQuantumProcessorRequest](docs/InternalPutLegacyQuantumProcessorRequest.md)
  - [InternalPutQuantumProcessorAccessorRequest](docs/InternalPutQuantumProcessorAccessorRequest.md)
  - [InternalPutQuantumProcessorRequest](docs/InternalPutQuantumProcessorRequest.md)
+ - [InternalQuantumProcessorCalendar](docs/InternalQuantumProcessorCalendar.md)
  - [InternalUpdateEndpointParameters](docs/InternalUpdateEndpointParameters.md)
  - [InternalUpdateEventBillingPriceRequest](docs/InternalUpdateEventBillingPriceRequest.md)
  - [InternalUpdateLegacyQuantumProcessorRequest](docs/InternalUpdateLegacyQuantumProcessorRequest.md)
@@ -399,6 +407,7 @@ Class | Method | HTTP request | Description
  - [QuantumProcessor](docs/QuantumProcessor.md)
  - [QuantumProcessorAccessor](docs/QuantumProcessorAccessor.md)
  - [QuantumProcessorAccessorType](docs/QuantumProcessorAccessorType.md)
+ - [QuantumProcessorCalendar](docs/QuantumProcessorCalendar.md)
  - [QubitSettings](docs/QubitSettings.md)
  - [QuercusConfiguration](docs/QuercusConfiguration.md)
  - [QueuePolicyType](docs/QueuePolicyType.md)

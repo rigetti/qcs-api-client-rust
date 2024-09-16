@@ -15,13 +15,15 @@ use serde::{Serialize, Deserialize};
 {{!-- for enum schemas --}}
 {{#isEnum}}
 /// {{{description}}}
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum {{{classname}}} {
 {{#allowableValues}}
 {{#enumVars}}
     #[serde(rename = "{{{value}}}")]
     {{{name}}},
 {{/enumVars}}{{/allowableValues}}
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for {{{classname}}} {
@@ -32,6 +34,7 @@ impl std::fmt::Display for {{{classname}}} {
             Self::{{{name}}} => write!(f, "{{{value}}}"),
             {{/enumVars}}
             {{/allowableValues}}
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

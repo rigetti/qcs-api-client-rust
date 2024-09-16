@@ -166,6 +166,16 @@ pub enum InternalDeleteEventBillingPriceError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`internal_get_event_billing_price`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalGetEventBillingPriceError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    Status404(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`internal_get_group_event_billing_price`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -193,6 +203,15 @@ pub enum InternalGetUserProfileError {
     Status401(crate::models::Error),
     Status403(crate::models::Error),
     Status404(crate::models::Error),
+    Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`internal_list_billing_invoices`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalListBillingInvoicesError {
+    Status403(crate::models::Error),
     Status422(crate::models::Error),
     UnknownValue(serde_json::Value),
 }
@@ -2213,6 +2232,129 @@ pub async fn internal_delete_event_billing_price(
         }
     }
 }
+async fn internal_get_event_billing_price_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    event_billing_price_id: i64,
+) -> Result<crate::models::EventBillingPrice, Error<InternalGetEventBillingPriceError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/eventBillingPrices/{eventBillingPriceId}",
+        local_var_configuration.qcs_config.api_url(),
+        eventBillingPriceId = event_billing_price_id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_get_event_billing_price request",
+            );
+        }
+    }
+
+    // Use QCS Bearer token
+    let token = configuration.qcs_config.get_bearer_access_token().await?;
+    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalGetEventBillingPriceError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Get an event billing price, which is used to associate a price with (optionally) a specific account and/or quantum processor.
+pub async fn internal_get_event_billing_price(
+    configuration: &configuration::Configuration,
+    event_billing_price_id: i64,
+) -> Result<crate::models::EventBillingPrice, Error<InternalGetEventBillingPriceError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
+    loop {
+        let result = internal_get_event_billing_price_inner(
+            configuration,
+            &mut backoff,
+            event_billing_price_id.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
 async fn internal_get_group_event_billing_price_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
@@ -2550,6 +2692,150 @@ pub async fn internal_get_user_profile(
     loop {
         let result =
             internal_get_user_profile_inner(configuration, &mut backoff, user_id.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn internal_list_billing_invoices_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    filter: &str,
+    page_size: Option<i64>,
+    page_token: Option<&str>,
+) -> Result<
+    crate::models::InternalListBillingInvoicesResponse,
+    Error<InternalListBillingInvoicesError>,
+> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/billingInvoices",
+        local_var_configuration.qcs_config.api_url()
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_list_billing_invoices request",
+            );
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.query(&[("filter", &filter.to_string())]);
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_token {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
+    }
+
+    // Use QCS Bearer token
+    let token = configuration.qcs_config.get_bearer_access_token().await?;
+    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalListBillingInvoicesError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// List billing invoices using a search filter.  Available filter fields include the following: * `total` - integer, the total amount in USD cents for the entire invoice. It is recommended to use `amount>0`. * `userIdpId` - string, the QCS user ID to which the invoice is attached. * `created` - time, RFC3339 date format of when the invoice was created.  Note that the filter clause is limited here: - must be top-level, so no nesting with parenthesis - must be all \"and\" OR \"or\", e.g. `a and b or c` is not supported
+pub async fn internal_list_billing_invoices(
+    configuration: &configuration::Configuration,
+    filter: &str,
+    page_size: Option<i64>,
+    page_token: Option<&str>,
+) -> Result<
+    crate::models::InternalListBillingInvoicesResponse,
+    Error<InternalListBillingInvoicesError>,
+> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
+    loop {
+        let result = internal_list_billing_invoices_inner(
+            configuration,
+            &mut backoff,
+            filter.clone(),
+            page_size.clone(),
+            page_token.clone(),
+        )
+        .await;
 
         match result {
             Ok(result) => return Ok(result),

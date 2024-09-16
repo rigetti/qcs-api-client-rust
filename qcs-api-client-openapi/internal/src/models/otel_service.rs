@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 /// The service to which OTEL traces should be sent.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum OtelService {
     #[serde(rename = "collector")]
     Collector,
@@ -20,6 +20,9 @@ pub enum OtelService {
     Honeycomb,
     #[serde(rename = "none")]
     None,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for OtelService {
@@ -28,6 +31,7 @@ impl std::fmt::Display for OtelService {
             Self::Collector => write!(f, "collector"),
             Self::Honeycomb => write!(f, "honeycomb"),
             Self::None => write!(f, "none"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

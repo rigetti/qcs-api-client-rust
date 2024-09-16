@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Where to pull the service's startup configuration from.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum StartupConfigurationSource {
     #[serde(rename = "deployedRack")]
     DeployedRack,
@@ -22,6 +22,9 @@ pub enum StartupConfigurationSource {
     Explicit,
     #[serde(rename = "treeline")]
     Treeline,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for StartupConfigurationSource {
@@ -31,6 +34,7 @@ impl std::fmt::Display for StartupConfigurationSource {
             Self::Blackpine => write!(f, "blackpine"),
             Self::Explicit => write!(f, "explicit"),
             Self::Treeline => write!(f, "treeline"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Edge type identifier; defines the type of 2Q gate operation for which the edge exists.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum LegacyEdgeType {
     #[serde(rename = "CPHASE")]
     CPHASE,
@@ -22,6 +22,9 @@ pub enum LegacyEdgeType {
     ISWAP,
     #[serde(rename = "XY")]
     XY,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for LegacyEdgeType {
@@ -31,6 +34,7 @@ impl std::fmt::Display for LegacyEdgeType {
             Self::CZ => write!(f, "CZ"),
             Self::ISWAP => write!(f, "ISWAP"),
             Self::XY => write!(f, "XY"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

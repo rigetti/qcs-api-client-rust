@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Enum for types of Instrument.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum InstrumentType {
     #[serde(rename = "FridgeThermometer")]
     FridgeThermometer,
@@ -36,6 +36,9 @@ pub enum InstrumentType {
     YokoShim,
     #[serde(rename = "Yokogawa_GS200")]
     YokogawaGS200,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for InstrumentType {
@@ -52,6 +55,7 @@ impl std::fmt::Display for InstrumentType {
             Self::YokoServer => write!(f, "YokoServer"),
             Self::YokoShim => write!(f, "YokoShim"),
             Self::YokogawaGS200 => write!(f, "Yokogawa_GS200"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

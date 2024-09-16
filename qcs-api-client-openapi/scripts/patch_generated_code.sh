@@ -4,6 +4,17 @@ set -eu
 
 ROOT="$(realpath -- "$(dirname -- "${0}")/..")"
 
+if ! hash sed 2>/dev/null; then
+    echo "This script requires 'sed' to be installed."
+    exit 1
+fi
+
+function is_gnu_sed() {
+    # Non-GNU `sed` doesn't have a way to check the version...so the
+    # `--version` command simply fails.
+    sed --version >/dev/null 2>&1
+}
+
 sed_replace() {
     replace_str="${1}"
     file="${2}"
@@ -11,15 +22,11 @@ sed_replace() {
         file="${ROOT}/${file}"
     fi
 
-    kernel="$(uname -s)"
-    case "${kernel}" in
-        Linux) sed -i -e "${replace_str}" "${file}" ;;
-        Darwin) sed -i '' -e "${replace_str}" "${file}" ;;
-        *)
-            echo "This script does not support ${kernel}"
-            exit 1
-            ;;
-    esac
+    if is_gnu_sed; then
+        sed -i -e "${replace_str}" "${file}"
+    else
+        sed -i '' -e "${replace_str}" "${file}"
+    fi
 }
 
 # Channels uses a tag, but the templates only support untagged enums

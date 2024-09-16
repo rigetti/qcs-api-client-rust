@@ -37,6 +37,9 @@ pub struct EndpointConfiguration {
         skip_serializing_if = "Option::is_none"
     )]
     pub engagement_policy_options: Option<Box<crate::models::EngagementPolicyOptions>>,
+    /// The date and time after which this endpoint should be considered 'expired', and may be automatically deleted.
+    #[serde(rename = "expiration", skip_serializing_if = "Option::is_none")]
+    pub expiration: Option<String>,
     /// Identifier for the dilution fridge system to which this endpoint has network access
     #[serde(rename = "fridgeId", skip_serializing_if = "Option::is_none")]
     pub fridge_id: Option<String>,
@@ -55,6 +58,9 @@ pub struct EndpointConfiguration {
     /// The name of the template used to apply default values to this endpoint
     #[serde(rename = "templateName", skip_serializing_if = "Option::is_none")]
     pub template_name: Option<Box<crate::models::TemplateName>>,
+    /// The number seconds following the endpoint creation or most recent update time until the endpoint is considered 'expired'. Expired endpoints may be automatically deleted. A zero, negative, NaN, or 'infinite' TTL indicates that the endpoint will never expire. Otherwise, the TTL must be at least one minute (60 seconds).
+    #[serde(rename = "ttl", skip_serializing_if = "Option::is_none")]
+    pub ttl: Option<f64>,
 }
 
 impl EndpointConfiguration {
@@ -67,10 +73,12 @@ impl EndpointConfiguration {
             datacenters: None,
             engagement_policy_name: None,
             engagement_policy_options: None,
+            expiration: None,
             fridge_id: None,
             live_instrument_access: None,
             quantum_processor_ids: None,
             template_name: None,
+            ttl: None,
         }
     }
 }

@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Which queue policy to use when prioritizing queued jobs.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum QueuePolicyType {
     #[serde(rename = "reservation")]
     Reservation,
@@ -24,6 +24,9 @@ pub enum QueuePolicyType {
     Settings,
     #[serde(rename = "fifo")]
     Fifo,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for QueuePolicyType {
@@ -34,6 +37,7 @@ impl std::fmt::Display for QueuePolicyType {
             Self::Resource => write!(f, "resource"),
             Self::Settings => write!(f, "settings"),
             Self::Fifo => write!(f, "fifo"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

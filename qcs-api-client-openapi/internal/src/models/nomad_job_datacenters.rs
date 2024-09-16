@@ -12,12 +12,17 @@
 use serde::{Deserialize, Serialize};
 
 /// An enumeration.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum NomadJobDatacenters {
     #[serde(rename = "berkeley-775")]
     Berkeley775,
     #[serde(rename = "fremont-fab")]
     FremontFab,
+    #[serde(rename = "rigetti-gb-1")]
+    RigettiGb1,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for NomadJobDatacenters {
@@ -25,6 +30,8 @@ impl std::fmt::Display for NomadJobDatacenters {
         match self {
             Self::Berkeley775 => write!(f, "berkeley-775"),
             Self::FremontFab => write!(f, "fremont-fab"),
+            Self::RigettiGb1 => write!(f, "rigetti-gb-1"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }
