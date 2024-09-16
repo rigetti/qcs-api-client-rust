@@ -1,7 +1,9 @@
 #![allow(unused_qualifications)]
+
 use pyo3::{
     exceptions::{PyFileNotFoundError, PyOSError, PyValueError},
     prelude::*,
+    types::PyFunction,
 };
 use rigetti_pyo3::{create_init_submodule, py_function_sync_async};
 
@@ -17,7 +19,8 @@ use crate::{
 
 use super::{
     error::TokenError, settings::AuthServer, tokens::ClientCredentials, ClientConfiguration,
-    ClientConfigurationBuilder, LoadError, OAuthGrant, OAuthSession, RefreshToken, TokenDispatcher,
+    ClientConfigurationBuilder, ExternallyManaged, LoadError, OAuthGrant, OAuthSession,
+    RefreshToken, TokenDispatcher,
 };
 
 create_init_submodule! {
@@ -27,7 +30,8 @@ create_init_submodule! {
         AuthServer,
         OAuthSession,
         RefreshToken,
-        ClientCredentials
+        ClientCredentials,
+        ExternallyManaged
     ],
     consts: [
         DEFAULT_API_URL,
@@ -91,7 +95,33 @@ impl ClientCredentials {
     }
 }
 
-impl_eq!(OAuthSession);
+impl_repr!(ExternallyManaged);
+#[pymethods]
+impl ExternallyManaged {
+    #[new]
+    fn __new__(refresh_function: Py<PyFunction>) -> Self {
+        #[allow(trivial_casts)] // Compilation fails without the cast.
+        // The provided refresh function will panic if there is an issue with the refresh function.
+        // This raises a `PanicException` within Python.
+        let refresh_closure = move |auth_server: AuthServer| {
+            let refresh_function = refresh_function.clone();
+            Box::pin(async move {
+                Python::with_gil(|py| {
+                    let result = refresh_function.call1(py, (auth_server.into_py(py),));
+                    match result {
+                        Ok(value) => value
+                            .extract::<String>(py)
+                            .map_or_else(|_| panic!("ExternallyManaged refresh function returned an unexpected type. Expected a string, got {value:?}"), Ok),
+                        Err(err) => Err(Box::<dyn std::error::Error + Send + Sync>::from(err))
+                    }
+                })
+            }) as super::tokens::RefreshResult
+        };
+
+        Self::new(refresh_closure)
+    }
+}
+
 impl_repr!(OAuthSession);
 #[pymethods]
 impl OAuthSession {
@@ -118,6 +148,9 @@ impl OAuthSession {
                 client_credentials.clone().into_py(py)
             }
             OAuthGrant::RefreshToken(ref refresh_token) => refresh_token.clone().into_py(py),
+            OAuthGrant::ExternallyManaged(ref externally_managed) => {
+                externally_managed.clone().into_py(py)
+            }
         }
     }
 
@@ -130,6 +163,16 @@ impl OAuthSession {
     #[pyo3(name = "validate")]
     fn py_validate(&self) -> Result<String, TokenError> {
         self.validate()
+    }
+
+    #[pyo3(name = "request_access_token")]
+    fn py_request_access_token(&self, py: Python<'_>) -> PyResult<String> {
+        py_request_access_token(py, self.clone())
+    }
+
+    #[pyo3(name = "request_access_token_async")]
+    fn py_request_access_token_async<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+        py_request_access_token_async(py, self.clone())
     }
 }
 
@@ -144,6 +187,13 @@ py_function_sync_async! {
     #[pyfunction]
     async fn get_bearer_access_token(configuration: ClientConfiguration) -> PyResult<String> {
         configuration.get_bearer_access_token().await.map_err(PyErr::from)
+    }
+}
+
+py_function_sync_async! {
+    #[pyfunction]
+    async fn request_access_token(session: OAuthSession) -> PyResult<String> {
+        session.clone().request_access_token().await.map(std::string::ToString::to_string).map_err(PyErr::from)
     }
 }
 
@@ -320,7 +370,7 @@ impl From<TokenError> for PyErr {
     fn from(value: TokenError) -> Self {
         let message = value.to_string();
         match value {
-            TokenError::NoRefreshToken | TokenError::NoCredentials | TokenError::NoAccessToken | TokenError::NoAuthServer | TokenError::InvalidAccessToken(_) | TokenError::Fetch(_) => {
+            TokenError::NoRefreshToken | TokenError::NoCredentials | TokenError::NoAccessToken | TokenError::NoAuthServer | TokenError::InvalidAccessToken(_) | TokenError::Fetch(_) | TokenError::ExternallyManaged(_) => {
                 PyValueError::new_err(message)
             }
             #[cfg(feature = "tonic")]

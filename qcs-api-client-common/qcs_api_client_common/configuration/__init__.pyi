@@ -1,4 +1,4 @@
-from typing import final
+from typing import Callable, final
 
 DEFAULT_API_URL: str
 DEFAULT_GRPC_API_URL: str
@@ -151,9 +151,29 @@ class ClientCredentials:
         """The client secret."""
 
 @final
+class ExternallyManaged:
+    def __new__(cls, refresh_function: Callable[[AuthServer], str]) -> ExternallyManaged:
+        """Manages access tokens by utilizing a user-provided refresh function.
+
+        The refresh function should return a valid access token, or raise an exception if it cannot.
+
+        .. testcode::
+            from qcs_apiclient_common.configuration import AuthServer, ExternallyManaged, OAuthSession
+
+            def refresh_function(auth_server: AuthServer) -> str:
+                return "my_access_token"
+
+            externally_managed = ExternallyManaged(refresh_function)
+            session = OAuthSession(externally_managed, AuthServer.default())
+        """
+
+@final
 class OAuthSession:
     def __new__(
-        cls, grant_payload: RefreshToken | ClientCredentials, auth_server: AuthServer, access_token: str | None = None
+        cls,
+        grant_payload: RefreshToken | ClientCredentials | ExternallyManaged,
+        auth_server: AuthServer,
+        access_token: str | None = None,
     ) -> OAuthSession: ...
     @property
     def access_token(self) -> str:
@@ -164,11 +184,17 @@ class OAuthSession:
 
     @property
     def auth_server(self) -> AuthServer:
-        """The refresh token."""
+        """The auth server."""
 
     @property
     def payload(self) -> RefreshToken | ClientCredentials:
         """Get the payload used to request an access token."""
+
+    def request_access_token(self) -> str:
+        """Request a new access token."""
+
+    async def request_access_token_async(self) -> str:
+        """Request a new access token."""
 
     def validate(self) -> str:
         """Validate the current access token, returning it if it is valid.

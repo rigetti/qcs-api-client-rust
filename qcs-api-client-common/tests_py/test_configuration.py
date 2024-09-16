@@ -1,6 +1,12 @@
 from syrupy.assertion import SnapshotAssertion
 
-from qcs_api_client_common.configuration import AuthServer, ClientConfiguration, OAuthSession, RefreshToken
+from qcs_api_client_common.configuration import (
+    AuthServer,
+    ClientConfiguration,
+    ExternallyManaged,
+    OAuthSession,
+    RefreshToken,
+)
 
 
 class TestClientConfiguration:
@@ -48,11 +54,18 @@ class TestCredentials:
         assert credentials.auth_server == auth_server
         assert credentials.payload == payload
 
-    def test_eq(self):
-        payload = RefreshToken("refresh")
-        auth_server = AuthServer("some_client_id", "some_issuer")
-        credentials = OAuthSession(payload, auth_server, "access")
-        assert credentials == credentials
-        assert credentials == OAuthSession(payload, auth_server, "access")
-        assert credentials != OAuthSession(payload, auth_server, "different_access")
-        assert credentials != OAuthSession(RefreshToken("different_refresh"), auth_server, "access")
+
+class TestOAuthSession:
+    def test_externally_managed(self):
+        expected_auth_server = AuthServer("client_id", "issuer")
+
+        def refresh_function(auth_server: AuthServer):
+            assert auth_server == expected_auth_server
+            return "access_token_from_refresh_function"
+
+        manager = ExternallyManaged(refresh_function)
+
+        session = OAuthSession(manager, expected_auth_server)
+
+        token = session.request_access_token()
+        assert token == "access_token_from_refresh_function"
