@@ -26,16 +26,20 @@
 use serde::{Deserialize, Serialize};
 
 /// Types of access mechanisms for a QPU. Each accessor type has its own access characteristics, benefits, and drawbacks.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum QuantumProcessorAccessorType {
     #[serde(rename = "gateway.v1")]
     GatewayV1,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for QuantumProcessorAccessorType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::GatewayV1 => write!(f, "gateway.v1"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

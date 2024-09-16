@@ -166,6 +166,9 @@ pub use self::list_group_users_response::ListGroupUsersResponse;
 pub mod list_groups_response;
 pub use self::list_groups_response::ListGroupsResponse;
 #[allow(non_snake_case)]
+pub mod list_instruction_set_architecture_response;
+pub use self::list_instruction_set_architecture_response::ListInstructionSetArchitectureResponse;
+#[allow(non_snake_case)]
 pub mod list_quantum_processor_accessors_response;
 pub use self::list_quantum_processor_accessors_response::ListQuantumProcessorAccessorsResponse;
 #[allow(non_snake_case)]
@@ -204,6 +207,9 @@ pub use self::quantum_processor_accessor::QuantumProcessorAccessor;
 #[allow(non_snake_case)]
 pub mod quantum_processor_accessor_type;
 pub use self::quantum_processor_accessor_type::QuantumProcessorAccessorType;
+#[allow(non_snake_case)]
+pub mod quantum_processor_calendar;
+pub use self::quantum_processor_calendar::QuantumProcessorCalendar;
 #[allow(non_snake_case)]
 pub mod remove_group_user_request;
 pub use self::remove_group_user_request::RemoveGroupUserRequest;

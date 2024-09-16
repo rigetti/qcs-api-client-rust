@@ -26,12 +26,15 @@
 use serde::{Deserialize, Serialize};
 
 /// There are two types of accounts within QCS: user (representing a single user in Okta) and group (representing one or more users in Okta).
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum AccountType {
     #[serde(rename = "group")]
     Group,
     #[serde(rename = "user")]
     User,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for AccountType {
@@ -39,6 +42,7 @@ impl std::fmt::Display for AccountType {
         match self {
             Self::Group => write!(f, "group"),
             Self::User => write!(f, "user"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }

@@ -2,7 +2,7 @@
 
 ### Breaking Changes
 
-#### add an unknown datacenter variant
+#### add unknown variants for oneofs; fix TokenError conversion
 
 ### Features
 

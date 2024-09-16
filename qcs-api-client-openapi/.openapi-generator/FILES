@@ -62,6 +62,7 @@ src/models/list_client_applications_response.rs
 src/models/list_endpoints_response.rs
 src/models/list_group_users_response.rs
 src/models/list_groups_response.rs
+src/models/list_instruction_set_architecture_response.rs
 src/models/list_quantum_processor_accessors_response.rs
 src/models/list_quantum_processors_response.rs
 src/models/list_reservations_response.rs
@@ -76,6 +77,7 @@ src/models/product.rs
 src/models/quantum_processor.rs
 src/models/quantum_processor_accessor.rs
 src/models/quantum_processor_accessor_type.rs
+src/models/quantum_processor_calendar.rs
 src/models/remove_group_user_request.rs
 src/models/reservation.rs
 src/models/restart_endpoint_request.rs

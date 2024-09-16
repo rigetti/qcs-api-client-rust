@@ -25,7 +25,7 @@
 use serde::{Deserialize, Serialize};
 
 ///
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum BillingInvoiceStatus {
     #[serde(rename = "draft")]
     Draft,
@@ -37,6 +37,9 @@ pub enum BillingInvoiceStatus {
     Uncollectible,
     #[serde(rename = "void")]
     Void,
+
+    #[serde(untagged)]
+    Unknown(String),
 }
 
 impl std::fmt::Display for BillingInvoiceStatus {
@@ -47,6 +50,7 @@ impl std::fmt::Display for BillingInvoiceStatus {
             Self::Paid => write!(f, "paid"),
             Self::Uncollectible => write!(f, "uncollectible"),
             Self::Void => write!(f, "void"),
+            Self::Unknown(s) => s.fmt(f),
         }
     }
 }
