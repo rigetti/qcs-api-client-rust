@@ -155,15 +155,15 @@ impl OAuthGrant {
     }
 }
 
-/// Manages the OAuth2 authorization process and token lifecycle for accessing the QCS API.
+/// Manages the `OAuth2` authorization process and token lifecycle for accessing the QCS API.
 ///
 /// This struct encapsulates the necessary information to request an access token
-/// from an authorization server, including the OAuth2 grant type and any associated
+/// from an authorization server, including the `OAuth2` grant type and any associated
 /// credentials or payload data.
 ///
 /// # Fields
 ///
-/// * `payload` - The OAuth2 grant type and associated data that will be used to request an access token.
+/// * `payload` - The `OAuth2` grant type and associated data that will be used to request an access token.
 /// * `access_token` - The access token currently in use, if any. If no token has been provided or requested yet, this will be `None`.
 /// * `auth_server` - The authorization server responsible for issuing tokens.
 #[derive(Clone, Debug)]
@@ -602,8 +602,8 @@ pub trait TokenRefresher: Clone + std::fmt::Debug + Send {
     /// refreshing an access token
     type Error;
 
-    /// Get the current access token
-    async fn get_access_token(&self) -> Result<String, Self::Error>;
+    /// Get the current access token, if any
+    async fn get_access_token(&self) -> Result<Option<String>, Self::Error>;
 
     /// Get a fresh access token
     async fn refresh_access_token(&self) -> Result<String, Self::Error>;
@@ -641,8 +641,10 @@ impl TokenRefresher for ClientConfiguration {
         Ok(self.refresh().await?.access_token()?.to_string())
     }
 
-    async fn get_access_token(&self) -> Result<String, Self::Error> {
-        Ok(self.oauth_session().await?.access_token()?.to_string())
+    async fn get_access_token(&self) -> Result<Option<String>, Self::Error> {
+        Ok(Some(
+            self.oauth_session().await?.access_token()?.to_string(),
+        ))
     }
 
     #[cfg(feature = "tracing")]

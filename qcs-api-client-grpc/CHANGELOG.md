@@ -1,3 +1,9 @@
+## 0.10.1 (2024-09-17)
+
+### Fixes
+
+#### Access token is loaded from secrets.toml, otherwise, access tokens are initialized on first request.
+
 ## 0.10.0 (2024-09-16)
 
 ### Breaking Changes
