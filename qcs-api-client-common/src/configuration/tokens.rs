@@ -602,6 +602,9 @@ pub trait TokenRefresher: Clone + std::fmt::Debug + Send {
     /// refreshing an access token
     type Error;
 
+    /// Get and validate the current access token, refreshing it if it doesn't exist or is invalid.
+    async fn validated_access_token(&self) -> Result<String, Self::Error>;
+
     /// Get the current access token, if any
     async fn get_access_token(&self) -> Result<Option<String>, Self::Error>;
 
@@ -636,6 +639,10 @@ pub trait TokenRefresher: Clone + std::fmt::Debug + Send {
 #[async_trait::async_trait]
 impl TokenRefresher for ClientConfiguration {
     type Error = TokenError;
+
+    async fn validated_access_token(&self) -> Result<String, Self::Error> {
+        self.get_bearer_access_token().await
+    }
 
     async fn refresh_access_token(&self) -> Result<String, Self::Error> {
         Ok(self.refresh().await?.access_token()?.to_string())
