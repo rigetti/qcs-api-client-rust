@@ -1,3 +1,9 @@
+## 0.10.2 (2024-09-17)
+
+### Fixes
+
+#### Validate and access token before making an authenticated gRPC request, refreshing the token if it is invalid
+
 ## 0.10.1 (2024-09-17)
 
 ### Fixes
