@@ -175,11 +175,11 @@ impl ClientConfiguration {
             .ok_or_else(|| LoadError::AuthServerNotFound(profile.auth_server_name.clone()))?;
 
         let credential = secrets.credentials.remove(&profile.credentials_name);
-        let refresh_token = match credential {
+        let (access_token, refresh_token) = match credential {
             Some(Credential {
                 token_payload: Some(token_payload),
-            }) => token_payload.refresh_token,
-            _ => None,
+            }) => (token_payload.access_token, token_payload.refresh_token),
+            _ => (None, None),
         };
 
         let quilc_url = env::var(QUILC_URL_VAR).unwrap_or(profile.applications.pyquil.quilc_url);
@@ -190,7 +190,7 @@ impl ClientConfiguration {
             OAuthSession::new(
                 OAuthGrant::RefreshToken(RefreshToken::new(refresh_token)),
                 auth_server.clone(),
-                None,
+                access_token,
             )
         });
 
@@ -404,7 +404,8 @@ mod test {
     };
 
     use super::{
-        settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, tokens::ClientCredentials, QCS_AUDIENCE,
+        settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, tokens::ClientCredentials, TokenRefresher,
+        QCS_AUDIENCE,
     };
 
     #[test]
@@ -567,6 +568,73 @@ issuer = ""
 
             Ok(())
         });
+    }
+
+    #[tokio::test]
+    async fn test_hydrate_access_token_on_load() {
+        let mut config = ClientConfiguration::builder().build().unwrap();
+        let access_token = "test_access_token";
+        figment::Jail::expect_with(|jail| {
+            let directory = jail.directory();
+            let settings_file_name = "settings.toml";
+            let settings_file_path = directory.join(settings_file_name);
+            let secrets_file_name = "secrets.toml";
+            let secrets_file_path = directory.join(secrets_file_name);
+
+            let settings_file_contents = r#"
+default_profile_name = "default"
+
+[profiles]
+[profiles.default]
+api_url = ""
+auth_server_name = "default"
+credentials_name = "default"
+
+[auth_servers]
+[auth_servers.default]
+client_id = ""
+issuer = ""
+"#;
+
+            let secrets_file_contents = format!(
+                r#"
+[credentials]
+[credentials.default]
+[credentials.default.token_payload]
+access_token = "{access_token}"
+expires_in = 3600
+id_token = "id_token"
+refresh_token = "refresh_token"
+scope = "offline_access openid profile email"
+token_type = "Bearer"
+"#
+            );
+
+            jail.create_file(settings_file_name, settings_file_contents)
+                .expect("should create test settings.toml");
+            jail.create_file(secrets_file_name, &secrets_file_contents)
+                .expect("should create test settings.toml");
+
+            jail.set_env(
+                "QCS_SETTINGS_FILE_PATH",
+                settings_file_path
+                    .to_str()
+                    .expect("settings file path should be a string"),
+            );
+            jail.set_env(
+                "QCS_SECRETS_FILE_PATH",
+                secrets_file_path
+                    .to_str()
+                    .expect("secrets file path should be a string"),
+            );
+
+            config = ClientConfiguration::load_default().unwrap();
+            Ok(())
+        });
+        assert_eq!(
+            config.get_access_token().await.unwrap(),
+            Some(access_token.to_string())
+        );
     }
 
     #[derive(Clone, Debug, Serialize)]
