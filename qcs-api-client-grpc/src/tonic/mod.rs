@@ -51,20 +51,14 @@ where
         }
     }
 
-    let token = match token_refresher
-        .get_access_token()
+    let token = token_refresher
+        .validated_access_token()
         .await
-        .map_err(Error::Refresh)?
-    {
-        Some(token) => token,
-        None => token_refresher
-            .refresh_access_token()
-            .await
-            .map_err(Error::Refresh)?,
-    };
+        .map_err(Error::Refresh)?;
 
     let (req, retry_req) = clone_request(req).await;
     let resp = make_request(&mut channel, req, token).await?;
+
     match resp.status() {
         StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
             // Refresh token and try again
@@ -213,20 +207,11 @@ where
         return service_call(original_req, config, channel).await;
     }
 
-    // request an access token if one hasn't been requested yet
-    let token = match config
-        .get_access_token()
+    let token = config
+        .validated_access_token()
         .with_current_context()
         .await
-        .map_err(Error::Refresh)?
-    {
-        Some(token) => token,
-        None => config
-            .refresh_access_token()
-            .with_current_context()
-            .await
-            .map_err(Error::Refresh)?,
-    };
+        .map_err(Error::Refresh)?;
 
     let (mut req, mut retry_req) = clone_request(original_req).with_current_context().await;
 
