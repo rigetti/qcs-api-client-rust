@@ -4962,7 +4962,6 @@ components:
           title: Docker Tag
           type: string
         enableSentry:
-          default: true
           description: Whether to send errors and data to Sentry
           title: Enable Sentry reporting
           type: boolean
