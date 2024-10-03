@@ -57,7 +57,6 @@ cp Cargo.toml "$WORKDIR"
 # Note: Everything below here is specifically for $WORKDIR.
 cd "$WORKDIR"
 
-
 # Edit Cargo.toml for the public repo; this requires dasel.
 if ! command -v dasel &> /dev/null
 then

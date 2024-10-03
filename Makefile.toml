@@ -58,3 +58,16 @@ condition = { platforms = ["mac"] }
 condition_script = ["command -v dasel && exit 1 || exit 0"]
 command = "brew install dasel"
 
+# used in CI to check dependencies are sorted.
+[tasks.install-cargo-sort]
+install_crate = { crate_name = "cargo-sort", version = "1.0.9", binary = "cargo", test_arg = ["sort", "--help"] }
+
+[tasks.sort-manifests]
+dependencies = ["install-cargo-sort"]
+command = "cargo"
+args = ["sort", "--workspace"]
+
+[tasks.check-manifests]
+dependencies = ["install-cargo-sort"]
+command = "cargo"
+args = ["sort", "--workspace", "--check"]

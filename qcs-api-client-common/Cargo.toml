@@ -28,36 +28,36 @@ python = ["dep:pyo3", "dep:pyo3-asyncio", "dep:paste", "dep:rigetti-pyo3", "toki
 
 [dependencies]
 async-trait = "0.1"
-backoff = { version = "0.4.0", features = ["tokio"] }
+backoff = { workspace = true }
+base64 = "0.22.1"
 derive_builder = "0.20.0"
+figment = { version = "0.10.18", features = ["env", "toml"] }
 futures = "0.3.26"
 home = "0.5.5"
-http = "0.2.8"
-figment = {version = "0.10.18", features = ["env", "toml"]}
+http = { workspace = true }
 jsonwebtoken = { workspace = true }
 paste = { version = "1.0.15", optional = true }
 pyo3 = { version = "0.20.3", features = ["multiple-pymethods"], optional = true }
-rigetti-pyo3 = { version = "0.3.6", optional = true }
-reqwest = { workspace = true, default-features = false, features = ["socks"] }
 pyo3-asyncio = { version = "0.20.0", features = ["tokio-runtime"], optional = true }
-serde = { version = "1.0", features = ["derive"] }
+reqwest = { workspace = true, default-features = false, features = ["socks"] }
+rigetti-pyo3 = { version = "0.3.6", optional = true }
+serde = { workspace = true, features = ["derive"] }
 shellexpand = "3.1.0"
-thiserror = "1.0.32"
+thiserror = { workspace = true }
 time = { version = "0.3.34", features = ["parsing"] }
-tokio = { version = "1.20.1", features = ["sync"] }
+tokio = { workspace = true, features = ["sync"] }
 toml = "0.8.14"
-tracing = { version = "0.1.37", optional = true }
-url = { version = "2.3.1", optional = true }
-urlpattern = { version = "0.2.0", optional = true }
-base64 = "0.22.1"
+tracing = { workspace = true, optional = true }
+url = { workspace = true, optional = true }
+urlpattern = { workspace = true, optional = true }
 
 [dev-dependencies]
 chrono = "0.4.38"
-figment = {version = "0.10.18", features = ["env", "toml", "test"]}
+figment = { version = "0.10.18", features = ["env", "toml", "test"] }
 httpmock = "0.7.0"
-rstest = "0.21.0"
+rstest = { workspace = true }
 serial_test = "3.1.1"
-tokio = { version = "1.20.1", features = ["fs", "macros"] }
+tokio = { workspace = true, features = ["fs", "macros"] }
 
 [build-dependencies]
 pyo3-build-config = { version = "0.22.1", optional = true }
@@ -91,7 +91,6 @@ noop_method_call = "warn"
 overflowing_literals = "warn"
 path_statements = "warn"
 patterns_in_fns_without_body = "warn"
-pointer_structural_match = "warn"
 semicolon_in_expressions_from_macros = "warn"
 trivial_casts = "warn"
 trivial_numeric_casts = "warn"

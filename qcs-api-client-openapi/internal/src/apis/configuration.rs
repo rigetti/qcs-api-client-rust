@@ -1,3 +1,17 @@
+// Copyright 2022 Rigetti Computing
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 /*
  * Rigetti QCS API
  *
@@ -12,8 +26,9 @@ use qcs_api_client_common::backoff;
 use reqwest;
 #[cfg(feature = "otel-tracing")]
 use {
+    qcs_api_client_common::tracing_configuration::HeaderAttributesFilter,
     reqwest_middleware::ClientBuilder, reqwest_tracing::reqwest_otel_span,
-    reqwest_tracing::TracingMiddleware, tracing,
+    reqwest_tracing::TracingMiddleware, tracing, tracing::Span,
 };
 
 #[derive(Debug, Clone)]
@@ -60,11 +75,7 @@ impl Configuration {
 
             let mut client_builder = ClientBuilder::new(client);
             if let Some(tracing_configuration) = qcs_config.tracing_configuration() {
-                // if tracing configuration set, tracing is enabled.
-                if let Some(tracing_filter) = tracing_configuration.filter() {
-                    // if a filter is set it, pass it to the middleware via Extension.
-                    client_builder = client_builder.with_init(Extension(tracing_filter.clone()));
-                }
+                client_builder = client_builder.with_init(Extension(tracing_configuration.clone()));
                 let middleware = TracingMiddleware::<FilteredSpanBackend>::new();
                 client_builder = client_builder.with(middleware);
             }
@@ -83,18 +94,55 @@ impl Configuration {
 struct FilteredSpanBackend;
 
 #[cfg(feature = "otel-tracing")]
+#[derive(Debug, Clone, Copy)]
+enum MetadataAttributeType {
+    Request,
+    Response,
+}
+
+#[cfg(feature = "otel-tracing")]
+impl std::fmt::Display for MetadataAttributeType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Request => write!(f, "request"),
+            Self::Response => write!(f, "response"),
+        }
+    }
+}
+
+#[cfg(feature = "otel-tracing")]
 impl FilteredSpanBackend {
-    fn is_enabled(
-        req: &reqwest::Request,
-        extensions: &mut task_local_extensions::Extensions,
-    ) -> bool {
-        if let Some(filter) =
-            extensions.get::<qcs_api_client_common::tracing_configuration::TracingFilter>()
+    fn is_enabled(req: &reqwest::Request, extensions: &mut http::Extensions) -> bool {
+        if let Some(filter) = extensions
+            .get::<qcs_api_client_common::tracing_configuration::TracingConfiguration>()
+            .and_then(|tracing_configuration| tracing_configuration.filter())
         {
             let input = urlpattern::UrlPatternMatchInput::Url(req.url().clone());
             return filter.is_enabled(&input);
         }
         true
+    }
+
+    fn add_header_metadata(
+        span: &Span,
+        header_map: &http::HeaderMap,
+        extensions: &http::Extensions,
+        metadata_attribute_type: MetadataAttributeType,
+    ) {
+        if let Some(tracing_configuration) =
+            extensions.get::<qcs_api_client_common::tracing_configuration::TracingConfiguration>()
+        {
+            let request_headers_to_trace = tracing_configuration
+                .request_headers()
+                .get_header_attributes(header_map);
+            for (key, value) in request_headers_to_trace {
+                tracing_opentelemetry::OpenTelemetrySpanExt::set_attribute(
+                    span,
+                    format!("http.{metadata_attribute_type}.header.{key}"),
+                    value,
+                );
+            }
+        }
     }
 }
 
@@ -106,7 +154,7 @@ impl reqwest_tracing::ReqwestOtelSpanBackend for FilteredSpanBackend {
     /// for details about the related semantic conventions.
     fn on_request_start(
         req: &reqwest::Request,
-        extensions: &mut task_local_extensions::Extensions,
+        extensions: &mut http::Extensions,
     ) -> tracing::Span {
         if !Self::is_enabled(req, extensions) {
             return tracing::Span::none();
@@ -118,20 +166,37 @@ impl reqwest_tracing::ReqwestOtelSpanBackend for FilteredSpanBackend {
             .get("User-Agent")
             .and_then(|ua| ua.to_str().ok())
             .unwrap_or("");
-        reqwest_otel_span!(
+        let span = reqwest_otel_span!(
             name = "HTTP request",
             req,
             http.url = uri,
             http.target = http_target,
             http.user_agent = user_agent
-        )
+        );
+        Self::add_header_metadata(
+            &span,
+            req.headers(),
+            extensions,
+            MetadataAttributeType::Request,
+        );
+
+        span
     }
 
     fn on_request_end(
         span: &tracing::Span,
         outcome: &reqwest_middleware::Result<reqwest::Response>,
-        _extension: &mut task_local_extensions::Extensions,
+        extension: &mut http::Extensions,
     ) {
+        if let Ok(response) = outcome {
+            Self::add_header_metadata(
+                span,
+                response.headers(),
+                extension,
+                MetadataAttributeType::Response,
+            );
+        }
+
         reqwest_tracing::default_on_request_end(span, outcome)
     }
 }
@@ -159,7 +224,7 @@ mod tests {
                 .parse()
                 .expect("test url should be valid"),
         );
-        let mut extensions = task_local_extensions::Extensions::new();
+        let mut extensions = http::Extensions::new();
         assert!(FilteredSpanBackend::is_enabled(&request, &mut extensions));
     }
 
@@ -182,7 +247,7 @@ mod tests {
 
         let url = url.parse().expect("test url should be valid");
         let request = reqwest::Request::new(reqwest::Method::GET, url);
-        let mut extensions = task_local_extensions::Extensions::new();
+        let mut extensions = http::Extensions::new();
         extensions.insert(tracing_filter.clone());
         assert_eq!(
             expected,

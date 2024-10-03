@@ -1,5 +1,8 @@
-use http::{Request, Response};
-use qcs_api_client_common::backoff::{self, backoff::Backoff, ExponentialBackoff};
+use http::{HeaderValue, Request, Response};
+use qcs_api_client_common::{
+    backoff::{self, backoff::Backoff, ExponentialBackoff},
+    configuration::TokenError,
+};
 use tonic::{body::BoxBody, client::GrpcService, Status};
 
 use qcs_api_client_common::backoff::duration_from_response as duration_from_http_response;
@@ -10,7 +13,7 @@ use std::{
     time::Duration,
 };
 
-use super::clone_request;
+use super::{build_duplicate_request, RequestBodyDuplicationError};
 use tower::Layer;
 
 /// The [`Layer`] used to apply exponential backoff retry logic to requests.
@@ -41,6 +44,10 @@ impl<S: GrpcService<BoxBody>> Layer<S> for RetryLayer {
 /// The [`GrpcService`] that wraps the gRPC client in order to provide exponential backoff retry
 /// logic.
 ///
+/// This middleware will add a `x-request-id` header to each request with a unique UUID and a
+/// `x-request-retry-index` header with the number of retries that have been attempted for the
+/// request.
+///
 /// See also: [`RetryLayer`].
 #[derive(Clone, Debug)]
 pub struct RetryService<S: GrpcService<BoxBody>> {
@@ -68,17 +75,24 @@ where
     S: GrpcService<BoxBody> + Send + Clone + 'static,
     S::Future: Send,
     S::ResponseBody: Send,
+    super::error::Error<TokenError>: From<S::Error> + From<RequestBodyDuplicationError>,
 {
     type ResponseBody = <S as GrpcService<BoxBody>>::ResponseBody;
-    type Error = <S as GrpcService<BoxBody>>::Error;
+    type Error = super::error::Error<TokenError>;
     type Future =
         Pin<Box<dyn Future<Output = Result<Response<Self::ResponseBody>, Self::Error>> + Send>>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.service.poll_ready(cx)
+        self.service
+            .poll_ready(cx)
+            .map_err(super::error::Error::from)
     }
 
     fn call(&mut self, mut req: Request<BoxBody>) -> Self::Future {
+        if let Ok(request_id) = new_request_id() {
+            req.headers_mut().insert(KEY_X_REQUEST_ID, request_id);
+        }
+
         // Clone the `backoff` so that new requests don't reuse it
         // and so that the `backoff` can be moved into the async closure.
         let mut backoff = self.backoff.clone();
@@ -90,15 +104,25 @@ where
         // https://github.com/tower-rs/tower/issues/547
         std::mem::swap(&mut self.service, &mut service);
 
-        Box::pin(async move {
+        super::common::pin_future_with_otel_context_if_available(async move {
+            let mut attempt = 0;
             loop {
-                let (request, retained) = clone_request(req).await;
+                let (mut request, retained) = build_duplicate_request(req).await?;
                 req = retained;
 
                 // Ensure that the service is ready before trying to use it.
                 // Failure to do this *will* cause a panic.
-                poll_fn(|cx| service.poll_ready(cx)).await?;
+                poll_fn(|cx| service.poll_ready(cx))
+                    .await
+                    .map_err(super::error::Error::from)?;
 
+                if let Ok(retry_index_header_value) =
+                    http::HeaderValue::from_str(attempt.to_string().as_str())
+                {
+                    request
+                        .headers_mut()
+                        .insert(KEY_X_REQUEST_RETRY_INDEX, retry_index_header_value);
+                }
                 let duration = match service.call(request).await {
                     Ok(response) => {
                         if let Some(duration) = duration_from_response(&response, &mut backoff) {
@@ -107,14 +131,23 @@ where
                             break Ok(response);
                         }
                     }
-                    Err(error) => break Err(error),
+                    Err(error) => break Err(super::error::Error::from(error)),
                 };
 
                 tokio::time::sleep(duration).await;
+                attempt += 1;
             }
         })
     }
 }
+
+fn new_request_id() -> Result<HeaderValue, http::header::InvalidHeaderValue> {
+    let request_id = uuid::Uuid::new_v4().to_string();
+    HeaderValue::from_str(request_id.as_str())
+}
+
+const KEY_X_REQUEST_ID: &str = "x-request-id";
+const KEY_X_REQUEST_RETRY_INDEX: &str = "x-request-retry-index";
 
 #[cfg(test)]
 mod tests {
@@ -193,7 +226,8 @@ mod tests {
         let health_server = HealthServer::new(FlakyHealthService::default());
 
         uds_grpc_stream::serve(health_server, |channel| async {
-            let response = HealthClient::new(wrap_channel_with_retry(channel))
+            let wrapped_channel = wrap_channel_with_retry(channel);
+            let response = HealthClient::new(wrapped_channel)
                 .check(Request::new(tonic_health::pb::HealthCheckRequest {
                     service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),
                 }))

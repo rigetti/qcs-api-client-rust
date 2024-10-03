@@ -8,47 +8,40 @@ categories = ["api-bindings"]
 publish = false
 
 [dependencies]
+anyhow = { version = "1.0.68", optional = true }
+http = { workspace = true }
 qcs-api-client-common = { path = "../../qcs-api-client-common", version = "0.10.2" }
-# Before updating `serde`, check for the following:
-#
-# 1. Has support been added for retaining the tag field for internally tagged enums?
-# 2. Has support been added for deserializing into a default enum variant if the tag
-#    does not match other variants or is not present?
-#
-# If 1 *and* 2 are true, then `src/models/channels/manual_serde.rs` can be removed,
-# along with the relevant parts of `scripts/patch_generated_code.sh`, and the derived
-# versions of the traits can be used along with the above features.
-#
-# Otherwise, make sure that `manual_serde.rs` still compiles with the newer version,
-# as it uses `serde` modules not covered by semver.
-serde = { version = "1.0.140", features = ["derive"] }
-serde_json = "1.0.82"
-url = "2.2.2"
+reqwest = { workspace = true, features = ["multipart"] }
 reqwest-middleware = { workspace = true, optional = true }
 reqwest-tracing = { workspace = true, optional = true }
-task-local-extensions = { version = "0.1.3", optional = true }
-urlpattern = { version = "0.2.0", optional = true }
-tracing = { version = "0.1.37", optional = true }
-anyhow = { version = "1.0.68", optional = true }
-tokio = { version = "1.20.1", features = ["time"] }
-
-[dependencies.reqwest]
-workspace = true
-features = ["multipart"]
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["time"] }
+tracing = { workspace = true, optional = true }
+tracing-opentelemetry = { workspace = true, optional = true }
+url = { workspace = true }
+urlpattern = { workspace = true, optional = true }
 
 [dev-dependencies]
-rstest = "0.17.0"
-tokio = { version = "1.20.1", features = ["rt-multi-thread", "rt", "macros"] }
+rstest = { workspace = true } 
+tokio = { workspace = true, features = ["rt-multi-thread", "rt", "macros"] }
 
 [features]
 # The old name of the tracing-opentelemetry feature, here for backwards compatibility
 otel-tracing = ["tracing-opentelemetry"]
-tracing = ["dep:tracing", "urlpattern", "qcs-api-client-common/tracing"]
-tracing-config = ["tracing", "qcs-api-client-common/tracing-config"]
+tracing = [
+  "dep:tracing",
+  "qcs-api-client-common/tracing",
+  "urlpattern",
+]
+tracing-config = [
+  "qcs-api-client-common/tracing-config",
+  "tracing", 
+]
 tracing-opentelemetry = [
   "dep:anyhow",
-  "dep:task-local-extensions",
   "dep:reqwest-middleware",
   "dep:reqwest-tracing",
+  "dep:tracing-opentelemetry",
   "tracing-config",
 ]

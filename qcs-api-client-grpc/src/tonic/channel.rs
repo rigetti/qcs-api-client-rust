@@ -4,13 +4,10 @@
 use std::time::Duration;
 
 use backoff::ExponentialBackoff;
-use http::{
-    uri::{InvalidUri, Scheme},
-    Uri,
-};
-use hyper::client::HttpConnector;
-use hyper_proxy::{Intercept, Proxy, ProxyConnector};
+use http::{uri::InvalidUri, Uri};
+use hyper_proxy2::{Intercept, Proxy, ProxyConnector};
 use hyper_socks2::{Auth, SocksConnector};
+use hyper_util::client::legacy::connect::HttpConnector;
 use tonic::{
     body::BoxBody,
     client::GrpcService,
@@ -20,11 +17,15 @@ use tower::{Layer, ServiceBuilder};
 use url::Url;
 
 use qcs_api_client_common::{
-    backoff,
-    backoff::default_backoff,
+    backoff::{self, default_backoff},
     configuration::{ClientConfiguration, LoadError, TokenError, TokenRefresher},
 };
 
+#[cfg(feature = "tracing")]
+use qcs_api_client_common::tracing_configuration::TracingConfiguration;
+
+#[cfg(feature = "tracing")]
+use super::trace::{build_trace_layer, CustomTraceLayer, CustomTraceService};
 use super::{Error, RefreshLayer, RefreshService, RetryLayer, RetryService};
 
 /// Errors that may occur when configuring a channel connection
@@ -143,31 +144,60 @@ where
 #[derive(Clone, Debug)]
 pub struct ChannelBuilder<O = ()> {
     endpoint: Endpoint,
+    #[cfg(feature = "tracing")]
+    trace_layer: CustomTraceLayer,
     options: O,
 }
 
 impl From<Endpoint> for ChannelBuilder<()> {
     fn from(endpoint: Endpoint) -> Self {
-        Self {
+        #[cfg(feature = "tracing")]
+        {
+            let base_url = endpoint.uri().to_string();
+            Self {
+                endpoint,
+                trace_layer: build_trace_layer(base_url, None),
+                options: (),
+            }
+        }
+
+        #[cfg(not(feature = "tracing"))]
+        return Self {
             endpoint,
             options: (),
-        }
+        };
     }
 }
 
 impl ChannelBuilder<()> {
     /// Create a [`ChannelBuilder`] using the given [`Uri`]
     pub fn from_uri(uri: Uri) -> Self {
-        Self {
+        #[cfg(feature = "tracing")]
+        {
+            let base_url = uri.to_string();
+            Self {
+                endpoint: get_endpoint(uri),
+                trace_layer: build_trace_layer(base_url, None),
+                options: (),
+            }
+        }
+
+        #[cfg(not(feature = "tracing"))]
+        return Self {
             endpoint: get_endpoint(uri),
             options: (),
-        }
+        };
     }
 }
 
+#[cfg(feature = "tracing")]
+type TargetService = CustomTraceService;
+#[cfg(not(feature = "tracing"))]
+type TargetService = Channel;
+
 impl<O> ChannelBuilder<O>
 where
-    O: IntoService<Channel>,
+    O: IntoService<TargetService>,
 {
     /// Wrap the channel with a timeout.
     #[must_use]
@@ -184,13 +214,23 @@ where
     where
         T: TokenRefresher + Clone + Send + Sync,
     {
-        ChannelBuilder {
+        #[cfg(feature = "tracing")]
+        return ChannelBuilder {
+            endpoint: self.endpoint,
+            trace_layer: self.trace_layer,
+            options: RefreshOptions {
+                layer,
+                other: self.options,
+            },
+        };
+        #[cfg(not(feature = "tracing"))]
+        return ChannelBuilder {
             endpoint: self.endpoint,
             options: RefreshOptions {
                 layer,
                 other: self.options,
             },
-        }
+        };
     }
 
     /// Wrap the channel with QCS authentication using the given [`TokenRefresher`].
@@ -206,7 +246,18 @@ where
         self,
         config: ClientConfiguration,
     ) -> ChannelBuilder<RefreshOptions<O, ClientConfiguration>> {
-        self.with_token_refresher(config)
+        #[cfg(feature = "tracing")]
+        {
+            let base_url = self.endpoint.uri().to_string();
+            let trace_layer = build_trace_layer(base_url, config.tracing_configuration());
+            let mut builder = self.with_token_refresher(config);
+            builder.trace_layer = trace_layer;
+            builder
+        }
+        #[cfg(not(feature = "tracing"))]
+        {
+            self.with_token_refresher(config)
+        }
     }
 
     /// Wrap the channel with QCS authentication for the given QCS profile.
@@ -228,13 +279,23 @@ where
 
     /// Wrap the channel with the given [`RetryLayer`].
     pub fn with_retry_layer(self, layer: RetryLayer) -> ChannelBuilder<RetryOptions<O>> {
-        ChannelBuilder {
+        #[cfg(feature = "tracing")]
+        return ChannelBuilder {
+            endpoint: self.endpoint,
+            trace_layer: self.trace_layer,
+            options: RetryOptions {
+                layer,
+                other: self.options,
+            },
+        };
+        #[cfg(not(feature = "tracing"))]
+        return ChannelBuilder {
             endpoint: self.endpoint,
             options: RetryOptions {
                 layer,
                 other: self.options,
             },
-        }
+        };
     }
 
     /// Wrap the channel with the given [`ExponentialBackoff`] configuration.
@@ -257,6 +318,13 @@ where
     /// Returns a [`ChannelError`] if the service cannot be built.
     pub fn build(self) -> Result<O::Service, ChannelError> {
         let channel = get_channel_with_endpoint(&self.endpoint)?;
+        #[cfg(feature = "tracing")]
+        {
+            let traced_channel = self.trace_layer.layer(channel);
+            Ok(self.options.into_service(traced_channel))
+        }
+
+        #[cfg(not(feature = "tracing"))]
         Ok(self.options.into_service(channel))
     }
 }
@@ -385,7 +453,7 @@ pub fn get_channel_with_endpoint(endpoint: &Endpoint) -> Result<Channel, Channel
     let mut connector = HttpConnector::new();
     connector.enforce_http(false);
 
-    let connect_to = |uri: Uri, intercept: Intercept| {
+    let connect_to = |uri: http::Uri, intercept: Intercept| {
         let connector = connector.clone();
         match uri.scheme_str() {
             Some("socks5") => {
@@ -397,7 +465,7 @@ pub fn get_channel_with_endpoint(endpoint: &Endpoint) -> Result<Channel, Channel
                 Ok(endpoint.connect_with_connector_lazy(socks_connector))
             }
             Some("https" | "http") => {
-                let is_http = uri.scheme() == Some(&Scheme::HTTP);
+                let is_http = uri.scheme() == Some(&http::uri::Scheme::HTTP);
                 let proxy = Proxy::new(intercept, uri);
                 let mut proxy_connector = ProxyConnector::from_proxy(connector, proxy)?;
                 if is_http {
@@ -528,5 +596,17 @@ where
 {
     ServiceBuilder::new()
         .layer(RetryLayer::default())
+        .service(channel)
+}
+
+#[cfg(feature = "tracing")]
+/// Add a tracing layer with OpenTelemetry semantics to the `channel`.
+pub fn wrap_channel_with_tracing(
+    channel: Channel,
+    base_url: String,
+    configuration: TracingConfiguration,
+) -> CustomTraceService {
+    ServiceBuilder::new()
+        .layer(build_trace_layer(base_url, Some(&configuration)))
         .service(channel)
 }

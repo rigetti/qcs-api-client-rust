@@ -78,7 +78,7 @@ where
         // Unpack the GrpcWebCall part
         let mut service = self.service.clone();
         std::mem::swap(&mut self.service, &mut service);
-        Box::pin(async move {
+        super::common::pin_future_with_otel_context_if_available(async move {
             let headers = req.headers().clone();
             let method = req.method().clone();
             let uri = req.uri().clone();
