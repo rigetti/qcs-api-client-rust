@@ -1,6 +1,6 @@
 [project]
 name = "qcs-api-client-common"
-version = "0.10.2"
+version = "0.11.0"
 description = "Contains core QCS client functionality and middleware implementations."
 readme = "README-py.md"
 license = { text = "Apache-2.0" }
