@@ -1,3 +1,9 @@
+## 0.12.0 (2024-10-03)
+
+### Breaking Changes
+
+#### Resolve "RefreshService and tower layer challenges"
+
 ## 0.11.2 (2024-09-17)
 
 ### Fixes

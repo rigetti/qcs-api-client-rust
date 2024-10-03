@@ -370,13 +370,13 @@ impl From<TokenError> for PyErr {
     fn from(value: TokenError) -> Self {
         let message = value.to_string();
         match value {
-            TokenError::NoRefreshToken | TokenError::NoCredentials | TokenError::NoAccessToken | TokenError::NoAuthServer | TokenError::InvalidAccessToken(_) | TokenError::Fetch(_) | TokenError::ExternallyManaged(_) => {
-                PyValueError::new_err(message)
-            }
-            #[cfg(feature = "tonic")]
-            TokenError::Transport(e) => pyo3::exceptions::PyRuntimeError::new_err(
-                "Unexpected error type received, this is a bug within the qcs-api-client-common package. Please create an issue: {e}",
-            ),
+            TokenError::NoRefreshToken
+            | TokenError::NoCredentials
+            | TokenError::NoAccessToken
+            | TokenError::NoAuthServer
+            | TokenError::InvalidAccessToken(_)
+            | TokenError::Fetch(_)
+            | TokenError::ExternallyManaged(_) => PyValueError::new_err(message),
         }
     }
 }

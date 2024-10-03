@@ -28,8 +28,17 @@ There are some caveats to the proxy configuration:
 - If both variables are defined, neither can be a `socks5` proxy, unless they are both the same value.
 - If only one variable is defined, and it is a `socks5` proxy, *all* traffic will routed through it.
 
+## Tracing
+
+This crates also supports tracing via [`tower_http::trace`][tower_http]. It additionally customizes spans according
+to [OpenTelemetry gRPC semantic conventions][otel_semconv].
+
+This functionality is available using the "tracing" feature. The "tracing-opentelemetry" feature extends capabilities by supporting dynamically configured span attributes (such as "rpc.grpc.request.metadata.<key>") and context propagation. See [`qcs_api_client_common`][qcs_api_client_common] for configuration details.
 
 [crates.io]: https://crates.io/crates/qcs-api-client-grpc
 [docs.rs]: https://docs.rs/qcs-api-client-grpc
 [get_channel]: https://docs.rs/qcs-api-client-grpc/latest/qcs_api_client_grpc/fn.get_channel.html
 [wrap_channel]: https://docs.rs/qcs-api-client-grpc/latest/qcs_api_client_grpc/fn.wrap_channel.html
+[tower_http]: https://docs.rs/tower-http/latest/tower_http/trace/index.html
+[otel_semconv]: https://opentelemetry.io/docs/specs/semconv/rpc/grpc/
+[qcs_api_client_common]: https://docs.rs/qcs-api-client-common/latest/qcs_api_client_common/
