@@ -55,11 +55,84 @@
 //! });
 //! ```
 
-use std::str::FromStr;
+use std::{collections::HashSet, str::FromStr};
 
 pub use urlpattern::{UrlPatternInit, UrlPatternMatchInput, UrlPatternResult};
 
 use {std::env, thiserror::Error, urlpattern::UrlPattern};
+
+/// A utility for configuring values either by inclusion or exclusion.
+#[derive(Debug, Clone, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum IncludeExclude<T>
+where
+    T: std::hash::Hash + Eq,
+{
+    /// Include these values. All other values are excluded.
+    Include(HashSet<T>),
+    /// Exclude these values. All other values are included.
+    Exclude(HashSet<T>),
+}
+
+impl<T> IncludeExclude<T>
+where
+    T: std::hash::Hash + Eq,
+{
+    /// Returns a new instance that includes all values.
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn include_all() -> Self {
+        Self::Exclude(HashSet::new())
+    }
+
+    /// Returns a new instance that excludes all values.
+    #[must_use]
+    pub fn include_none() -> Self {
+        Self::Include(HashSet::new())
+    }
+}
+
+/// A trait for filtering header values into a [`Vec<(String, String)>`] of tracing attributes.
+pub trait HeaderAttributesFilter {
+    /// Given a [`http::HeaderMap`], return a corresponding list of tracing attributes.
+    fn get_header_attributes(&self, headers: &http::HeaderMap) -> Vec<(String, String)>;
+}
+
+impl HeaderAttributesFilter for IncludeExclude<String> {
+    /// Any header values that return an error on [`http::HeaderValue::to_str`] will be excluded.
+    /// Note, this implementation intentionally scales linearly with the number of included headers
+    /// when [`Self::Include`] is used and scales linearly with [`http::HeaderMap::len`]
+    /// when [`Self::Exclude`] is used.
+    #[must_use]
+    fn get_header_attributes(&self, headers: &http::HeaderMap) -> Vec<(String, String)> {
+        match self {
+            Self::Include(set) => {
+                let mut header_attributes = Vec::new();
+                for header_name in set {
+                    if let Some(header_value) = headers
+                        .get(header_name)
+                        .and_then(|header_value| header_value.to_str().ok())
+                    {
+                        header_attributes.push((header_name.to_string(), header_value.to_string()));
+                    }
+                }
+                header_attributes
+            }
+            Self::Exclude(set) => {
+                let mut header_attributes = Vec::new();
+                for (header_name, header_value) in headers {
+                    if !set.contains(header_name.as_str()) {
+                        if let Ok(header_value) = header_value.to_str() {
+                            header_attributes
+                                .push((header_name.to_string(), header_value.to_string()));
+                        }
+                    }
+                }
+                header_attributes
+            }
+        }
+    }
+}
 
 /// Environment variable for controlling whether any network API calls are traced.
 pub static QCS_API_TRACING_ENABLED: &str = "QCS_API_TRACING_ENABLED";
@@ -91,10 +164,23 @@ pub enum TracingFilterError {
 
 /// A builder for [`TracingConfiguration`].
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct TracingConfigurationBuilder {
     filter: Option<TracingFilter>,
     propagate_otel_context: bool,
+    request_headers: IncludeExclude<String>,
+    response_headers: IncludeExclude<String>,
+}
+
+impl Default for TracingConfigurationBuilder {
+    fn default() -> Self {
+        Self {
+            filter: None,
+            propagate_otel_context: false,
+            request_headers: IncludeExclude::include_none(),
+            response_headers: IncludeExclude::include_none(),
+        }
+    }
 }
 
 impl From<TracingConfiguration> for TracingConfigurationBuilder {
@@ -102,6 +188,8 @@ impl From<TracingConfiguration> for TracingConfigurationBuilder {
         Self {
             filter: tracing_configuration.filter,
             propagate_otel_context: tracing_configuration.propagate_otel_context,
+            request_headers: tracing_configuration.request_headers,
+            response_headers: tracing_configuration.response_headers,
         }
     }
 }
@@ -117,11 +205,29 @@ impl TracingConfigurationBuilder {
         self
     }
 
-    /// Sets `propagate_otel_context` which indicates whether Open Telelmetry context propagation
+    /// Sets `propagate_otel_context` which indicates whether OpenTelemetry context propagation
     /// headers should be set on network API calls.
     #[must_use]
     pub fn set_propagate_otel_context(mut self, propagate_otel_context: bool) -> Self {
         self.propagate_otel_context = propagate_otel_context;
+        self
+    }
+
+    /// Set the request headers to include in the trace request attributes. As per
+    /// OpenTelemetry semantic conventions, these will be included as
+    /// `rpc.grpc.request.metadata.{key}` attributes.
+    #[must_use]
+    pub fn set_request_headers(mut self, request_headers: IncludeExclude<String>) -> Self {
+        self.request_headers = request_headers;
+        self
+    }
+
+    /// Set the response headers to include in the trace response attributes. As per
+    /// OpenTelemetry semantic conventions, these will be included as
+    /// `rpc.grpc.response.metadata.{key}` attributes.
+    #[must_use]
+    pub fn set_response_headers(mut self, response_headers: IncludeExclude<String>) -> Self {
+        self.response_headers = response_headers;
         self
     }
 
@@ -131,19 +237,55 @@ impl TracingConfigurationBuilder {
         TracingConfiguration {
             filter: self.filter,
             propagate_otel_context: self.propagate_otel_context,
+            request_headers: self.request_headers,
+            response_headers: self.response_headers,
         }
     }
 }
 
 /// Configuration for tracing of network API calls. Note, this does not configure any trace
 /// processing or collector. Rather, it configures which network API calls should be traced.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct TracingConfiguration {
-    /// An optional [`TracingFilter`].
+    /// An optional [`TracingFilter`]. If `None`, all network API calls will be traced.
     filter: Option<TracingFilter>,
-    /// Whether or not API calls should set Open Telemetry context propagation headers.
+    /// Whether or not API calls should set OpenTelemetry context propagation headers.
     propagate_otel_context: bool,
+    /// The headers to include in the trace request attributes. As per
+    /// OpenTelemetry semantic conventions, these will be included as
+    /// `rpc.grpc.request.metadata.{key}` attributes.
+    request_headers: IncludeExclude<String>,
+    /// The headers to include in the trace response attributes. As per
+    /// OpenTelemetry semantic conventions, these will be included as
+    /// `rpc.grpc.response.metadata.{key}` attributes.
+    response_headers: IncludeExclude<String>,
 }
+
+impl Default for TracingConfiguration {
+    fn default() -> Self {
+        Self {
+            filter: None,
+            propagate_otel_context: false,
+            request_headers: IncludeExclude::Include(
+                [KEY_X_REQUEST_ID, KEY_X_REQUEST_RETRY_INDEX]
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect(),
+            ),
+            response_headers: IncludeExclude::Include(
+                std::iter::once(KEY_X_REQUEST_ID.to_string()).collect(),
+            ),
+        }
+    }
+}
+
+/// The canonical metadata key for request and response request ids.
+const KEY_X_REQUEST_ID: &str = "x-request-id";
+
+/// A metadata key that may be used to indicate the number of times a request has been
+/// retried. This may be useful to distinguish between retried requests that share
+/// the same request id.
+const KEY_X_REQUEST_RETRY_INDEX: &str = "x-request-retry-index";
 
 impl TracingConfiguration {
     #![allow(clippy::missing_const_for_fn)]
@@ -169,6 +311,7 @@ impl TracingConfiguration {
         Ok(Some(Self {
             filter,
             propagate_otel_context,
+            ..Self::default()
         }))
     }
 
@@ -178,11 +321,23 @@ impl TracingConfiguration {
         self.filter.as_ref()
     }
 
-    /// Indicates whether Open Telemetry context propagation headers should be set on
+    /// Indicates whether OpenTelemetry context propagation headers should be set on
     /// API calls.
     #[must_use]
     pub fn propagate_otel_context(&self) -> bool {
         self.propagate_otel_context
+    }
+
+    /// Get the request headers that should be included in the trace request attributes.
+    #[must_use]
+    pub fn request_headers(&self) -> &IncludeExclude<String> {
+        &self.request_headers
+    }
+
+    /// Get the response headers that should be included in the trace response attributes.
+    #[must_use]
+    pub fn response_headers(&self) -> &IncludeExclude<String> {
+        &self.response_headers
     }
 
     /// Returns `true` if the specified URL should be traced. For details on how this is determined,

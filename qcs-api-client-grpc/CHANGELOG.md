@@ -1,3 +1,21 @@
+## 0.11.0-rc.0 (2024-10-03)
+
+### Breaking Changes
+
+#### update http and support grpc trace layer
+
+### Fixes
+
+#### misc mr feedback
+
+#### avoid overloading clone copy rust semantics
+
+#### tracing configuration features import
+
+#### avoid string deref
+
+#### update tonic per cargo-deny ddos warning
+
 ## 0.10.2 (2024-09-17)
 
 ### Fixes

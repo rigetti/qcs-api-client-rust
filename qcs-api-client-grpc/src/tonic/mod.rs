@@ -1,22 +1,20 @@
 /// QCS Middleware for [`tonic`] clients.
-use http::StatusCode;
-use http_body::{Body, Full};
-use tonic::{
-    body::BoxBody,
-    client::GrpcService,
-    codegen::http::{Request, Response},
-    Status,
-};
-
-#[cfg(feature = "tracing")]
-use tonic::transport::Uri;
+///
+use futures_util::pin_mut;
+use http::Request;
+use http_body::Body;
+use http_body_util::BodyExt;
+use tonic::body::BoxBody;
 
 mod channel;
+mod common;
 mod error;
 #[cfg(feature = "grpc-web")]
 mod grpc_web;
 mod refresh;
 mod retry;
+#[cfg(feature = "tracing")]
+mod trace;
 
 pub use channel::*;
 pub use error::*;
@@ -25,66 +23,59 @@ pub use grpc_web::*;
 pub use refresh::*;
 pub use retry::*;
 
-use qcs_api_client_common::configuration::TokenRefresher;
+/// An error observed while duplicating a request body. This may be returned by any
+/// [`tower::Service`] that duplicates a request body for the purpose of retrying a request.
+#[derive(Debug, thiserror::Error)]
+pub enum RequestBodyDuplicationError {
+    /// The inner service returned an error from the server, or the client cancelled the
+    /// request.
+    #[error(transparent)]
+    Status(#[from] tonic::Status),
+    /// Failed to read the request body for cloning.
+    #[error("failed to read request body for request clone: {0}")]
+    HttpBody(#[from] http::Error),
+}
 
-async fn service_call<C, T>(
-    req: Request<BoxBody>,
-    token_refresher: T,
-    mut channel: C,
-) -> Result<Response<<C as GrpcService<BoxBody>>::ResponseBody>, Error<T::Error>>
-where
-    C: GrpcService<BoxBody> + Send,
-    <C as GrpcService<BoxBody>>::ResponseBody: Send,
-    <C as GrpcService<BoxBody>>::Future: Send,
-    T: TokenRefresher + Send,
-    T::Error: std::error::Error,
-    Error<T::Error>: From<C::Error>,
-{
-    #[cfg(feature = "tracing")]
-    {
-        if should_trace(
-            &token_refresher,
-            &get_full_url_string(&token_refresher, req.uri()),
-            true,
-        ) {
-            tracing::debug!("making gRPC request to {}", req.uri());
+impl From<RequestBodyDuplicationError> for tonic::Status {
+    fn from(err: RequestBodyDuplicationError) -> tonic::Status {
+        match err {
+            RequestBodyDuplicationError::Status(status) => status,
+            RequestBodyDuplicationError::HttpBody(error) => tonic::Status::cancelled(format!(
+                "failed to read request body for request clone: {error}"
+            )),
         }
-    }
-
-    let token = token_refresher
-        .validated_access_token()
-        .await
-        .map_err(Error::Refresh)?;
-
-    let (req, retry_req) = clone_request(req).await;
-    let resp = make_request(&mut channel, req, token).await?;
-
-    match resp.status() {
-        StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
-            // Refresh token and try again
-            let token = token_refresher
-                .refresh_access_token()
-                .await
-                .map_err(Error::Refresh)?;
-            make_request(&mut channel, retry_req, token).await
-        }
-        _ => Ok(resp),
     }
 }
 
-async fn clone_body(body: Request<BoxBody>) -> (BoxBody, BoxBody) {
+type RequestBodyDuplicationResult<T> = Result<T, RequestBodyDuplicationError>;
+
+async fn build_duplicate_frame_bytes(
+    mut request: Request<tonic::body::BoxBody>,
+) -> RequestBodyDuplicationResult<(tonic::body::BoxBody, tonic::body::BoxBody)> {
     let mut bytes = Vec::new();
-    let mut body = body.into_body();
-    while let Some(result) = body.data().await {
-        bytes.extend(result.expect("loading request body should not fail here"));
+
+    let body = request.body_mut();
+    pin_mut!(body);
+    while let Some(result) = std::future::poll_fn(|cx| body.as_mut().poll_frame(cx)).await {
+        let frame_bytes = result?.into_data().map_err(|frame| {
+            tonic::Status::cancelled(format!(
+                "cannot duplicate a frame that is not a data frame: {frame:?}"
+            ))
+        })?;
+        bytes.extend(frame_bytes);
     }
 
-    let bytes =
-        Full::from(bytes).map_err(|_| Status::internal("this will never happen from Infallible"));
-    (BoxBody::new(bytes.clone()), BoxBody::new(bytes))
+    let bytes = http_body_util::Full::from(bytes)
+        .map_err(|_| tonic::Status::cancelled("failed to initialize single chunk body"));
+    Ok((
+        tonic::body::BoxBody::new(bytes.clone()),
+        tonic::body::BoxBody::new(bytes),
+    ))
 }
 
-async fn clone_request(req: Request<BoxBody>) -> (Request<BoxBody>, Request<BoxBody>) {
+async fn build_duplicate_request(
+    req: Request<BoxBody>,
+) -> RequestBodyDuplicationResult<(Request<BoxBody>, Request<BoxBody>)> {
     let mut builder_1 = Request::builder()
         .method(req.method().clone())
         .uri(req.uri().clone())
@@ -100,263 +91,131 @@ async fn clone_request(req: Request<BoxBody>) -> (Request<BoxBody>, Request<BoxB
         builder_2 = builder_2.header(key.clone(), val.clone());
     }
 
-    let (body_1, body_2) = clone_body(req).await;
+    let (body_1, body_2) = build_duplicate_frame_bytes(req).await?;
 
-    let req_1 = builder_1
-        .body(body_1)
-        .expect("all values from existing request should be valid");
+    let req_1 = builder_1.body(body_1)?;
 
-    let req_2 = builder_2
-        .body(body_2)
-        .expect("all values from existing request should be valid");
+    let req_2 = builder_2.body(body_2)?;
 
-    (req_1, req_2)
-}
-
-async fn make_request<C, E: std::error::Error>(
-    service: &mut C,
-    mut request: Request<BoxBody>,
-    token: String,
-) -> Result<Response<<C as GrpcService<BoxBody>>::ResponseBody>, Error<E>>
-where
-    C: GrpcService<BoxBody> + Send,
-    <C as GrpcService<BoxBody>>::ResponseBody: Send,
-    <C as GrpcService<BoxBody>>::Future: Send,
-    Error<E>: From<C::Error>,
-{
-    let header_val = format!("Bearer {token}")
-        .try_into()
-        .map_err(Error::InvalidAccessToken)?;
-    request.headers_mut().insert("authorization", header_val);
-    service.call(request).await.map_err(Error::from)
-}
-
-#[cfg(feature = "tracing")]
-fn get_full_url_string<T: TokenRefresher>(token_refresher: &T, uri: &Uri) -> String {
-    format!("{}{}", token_refresher.base_url(), uri)
-}
-
-#[cfg(feature = "tracing")]
-fn should_trace<T: TokenRefresher>(token_refresher: &T, url_str: &str, default: bool) -> bool {
-    use urlpattern::UrlPatternMatchInput;
-
-    let url = url_str.parse::<::url::Url>().ok();
-
-    url.map_or(default, |url| {
-        token_refresher.should_trace(&UrlPatternMatchInput::Url(url))
-    })
-}
-
-#[cfg(feature = "tracing-opentelemetry")]
-async fn make_traced_request<C, E: std::error::Error>(
-    service: &mut C,
-    mut request: Request<BoxBody>,
-    token: String,
-) -> Result<Response<<C as GrpcService<BoxBody>>::ResponseBody>, Error<E>>
-where
-    C: GrpcService<BoxBody> + Send,
-    <C as GrpcService<BoxBody>>::Future: Send,
-    Error<E>: From<C::Error>,
-{
-    use opentelemetry::trace::FutureExt;
-    use tracing::Instrument;
-
-    let header_val = format!("Bearer {token}")
-        .try_into()
-        .map_err(Error::InvalidAccessToken)?;
-    request.headers_mut().insert("authorization", header_val);
-
-    let span = make_grpc_request_span(&request);
-    service
-        .call(request)
-        .with_current_context()
-        .instrument(span)
-        .await
-        .map_err(Error::from)
-}
-
-#[cfg(feature = "tracing-opentelemetry")]
-async fn traced_service_call<C, T: TokenRefresher + Send>(
-    original_req: Request<BoxBody>,
-    config: T,
-    mut channel: C,
-) -> Result<Response<<C as GrpcService<BoxBody>>::ResponseBody>, Error<T::Error>>
-where
-    C: GrpcService<BoxBody> + Send,
-    <C as GrpcService<BoxBody>>::ResponseBody: Send,
-    <C as GrpcService<BoxBody>>::Future: Send,
-    T::Error: std::error::Error,
-    Error<T::Error>: From<C::Error>,
-{
-    use opentelemetry::{propagation::TextMapPropagator, sdk::propagation::TraceContextPropagator};
-    use opentelemetry_api::trace::FutureExt;
-    use opentelemetry_http::HeaderInjector;
-    use qcs_api_client_common::tracing_configuration::TracingConfiguration;
-
-    // The request URI here doesn't include the base url, so we have  to manually add it here to evaluate request filter patterns.
-    let full_request_url = format!("{}{}", config.base_url(), &original_req.uri());
-
-    if should_trace(&config, &full_request_url, true) {
-        tracing::debug!("making traced gRPC request to {}", full_request_url);
-    }
-
-    let should_otel_trace =
-        config.tracing_configuration().is_some() && should_trace(&config, &full_request_url, false);
-
-    if !should_otel_trace {
-        return service_call(original_req, config, channel).await;
-    }
-
-    let token = config
-        .validated_access_token()
-        .with_current_context()
-        .await
-        .map_err(Error::Refresh)?;
-
-    let (mut req, mut retry_req) = clone_request(original_req).with_current_context().await;
-
-    if config
-        .tracing_configuration()
-        .is_some_and(TracingConfiguration::propagate_otel_context)
-    {
-        // Poor semantics here, but adding custom gRPC metadata is equivalent to setting request
-        // headers: https://chromium.googlesource.com/external/github.com/grpc/grpc/+/HEAD/doc/PROTOCOL-HTTP2.md.
-        let propagator = TraceContextPropagator::new();
-        let mut injector = HeaderInjector(req.headers_mut());
-        propagator.inject_context(&opentelemetry::Context::current(), &mut injector);
-    }
-
-    let resp = make_traced_request(&mut channel, req, token)
-        .with_current_context()
-        .await?;
-
-    match resp.status() {
-        StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
-            tracing::info!("refreshing token after receiving unauthorized or forbidden status",);
-            // Refresh token and try again
-            let token = config
-                .refresh_access_token()
-                .with_current_context()
-                .await
-                .map_err(Error::Refresh)?;
-            tracing::info!("token refreshed");
-            let propagator = TraceContextPropagator::new();
-            let mut injector = HeaderInjector(retry_req.headers_mut());
-            propagator.inject_context(&opentelemetry::Context::current(), &mut injector);
-
-            make_traced_request(&mut channel, retry_req, token)
-                .with_current_context()
-                .await
-        }
-        _ => Ok(resp),
-    }
-}
-
-#[cfg(feature = "tracing-opentelemetry")]
-static GRPC_SPAN_NAME: &str = "gRPC request";
-
-/// Creates a gRPC request span that conforms to the gRPC semantic conventions. See <https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/rpc.md> for details.
-#[cfg(feature = "tracing-opentelemetry")]
-fn make_grpc_request_span(request: &Request<BoxBody>) -> tracing::Span {
-    let _method = request.method();
-    let url = request.uri();
-    let path = url.path();
-    let mut path_split = path.split('/');
-    let (_, service, method) = (path_split.next(), path_split.next(), path_split.next());
-    let service = service.unwrap_or("");
-    let method = method.unwrap_or("");
-    let _scheme = url.scheme();
-    let host = url.host().unwrap_or("");
-    let host_port = url.port().map_or(0u16, |p| p.as_u16());
-    tracing::span!(
-        tracing::Level::INFO,
-        GRPC_SPAN_NAME,
-        rpc.system = "grpc",
-        rpc.service = %service,
-        rpc.method = %method,
-        net.peer.name = %host,
-        net.peer.port = %host_port,
-        "message.type" = "sent",
-        // We would like to include this attribute according to the gRPC semantic conventions, but
-        // the issue is we cannot record it on the span until trailers have been received (in order
-        // to get the gRPC status code). The current way the tower layer is setup does not allow us
-        // to do this.
-        // rpc.grpc.status_code = i32::from(Code::Unknown as u8),
-        otel.kind = "client",
-        otel.name = %path,
-    )
+    Ok((req_1, req_2))
 }
 
 /// This module manages a gRPC server-client connection over a Unix domain socket. Useful for unit testing
 /// servers or clients within unit tests - supports parallelization within same process and
 /// requires no port management.
 ///
-/// Derived largely from <https://stackoverflow.com/a/71808401/> and
-/// <https://github.com/hyperium/tonic/tree/master/examples/src/uds/>
+/// Derived largely from <https://stackoverflow.com/a/71808401> and
+/// <https://github.com/hyperium/tonic/tree/master/examples/src/uds>.
 #[cfg(test)]
 pub(crate) mod uds_grpc_stream {
+    use hyper_util::rt::TokioIo;
+    use opentelemetry::trace::FutureExt;
     use std::convert::Infallible;
-    use std::sync::Arc;
-    use tempfile::NamedTempFile;
-    use tokio::net::{UnixListener, UnixStream};
+    use tempfile::TempDir;
+    use tokio::net::UnixStream;
     use tokio_stream::wrappers::UnixListenerStream;
-    use tonic::client::GrpcService;
     use tonic::server::NamedService;
-    use tonic::transport::{Channel, Endpoint, Server, Uri};
-    use tower::service_fn;
+    use tonic::transport::{Channel, Endpoint, Server};
 
     /// The can be any valid URL. It is necessary to initialize an [`Endpoint`].
     #[allow(dead_code)]
     static FAUX_URL: &str = "http://api.example.rigetti.com";
 
-    async fn build_uds_stream() -> Result<(UnixListenerStream, Channel), String> {
-        let socket = NamedTempFile::new().unwrap();
-        let socket = Arc::new(socket.into_temp_path());
-        std::fs::remove_file(&*socket).unwrap();
-
-        let uds = UnixListener::bind(&*socket).unwrap();
-        let stream = UnixListenerStream::new(uds);
-
-        let socket = Arc::clone(&socket);
-        // Connect to the server over a Unix socket
-        // The URL will be ignored.
-        let channel = Endpoint::try_from(FAUX_URL)
-            .unwrap()
-            .connect_with_connector(service_fn(move |_: Uri| {
-                let socket = Arc::clone(&socket);
-                async move { UnixStream::connect(&*socket).await }
-            }))
-            .await
-            .map_err(|e| format!("failed to connect to server: {e}"))?;
-
-        Ok((stream, channel))
+    fn build_server_stream(path: String) -> Result<UnixListenerStream, Error> {
+        let uds =
+            tokio::net::UnixListener::bind(path.clone()).map_err(|_| Error::BindUnixPath(path))?;
+        Ok(UnixListenerStream::new(uds))
     }
 
-    /// Serve the provide gRPC service over a Unix domain socket for the duration of the
+    async fn build_client_channel(path: String) -> Result<Channel, Error> {
+        let connector = tower::service_fn(move |_: tonic::transport::Uri| {
+            let path = path.clone();
+            async move {
+                let connection = UnixStream::connect(path).await?;
+                Ok::<_, std::io::Error>(TokioIo::new(connection))
+            }
+        });
+        let channel = Endpoint::try_from(FAUX_URL)
+            .map_err(|source| Error::Endpoint {
+                url: FAUX_URL.to_string(),
+                source,
+            })?
+            .connect_with_connector(connector)
+            .await
+            .map_err(|source| Error::Connect { source })?;
+        Ok(channel)
+    }
+
+    /// Errors when connecting a server-client [`Channel`] over a Unix domain socket for testing gRPC
+    /// services.
+    #[derive(thiserror::Error, Debug)]
+    pub enum Error {
+        /// Failed to initialize an [`Endpoint`] for the provided URL.
+        #[error("failed to initialize endpoint for {url}: {source}")]
+        Endpoint {
+            /// The URL that failed to initialize.
+            url: String,
+            /// The source of the error.
+            #[source]
+            source: tonic::transport::Error,
+        },
+        /// Failed to connect to the provided endpoint.
+        #[error("failed to connect to endpoint: {source}")]
+        Connect {
+            /// The source of the error.
+            #[source]
+            source: tonic::transport::Error,
+        },
+        /// Failed to bind the provided path as a Unix domain socket.
+        #[error("failed to bind path as unix listener: {0}")]
+        BindUnixPath(String),
+        /// Failed to initialize a temporary file for the Unix domain socket.
+        #[error("failed in initialize tempfile: {0}")]
+        TempFile(#[from] std::io::Error),
+        /// Failed to convert the tempfile to an [`OsString`].
+        #[error("failed to convert tempfile to OsString")]
+        TempFileOsString,
+        /// Failed to bind to the Unix domain socket.
+        #[error("failed to bind to UDS: {0}")]
+        TonicTransport(#[from] tonic::transport::Error),
+    }
+
+    /// Serve the provided gRPC service over a Unix domain socket for the duration of the
     /// provided callback.
-    pub(crate) async fn serve<S, F, R>(service: S, f: F) -> Result<(), String>
+    ///
+    /// # Errors
+    ///
+    /// See [`Error`].
+    #[allow(clippy::significant_drop_tightening)]
+    pub async fn serve<S, F, R>(service: S, f: F) -> Result<(), Error>
     where
         S: tower::Service<
-                http::Request<hyper::body::Body>,
+                http::Request<tonic::body::BoxBody>,
                 Response = http::Response<tonic::body::BoxBody>,
                 Error = Infallible,
             > + NamedService
-            + GrpcService<tonic::body::BoxBody>
             + Clone
             + Send
             + 'static,
+        S::Future: Send,
         F: FnOnce(Channel) -> R + Send,
         R: std::future::Future<Output = ()> + Send,
-        <S as tower::Service<http::Request<hyper::Body>>>::Future: Send,
     {
-        let (stream, channel) = build_uds_stream().await.unwrap();
+        let directory = TempDir::new()?;
+        let file = directory.path().as_os_str();
+        let file = file.to_os_string();
+        let file = file.into_string().map_err(|_| Error::TempFileOsString)?;
+        let file = format!("{file}/test.sock");
+        let stream = build_server_stream(file.clone())?;
+
+        let channel = build_client_channel(file).await?;
         let serve_future = Server::builder()
             .add_service(service)
             .serve_with_incoming(stream);
 
         tokio::select! {
-           result = serve_future => result.map_err(|e| format!("server unexpectedly exited with error: {e}")),
-           () = f(channel) => Ok(()),
+           result = serve_future => result.map_err(Error::TonicTransport),
+           () = f(channel).with_current_context() => Ok(()),
         }
     }
 }
@@ -377,15 +236,13 @@ mod otel_tests {
     use tonic_health::pb::health_server::{Health, HealthServer};
     use tonic_health::{pb::health_client::HealthClient, server::HealthService};
 
-    use crate::tonic::uds_grpc_stream;
-    use qcs_api_client_common::configuration::AuthServer;
+    use crate::tonic::{uds_grpc_stream, wrap_channel_with_tracing};
     use qcs_api_client_common::configuration::ClientConfiguration;
-    use qcs_api_client_common::configuration::OAuthSession;
-    use qcs_api_client_common::configuration::RefreshToken;
-
-    use super::channel::{wrap_channel_with, wrap_channel_with_token_refresher};
+    use qcs_api_client_common::configuration::{AuthServer, OAuthSession, RefreshToken};
 
     static HEALTH_CHECK_PATH: &str = "/grpc.health.v1.Health/Check";
+
+    const FAUX_BASE_URL: &str = "http://api.example.rigetti.com";
 
     /// Test that when tracing is enabled and no filter is set, any request is properly traced.
     #[tokio::test]
@@ -482,9 +339,13 @@ mod otel_tests {
 
                 uds_grpc_stream::serve(health_server, |channel| {
                     async {
-                        let response = HealthClient::new(wrap_channel_with_token_refresher(
+                        let response = HealthClient::new(wrap_channel_with_tracing(
                             channel,
-                            client_configuration,
+                            FAUX_BASE_URL.to_string(),
+                            client_configuration
+                                .tracing_configuration()
+                                .unwrap()
+                                .clone(),
                         ))
                         .check(Request::new(tonic_health::pb::HealthCheckRequest {
                             service: <HealthServer<HealthService> as NamedService>::NAME
@@ -512,20 +373,11 @@ mod otel_tests {
             .duration_since(grpc_span.start_time)
             .expect("span should have valid timestamps");
         assert!(duration.as_millis() >= 50u128);
-    }
 
-    /// Test that when tracing is disabled, the request is not traced.
-    #[tokio::test]
-    async fn test_tracing_disabled() {
-        let client_config = ClientConfiguration::builder()
-            .oauth_session(Some(OAuthSession::from_refresh_token(
-                RefreshToken::new("refresh_token".to_string()),
-                AuthServer::default(),
-                Some(create_jwt()),
-            )))
-            .build()
-            .expect("should not fail to build client config");
-        assert_grpc_health_check_not_traced(client_config).await;
+        let status_code_attribute =
+            tracing_test::get_span_attribute(grpc_span, "rpc.grpc.status_code")
+                .expect("gRPC span should have status code attribute");
+        assert_eq!(status_code_attribute, (tonic::Code::Ok as u8).to_string());
     }
 
     /// Test that when tracing is enabled but the request does not match the configured filter, the
@@ -576,14 +428,20 @@ mod otel_tests {
 
                 uds_grpc_stream::serve(health_server, |channel| {
                     async {
-                        let response =
-                            HealthClient::new(wrap_channel_with(channel, client_configuration))
-                                .check(Request::new(tonic_health::pb::HealthCheckRequest {
-                                    service: <HealthServer<HealthService> as NamedService>::NAME
-                                        .to_string(),
-                                }))
-                                .await
-                                .unwrap();
+                        let response = HealthClient::new(wrap_channel_with_tracing(
+                            channel,
+                            FAUX_BASE_URL.to_string(),
+                            client_configuration
+                                .tracing_configuration()
+                                .unwrap()
+                                .clone(),
+                        ))
+                        .check(Request::new(tonic_health::pb::HealthCheckRequest {
+                            service: <HealthServer<HealthService> as NamedService>::NAME
+                                .to_string(),
+                        }))
+                        .await
+                        .unwrap();
                         assert_eq!(response.into_inner().status(), ServingStatus::Serving);
                     }
                     .with_current_context()
@@ -883,9 +741,22 @@ mod otel_tests {
                 Ok(())
             }
 
-            fn shutdown(&mut self) -> TraceResult<()> {
+            fn shutdown(&self) -> TraceResult<()> {
                 Ok(())
             }
+        }
+
+        /// Get the Opentelemetry attribute value for the provided key.
+        #[must_use]
+        pub(super) fn get_span_attribute(
+            span_data: &SpanData,
+            key: &'static str,
+        ) -> Option<String> {
+            span_data
+                .attributes
+                .iter()
+                .find(|attr| attr.key.to_string() == *key)
+                .map(|kv| kv.value.to_string())
         }
     }
 }

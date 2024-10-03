@@ -3,7 +3,7 @@ use tonic::transport::Error as TransportError;
 
 use qcs_api_client_common::configuration::LoadError;
 
-use super::channel::ChannelError;
+use super::{channel::ChannelError, RequestBodyDuplicationError};
 
 /// Errors that may occur when using gRPC.
 #[derive(Debug, thiserror::Error)]
@@ -33,4 +33,6 @@ where
     #[cfg(feature = "grpc-web")]
     #[error("The hyper grpc-web client returned an error: {0}")]
     HyperError(#[from] hyper::Error),
+    #[error("failed to duplicate request body for retry: {0}")]
+    CloneBody(#[from] RequestBodyDuplicationError),
 }
