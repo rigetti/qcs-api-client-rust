@@ -1,3 +1,9 @@
+## 0.11.1-rc.0 (2024-10-04)
+
+### Fixes
+
+#### update remaining dependencies to remove http=0.2 entirely
+
 ## 0.11.0 (2024-10-03)
 
 ### Breaking Changes
