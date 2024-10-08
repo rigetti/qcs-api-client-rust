@@ -1,6 +1,6 @@
 [package]
 name = "qcs-api-client-common"
-version = "0.11.1"
+version = "0.11.2-rc.0"
 edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
@@ -24,7 +24,7 @@ crate-type = ["cdylib", "rlib"]
 [features]
 tracing = ["dep:tracing", "url", "urlpattern"]
 tracing-config = ["tracing"]
-python = ["dep:pyo3", "dep:pyo3-asyncio", "dep:paste", "dep:rigetti-pyo3", "tokio/macros", "pyo3-build-config"]
+python = ["dep:pyo3", "dep:pyo3-asyncio-0-21", "dep:paste", "dep:rigetti-pyo3", "tokio/macros", "pyo3-build-config"]
 
 [dependencies]
 async-trait = "0.1"
@@ -37,10 +37,11 @@ home = "0.5.5"
 http = { workspace = true }
 jsonwebtoken = { workspace = true }
 paste = { version = "1.0.15", optional = true }
-pyo3 = { version = "0.20.3", features = ["multiple-pymethods"], optional = true }
-pyo3-asyncio = { version = "0.20.0", features = ["tokio-runtime"], optional = true }
+pyo3 = { version = "0.21", features = ["multiple-pymethods"], optional = true }
+# pyo3-asyncio may be abandoned; see https://github.com/awestlake87/pyo3-asyncio/pull/125
+pyo3-asyncio-0-21 = { version = "0.21.0", features = ["tokio-runtime"], optional = true }
 reqwest = { workspace = true, default-features = false, features = ["socks"] }
-rigetti-pyo3 = { version = "0.3.6", optional = true }
+rigetti-pyo3 = { version = "0.4", optional = true }
 serde = { workspace = true, features = ["derive"] }
 shellexpand = "3.1.0"
 thiserror = { workspace = true }

@@ -1,3 +1,9 @@
+[patch]
+  [patch.crates-io]
+    [patch.crates-io.rigetti-pyo3]
+      branch = 'update-pyo3'
+      git = 'https://github.com/rigetti/rigetti-pyo3'
+
 [workspace]
   members = ['qcs-api-client-common', 'qcs-api-client-grpc', 'qcs-api-client-openapi']
   resolver = '2'
