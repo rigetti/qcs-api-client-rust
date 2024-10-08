@@ -8,11 +8,6 @@ versioned_files = ["qcs-api-client-common/pyproject.toml"]
 changelog = "qcs-api-client-common/CHANGELOG-py.md"
 scopes = ["common-py", "common-public-py"]
 
-[packages.common-internal]
-versioned_files = ["qcs-api-client-common-internal/Cargo.toml"]
-changelog = "qcs-api-client-common-internal/CHANGELOG.md"
-scopes = ["common", "common-internal"]
-
 [packages.grpc]
 versioned_files = ["qcs-api-client-grpc/Cargo.toml"]
 changelog = "qcs-api-client-grpc/CHANGELOG.md"

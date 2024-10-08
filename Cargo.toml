@@ -7,7 +7,6 @@ resolver = "2"
 members = [
     "proxy-test",
     "qcs-api-client-common",
-    "qcs-api-client-common-internal",
     "qcs-api-client-grpc",
     "qcs-api-client-grpc-internal",
     "qcs-api-client-openapi/internal",
@@ -71,10 +70,4 @@ tracing-subscriber = "0.3.18"
 url = { version = "2.3.1" }
 urlpattern = "0.2.0"
 uuid = { version = "1.10.0", features = ["v4"] }
-
-[patch.crates-io]
-# `hyper-proxy` is unmaintained, and depends on an outdated version of `rustls`.
-# Following https://gitlab.com/rigetti/qcs/clients/qcs-api-client-rust/-/merge_requests/118,
-# we should migrate to hyper-proxy2.
-hyper-proxy = { git = "https://github.com/rigetti/hyper-proxy" }
 

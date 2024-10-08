@@ -54,7 +54,7 @@ urlpattern = { workspace = true, optional = true }
 [dev-dependencies]
 chrono = "0.4.38"
 figment = { version = "0.10.18", features = ["env", "toml", "test"] }
-httpmock = "0.7.0"
+httpmock = "0.8.0-alpha.1"
 rstest = { workspace = true }
 serial_test = "3.1.1"
 tokio = { workspace = true, features = ["fs", "macros"] }
