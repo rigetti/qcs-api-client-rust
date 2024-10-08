@@ -1,6 +1,6 @@
 [package]
 name = "qcs-api-client-common"
-version = "0.11.0"
+version = "0.11.1"
 edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
@@ -54,7 +54,7 @@ urlpattern = { workspace = true, optional = true }
 [dev-dependencies]
 chrono = "0.4.38"
 figment = { version = "0.10.18", features = ["env", "toml", "test"] }
-httpmock = "0.7.0"
+httpmock = "0.8.0-alpha.1"
 rstest = { workspace = true }
 serial_test = "3.1.1"
 tokio = { workspace = true, features = ["fs", "macros"] }

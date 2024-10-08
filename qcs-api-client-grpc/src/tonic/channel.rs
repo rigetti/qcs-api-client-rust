@@ -11,7 +11,7 @@ use hyper_util::client::legacy::connect::HttpConnector;
 use tonic::{
     body::BoxBody,
     client::GrpcService,
-    transport::{Channel, Endpoint},
+    transport::{Channel, ClientTlsConfig, Endpoint},
 };
 use tower::{Layer, ServiceBuilder};
 use url::Url;
@@ -349,6 +349,8 @@ pub fn get_endpoint(uri: Uri) -> Endpoint {
             env!("CARGO_PKG_VERSION")
         ))
         .expect("user agent string should be valid")
+        .tls_config(ClientTlsConfig::new().with_enabled_roots())
+        .expect("tls setup should succeed")
 }
 
 /// Get an [`Endpoint`] for the given [`Uri`] and timeout.
