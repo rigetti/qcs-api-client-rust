@@ -1,3 +1,11 @@
+## 0.12.1 (2024-10-08)
+
+### Fixes
+
+#### update remaining dependencies to remove http=0.2 entirely
+
+#### enable TLS
+
 ## 0.12.0 (2024-10-03)
 
 ### Breaking Changes
