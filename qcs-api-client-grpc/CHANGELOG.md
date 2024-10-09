@@ -1,3 +1,9 @@
+## 0.11.2 (2024-10-09)
+
+### Fixes
+
+#### update dev (codegen) dependencies
+
 ## 0.11.1 (2024-10-08)
 
 ### Fixes
