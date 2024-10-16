@@ -4937,6 +4937,15 @@ components:
       type: object
     ControllerComponent:
       properties:
+        archiveBackendS3Bucket:
+          description: The S3 bucket that jobs with archived results will have those
+            results sent to.
+          title: Archive Backend S3 Bucket
+          type: string
+        archiveBackendS3RoleArn:
+          description: The AWS Role used by the `archive_backend_s3_bucket`.
+          title: Archive Backend S3 Role ARN
+          type: string
         backend:
           allOf:
             - $ref: "#/components/schemas/ExecutionBackend"
