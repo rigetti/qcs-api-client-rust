@@ -1,5 +1,5 @@
 use std::{
-    future::Future,
+    future::{poll_fn, Future},
     pin::Pin,
     task::{Context, Poll},
 };
@@ -160,6 +160,11 @@ where
         {
             tracing::info!("token refreshed");
         }
+        // Ensure that the service is ready before trying to use it.
+        // Failure to do this *will* cause a panic.
+        poll_fn(|cx| channel.poll_ready(cx))
+            .await
+            .map_err(super::error::Error::from)?;
         make_request(&mut channel, retry_req, token).await
     } else {
         Ok(resp)

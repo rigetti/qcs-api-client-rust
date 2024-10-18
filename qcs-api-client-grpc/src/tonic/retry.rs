@@ -55,6 +55,10 @@ pub struct RetryService<S: GrpcService<BoxBody>> {
     service: S,
 }
 
+/// Return `Some` if the request should be retried and the provided `backoff`
+/// has another backoff to try, or, for an http request, if the response
+/// specifies a `Retry-After` header. If `None` is returned, the request should
+/// not be retried.
 fn duration_from_response<T>(
     response: &Response<T>,
     backoff: &mut ExponentialBackoff,
@@ -63,6 +67,7 @@ fn duration_from_response<T>(
         match grpc_status.code() {
             // gRPC has no equivalent to RETRY-AFTER, so just use the backoff
             tonic::Code::Unavailable => backoff.next_backoff(),
+            // No other gRPC statuses are retried.
             _ => None,
         }
     } else {
