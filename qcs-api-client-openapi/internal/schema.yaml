@@ -1950,6 +1950,311 @@ paths:
       summary: Reset Password With Token
       tags:
         - authentication
+  /v1/internal/billingOrganizations:
+    get:
+      description: List all billing organizations.
+      operationId: InternalListBillingOrganizations
+      parameters:
+        - $ref: "#/components/parameters/pageTokenParam"
+        - $ref: "#/components/parameters/pageSizeParam"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalListBillingOrganizationsResponse"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client not authorized to complete request.
+      tags:
+        - account
+      security:
+        - JWTBearer: []
+      x-internal: true
+    post:
+      description: Create a billing organization, which is unique by name.
+      operationId: InternalCreateBillingOrganization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBillingOrganizationRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingOrganization"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client not authorized to complete request.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: A conflicting billing organization exists.
+      tags:
+        - account
+      security:
+        - JWTBearer: []
+      x-internal: true
+  "/v1/internal/billingOrganizations/{billingOrganizationId}":
+    get:
+      description: Get a billing organization, which is unique by name.
+      operationId: InternalGetBillingOrganization
+      parameters:
+        - in: path
+          name: billingOrganizationId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingOrganization"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client not authorized to complete request.
+      tags:
+        - account
+      security:
+        - JWTBearer: []
+      x-internal: true
+    put:
+      description: Update a billing organization, which is unique by name.
+      operationId: InternalPutBillingOrganization
+      parameters:
+        - in: path
+          name: billingOrganizationId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBillingOrganizationRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingOrganization"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client not authorized to complete request.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: A conflicting billing organization exists.
+      tags:
+        - account
+      security:
+        - JWTBearer: []
+      x-internal: true
+    delete:
+      description: Delete a billing organization, which also deletes all account
+        associations.
+      operationId: InternalDeleteBillingOrganization
+      parameters:
+        - in: path
+          name: billingOrganizationId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingOrganization"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client not authorized to complete request.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Organization with associated accounts cannot be deleted - delete
+            all existing associations first.
+      tags:
+        - account
+      security:
+        - JWTBearer: []
+      x-internal: true
+  "/v1/internal/billingOrganizations/{billingOrganizationId}/accounts":
+    get:
+      description: List all accounts related to this billing organization.
+      operationId: InternalListBillingOrganizationAccounts
+      parameters:
+        - in: path
+          name: billingOrganizationId
+          required: true
+          schema:
+            type: integer
+        - $ref: "#/components/parameters/pageTokenParam"
+        - $ref: "#/components/parameters/pageSizeParam"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalListBillingOrganizationAccountsResponse"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client not authorized to complete request.
+      tags:
+        - account
+      security:
+        - JWTBearer: []
+      x-internal: true
+    put:
+      description: Create an association between accounts and this billing
+        organization if one is not already present.
+      operationId: InternalPutBillingOrganizationAccounts
+      parameters:
+        - in: path
+          name: billingOrganizationId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Accounts"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Accounts"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client not authorized to complete request.
+      tags:
+        - account
+      security:
+        - JWTBearer: []
+      x-internal: true
+    delete:
+      description: Delete all associations between accounts and this billing organization.
+      operationId: InternalDeleteBillingOrganizationAccounts
+      parameters:
+        - in: path
+          name: billingOrganizationId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Accounts"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Accounts"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client not authorized to complete request.
+      tags:
+        - account
+      security:
+        - JWTBearer: []
+      x-internal: true
   "/v1/calendars/{quantumProcessorId}":
     get:
       description: Get calendar details for the requested quantum processor.
@@ -2950,6 +3255,48 @@ paths:
       tags:
         - account
       x-internal: true
+  "/v1/internal/groups/{groupName}/billingOrganization":
+    get:
+      summary: Get Group Billing Organization
+      description: Fetch the group's billing organization.
+      operationId: InternalGetGroupBillingOrganization
+      parameters:
+        - description: The group name (e.g. `acme`)
+          in: path
+          name: groupName
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingOrganization"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: User not authorized to request group information.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Requested group does not exist or has no billing organization.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+      x-internal: true
   "/v1/internal/groups/{groupName}/eventBillingPrices:get":
     post:
       description: Retrieve `EventBillingPrice` for a group for a specific event. If
@@ -3424,6 +3771,47 @@ paths:
         - account
     parameters: []
     x-internal: true
+  "/v1/internal/users/{userId}/billingOrganization":
+    get:
+      description: Fetch the user's billing organization.
+      operationId: InternalGetUserBillingOrganization
+      parameters:
+        - description: The user's QCS id (e.g. `0uo3248cbsd73h`)
+          in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingOrganization"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: User not authorized to request user information.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Requested user does not exist or has no billing organization.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+      x-internal: true
   "/v1/internal/users/{userId}/billingCustomer":
     patch:
       description: Update the billing customer assigned to a QCS user account. This
@@ -7378,6 +7766,29 @@ components:
     AccountId:
       description: userId for `accountType` "user", group name for `accountType` "group".
       type: string
+    Account:
+      description: An account ID and type.
+      properties:
+        accountId:
+          $ref: "#/components/schemas/AccountId"
+        accountType:
+          $ref: "#/components/schemas/AccountType"
+      required:
+        - accountId
+        - accountType
+      type: object
+      x-internal: true
+    Accounts:
+      description: A collection of accounts.
+      properties:
+        accounts:
+          items:
+            $ref: "#/components/schemas/Account"
+          type: array
+      required:
+        - accounts
+      type: object
+      x-internal: true
     AddGroupUserRequest:
       description: Must provide either `userId` or `userEmail` and `groupId` or `groupName`.
       properties:
@@ -7515,6 +7926,62 @@ components:
         - uncollectible
         - void
       type: string
+    BillingOrganization:
+      description: Represents a single billable entity which can be shared by multiple
+        accounts.
+      properties:
+        id:
+          type: integer
+        name:
+          description: 'Unique, human-readable name of this organization. Example: "ACME
+            Corp"'
+          type: string
+        description:
+          description: Any additional context about this organization.
+          type: string
+        rigettiContactEmail:
+          description: Email address for the Rigetti employee who is the main point of
+            contact for this organization.
+          type: string
+      required:
+        - id
+        - name
+        - rigettiContactEmail
+      type: object
+      x-internal: true
+    CreateBillingOrganizationRequest:
+      description: Create a new billing organization.
+      properties:
+        name:
+          description: Unique, human-readable name of this organization.
+          type: string
+        description:
+          description: Any additional context about this organization.
+          type: string
+        rigettiContactEmail:
+          description: Email address for the Rigetti employee who is the main point of
+            contact for this organization.
+          type: string
+      required:
+        - name
+        - rigettiContactEmail
+      type: object
+      x-internal: true
+    UpdateBillingOrganizationRequest:
+      description: Update an existing billing organization.
+      properties:
+        name:
+          description: Unique, human-readable name of this organization.
+          type: string
+        description:
+          description: Any additional context about this organization.
+          type: string
+        rigettiContactEmail:
+          description: Email address for the Rigetti employee who is the main point of
+            contact for this organization.
+          type: string
+      type: object
+      x-internal: true
     BillingPrice:
       description: |
         A configuration for calculating the cost of `BillingProduct` usage
@@ -7761,6 +8228,32 @@ components:
           type: string
       required:
         - invoices
+      type: object
+      x-internal: true
+    InternalListBillingOrganizationsResponse:
+      description: Results from listing billing organizations.
+      properties:
+        nextPageToken:
+          type: string
+        billingOrganizations:
+          type: array
+          items:
+            $ref: "#/components/schemas/BillingOrganization"
+      required:
+        - billingOrganizations
+      type: object
+      x-internal: true
+    InternalListBillingOrganizationAccountsResponse:
+      description: A collection of accounts within a billing organization.
+      properties:
+        nextPageToken:
+          type: string
+        accounts:
+          items:
+            $ref: "#/components/schemas/Account"
+          type: array
+      required:
+        - accounts
       type: object
       x-internal: true
     InternalListBillingInvoicesResponseItem:
