@@ -4743,6 +4743,31 @@ paths:
       tags:
         - account
       x-internal: true
+  /v1/users:activate:
+    post:
+      description: Activate a user, completing an invitation request.
+      operationId: ActivateUser
+      summary: Activate User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivateUserRequest"
+      responses:
+        "204":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Request completed successfully.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      tags:
+        - account
   /v1/webhooks/stripe:
     post:
       description: Receive Stripe webhooks. Currently, we only support
@@ -8370,6 +8395,20 @@ components:
         - quantumProcessorId
         - startTime
         - endTime
+      type: object
+    ActivateUserRequest:
+      properties:
+        credentials:
+          $ref: "#/components/schemas/UserCredentials"
+        profile:
+          $ref: "#/components/schemas/UserProfile"
+        token:
+          description: Verification token provided in invitation email.
+          type: string
+      required:
+        - profile
+        - credentials
+        - token
       type: object
     CreateUserRequest:
       properties:

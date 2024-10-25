@@ -1909,6 +1909,31 @@ paths:
       summary: List QCS groups for the requested user
       tags:
         - account
+  /v1/users:activate:
+    post:
+      description: Activate a user, completing an invitation request.
+      operationId: ActivateUser
+      summary: Activate User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivateUserRequest"
+      responses:
+        "204":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Request completed successfully.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      tags:
+        - account
   "/v1/quantumProcessors/{quantumProcessorId}/quiltCalibrations":
     get:
       description: Retrieve the calibration data used for client-side Quilt generation.
@@ -3176,6 +3201,20 @@ components:
         - quantumProcessorId
         - startTime
         - endTime
+      type: object
+    ActivateUserRequest:
+      properties:
+        credentials:
+          $ref: "#/components/schemas/UserCredentials"
+        profile:
+          $ref: "#/components/schemas/UserProfile"
+        token:
+          description: Verification token provided in invitation email.
+          type: string
+      required:
+        - profile
+        - credentials
+        - token
       type: object
     EventBillingPriceRate:
       description: |
