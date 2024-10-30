@@ -4785,6 +4785,252 @@ paths:
       tags:
         - account
       x-internal: true
+  /v1/announcements:
+    get:
+      description: |
+        List all announcements created on the platform.
+
+        Available filter fields include:
+        * `id` - integer
+        * `active` - boolean
+
+        Available order fields include:
+        * `id`
+      operationId: ListAnnouncements
+      parameters:
+        - $ref: "#/components/parameters/filterParam"
+        - $ref: "#/components/parameters/orderParam"
+        - $ref: "#/components/parameters/pageSizeParam"
+        - $ref: "#/components/parameters/pageTokenParam"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementsResponse"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+      x-internal: true
+    post:
+      description: Create a new announcement.
+      operationId: CreateAnnouncement
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementContent"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+          description: Announcement successfully created.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: User not authorized to create announcements.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+      x-internal: true
+  "/v1/announcements/{announcementId}":
+    put:
+      description: Update an existing announcement's content.
+      operationId: UpdateAnnouncement
+      parameters:
+        - name: announcementId
+          description: The ID of an existing announcement.
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementContent"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: User not authorized to update announcements.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unknown announcement ID.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+      x-internal: true
+    delete:
+      description: Soft delete an announcement, marking it as inactive and preventing
+        it from being displayed to any user.
+      operationId: DeleteAnnouncement
+      parameters:
+        - name: announcementId
+          description: The ID of an existing announcement.
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: User not authorized to update announcements.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unknown announcement ID.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+      x-internal: true
+  /v1/viewer/announcements:
+    get:
+      description: List all announcements relevant to the authenticating user. By
+        default, does not include dismissed announcements.
+      operationId: ListViewerAnnouncements
+      parameters:
+        - $ref: "#/components/parameters/pageSizeParam"
+        - $ref: "#/components/parameters/pageTokenParam"
+        - name: includeDismissed
+          description: Include dismissed announcements in the response.
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementsResponse"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+  "/v1/viewer/announcements/{announcementId}":
+    delete:
+      description: Dismiss an announcement for an authenticating user, indicating that
+        they do not want to see it again.
+      operationId: DismissViewerAnnouncement
+      parameters:
+        - name: announcementId
+          description: The ID of an existing announcement.
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unknown announcement ID.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
   "/v1/internal/quantumProcessors/{quantumProcessorId}/qpuSettings":
     get:
       description: >-
@@ -7826,6 +8072,45 @@ components:
         userId:
           type: string
       type: object
+    AnnouncementContent:
+      properties:
+        contentHtml:
+          description: The HTML content of the announcement to be displayed.
+          type: string
+      required:
+        - contentHtml
+      x-internal: true
+    Announcement:
+      description: An announcement to be displayed to users.
+      properties:
+        id:
+          type: integer
+        contentHtml:
+          description: The HTML content of the announcement to be displayed.
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          description: The RFC3339-format time the announcement was created.
+        active:
+          type: boolean
+          description: Whether the announcement is currently active.
+      required:
+        - id
+        - contentHtml
+        - createdAt
+        - active
+    AnnouncementsResponse:
+      description: A page of announcements.
+      properties:
+        nextPageToken:
+          type: string
+        announcements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Announcement"
+      required:
+        - announcements
     AuthEmailPasswordResetTokenRequest:
       properties:
         email:

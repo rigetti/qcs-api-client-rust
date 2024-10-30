@@ -1934,6 +1934,74 @@ paths:
           description: Request validation failed.
       tags:
         - account
+  /v1/viewer/announcements:
+    get:
+      description: List all announcements relevant to the authenticating user. By
+        default, does not include dismissed announcements.
+      operationId: ListViewerAnnouncements
+      parameters:
+        - $ref: "#/components/parameters/pageSizeParam"
+        - $ref: "#/components/parameters/pageTokenParam"
+        - name: includeDismissed
+          description: Include dismissed announcements in the response.
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementsResponse"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+  "/v1/viewer/announcements/{announcementId}":
+    delete:
+      description: Dismiss an announcement for an authenticating user, indicating that
+        they do not want to see it again.
+      operationId: DismissViewerAnnouncement
+      parameters:
+        - name: announcementId
+          description: The ID of an existing announcement.
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unknown announcement ID.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
   "/v1/quantumProcessors/{quantumProcessorId}/quiltCalibrations":
     get:
       description: Retrieve the calibration data used for client-side Quilt generation.
@@ -2749,6 +2817,37 @@ components:
         userId:
           type: string
       type: object
+    Announcement:
+      description: An announcement to be displayed to users.
+      properties:
+        id:
+          type: integer
+        contentHtml:
+          description: The HTML content of the announcement to be displayed.
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          description: The RFC3339-format time the announcement was created.
+        active:
+          type: boolean
+          description: Whether the announcement is currently active.
+      required:
+        - id
+        - contentHtml
+        - createdAt
+        - active
+    AnnouncementsResponse:
+      description: A page of announcements.
+      properties:
+        nextPageToken:
+          type: string
+        announcements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Announcement"
+      required:
+        - announcements
     AuthEmailPasswordResetTokenRequest:
       properties:
         email:
