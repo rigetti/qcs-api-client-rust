@@ -1862,6 +1862,7 @@ paths:
     get:
       description: Retrieve the profile of the authenticated user.
       operationId: AuthGetUser
+      parameters: []
       responses:
         "200":
           content:
@@ -1887,7 +1888,6 @@ paths:
       summary: Get User
       tags:
         - authentication
-    parameters: []
   /v1/auth:resetPassword:
     parameters: []
     post:
@@ -5027,6 +5027,93 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Unknown announcement ID.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+  /v1/viewer/userProfile:
+    put:
+      description: Update the profile of the authenticated user.
+      operationId: UpdateViewerUserProfile
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateViewerUserProfileRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: The authenticated user could not be located within our records.
+            Please contact support@rigetti.com if you reach this error.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: The request could not be validated.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+  /v1/viewer/onboardingCompleted:
+    get:
+      description: Get the onboarding status of the authenticated user.
+      operationId: GetViewerUserOnboardingCompleted
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+    put:
+      description: Update the onboarding status of the authenticated user.
+      operationId: PutViewerUserOnboardingCompleted
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
       security:
         - JWTBearer: []
       tags:
@@ -9359,6 +9446,25 @@ components:
         - lastName
         - organization
       type: object
+    UpdateViewerUserProfileRequest:
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        organization:
+          type: string
+      required:
+        - firstName
+        - lastName
+        - organization
+      type: object
+    ViewerUserOnboardingCompleted:
+      properties:
+        onboardingCompleted:
+          type: boolean
+      required:
+        - onboardingCompleted
     ActiveReset:
       description: >-
         Active reset instruction.
