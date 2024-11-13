@@ -34,7 +34,6 @@ use pyo3::prelude::*;
 use self::{
     secrets::{Credential, Secrets},
     settings::Settings,
-    tokens::OAuthGrant,
 };
 
 mod error;
@@ -50,7 +49,7 @@ pub(crate) use py::*;
 pub use secrets::{DEFAULT_SECRETS_PATH, SECRETS_PATH_VAR};
 pub use settings::{AuthServer, DEFAULT_SETTINGS_PATH, SETTINGS_PATH_VAR};
 pub use tokens::{
-    ClientCredentials, ExternallyManaged, OAuthSession, RefreshFunction, RefreshToken,
+    ClientCredentials, ExternallyManaged, OAuthGrant, OAuthSession, RefreshFunction, RefreshToken,
     TokenDispatcher, TokenRefresher,
 };
 
