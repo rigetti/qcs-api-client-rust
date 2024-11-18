@@ -1,3 +1,11 @@
+## 0.11.3 (2024-11-18)
+
+### Fixes
+
+#### wait for channel to be ready again before retrying request after token-refresh
+
+#### expose OAuthGrant via public API, allow creating OAuthSession from ExternallyManaged
+
 ## 0.11.2 (2024-10-09)
 
 ### Fixes
