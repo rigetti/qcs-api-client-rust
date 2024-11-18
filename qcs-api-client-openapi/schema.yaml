@@ -767,6 +767,7 @@ paths:
     get:
       description: Retrieve the profile of the authenticated user.
       operationId: AuthGetUser
+      parameters: []
       responses:
         "200":
           content:
@@ -792,7 +793,6 @@ paths:
       summary: Get User
       tags:
         - authentication
-    parameters: []
   /v1/auth:resetPassword:
     parameters: []
     post:
@@ -1909,6 +1909,186 @@ paths:
       summary: List QCS groups for the requested user
       tags:
         - account
+  /v1/users:activate:
+    post:
+      description: Activate a user, completing an invitation request.
+      operationId: ActivateUser
+      summary: Activate User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivateUserRequest"
+      responses:
+        "204":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Request completed successfully.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      tags:
+        - account
+  /v1/viewer/announcements:
+    get:
+      description: List all announcements relevant to the authenticating user. By
+        default, does not include dismissed announcements.
+      operationId: ListViewerAnnouncements
+      parameters:
+        - $ref: "#/components/parameters/pageSizeParam"
+        - $ref: "#/components/parameters/pageTokenParam"
+        - name: includeDismissed
+          description: Include dismissed announcements in the response.
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementsResponse"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+  "/v1/viewer/announcements/{announcementId}":
+    delete:
+      description: Dismiss an announcement for an authenticating user, indicating that
+        they do not want to see it again.
+      operationId: DismissViewerAnnouncement
+      parameters:
+        - name: announcementId
+          description: The ID of an existing announcement.
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unknown announcement ID.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+  /v1/viewer/userProfile:
+    put:
+      description: Update the profile of the authenticated user.
+      operationId: UpdateViewerUserProfile
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateViewerUserProfileRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: The authenticated user could not be located within our records.
+            Please contact support@rigetti.com if you reach this error.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: The request could not be validated.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+  /v1/viewer/onboardingCompleted:
+    get:
+      description: Get the onboarding status of the authenticated user.
+      operationId: GetViewerUserOnboardingCompleted
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+    put:
+      description: Update the onboarding status of the authenticated user.
+      operationId: PutViewerUserOnboardingCompleted
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
   "/v1/quantumProcessors/{quantumProcessorId}/quiltCalibrations":
     get:
       description: Retrieve the calibration data used for client-side Quilt generation.
@@ -2724,6 +2904,37 @@ components:
         userId:
           type: string
       type: object
+    Announcement:
+      description: An announcement to be displayed to users.
+      properties:
+        id:
+          type: integer
+        contentHtml:
+          description: The HTML content of the announcement to be displayed.
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          description: The RFC3339-format time the announcement was created.
+        active:
+          type: boolean
+          description: Whether the announcement is currently active.
+      required:
+        - id
+        - contentHtml
+        - createdAt
+        - active
+    AnnouncementsResponse:
+      description: A page of announcements.
+      properties:
+        nextPageToken:
+          type: string
+        announcements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Announcement"
+      required:
+        - announcements
     AuthEmailPasswordResetTokenRequest:
       properties:
         email:
@@ -3177,6 +3388,20 @@ components:
         - startTime
         - endTime
       type: object
+    ActivateUserRequest:
+      properties:
+        credentials:
+          $ref: "#/components/schemas/UserCredentials"
+        profile:
+          $ref: "#/components/schemas/UserProfile"
+        token:
+          description: Verification token provided in invitation email.
+          type: string
+      required:
+        - profile
+        - credentials
+        - token
+      type: object
     EventBillingPriceRate:
       description: |
         The per-unit price associated with a particular QCS service product,
@@ -3484,6 +3709,25 @@ components:
         - lastName
         - organization
       type: object
+    UpdateViewerUserProfileRequest:
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        organization:
+          type: string
+      required:
+        - firstName
+        - lastName
+        - organization
+      type: object
+    ViewerUserOnboardingCompleted:
+      properties:
+        onboardingCompleted:
+          type: boolean
+      required:
+        - onboardingCompleted
     GetQuiltCalibrationsResponse:
       properties:
         quilt:

@@ -138,6 +138,24 @@ pub enum OAuthGrant {
     ExternallyManaged(ExternallyManaged),
 }
 
+impl From<ExternallyManaged> for OAuthGrant {
+    fn from(v: ExternallyManaged) -> Self {
+        Self::ExternallyManaged(v)
+    }
+}
+
+impl From<ClientCredentials> for OAuthGrant {
+    fn from(v: ClientCredentials) -> Self {
+        Self::ClientCredentials(v)
+    }
+}
+
+impl From<RefreshToken> for OAuthGrant {
+    fn from(v: RefreshToken) -> Self {
+        Self::RefreshToken(v)
+    }
+}
+
 impl OAuthGrant {
     /// Request a new access token from the given issuer using this grant type and payload.
     async fn request_access_token(
@@ -193,6 +211,23 @@ impl OAuthSession {
             access_token,
             auth_server,
         }
+    }
+
+    /// Initialize a new set of [`Credentials`] using an [`ExternallyManaged`].
+    ///
+    /// Optionally include an `access_token`, if not included, then one can be requested
+    /// with [`Self::request_access_token`].
+    #[must_use]
+    pub const fn from_externally_managed(
+        tokens: ExternallyManaged,
+        auth_server: AuthServer,
+        access_token: Option<String>,
+    ) -> Self {
+        Self::new(
+            OAuthGrant::ExternallyManaged(tokens),
+            auth_server,
+            access_token,
+        )
     }
 
     /// Initialize a new set of [`Credentials`] using a [`RefreshToken`].
@@ -520,13 +555,15 @@ impl ExternallyManaged {
     /// });
     /// ```
     pub fn from_sync(
-        refresh_function: fn(
-            AuthServer,
-        ) -> Result<String, Box<dyn std::error::Error + Send + Sync>>,
+        refresh_function: impl Fn(AuthServer) -> Result<String, Box<dyn std::error::Error + Send + Sync>>
+            + Send
+            + Sync
+            + 'static,
     ) -> Self {
         Self {
             refresh_function: Arc::new(Box::new(move |auth_server| {
-                Box::pin(async move { refresh_function(auth_server) })
+                let result = refresh_function(auth_server);
+                Box::pin(async move { result })
             })),
         }
     }

@@ -33,7 +33,7 @@ pub const fn status_code_is_retry(code: StatusCode) -> bool {
 }
 
 /// Return `Some` if the response specifies a `Retry-After` header or the provided `backoff` has
-/// another backoff to try.
+/// another backoff to try. If `None` is returned, the request should not be retried.
 #[must_use]
 pub fn duration_from_response(
     status: StatusCode,
