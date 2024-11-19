@@ -46,6 +46,9 @@ message TsunamiDataReceiver {
 
     // Whether to buffer and publish the data directly into the execution results
     bool publish = 5;
+
+    // Whether to buffer and store the data to long-term storage
+    bool archive = 6;
 }
 
 // The ReadoutPipeline specifies the components used to transform readout
@@ -77,4 +80,7 @@ message ReadoutTransformation {
     // Which receiver or transformation node this transformation receives its data
     // from. This must match a key in ReadoutPipeline.nodes.
     string source_id = 4;
+
+    // Whether to publish the return values for this stream to long-term storage.
+    bool archive = 5;
 }

@@ -8,6 +8,24 @@ import "translation/metadata.proto";
 // and other translation features.
 message TranslationOptions {
 
+    // When set, the client program will be pre-processed via the Q-CTRL API
+    // before translation.
+    .services.translation.TranslationOptions.QCtrl q_ctrl = 1;
+    message QCtrl {
+
+        // Indicates whether Q-CTRL pre-processing should consider the set of
+        // program qubits to be fixed. If true, Q-CTRL may only remap qubits to
+        // others specified within the user-submitted program. If false, Q-CTRL may
+        // remap program qubits to any physical qubit on the device in order to
+        // optimize the program.
+        //
+        // Note, this attribute is used to set `fixed_layouts` attribute on Q-CTRL's
+        // `CompileOptions` message. Q-CTRL supports compilation of mutliple programs
+        // at once, while Rigetti's `TranslationOptions` are currently scoped to a
+        // single program. As such, we use `fixed_layout` rather than `fixed_layouts`.
+        optional bool fixed_layout = 1;
+    }
+
     // The backend to use for translation, to include relevant options.
     // If neither is specified, the implementing service may select the
     // translation backend and options.

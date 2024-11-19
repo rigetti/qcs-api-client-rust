@@ -4,6 +4,7 @@ option go_package = "gitlab.com/rigetti/share/service-model/golang/controller";
 import "controller/job.proto";
 import "controller/manifest.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 
 // A request to execute multiple ControllerJobs as if they were sent as separate requests.
 // Note that the job execution IDs will be returned in the same order as the requests,
@@ -124,6 +125,12 @@ message GetControllerJobStatusResponse {
 
     // Best-effort estimate of how long it will be (from the time the response is
     // generated) until the job is finished executing.
+    // This will not attempt to account for future schedule modifications, such as
+    // the arrival of a higher-priority job or a maintenance reservation being
+    // scheduled.
+    // The minimum estimate uses each job's estimated duration, if available; the
+    // maximum estimate uses the execution timeout enforced by the controller
+    // service.
     .services.controller.EstimatedDelay estimated_job_completion_delay = 2;
     enum Status {
         UNKNOWN = 0;
@@ -140,8 +147,16 @@ message GetControllerJobStatusResponse {
 // is expected to be dequeued and run.
 message EstimatedDelay {
 
-    // The shortest possible delay before the event
+    // Our most optimistic estimate of the delay before the event (will always be the lowest duration in
+    // this message)
     .google.protobuf.Duration minimum = 1;
+
+    // Our most pessimistic estimate of the delay (will always be the highest duration in this
+    // message)
+    .google.protobuf.Duration maximum = 2;
+
+    // When these estimates were calculated
+    .google.protobuf.Timestamp now = 3;
 }
 message GetRackManifestRequest {
 }

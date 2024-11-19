@@ -382,6 +382,20 @@ message ControllerJobExecutionResult {
     // Internal data about the timing of specific phases in job execution (only included
     // if the user requesting the job result has appropriate permissions)
     repeated .models.controller.JobPhaseChange timing_data = 6;
+
+    // If some portion of this result is archived,
+    // this provides information about that archival.
+    .models.controller.ControllerJobExecutionResult.Archive archive = 7;
+    message Archive {
+
+        // If defined, this `ControllerJobExecutionResult` can be found
+        // here in serialized protobuf binary format.
+        .models.controller.ControllerJobExecutionResult.Archive.S3 s3 = 1;
+        message S3 {
+            string bucket = 1;
+            string key = 2;
+        }
+    }
     enum Status {
         UNKNOWN = 0;
         SUCCESS = 1;
