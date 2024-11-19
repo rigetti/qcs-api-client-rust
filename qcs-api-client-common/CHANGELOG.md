@@ -1,4 +1,8 @@
-## 0.11.3 (2024-11-18)
+## 0.11.3-rc.0 (2024-11-19)
+
+### Features
+
+#### update protobuf definitions
 
 ### Fixes
 
