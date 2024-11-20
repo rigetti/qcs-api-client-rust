@@ -27,6 +27,7 @@ impl serde::Serialize for BinaryDataValue {
         let mut struct_ser = serializer.serialize_struct("models.controller.BinaryDataValue", len)?;
         if !self.data.is_empty() {
             #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("data", pbjson::private::base64::encode(&self.data).as_str())?;
         }
         struct_ser.end()
@@ -350,6 +351,7 @@ impl serde::Serialize for ControllerJobExecutionResult {
         }
         if self.execution_duration_microseconds != 0 {
             #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("executionDurationMicroseconds", ToString::to_string(&self.execution_duration_microseconds).as_str())?;
         }
         struct_ser.end()
@@ -701,6 +703,7 @@ impl serde::Serialize for EncryptedControllerJob {
         let mut struct_ser = serializer.serialize_struct("models.controller.EncryptedControllerJob", len)?;
         if !self.job.is_empty() {
             #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("job", pbjson::private::base64::encode(&self.job).as_str())?;
         }
         if let Some(v) = self.encryption.as_ref() {
@@ -1003,6 +1006,7 @@ impl serde::Serialize for JobEncryption {
         }
         if !self.nonce.is_empty() {
             #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("nonce", pbjson::private::base64::encode(&self.nonce).as_str())?;
         }
         struct_ser.end()

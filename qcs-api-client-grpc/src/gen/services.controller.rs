@@ -17,13 +17,11 @@
 /// A request to execute multiple ControllerJobs as if they were sent as separate requests.
 /// Note that the job execution IDs will be returned in the same order as the requests,
 /// but execution itself may occur out of that order depending on executor configuration.
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct BatchExecuteControllerJobsRequest {
     #[prost(message, repeated, tag = "1")]
     pub requests: ::prost::alloc::vec::Vec<ExecuteControllerJobRequest>,
 }
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct BatchExecuteControllerJobsResponse {
     #[prost(message, repeated, tag = "1")]
@@ -37,7 +35,6 @@ pub struct BatchExecuteControllerJobsResponse {
 /// order of the given configurations is not guaranteed. If there is a failure to queue any of the jobs,
 /// then none will be queued. A request must have at least one configuration, otherwise an error will be
 /// returned.
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ExecuteControllerJobRequest {
     /// One or more configurations against which to execute the provided job.
@@ -59,14 +56,12 @@ pub struct ExecuteControllerJobRequest {
 /// Nested message and enum types in `ExecuteControllerJobRequest`.
 pub mod execute_controller_job_request {
     #[derive(serde::Deserialize)]
-    #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Job {
         #[prost(message, tag = "201")]
         Encrypted(super::super::super::models::controller::EncryptedControllerJob),
     }
     /// Required by the gateway to forward requests to the correct execution host.
-    #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Target {
         #[prost(string, tag = "101")]
@@ -76,8 +71,7 @@ pub mod execute_controller_job_request {
     }
 }
 /// Options specified on execution requests describing any features or processes requested before or after job execution.
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct ExecutionOptions {
     /// If jobs contain settings that would cause managed settings to change values,
     /// that job will be rejected unless this field is set to true and the submitter has the appropriate authorization.
@@ -94,14 +88,12 @@ pub struct ExecutionOptions {
     #[prost(message, optional, tag = "4")]
     pub timeout: ::core::option::Option<::pbjson_types::Duration>,
 }
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ExecuteControllerJobResponse {
     /// One execution ID per input JobExecutionConfiguration, in the same order as the input.
     #[prost(string, repeated, tag = "1")]
     pub job_execution_ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetControllerJobResultsRequest {
     /// Which Controller Job execution to query for results
@@ -114,7 +106,6 @@ pub struct GetControllerJobResultsRequest {
 /// Nested message and enum types in `GetControllerJobResultsRequest`.
 pub mod get_controller_job_results_request {
     /// Required by the gateway to forward requests to the correct execution host.
-    #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Target {
         #[prost(string, tag = "101")]
@@ -123,7 +114,6 @@ pub mod get_controller_job_results_request {
         EndpointId(::prost::alloc::string::String),
     }
 }
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetControllerJobResultsResponse {
     #[prost(message, optional, tag = "1")]
@@ -139,7 +129,6 @@ pub struct GetControllerJobResultsResponse {
 /// Success response indicates only that the request was received. Cancellation
 /// is not guaranteed, as it is based on job state at time of cancellation, and is
 /// completed on a best-effort basis.
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CancelControllerJobsRequest {
     #[prost(string, repeated, tag = "1")]
@@ -151,7 +140,6 @@ pub struct CancelControllerJobsRequest {
 /// Nested message and enum types in `CancelControllerJobsRequest`.
 pub mod cancel_controller_jobs_request {
     /// Required by ConServ gateway to forward requests to the correct rackhost.
-    #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Target {
         #[prost(string, tag = "101")]
@@ -160,17 +148,14 @@ pub mod cancel_controller_jobs_request {
         EndpointId(::prost::alloc::string::String),
     }
 }
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct CancelControllerJobsResponse {}
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetControllerJobStatusRequest {
     #[prost(string, tag = "1")]
     pub job_id: ::prost::alloc::string::String,
 }
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct GetControllerJobStatusResponse {
     #[prost(enumeration = "get_controller_job_status_response::Status", tag = "1")]
     pub status: i32,
@@ -209,13 +194,13 @@ pub mod get_controller_job_status_response {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                Status::Unknown => "UNKNOWN",
-                Status::Queued => "QUEUED",
-                Status::Running => "RUNNING",
-                Status::Succeeded => "SUCCEEDED",
-                Status::Failed => "FAILED",
-                Status::Canceled => "CANCELED",
-                Status::PostProcessing => "POST_PROCESSING",
+                Self::Unknown => "UNKNOWN",
+                Self::Queued => "QUEUED",
+                Self::Running => "RUNNING",
+                Self::Succeeded => "SUCCEEDED",
+                Self::Failed => "FAILED",
+                Self::Canceled => "CANCELED",
+                Self::PostProcessing => "POST_PROCESSING",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -235,8 +220,7 @@ pub mod get_controller_job_status_response {
 }
 /// An estimation of the delay before a specific event, such as when a queued job
 /// is expected to be dequeued and run.
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct EstimatedDelay {
     /// The shortest possible delay before the event
     #[prost(message, optional, tag = "1")]
@@ -244,7 +228,13 @@ pub struct EstimatedDelay {
 }
 /// Generated client implementations.
 pub mod controller_client {
-    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
+    #![allow(
+        unused_variables,
+        dead_code,
+        missing_docs,
+        clippy::wildcard_imports,
+        clippy::let_unit_value,
+    )]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
     #[derive(Debug, Clone)]
@@ -266,8 +256,8 @@ pub mod controller_client {
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::Error: Into<StdError>,
-        T::ResponseBody: Body<Data = Bytes> + Send + 'static,
-        <T::ResponseBody as Body>::Error: Into<StdError> + Send,
+        T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
+        <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
     {
         pub fn new(inner: T) -> Self {
             let inner = tonic::client::Grpc::new(inner);
@@ -292,7 +282,7 @@ pub mod controller_client {
             >,
             <T as tonic::codegen::Service<
                 http::Request<tonic::body::BoxBody>,
-            >>::Error: Into<StdError> + Send + Sync,
+            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             ControllerClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -338,8 +328,7 @@ pub mod controller_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -368,8 +357,7 @@ pub mod controller_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -398,8 +386,7 @@ pub mod controller_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -428,8 +415,7 @@ pub mod controller_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -458,8 +444,7 @@ pub mod controller_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -482,11 +467,17 @@ pub mod controller_client {
 /// Generated server implementations.
 #[cfg(feature = "server")]
 pub mod controller_server {
-    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
+    #![allow(
+        unused_variables,
+        dead_code,
+        missing_docs,
+        clippy::wildcard_imports,
+        clippy::let_unit_value,
+    )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with ControllerServer.
     #[async_trait]
-    pub trait Controller: Send + Sync + 'static {
+    pub trait Controller: std::marker::Send + std::marker::Sync + 'static {
         async fn execute_controller_job(
             &self,
             request: tonic::Request<super::ExecuteControllerJobRequest>,
@@ -524,20 +515,18 @@ pub mod controller_server {
         >;
     }
     #[derive(Debug)]
-    pub struct ControllerServer<T: Controller> {
-        inner: _Inner<T>,
+    pub struct ControllerServer<T> {
+        inner: Arc<T>,
         accept_compression_encodings: EnabledCompressionEncodings,
         send_compression_encodings: EnabledCompressionEncodings,
         max_decoding_message_size: Option<usize>,
         max_encoding_message_size: Option<usize>,
     }
-    struct _Inner<T>(Arc<T>);
-    impl<T: Controller> ControllerServer<T> {
+    impl<T> ControllerServer<T> {
         pub fn new(inner: T) -> Self {
             Self::from_arc(Arc::new(inner))
         }
         pub fn from_arc(inner: Arc<T>) -> Self {
-            let inner = _Inner(inner);
             Self {
                 inner,
                 accept_compression_encodings: Default::default(),
@@ -587,8 +576,8 @@ pub mod controller_server {
     impl<T, B> tonic::codegen::Service<http::Request<B>> for ControllerServer<T>
     where
         T: Controller,
-        B: Body + Send + 'static,
-        B::Error: Into<StdError> + Send + 'static,
+        B: Body + std::marker::Send + 'static,
+        B::Error: Into<StdError> + std::marker::Send + 'static,
     {
         type Response = http::Response<tonic::body::BoxBody>;
         type Error = std::convert::Infallible;
@@ -600,7 +589,6 @@ pub mod controller_server {
             Poll::Ready(Ok(()))
         }
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
-            let inner = self.inner.clone();
             match req.uri().path() {
                 "/services.controller.Controller/ExecuteControllerJob" => {
                     #[allow(non_camel_case_types)]
@@ -632,7 +620,6 @@ pub mod controller_server {
                     let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
-                        let inner = inner.0;
                         let method = ExecuteControllerJobSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
@@ -685,7 +672,6 @@ pub mod controller_server {
                     let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
-                        let inner = inner.0;
                         let method = BatchExecuteControllerJobsSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
@@ -737,7 +723,6 @@ pub mod controller_server {
                     let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
-                        let inner = inner.0;
                         let method = GetControllerJobResultsSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
@@ -784,7 +769,6 @@ pub mod controller_server {
                     let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
-                        let inner = inner.0;
                         let method = CancelControllerJobsSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
@@ -834,7 +818,6 @@ pub mod controller_server {
                     let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
-                        let inner = inner.0;
                         let method = GetControllerJobStatusSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
@@ -853,20 +836,25 @@ pub mod controller_server {
                 }
                 _ => {
                     Box::pin(async move {
-                        Ok(
-                            http::Response::builder()
-                                .status(200)
-                                .header("grpc-status", "12")
-                                .header("content-type", "application/grpc")
-                                .body(empty_body())
-                                .unwrap(),
-                        )
+                        let mut response = http::Response::new(empty_body());
+                        let headers = response.headers_mut();
+                        headers
+                            .insert(
+                                tonic::Status::GRPC_STATUS,
+                                (tonic::Code::Unimplemented as i32).into(),
+                            );
+                        headers
+                            .insert(
+                                http::header::CONTENT_TYPE,
+                                tonic::metadata::GRPC_CONTENT_TYPE,
+                            );
+                        Ok(response)
                     })
                 }
             }
         }
     }
-    impl<T: Controller> Clone for ControllerServer<T> {
+    impl<T> Clone for ControllerServer<T> {
         fn clone(&self) -> Self {
             let inner = self.inner.clone();
             Self {
@@ -878,18 +866,10 @@ pub mod controller_server {
             }
         }
     }
-    impl<T: Controller> Clone for _Inner<T> {
-        fn clone(&self) -> Self {
-            Self(Arc::clone(&self.0))
-        }
-    }
-    impl<T: std::fmt::Debug> std::fmt::Debug for _Inner<T> {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "{:?}", self.0)
-        }
-    }
-    impl<T: Controller> tonic::server::NamedService for ControllerServer<T> {
-        const NAME: &'static str = "services.controller.Controller";
+    /// Generated gRPC service name
+    pub const SERVICE_NAME: &str = "services.controller.Controller";
+    impl<T> tonic::server::NamedService for ControllerServer<T> {
+        const NAME: &'static str = SERVICE_NAME;
     }
 }
 
