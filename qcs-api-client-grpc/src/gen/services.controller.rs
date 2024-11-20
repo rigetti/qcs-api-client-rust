@@ -161,6 +161,12 @@ pub struct GetControllerJobStatusResponse {
     pub status: i32,
     /// Best-effort estimate of how long it will be (from the time the response is
     /// generated) until the job is finished executing.
+    /// This will not attempt to account for future schedule modifications, such as
+    /// the arrival of a higher-priority job or a maintenance reservation being
+    /// scheduled.
+    /// The minimum estimate uses each job's estimated duration, if available; the
+    /// maximum estimate uses the execution timeout enforced by the controller
+    /// service.
     #[prost(message, optional, tag = "2")]
     pub estimated_job_completion_delay: ::core::option::Option<EstimatedDelay>,
 }
@@ -222,9 +228,17 @@ pub mod get_controller_job_status_response {
 /// is expected to be dequeued and run.
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct EstimatedDelay {
-    /// The shortest possible delay before the event
+    /// Our most optimistic estimate of the delay before the event (will always be the lowest duration in
+    /// this message)
     #[prost(message, optional, tag = "1")]
     pub minimum: ::core::option::Option<::pbjson_types::Duration>,
+    /// Our most pessimistic estimate of the delay (will always be the highest duration in this
+    /// message)
+    #[prost(message, optional, tag = "2")]
+    pub maximum: ::core::option::Option<::pbjson_types::Duration>,
+    /// When these estimates were calculated
+    #[prost(message, optional, tag = "3")]
+    pub now: ::core::option::Option<::pbjson_types::Timestamp>,
 }
 /// Generated client implementations.
 pub mod controller_client {

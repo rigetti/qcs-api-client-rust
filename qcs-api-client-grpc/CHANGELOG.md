@@ -1,3 +1,9 @@
+## 0.11.5 (2024-11-20)
+
+### Fixes
+
+#### generate rust structs for missing proto messages
+
 ## 0.11.4 (2024-11-20)
 
 ### Features

@@ -404,9 +404,21 @@ impl serde::Serialize for EstimatedDelay {
         if self.minimum.is_some() {
             len += 1;
         }
+        if self.maximum.is_some() {
+            len += 1;
+        }
+        if self.now.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("services.controller.EstimatedDelay", len)?;
         if let Some(v) = self.minimum.as_ref() {
             struct_ser.serialize_field("minimum", v)?;
+        }
+        if let Some(v) = self.maximum.as_ref() {
+            struct_ser.serialize_field("maximum", v)?;
+        }
+        if let Some(v) = self.now.as_ref() {
+            struct_ser.serialize_field("now", v)?;
         }
         struct_ser.end()
     }
@@ -419,11 +431,15 @@ impl<'de> serde::Deserialize<'de> for EstimatedDelay {
     {
         const FIELDS: &[&str] = &[
             "minimum",
+            "maximum",
+            "now",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Minimum,
+            Maximum,
+            Now,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -446,6 +462,8 @@ impl<'de> serde::Deserialize<'de> for EstimatedDelay {
                     {
                         match value {
                             "minimum" => Ok(GeneratedField::Minimum),
+                            "maximum" => Ok(GeneratedField::Maximum),
+                            "now" => Ok(GeneratedField::Now),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -466,6 +484,8 @@ impl<'de> serde::Deserialize<'de> for EstimatedDelay {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut minimum__ = None;
+                let mut maximum__ = None;
+                let mut now__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Minimum => {
@@ -474,10 +494,24 @@ impl<'de> serde::Deserialize<'de> for EstimatedDelay {
                             }
                             minimum__ = map_.next_value()?;
                         }
+                        GeneratedField::Maximum => {
+                            if maximum__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("maximum"));
+                            }
+                            maximum__ = map_.next_value()?;
+                        }
+                        GeneratedField::Now => {
+                            if now__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("now"));
+                            }
+                            now__ = map_.next_value()?;
+                        }
                     }
                 }
                 Ok(EstimatedDelay {
                     minimum: minimum__,
+                    maximum: maximum__,
+                    now: now__,
                 })
             }
         }
