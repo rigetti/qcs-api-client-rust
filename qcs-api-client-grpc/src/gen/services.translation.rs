@@ -18,6 +18,10 @@
 /// and other translation features.
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct TranslationOptions {
+    /// When set, the client program will be pre-processed via the Q-CTRL API
+    /// before translation.
+    #[prost(message, optional, tag = "1")]
+    pub q_ctrl: ::core::option::Option<translation_options::QCtrl>,
     /// The backend to use for translation, to include relevant options.
     /// If neither is specified, the implementing service may select the
     /// translation backend and options.
@@ -28,6 +32,21 @@ pub struct TranslationOptions {
 }
 /// Nested message and enum types in `TranslationOptions`.
 pub mod translation_options {
+    #[derive(Clone, Copy, PartialEq, ::prost::Message)]
+    pub struct QCtrl {
+        /// Indicates whether Q-CTRL pre-processing should consider the set of
+        /// program qubits to be fixed. If true, Q-CTRL may only remap qubits to
+        /// others specified within the user-submitted program. If false, Q-CTRL may
+        /// remap program qubits to any physical qubit on the device in order to
+        /// optimize the program.
+        ///
+        /// Note, this attribute is used to set `fixed_layouts` attribute on Q-CTRL's
+        /// `CompileOptions` message. Q-CTRL supports compilation of mutliple programs
+        /// at once, while Rigetti's `TranslationOptions` are currently scoped to a
+        /// single program. As such, we use `fixed_layout` rather than `fixed_layouts`.
+        #[prost(bool, optional, tag = "1")]
+        pub fixed_layout: ::core::option::Option<bool>,
+    }
     /// The backend to use for translation, to include relevant options.
     /// If neither is specified, the implementing service may select the
     /// translation backend and options.
