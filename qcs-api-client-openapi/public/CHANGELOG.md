@@ -1,3 +1,9 @@
+## 0.12.4 (2024-11-20)
+
+### Features
+
+#### update protobuf messages
+
 ## 0.12.3 (2024-11-18)
 
 ### Fixes
