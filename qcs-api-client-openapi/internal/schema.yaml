@@ -9206,6 +9206,8 @@ components:
           type: string
         groupName:
           type: string
+        billingOrganizationId:
+          type: integer
       required:
         - email
       type: object
