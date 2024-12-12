@@ -2460,6 +2460,52 @@ paths:
       summary: Get Group Balance
       tags:
         - account
+    put:
+      description: Update the balance of the requested QCS group account.
+      operationId: PutGroupBalance
+      parameters:
+        - description: URL encoded name of group for which to retrieve account balance.
+          in: path
+          name: groupName
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGroupAccountBalanceRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountBalance"
+          description: Request completed successfully.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client not authorized to complete request.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: QCS group account does not exist.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      summary: Update Group Balance
+      tags:
+        - account
+      x-internal: true
   "/v1/groups/{groupName}/billingCustomer":
     get:
       description: Retrieve billing customer for a QCS group account.
@@ -4490,6 +4536,53 @@ paths:
       summary: Get User Balance
       tags:
         - account
+    put:
+      description: Update the balance of the requested QCS user account.
+      operationId: PutUserBalance
+      parameters:
+        - description: The user's QCS id. May be found as `idpId` in the `AuthGetUser` API
+            call.
+          in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserAccountBalanceRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountBalance"
+          description: Request completed successfully.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Client not authorized to complete request.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: QCS user account does not exist.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      summary: Update User Balance
+      tags:
+        - account
+      x-internal: true
   "/v1/users/{userId}/billingCustomer":
     get:
       description: Retrieve billing customer for a QCS user account.
@@ -8265,6 +8358,42 @@ components:
       required:
         - balance
       type: object
+    UpdateUserAccountBalanceRequest:
+      description: Used to change the balance of a QCS user account in the billing system.
+      properties:
+        amount:
+          description: |
+            The delta to apply to the account balance in cents USD.
+            A positive value indicates the amount owed by the user,
+            and a negative value indicates the credits applied to the account.
+            For example, granting a user $20 would be `amount: -2000`.
+          type: integer
+        description:
+          description: Details such as who requested and approved the balance change.
+          type: string
+      required:
+        - amount
+        - description
+      type: object
+      x-internal: true
+    UpdateGroupAccountBalanceRequest:
+      description: Used to change the balance of a QCS group account in the billing system.
+      properties:
+        amount:
+          description: |
+            The delta to apply to the account balance in cents USD.
+            A positive value indicates the amount owed by the user,
+            and a negative value indicates the credits applied to the account.
+            For example, granting a user $20 would be `amount: -2000`.
+          type: integer
+        description:
+          description: Details such as who requested and approved the balance change.
+          type: string
+      required:
+        - amount
+        - description
+      type: object
+      x-internal: true
     AccountBillingCustomerCreateRequest:
       description: If `id` is present, this will set the billing customer id to the
         requested account if the billing customer exists and has not been
