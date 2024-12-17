@@ -6217,6 +6217,11 @@ components:
             the corresponding fridge
           title: Live Instrument Access
           type: boolean
+        notificationSlackChannel:
+          description: "The Slack channel to which create/update/delete notifications
+            should be sent for this endpoint. Example: bf01"
+          title: Notification Slack Channel
+          type: string
         quantumProcessorIds:
           description: "Public identifiers for quantum processors served by this endpoint.
             Note: this is only used for QCS services and authorization and does
@@ -6684,6 +6689,11 @@ components:
             the corresponding fridge
           title: Live Instrument Access
           type: boolean
+        notificationSlackChannel:
+          description: "The Slack channel to which create/update/delete notifications
+            should be sent for this endpoint. Example: bf01"
+          title: Notification Slack Channel
+          type: string
         quantumProcessorIds:
           description: "Public identifiers for quantum processors served by this endpoint.
             Note: this is only used for QCS services and authorization and does
@@ -6880,6 +6890,11 @@ components:
             the corresponding fridge
           title: Live Instrument Access
           type: boolean
+        notificationSlackChannel:
+          description: "The Slack channel to which create/update/delete notifications
+            should be sent for this endpoint. Example: bf01"
+          title: Notification Slack Channel
+          type: string
         quantumProcessorIds:
           description: "Public identifiers for quantum processors served by this endpoint.
             Note: this is only used for QCS services and authorization and does
