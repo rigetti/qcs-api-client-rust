@@ -9473,8 +9473,11 @@ components:
         reservationCalendarEmail:
           description: This calendar's schedule contains all reservation events for the QPU.
           type: string
+        maintenanceCalendarEmail:
+          description: This calendar's schedule contains maintenance events for the QPU,
+            during which execution is not available.
+          type: string
       required:
-        - reservationICal
         - public
       type: object
       x-internal: true
