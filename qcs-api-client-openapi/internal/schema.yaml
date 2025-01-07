@@ -5799,7 +5799,7 @@ components:
         magsim:
           $ref: "#/components/schemas/MagnetoSimulatorComponent"
         orchestrator:
-          $ref: "#/components/schemas/pydantic__main__OrchestratorComponent"
+          $ref: "#/components/schemas/OrchestratorComponent"
       title: ComponentOptions
       type: object
     ControllerAddress:
@@ -6492,8 +6492,7 @@ components:
       properties:
         orchestrators:
           additionalProperties:
-            $ref: "#/components/schemas/app__lib__components__orchestrator__OrchestratorCom\
-              ponent"
+            $ref: "#/components/schemas/OrchestratorComponent"
           title: Orchestrators
           type: object
       title: ExtraComponents
@@ -7489,6 +7488,133 @@ components:
         - type
       title: OptionCard
       type: object
+    OrchestratorComponent:
+      properties:
+        commandLineArgs:
+          description: Command line arguments to append to the default values in the
+            orchestrator start command
+          items:
+            type: string
+          title: Command Line Arguments
+          type: array
+        controllerServiceEndpoint:
+          description: If present, forward all jobs to a controller rather than handling
+            them locally
+          title: Controller Service Endpoint
+          type: string
+        cpuLimit:
+          description: CPU Allocation, in MHz, required by this component. Whether it is a
+            hard or soft limit is specified by the component itself. By default,
+            it is a soft limit, and components are allowed to burst above when
+            there is unused capacity.
+          title: CPU Limit
+          type: integer
+        dockerTag:
+          default: latest
+          description: "Which docker tag to pull and start. [Example: v1.0.0]"
+          title: Docker Tag
+          type: string
+        enableHealthCheck:
+          default: true
+          description: Whether to enable the Nomad health check script for this
+            component's task
+          title: Enable Health Check
+          type: boolean
+        enableSentry:
+          default: true
+          description: Whether to send errors and data to Sentry
+          title: Enable Sentry reporting
+          type: boolean
+        environment:
+          description: The QCS service environment from which this stack will request data
+          title: Environment
+          type: string
+        environmentVariables:
+          additionalProperties:
+            type: string
+          description: Environment variables to set for this component. To unset a
+            variable which has been set by component defaults, set it to an
+            empty string. Note that not all environment variables may be
+            overridden. Examples of such variables are those set by Nomad to
+            provide secret values to the task container.
+          title: Environment Variables
+          type: object
+        gitBranch:
+          description: Which branch of the relevant repository to associate with this
+            endpoint. May be used for automatic upgrades on updates to the git
+            branch.
+          title: Git Branch
+          type: string
+        includeDefaultCommandLineArgs:
+          default: true
+          description: Whether to include default command line arguments in the
+            orchestrator start command. These include rack configuration path
+            and certain ports. Disable this for fine-grained control over
+            command line arguments or if using an older version of Lodgepole
+            with different arguments.
+          title: Include Default Command Line Arguments
+          type: boolean
+        isSidecar:
+          default: false
+          description: Whether this component is a sidecar or not.
+          title: Is Sidecar
+          type: boolean
+        listenPorts:
+          additionalProperties:
+            type: integer
+          default: {}
+          description: Fixed network ports keyed on port name
+          title: Listen Ports
+          type: object
+        loggingProvider:
+          allOf:
+            - $ref: "#/components/schemas/LoggingTarget"
+          default: loki
+          description: The logging provider handles the logs emitted on stdout/stderr
+          title: Logging Provider
+        memorySoftLimit:
+          description: Memory allocation in MB required by this component.
+          title: Memory Soft Limit
+          type: integer
+        mock:
+          default: true
+          description: Whether to start the orchestrator in "mock" mode, where mock
+            responses are generated in-process rather than being dispatched to
+            control hardware
+          title: Mock
+          type: boolean
+        rackConfig:
+          allOf:
+            - $ref: "#/components/schemas/DeployedRack"
+          description: The contents of the DeployedRack/Rack YAML to deploy with the
+            service, as a nested object. This will be parsed and validated using
+            the Rigetti Domain Model / Treeline.
+          title: Explicit Rack Configuration
+        rackYamlString:
+          description: The contents of the DeployedRack/Rack YAML to deploy with the
+            service, as a YAML string. Use this option when deploying an old
+            version of Lodgepole with rack components not supported by the
+            Rigetti Domain Model / Treeline (such as VNAs).
+          title: Explicit Rack Configuration (YAML String)
+          type: string
+        timeReferenceInstrument:
+          description: Instrument used as a reference when synchronizing time amongst
+            instruments
+          title: Time Reference Instrument
+          type: string
+        triggerTimeOffset:
+          default: "0.0"
+          description: Instrument trigger time offset in seconds
+          title: Trigger Time Offset
+          type: string
+        visaPassthrough:
+          default: false
+          description: Whether to pass through access to USB instruments with host VISA
+            configuration
+          title: VISA Passthrough
+          type: boolean
+      title: Orchestrator Component
+      type: object
     OtelService:
       description: The service to which OTEL traces should be sent.
       enum:
@@ -8105,260 +8231,6 @@ components:
       required:
         - _type
       title: YokogawaGS200Channel
-      type: object
-    app__lib__components__orchestrator__OrchestratorComponent:
-      properties:
-        commandLineArgs:
-          description: Command line arguments to append to the default values in the
-            orchestrator start command
-          items:
-            type: string
-          title: Command Line Arguments
-          type: array
-        controllerServiceEndpoint:
-          description: If present, forward all jobs to a controller rather than handling
-            them locally
-          title: Controller Service Endpoint
-          type: string
-        cpuLimit:
-          description: CPU Allocation, in MHz, required by this component. Whether it is a
-            hard or soft limit is specified by the component itself. By default,
-            it is a soft limit, and components are allowed to burst above when
-            there is unused capacity.
-          title: CPU Limit
-          type: integer
-        dockerTag:
-          default: latest
-          description: "Which docker tag to pull and start. [Example: v1.0.0]"
-          title: Docker Tag
-          type: string
-        enableHealthCheck:
-          default: true
-          description: Whether to enable the Nomad health check script for this
-            component's task
-          title: Enable Health Check
-          type: boolean
-        enableSentry:
-          default: true
-          description: Whether to send errors and data to Sentry
-          title: Enable Sentry reporting
-          type: boolean
-        environment:
-          description: The QCS service environment from which this stack will request data
-          title: Environment
-          type: string
-        environmentVariables:
-          additionalProperties:
-            type: string
-          description: Environment variables to set for this component. To unset a
-            variable which has been set by component defaults, set it to an
-            empty string. Note that not all environment variables may be
-            overridden. Examples of such variables are those set by Nomad to
-            provide secret values to the task container.
-          title: Environment Variables
-          type: object
-        gitBranch:
-          description: Which branch of the relevant repository to associate with this
-            endpoint. May be used for automatic upgrades on updates to the git
-            branch.
-          title: Git Branch
-          type: string
-        includeDefaultCommandLineArgs:
-          default: true
-          description: Whether to include default command line arguments in the
-            orchestrator start command. These include rack configuration path
-            and certain ports. Disable this for fine-grained control over
-            command line arguments or if using an older version of Lodgepole
-            with different arguments.
-          title: Include Default Command Line Arguments
-          type: boolean
-        isSidecar:
-          default: false
-          description: Whether this component is a sidecar or not.
-          title: Is Sidecar
-          type: boolean
-        listenPorts:
-          additionalProperties:
-            type: integer
-          default: {}
-          description: Fixed network ports keyed on port name
-          title: Listen Ports
-          type: object
-        loggingProvider:
-          allOf:
-            - $ref: "#/components/schemas/LoggingTarget"
-          default: loki
-          description: The logging provider handles the logs emitted on stdout/stderr
-          title: Logging Provider
-        memorySoftLimit:
-          description: Memory allocation in MB required by this component.
-          title: Memory Soft Limit
-          type: integer
-        mock:
-          default: true
-          description: Whether to start the orchestrator in "mock" mode, where mock
-            responses are generated in-process rather than being dispatched to
-            control hardware
-          title: Mock
-          type: boolean
-        rackConfig:
-          allOf:
-            - $ref: "#/components/schemas/DeployedRack"
-          description: The contents of the DeployedRack/Rack YAML to deploy with the
-            service, as a nested object. This will be parsed and validated using
-            the Rigetti Domain Model / Treeline.
-          title: Explicit Rack Configuration
-        rackYamlString:
-          description: The contents of the DeployedRack/Rack YAML to deploy with the
-            service, as a YAML string. Use this option when deploying an old
-            version of Lodgepole with rack components not supported by the
-            Rigetti Domain Model / Treeline (such as VNAs).
-          title: Explicit Rack Configuration (YAML String)
-          type: string
-        timeReferenceInstrument:
-          description: Instrument used as a reference when synchronizing time amongst
-            instruments
-          title: Time Reference Instrument
-          type: string
-        triggerTimeOffset:
-          default: "0.0"
-          description: Instrument trigger time offset in seconds
-          title: Trigger Time Offset
-          type: string
-        visaPassthrough:
-          default: false
-          description: Whether to pass through access to USB instruments with host VISA
-            configuration
-          title: VISA Passthrough
-          type: boolean
-      title: Orchestrator Component
-      type: object
-    pydantic__main__OrchestratorComponent:
-      properties:
-        commandLineArgs:
-          description: Command line arguments to append to the default values in the
-            orchestrator start command
-          items:
-            type: string
-          title: Command Line Arguments
-          type: array
-        controllerServiceEndpoint:
-          description: If present, forward all jobs to a controller rather than handling
-            them locally
-          title: Controller Service Endpoint
-          type: string
-        cpuLimit:
-          description: CPU Allocation, in MHz, required by this component. Whether it is a
-            hard or soft limit is specified by the component itself. By default,
-            it is a soft limit, and components are allowed to burst above when
-            there is unused capacity.
-          title: CPU Limit
-          type: integer
-        dockerTag:
-          default: latest
-          description: "Which docker tag to pull and start. [Example: v1.0.0]"
-          title: Docker Tag
-          type: string
-        enableHealthCheck:
-          default: true
-          description: Whether to enable the Nomad health check script for this
-            component's task
-          title: Enable Health Check
-          type: boolean
-        enableSentry:
-          default: true
-          description: Whether to send errors and data to Sentry
-          title: Enable Sentry reporting
-          type: boolean
-        environment:
-          description: The QCS service environment from which this stack will request data
-          title: Environment
-          type: string
-        environmentVariables:
-          additionalProperties:
-            type: string
-          description: Environment variables to set for this component. To unset a
-            variable which has been set by component defaults, set it to an
-            empty string. Note that not all environment variables may be
-            overridden. Examples of such variables are those set by Nomad to
-            provide secret values to the task container.
-          title: Environment Variables
-          type: object
-        gitBranch:
-          description: Which branch of the relevant repository to associate with this
-            endpoint. May be used for automatic upgrades on updates to the git
-            branch.
-          title: Git Branch
-          type: string
-        includeDefaultCommandLineArgs:
-          default: true
-          description: Whether to include default command line arguments in the
-            orchestrator start command. These include rack configuration path
-            and certain ports. Disable this for fine-grained control over
-            command line arguments or if using an older version of Lodgepole
-            with different arguments.
-          title: Include Default Command Line Arguments
-          type: boolean
-        isSidecar:
-          default: false
-          description: Whether this component is a sidecar or not.
-          title: Is Sidecar
-          type: boolean
-        listenPorts:
-          additionalProperties:
-            type: integer
-          default: {}
-          description: Fixed network ports keyed on port name
-          title: Listen Ports
-          type: object
-        loggingProvider:
-          allOf:
-            - $ref: "#/components/schemas/LoggingTarget"
-          default: loki
-          description: The logging provider handles the logs emitted on stdout/stderr
-          title: Logging Provider
-        memorySoftLimit:
-          description: Memory allocation in MB required by this component.
-          title: Memory Soft Limit
-          type: integer
-        mock:
-          default: true
-          description: Whether to start the orchestrator in "mock" mode, where mock
-            responses are generated in-process rather than being dispatched to
-            control hardware
-          title: Mock
-          type: boolean
-        rackConfig:
-          allOf:
-            - $ref: "#/components/schemas/DeployedRack"
-          description: The contents of the DeployedRack/Rack YAML to deploy with the
-            service, as a nested object. This will be parsed and validated using
-            the Rigetti Domain Model / Treeline.
-          title: Explicit Rack Configuration
-        rackYamlString:
-          description: The contents of the DeployedRack/Rack YAML to deploy with the
-            service, as a YAML string. Use this option when deploying an old
-            version of Lodgepole with rack components not supported by the
-            Rigetti Domain Model / Treeline (such as VNAs).
-          title: Explicit Rack Configuration (YAML String)
-          type: string
-        timeReferenceInstrument:
-          description: Instrument used as a reference when synchronizing time amongst
-            instruments
-          title: Time Reference Instrument
-          type: string
-        triggerTimeOffset:
-          default: "0.0"
-          description: Instrument trigger time offset in seconds
-          title: Trigger Time Offset
-          type: string
-        visaPassthrough:
-          default: false
-          description: Whether to pass through access to USB instruments with host VISA
-            configuration
-          title: VISA Passthrough
-          type: boolean
-      title: Orchestrator Component
       type: object
     AccountBalance:
       description: Balance of QCS account in billing system. Note, a negative balance
