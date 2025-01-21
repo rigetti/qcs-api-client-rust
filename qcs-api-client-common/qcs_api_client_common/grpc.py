@@ -1,4 +1,5 @@
 """Middleware for gRPC clients."""
+
 from abc import ABCMeta
 from typing import Any, Callable, List, Optional, Tuple
 
@@ -14,7 +15,8 @@ class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
 
     The interceptor will automatically refresh your token as needed.
     """
-    def __init__(self, client_configuration: Optional[ClientConfiguration]=None):
+
+    def __init__(self, client_configuration: Optional[ClientConfiguration] = None):
         """Initialize the interceptor using a `ClientConfiguration`.
 
         If `client_configuration` is unset, `ClientConfiguratio.load_default()` will be used.
@@ -30,7 +32,7 @@ class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
         self,
         continuation: Callable[[ClientCallDetails, Any], Call],
         client_call_details: ClientCallDetails,
-        request: Any
+        request: Any,
     ) -> Any:
         """Adds the QCS authorization token to the request metadata, refreshing the token if needed."""
         # Modify the headers to add the access token
@@ -38,7 +40,7 @@ class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
         if client_call_details.metadata is not None:
             authorized_metadata = list(client_call_details.metadata)
 
-        authorized_metadata.append(('authorization', f'Bearer {await self._get_access_token()}'))
+        authorized_metadata.append(("authorization", f"Bearer {await self._get_access_token()}"))
 
         new_client_call_details = grpc.aio.ClientCallDetails(
             client_call_details.method,

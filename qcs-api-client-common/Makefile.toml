@@ -85,8 +85,13 @@ script = [
     '''
 ]
 
+[tasks.ruff-check]
+dependencies = ["install-uv"]
+command = "ruff"
+args = ["check"]
+
 [tasks.dev-flow]
-dependencies = ["dev-test-flow", "pytest", "stubtest"]
+dependencies = ["dev-test-flow", "pytest", "stubtest", "ruff-check"]
 
 [tasks.default]
 alias = "dev-flow"

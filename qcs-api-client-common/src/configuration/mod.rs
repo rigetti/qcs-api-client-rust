@@ -181,6 +181,7 @@ impl ClientConfiguration {
             _ => (None, None),
         };
 
+        let api_url = env::var(API_URL_VAR).unwrap_or(profile.api_url);
         let quilc_url = env::var(QUILC_URL_VAR).unwrap_or(profile.applications.pyquil.quilc_url);
         let qvm_url = env::var(QVM_URL_VAR).unwrap_or(profile.applications.pyquil.qvm_url);
         let grpc_api_url = env::var(GRPC_API_URL_VAR).unwrap_or(profile.grpc_api_url);
@@ -201,7 +202,7 @@ impl ClientConfiguration {
         builder
             .profile(profile_name)
             .oauth_session(oauth_session)
-            .api_url(profile.api_url)
+            .api_url(api_url)
             .quilc_url(quilc_url)
             .qvm_url(qvm_url)
             .grpc_api_url(grpc_api_url);
@@ -455,15 +456,18 @@ mod test {
             let quilc_url = "quilc_url";
             let qvm_url = "qvm_url";
             let grpc_url = "grpc_url";
+            let api_url = "api_url";
 
             jail.set_env(QUILC_URL_VAR, quilc_url);
             jail.set_env(QVM_URL_VAR, qvm_url);
             jail.set_env(GRPC_API_URL_VAR, grpc_url);
+            jail.set_env(API_URL_VAR, api_url);
 
             let config = ClientConfiguration::load_default().unwrap();
             assert_eq!(config.quilc_url, quilc_url);
             assert_eq!(config.qvm_url, qvm_url);
             assert_eq!(config.grpc_api_url, grpc_url);
+            assert_eq!(config.api_url, api_url);
 
             Ok(())
         });

@@ -34,4 +34,3 @@ def pytest_configure(config: pytest.Config):
 def integration_qpu_id(request: pytest.Config) -> str:
     cli_value = request.config.getoption("--qpu")
     return cli_value
-

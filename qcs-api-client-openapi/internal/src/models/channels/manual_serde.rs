@@ -48,7 +48,7 @@ impl<'de> _serde::Deserialize<'de> for Channels {
             __field19,
         }
         struct __FieldVisitor;
-        impl<'de> _serde::de::Visitor<'de> for __FieldVisitor {
+        impl _serde::de::Visitor<'_> for __FieldVisitor {
             type Value = __Field;
             fn expecting(
                 &self,

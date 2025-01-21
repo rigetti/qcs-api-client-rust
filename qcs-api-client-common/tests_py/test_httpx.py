@@ -10,9 +10,10 @@ from qcs_api_client_common.httpx import QCSAuthorization
 @pytest.fixture
 def mock_client_config():
     config = AsyncMock(spec=ClientConfiguration)
-    config.get_bearer_access_token = Mock(return_value='mock_client_token')
-    config.get_bearer_access_token_async = AsyncMock(return_value='mock_client_token')
+    config.get_bearer_access_token = Mock(return_value="mock_client_token")
+    config.get_bearer_access_token_async = AsyncMock(return_value="mock_client_token")
     return config
+
 
 def test_auth_sync(mock_client_config):
     request = httpx.Request("GET", "https://rigetti.com")
@@ -25,6 +26,7 @@ def test_auth_sync(mock_client_config):
 
     assert request.headers["Authorization"] == "Bearer mock_client_token"
     mock_client_config.get_bearer_access_token.assert_called_once()
+
 
 @pytest.mark.asyncio
 async def test_auth_async(mock_client_config):
