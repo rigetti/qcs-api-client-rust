@@ -57,7 +57,7 @@ class ClientConfiguration:
         ...
 
     @staticmethod
-    def load_profile(profile_name: str) -> ClientConfigurationBuilder:
+    def load_profile(profile_name: str) -> ClientConfiguration:
         """Load a `ClientConfiguration` using the given QCS profile."""
 
     @staticmethod

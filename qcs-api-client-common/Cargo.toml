@@ -27,9 +27,9 @@ tracing-config = ["tracing"]
 python = ["dep:pyo3", "dep:pyo3-asyncio", "dep:paste", "dep:rigetti-pyo3", "tokio/macros", "pyo3-build-config"]
 
 [dependencies]
+async-tempfile = { version = "0.6.0", features = ["uuid"] }
 async-trait = "0.1"
 backoff = { workspace = true }
-base64 = "0.22.1"
 derive_builder = "0.20.0"
 figment = { version = "0.10.18", features = ["env", "toml"] }
 futures = "0.3.26"
@@ -44,15 +44,15 @@ rigetti-pyo3 = { version = "0.3.6", optional = true }
 serde = { workspace = true, features = ["derive"] }
 shellexpand = "3.1.0"
 thiserror = { workspace = true }
-time = { version = "0.3.34", features = ["parsing"] }
-tokio = { workspace = true, features = ["sync"] }
-toml = "0.8.14"
+time = { version = "0.3.34", features = ["macros", "parsing", "serde"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "sync", "fs"] }
+toml = { version = "0.8.19", features = ["preserve_order"] }
+toml_edit = "0.22.22"
 tracing = { workspace = true, optional = true }
 url = { workspace = true, optional = true }
 urlpattern = { workspace = true, optional = true }
 
 [dev-dependencies]
-chrono = "0.4.38"
 figment = { version = "0.10.18", features = ["env", "toml", "test"] }
 httpmock = "0.8.0-alpha.1"
 rstest = { workspace = true }

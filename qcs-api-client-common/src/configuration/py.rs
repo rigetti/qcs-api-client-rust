@@ -202,7 +202,7 @@ impl_repr!(ClientConfiguration);
 impl ClientConfiguration {
     #[staticmethod]
     #[pyo3(name = "load_default")]
-    fn py_load_default() -> Result<Self, LoadError> {
+    fn py_load_default(_py: Python<'_>) -> Result<Self, LoadError> {
         Self::load_default()
     }
 
@@ -214,7 +214,7 @@ impl ClientConfiguration {
 
     #[staticmethod]
     #[pyo3(name = "load_profile")]
-    fn py_load_profile(profile_name: String) -> Result<Self, LoadError> {
+    fn py_load_profile(_py: Python<'_>, profile_name: String) -> Result<Self, LoadError> {
         Self::load_profile(profile_name)
     }
 
@@ -358,7 +358,7 @@ impl From<LoadError> for PyErr {
             | LoadError::Build(_)
             | LoadError::ProfileNotFound(_)
             | LoadError::AuthServerNotFound(_) => PyValueError::new_err(message),
-            LoadError::EnvVar { .. } => PyOSError::new_err(message),
+            LoadError::EnvVar { .. } | LoadError::Io(_) => PyOSError::new_err(message),
             LoadError::Path { .. } => PyFileNotFoundError::new_err(message),
             #[cfg(feature = "tracing-config")]
             LoadError::TracingFilterParseError(_) => PyValueError::new_err(message),
@@ -376,7 +376,8 @@ impl From<TokenError> for PyErr {
             | TokenError::NoAuthServer
             | TokenError::InvalidAccessToken(_)
             | TokenError::Fetch(_)
-            | TokenError::ExternallyManaged(_) => PyValueError::new_err(message),
+            | TokenError::ExternallyManaged(_)
+            | TokenError::Write(_) => PyValueError::new_err(message),
         }
     }
 }

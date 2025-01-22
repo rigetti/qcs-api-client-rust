@@ -465,6 +465,7 @@ impl TracingFilter {
             <UrlPattern>::parse(init.clone())
                 .and_then(|pattern| pattern.exec(input.clone()))
                 .map_err(|e| {
+                    #[cfg(feature = "tracing")]
                     tracing::error!("error matching url pattern: {}", e);
                 })
                 .ok()

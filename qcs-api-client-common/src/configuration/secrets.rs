@@ -1,22 +1,35 @@
 use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 
+use async_tempfile::TempFile;
 use figment::providers::{Format, Toml};
 use figment::Figment;
 use serde::{Deserialize, Serialize};
+use time::format_description::well_known::Rfc3339;
+use time::{OffsetDateTime, PrimitiveDateTime};
+use tokio::io::AsyncWriteExt;
+use toml_edit::{DocumentMut, Item};
 
 use crate::configuration::LoadError;
 
+use super::error::{IoErrorWithPath, IoOperation, WriteError};
 use super::{expand_path_from_env_or_default, DEFAULT_PROFILE_NAME};
 
 /// Setting the `QCS_SECRETS_FILE_PATH` environment variable will change which file is used for loading secrets
 pub const SECRETS_PATH_VAR: &str = "QCS_SECRETS_FILE_PATH";
-/// The default path that [`Secrets`] will be loaded from;
+/// `QCS_SECRETS_READ_ONLY` indicates whether to treat the `secrets.toml` file as read-only. Disabled by default.
+/// * Access token updates will _not_ be persisted to the secrets file, regardless of file permissions, for any of the following values (case insensitive): "true", "yes", "1".  
+/// * Access token updates will be persisted to the secrets file if it is writeable for any other value or if unset.
+pub const SECRETS_READ_ONLY_VAR: &str = "QCS_SECRETS_READ_ONLY";
+/// The default path that [`Secrets`] will be loaded from
 pub const DEFAULT_SECRETS_PATH: &str = "~/.qcs/secrets.toml";
 
 #[derive(Deserialize, Debug, PartialEq, Serialize)]
 pub(crate) struct Secrets {
     #[serde(default = "default_credentials")]
     pub(crate) credentials: HashMap<String, Credential>,
+    #[serde(skip)]
+    pub(crate) file_path: Option<PathBuf>,
 }
 
 fn default_credentials() -> HashMap<String, Credential> {
@@ -27,6 +40,7 @@ impl Default for Secrets {
     fn default() -> Self {
         Self {
             credentials: default_credentials(),
+            file_path: None,
         }
     }
 }
@@ -34,7 +48,162 @@ impl Default for Secrets {
 impl Secrets {
     pub(crate) fn load() -> Result<Self, LoadError> {
         let path = expand_path_from_env_or_default(SECRETS_PATH_VAR, DEFAULT_SECRETS_PATH)?;
-        Ok(Figment::from(Toml::file(path)).extract()?)
+        #[cfg(feature = "tracing")]
+        tracing::debug!("loading QCS secrets from {path:?}");
+        Self::load_from_path(&path)
+    }
+
+    pub(crate) fn load_from_path(path: &PathBuf) -> Result<Self, LoadError> {
+        let mut secrets: Self = Figment::from(Toml::file(path)).extract()?;
+        secrets.file_path = Some(path.into());
+        Ok(secrets)
+    }
+
+    /// Returns a bool indicating whether or not the QCS [`Secrets`] file is read-only.
+    ///
+    /// The file is considered read-only if the `QCS_SECRETS_READ_ONLY` environment variable is set,
+    /// or if the file permissions indicate that it is read-only.
+    pub(crate) async fn is_read_only(
+        secrets_path: impl AsRef<Path> + Send + Sync,
+    ) -> Result<bool, WriteError> {
+        // Check if the QCS_SECRETS_READ_ONLY environment variable is set
+        let ro_env = std::env::var(SECRETS_READ_ONLY_VAR);
+        let ro_env_lowercase = ro_env.as_deref().map(str::to_lowercase);
+        if let Ok("true" | "yes" | "1") = ro_env_lowercase.as_deref() {
+            return Ok(true);
+        }
+
+        // Check file permissions
+        let is_read_only = tokio::fs::metadata(&secrets_path)
+            .await
+            .map_err(|error| IoErrorWithPath {
+                error,
+                path: secrets_path.as_ref().to_path_buf(),
+                operation: IoOperation::GetMetadata,
+            })?
+            .permissions()
+            .readonly();
+        Ok(is_read_only)
+    }
+
+    /// Attempts to write an access token to the QCS [`Secrets`] file at
+    /// the given path.
+    ///
+    /// The access token will only be updated if the access token currently stored in the file is
+    /// older than the provided `updated_at` timestamp.
+    ///
+    /// # Errors
+    ///
+    /// - [`TokenError`] for possible errors.
+    pub(crate) async fn write_access_token(
+        secrets_path: impl AsRef<Path> + Send + Sync + std::fmt::Debug,
+        profile_name: &str,
+        access_token: &str,
+        updated_at: OffsetDateTime,
+    ) -> Result<(), WriteError> {
+        // Read the current contents of the secrets file
+        let secrets_string = tokio::fs::read_to_string(&secrets_path)
+            .await
+            .map_err(|error| IoErrorWithPath {
+                error,
+                path: secrets_path.as_ref().to_path_buf(),
+                operation: IoOperation::Read,
+            })?;
+
+        // Parse the TOML content into a mutable document
+        let mut secrets_toml = secrets_string.parse::<DocumentMut>()?;
+
+        // Navigate to the `[credentials.<profile_name>.token_payload]` table
+        let token_payload = Self::get_token_payload_table(&mut secrets_toml, profile_name)?;
+
+        let current_updated_at = token_payload
+            .get("updated_at")
+            .and_then(|v| v.as_str())
+            .and_then(|s| PrimitiveDateTime::parse(s, &Rfc3339).ok())
+            .map(PrimitiveDateTime::assume_utc);
+
+        let should_update = current_updated_at.is_none_or(|dt| dt < updated_at);
+
+        if should_update {
+            // Update the `access_token` and `updated_at` fields
+            token_payload["access_token"] = access_token.into();
+            token_payload["updated_at"] = updated_at.format(&Rfc3339)?.into();
+
+            // Create a temporary file
+            // Write the updated TOML content to a temporary file.
+            // The file is named using a newly generated UUIDv4 to avoid collisions
+            // with other processes that may also be attempting to update the secrets file.
+            let mut temp_file = TempFile::new().await?;
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "Created temporary QCS secrets file at {:?}",
+                temp_file.file_path()
+            );
+            // Set the same permissions as the original file
+            let secrets_file_permissions = tokio::fs::metadata(&secrets_path)
+                .await
+                .map_err(|error| IoErrorWithPath {
+                    error,
+                    path: secrets_path.as_ref().to_path_buf(),
+                    operation: IoOperation::GetMetadata,
+                })?
+                .permissions();
+            temp_file
+                .set_permissions(secrets_file_permissions)
+                .await
+                .map_err(|error| IoErrorWithPath {
+                    error,
+                    path: temp_file.file_path().clone(),
+                    operation: IoOperation::SetPermissions,
+                })?;
+
+            // Write the updated TOML content to the temporary file
+            temp_file
+                .write_all(secrets_toml.to_string().as_bytes())
+                .await
+                .map_err(|error| IoErrorWithPath {
+                    error,
+                    path: temp_file.file_path().clone(),
+                    operation: IoOperation::Write,
+                })?;
+            temp_file.flush().await.map_err(|error| IoErrorWithPath {
+                error,
+                path: temp_file.file_path().clone(),
+                operation: IoOperation::Flush,
+            })?;
+
+            // Atomically replace the original file with the temporary file.
+            // Note that this will fail if the secrets file is on a different mount-point from `std::env::temp_dir()`.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "Overwriting QCS secrets file at {secrets_path:?} with temporary file at {:?}",
+                temp_file.file_path()
+            );
+            tokio::fs::rename(temp_file.file_path(), &secrets_path)
+                .await
+                .map_err(|error| IoErrorWithPath {
+                    error,
+                    path: temp_file.file_path().clone(),
+                    operation: IoOperation::Rename {
+                        dest: secrets_path.as_ref().to_path_buf(),
+                    },
+                })?;
+        }
+
+        Ok(())
+    }
+
+    /// Get the `[credentials.<profile_name>.token_payload]` table from the TOML document
+    fn get_token_payload_table<'a>(
+        secrets_toml: &'a mut DocumentMut,
+        profile_name: &str,
+    ) -> Result<&'a mut Item, WriteError> {
+        secrets_toml
+            .get_mut("credentials")
+            .and_then(|credentials| credentials.get_mut(profile_name)?.get_mut("token_payload"))
+            .ok_or_else(|| {
+                WriteError::MissingTable(format!("credentials.{profile_name}.token_payload",))
+            })
     }
 }
 
@@ -47,6 +216,11 @@ pub(crate) struct Credential {
 pub(crate) struct TokenPayload {
     pub(crate) refresh_token: Option<String>,
     pub(crate) access_token: Option<String>,
+    #[serde(
+        default,
+        deserialize_with = "time::serde::rfc3339::option::deserialize"
+    )]
+    pub(crate) updated_at: Option<OffsetDateTime>,
     scope: Option<String>,
     expires_in: Option<u32>,
     id_token: Option<String>,
@@ -55,6 +229,12 @@ pub(crate) struct TokenPayload {
 
 #[cfg(test)]
 mod describe_load {
+    #[cfg(unix)]
+    use std::os::unix::fs::PermissionsExt;
+    use std::path::PathBuf;
+
+    use time::{macros::datetime, OffsetDateTime};
+
     use super::{Credential, Secrets, SECRETS_PATH_VAR};
 
     #[test]
@@ -69,17 +249,98 @@ mod describe_load {
     #[test]
     fn loads_from_env_var_path() {
         figment::Jail::expect_with(|jail| {
-            let mut secrets = Secrets::default();
+            let mut secrets = Secrets {
+                file_path: Some(PathBuf::from("env_secrets.toml")),
+                ..Secrets::default()
+            };
             secrets
                 .credentials
                 .insert("test".to_string(), Credential::default());
             let secrets_string =
-                toml::to_string(&secrets).expect("Should be able to serialize settings");
+                toml::to_string(&secrets).expect("Should be able to serialize secrets");
 
-            _ = jail.create_file("secrets.toml", &secrets_string)?;
-            jail.set_env(SECRETS_PATH_VAR, "secrets.toml");
+            _ = jail.create_file("env_secrets.toml", &secrets_string)?;
+            jail.set_env(SECRETS_PATH_VAR, "env_secrets.toml");
 
             assert_eq!(secrets, Secrets::load().unwrap());
+
+            Ok(())
+        });
+    }
+
+    const fn max_rfc3339() -> OffsetDateTime {
+        // PrimitiveDateTime::MAX can be larger than what can fit in a RFC3339 timestamp if the `time` crate's `large-dates` feature is enabled.
+        // Instead of asserting that the `time` crate's `large-dates` feature is disabled, we use a hardcoded max value here.
+        datetime!(9999-12-31 23:59:59.999_999_999).assume_utc()
+    }
+
+    #[test]
+    fn test_write_access_token() {
+        figment::Jail::expect_with(|jail| {
+            let secrets_file_contents = r#"
+[credentials]
+[credentials.test]
+[credentials.test.token_payload]
+access_token = "old_access_token"
+expires_in = 3600
+id_token = "id_token"
+refresh_token = "refresh_token"
+scope = "offline_access openid profile email"
+token_type = "Bearer"
+"#;
+
+            jail.create_file("secrets.toml", secrets_file_contents)
+                .expect("should create test secrets.toml");
+            let mut original_permissions = std::fs::metadata("secrets.toml")
+                .expect("Should be able to get file metadata")
+                .permissions();
+            #[cfg(unix)]
+            {
+                assert_ne!(
+                    0o666,
+                    original_permissions.mode(),
+                    "Initial file mode should not be 666"
+                );
+                original_permissions.set_mode(0o100_666);
+                std::fs::set_permissions("secrets.toml", original_permissions.clone())
+                    .expect("Should be able to set file permissions");
+            }
+            jail.set_env("QCS_SECRETS_FILE_PATH", "secrets.toml");
+            jail.set_env("QCS_PROFILE_NAME", "test");
+
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                // Create array of token updates with different timestamps
+                let token_updates = [
+                    ("new_access_token", max_rfc3339()),
+                    ("stale_access_token", OffsetDateTime::now_utc()),
+                ];
+
+                for (access_token, updated_at) in token_updates {
+                    Secrets::write_access_token("secrets.toml", "test", access_token, updated_at)
+                        .await
+                        .expect("Should be able to write access token");
+                }
+
+                // Verify the final state
+                let mut secrets = Secrets::load_from_path(&"secrets.toml".into()).unwrap();
+                let payload = secrets
+                    .credentials
+                    .remove("test")
+                    .unwrap()
+                    .token_payload
+                    .unwrap();
+
+                assert_eq!(payload.access_token.unwrap(), "new_access_token");
+                assert_eq!(payload.updated_at.unwrap(), max_rfc3339());
+                let new_permissions = std::fs::metadata("secrets.toml")
+                    .expect("Should be able to get file metadata")
+                    .permissions();
+                assert_eq!(
+                    original_permissions, new_permissions,
+                    "Final file permissions should not be changed"
+                );
+            });
 
             Ok(())
         });

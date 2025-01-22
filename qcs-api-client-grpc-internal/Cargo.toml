@@ -25,7 +25,7 @@ qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.11.5" 
 serde = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["time"] }
-tonic = { workspace = true, features = ["tls-roots"] }
+tonic = { workspace = true }
 tonic-web = { workspace = true, optional = true }
 tower = { workspace = true, features = ["retry"] }
 tower-http = { workspace = true, features = ["trace"] }

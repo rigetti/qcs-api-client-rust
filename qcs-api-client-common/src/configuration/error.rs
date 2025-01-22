@@ -25,6 +25,9 @@ pub enum LoadError {
         /// The error message.
         message: String,
     },
+    /// The file could not be read or written to.
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
     /// Failed to use the builder to build a configuration.
     #[error("Failed to build the ClientConfiguration: {0}")]
     Build(#[from] ClientConfigurationBuilderError),
@@ -34,7 +37,6 @@ pub enum LoadError {
     /// Provided authorization server not found.
     #[error("Expected auth server {0} in settings.auth_servers but it does not exist")]
     AuthServerNotFound(String),
-
     #[cfg(feature = "tracing-config")]
     /// Failed to parse tracing filter. These should be a comma separated list of URL patterns. See
     /// <https://wicg.github.io/urlpattern> for reference.
@@ -81,4 +83,49 @@ pub enum TokenError {
     /// Catch all for errors returned from an [`super::ExternallyManaged`] refresh function.
     #[error("Failed to request an externally managed access token: {0}")]
     ExternallyManaged(String),
+    /// Failure writing the new access token to the secrets file.
+    #[error("Failed to write the new access token to the secrets file: {0}")]
+    Write(#[from] WriteError),
+}
+
+/// Errors that can occur when trying to write or update a configuration file.
+#[derive(Debug, thiserror::Error)]
+pub enum WriteError {
+    /// There was an IO error while updating the secrets file.
+    #[error(transparent)]
+    IoWithPath(#[from] IoErrorWithPath),
+    /// The file's contents are not valid TOML
+    #[error("File could not be read as TOML: {0}")]
+    InvalidToml(#[from] toml_edit::TomlError),
+    /// TOML table could not be found.
+    #[error("The table `{0}` does not exist.")]
+    MissingTable(String),
+    /// There was an error with time formatting
+    #[error("Error formatting time: {0}.")]
+    TimeFormat(#[from] time::error::Format),
+    /// There was an error writing or persisting the temporary secrets file during access token refresh.
+    #[error("Error writing or persisting temporary secrets file during access token refresh: {0}")]
+    TempFile(#[from] async_tempfile::Error),
+}
+
+/// A fallible IO operation that can result in a [`IoErrorWithPath`]
+#[derive(Debug)]
+pub enum IoOperation {
+    Open,
+    Read,
+    Write,
+    Rename { dest: PathBuf },
+    GetMetadata,
+    SetPermissions,
+    Flush,
+}
+
+/// An error wrapping [`std::io::Error`] that includes the path and operation as additional context.
+#[derive(Debug, thiserror::Error)]
+#[error("Io error while error performing {operation:?} on {path}: {error}")]
+pub struct IoErrorWithPath {
+    #[source]
+    pub error: std::io::Error,
+    pub path: PathBuf,
+    pub operation: IoOperation,
 }

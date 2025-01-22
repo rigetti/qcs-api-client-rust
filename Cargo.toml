@@ -58,10 +58,10 @@ tempfile = "3.3.0"
 thiserror = "1.0.32"
 tokio = { version = "1.38.0", features = ["time"] }
 tokio-stream = { version = "0.1.15", features = ["net"] }
-tonic = { version = "0.12.3", features = ["tls-roots"] }
+tonic = { version = "0.12.3", features = ["tls-roots", "tls-native-roots"] }
 tonic-build = "0.12.3"
-tonic-health = "0.12.1"
-tonic-web = { version = "0.12.1" }
+tonic-health = "0.12.3"
+tonic-web = "0.12.3"
 tower = { version = "0.4", features = ["retry"] }
 tower-http = { version = "0.5.2", features = ["trace"] }
 tracing = { version = "0.1.37" }

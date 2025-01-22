@@ -46,6 +46,9 @@ but are overridden by settings explicitly set in a builder.
 
 * ``QCS_SETTINGS_FILE_PATH``: Path to the ``settings.toml`` file.
 * ``QCS_SECRETS_FILE_PATH``: Path to the ``secrets.toml`` file.
+* ``QCS_SECRETS_READ_ONLY``: Flag indicating whether to treat the `secrets.toml` file as read-only. Disabled by default.
+    * Access token updates will _not_ be persisted to the secrets file, regardless of file permissions, for any of the following values (case insensitive): "true", "yes", "1".
+    * Access token updates will be persisted to the secrets file if it is writeable for any other value or if unset.
 * ``QCS_PROFILE_NAME``: Profile to load from ``settings.toml``.
 * ``QCS_SETTINGS_APPLICATIONS_QUILC_URL``: URL for the quilc server.
 * ``QCS_SETTINGS_APPLICATIONS_QVM_URL``: URL for the QVM server.
