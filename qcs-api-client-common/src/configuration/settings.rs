@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use figment::providers::Format;
 use figment::{providers::Toml, Figment};
@@ -23,12 +24,18 @@ pub(crate) struct Settings {
     pub(crate) profiles: HashMap<String, Profile>,
     #[serde(default = "default_auth_servers")]
     pub(crate) auth_servers: HashMap<String, AuthServer>,
+    #[serde(skip)]
+    pub(crate) file_path: Option<PathBuf>,
 }
 
 impl Settings {
     pub(crate) fn load() -> Result<Self, LoadError> {
         let path = expand_path_from_env_or_default(SETTINGS_PATH_VAR, DEFAULT_SETTINGS_PATH)?;
-        Ok(Figment::from(Toml::file(path)).extract()?)
+        #[cfg(feature = "tracing")]
+        tracing::debug!("loading QCS settings from {path:?}");
+        let mut settings: Self = Figment::from(Toml::file(&path)).extract()?;
+        settings.file_path = Some(path);
+        Ok(settings)
     }
 }
 
@@ -38,6 +45,7 @@ impl Default for Settings {
             default_profile_name: default_profile_name(),
             profiles: default_profiles(),
             auth_servers: default_auth_servers(),
+            file_path: None,
         }
     }
 }
@@ -172,6 +180,8 @@ impl Default for Pyquil {
 
 #[cfg(test)]
 mod test {
+    use std::path::PathBuf;
+
     use super::{Settings, SETTINGS_PATH_VAR};
 
     #[test]
@@ -191,6 +201,7 @@ mod test {
             let loaded = Settings::load().expect("should load settings");
             let expected = Settings {
                 default_profile_name: "TEST".to_string(),
+                file_path: Some(PathBuf::from("settings.toml")),
                 ..Settings::default()
             };
 
@@ -205,6 +216,7 @@ mod test {
         figment::Jail::expect_with(|jail| {
             let settings = Settings {
                 default_profile_name: "TEST".to_string(),
+                file_path: Some(PathBuf::from("secrets.toml")),
                 ..Settings::default()
             };
             let settings_string =

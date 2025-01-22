@@ -1,3 +1,13 @@
+## 0.12.6 (2025-01-22)
+
+### Features
+
+#### Access tokens are written back to QCS configuration
+
+### Fixes
+
+#### respect env var for api_url
+
 ## 0.12.5 (2024-11-20)
 
 ### Fixes

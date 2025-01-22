@@ -1,6 +1,6 @@
 [package]
 name = "qcs-api-client-grpc"
-version = "0.11.5"
+version = "0.11.6"
 edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
@@ -27,11 +27,11 @@ opentelemetry_sdk = { workspace = true }
 pbjson = { workspace = true }
 pbjson-types = { workspace = true }
 prost = { workspace = true }
-qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.11.5" }
+qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.11.6" }
 serde = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["time"] }
-tonic = { workspace = true, features = ["tls-roots"] }
+tonic = { workspace = true }
 tonic-web = { workspace = true, optional = true }
 tower = { workspace = true, features = ["retry"] }
 tower-http = { workspace = true, features = ["trace"] }
@@ -67,14 +67,14 @@ grpc-web = ["dep:tonic-web"]
 # The old name of the tracing-opentelemetry feature, here for backwards compatibility
 otel-tracing = ["tracing-opentelemetry"]
 tracing-opentelemetry = [
-    "dep:opentelemetry", 
+    "dep:opentelemetry",
     "dep:opentelemetry-http",
     "qcs-api-client-common/tracing-config",
-    "tracing-config", 
-    "tracing", 
+    "tracing-config",
+    "tracing",
 ]
 tracing = [
-    "dep:tracing", 
+    "dep:tracing",
     "qcs-api-client-common/tracing-config",
     "urlpattern",
 ]

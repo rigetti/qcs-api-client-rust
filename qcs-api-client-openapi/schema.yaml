@@ -545,7 +545,7 @@ paths:
                 $ref: "#/components/schemas/ValidationError"
           description: Unprocessable Entity
       security:
-        - JWTBearer: []
+        - JWTBearerOptional: []
       summary: List Instruction Set Architectures
       tags:
         - quantumProcessors
@@ -581,7 +581,7 @@ paths:
                 $ref: "#/components/schemas/ValidationError"
           description: Unprocessable Entity
       security:
-        - JWTBearer: []
+        - JWTBearerOptional: []
       summary: List Quantum Processors
       tags:
         - quantumProcessors
@@ -618,7 +618,7 @@ paths:
                 $ref: "#/components/schemas/ValidationError"
           description: Unprocessable Entity
       security:
-        - JWTBearer: []
+        - JWTBearerOptional: []
       summary: Get Quantum Processor
       tags:
         - quantumProcessors
@@ -662,7 +662,7 @@ paths:
                 $ref: "#/components/schemas/ValidationError"
           description: Unprocessable Entity
       security:
-        - JWTBearer: []
+        - JWTBearerOptional: []
       summary: List Quantum Processor Accessors
       tags:
         - quantumProcessors
@@ -737,7 +737,7 @@ paths:
                 $ref: "#/components/schemas/ValidationError"
           description: Unprocessable Entity
       security:
-        - JWTBearer: []
+        - JWTBearerOptional: []
       summary: Get Instruction Set Architecture
       tags:
         - quantumProcessors
@@ -2233,17 +2233,6 @@ components:
         status:
           type: string
           example: PASS
-    AccountType:
-      description: >-
-        There are two types of accounts within QCS: user (representing a single
-        user in Okta) and group
-
-        (representing one or more users in Okta).
-      enum:
-        - group
-        - user
-      title: AccountType
-      type: string
     Architecture:
       additionalProperties: false
       description: >-
@@ -2892,6 +2881,12 @@ components:
     AccountId:
       description: userId for `accountType` "user", group name for `accountType` "group".
       type: string
+    AccountType:
+      default: user
+      enum:
+        - group
+        - user
+      type: string
     AddGroupUserRequest:
       description: Must provide either `userId` or `userEmail` and `groupId` or `groupName`.
       properties:
@@ -3501,6 +3496,8 @@ components:
           type: string
         groupName:
           type: string
+        billingOrganizationId:
+          type: integer
       required:
         - email
       type: object
@@ -3803,6 +3800,11 @@ components:
       type: object
   securitySchemes:
     JWTBearer:
+      bearerFormat: JWT
+      description: A JSON web token with `sub` or `uid` claim, as well as `groups`
+        claim. If the token is absent, invalid or expired, the client will
+        receive a 401 response. If the token is valid, the server uses the
+        claims to authorize the request, which may result in a 403 response.
       scheme: bearer
       type: http
     JWTBearerOptional:

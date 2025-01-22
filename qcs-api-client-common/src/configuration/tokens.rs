@@ -4,9 +4,13 @@ use futures::Future;
 use http::{header::CONTENT_TYPE, HeaderMap, HeaderValue};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use tokio::sync::{Mutex, Notify, RwLock};
 
-use super::{settings::AuthServer, ClientConfiguration, TokenError, QCS_AUDIENCE};
+use super::{
+    secrets::Secrets, settings::AuthServer, ClientConfiguration, ConfigSource, TokenError,
+    QCS_AUDIENCE,
+};
 #[cfg(feature = "tracing-config")]
 use crate::tracing_configuration::TracingConfiguration;
 #[cfg(feature = "tracing")]
@@ -375,8 +379,13 @@ impl TokenDispatcher {
     /// # Errors
     ///
     /// See [`TokenError`]
-    pub async fn refresh(&self) -> Result<OAuthSession, TokenError> {
-        self.managed_refresh(Self::perform_refresh).await
+    pub async fn refresh(
+        &self,
+        source: &ConfigSource,
+        profile: &str,
+    ) -> Result<OAuthSession, TokenError> {
+        self.managed_refresh(Self::perform_refresh, source, profile)
+            .await
     }
 
     /// Validate the access token, returning it if it is valid, or an error describing why it is
@@ -392,7 +401,12 @@ impl TokenDispatcher {
 
     /// If tokens are already being refreshed, wait and return the updated tokens. Otherwise, run
     /// ``refresh_fn``.
-    async fn managed_refresh<F, Fut>(&self, refresh_fn: F) -> Result<OAuthSession, TokenError>
+    async fn managed_refresh<F, Fut>(
+        &self,
+        refresh_fn: F,
+        source: &ConfigSource,
+        profile: &str,
+    ) -> Result<OAuthSession, TokenError>
     where
         F: FnOnce(Arc<RwLock<OAuthSession>>) -> Fut + Send,
         Fut: Future<Output = Result<OAuthSession, TokenError>> + Send,
@@ -408,12 +422,29 @@ impl TokenDispatcher {
         *is_refreshing = true;
         drop(is_refreshing);
 
-        let result = refresh_fn(self.lock.clone()).await;
+        let oauth_session = refresh_fn(self.lock.clone()).await?;
+
+        // If the config source is a file, write the new access token to the file
+        if let ConfigSource::File {
+            settings_path: _,
+            secrets_path,
+        } = source
+        {
+            if !Secrets::is_read_only(secrets_path).await? {
+                let now = OffsetDateTime::now_utc();
+                Secrets::write_access_token(
+                    secrets_path,
+                    profile,
+                    oauth_session.access_token()?,
+                    now,
+                )
+                .await?;
+            }
+        }
 
         *self.refreshing.lock().await = false;
         self.notify_refreshed.notify_waiters();
-
-        result
+        Ok(oauth_session)
     }
 
     /// Refreshes the tokens. Readers will be blocked until the refresh is complete. Returns a copy
@@ -708,7 +739,10 @@ mod test {
 
     use super::*;
     use httpmock::prelude::*;
+    use rstest::rstest;
+    use time::format_description::well_known::Rfc3339;
     use tokio::time::Instant;
+    use toml_edit::DocumentMut;
 
     #[tokio::test]
     async fn test_tokens_blocked_during_refresh() {
@@ -739,7 +773,12 @@ mod test {
         let refresh_duration = Duration::from_secs(3);
 
         let start_write = Instant::now();
-        let write_future = tokio::spawn(async move { dispatcher_clone1.refresh().await.unwrap() });
+        let write_future = tokio::spawn(async move {
+            dispatcher_clone1
+                .refresh(&ConfigSource::Default, "")
+                .await
+                .unwrap()
+        });
 
         let start_read = Instant::now();
         let read_future = tokio::spawn(async move { dispatcher_clone2.tokens().await });
@@ -769,5 +808,152 @@ mod test {
                 read_result.payload
             );
         }
+    }
+
+    #[rstest]
+    fn test_qcs_secrets_readonly(
+        #[values(
+            (Some("TRUE"), true),
+            (Some("tRue"), true),
+            (Some("true"), true),
+            (Some("YES"), true),
+            (Some("yEs"), true),
+            (Some("yes"), true),
+            (Some("1"), true),
+            (Some("2"), false),
+            (Some("other"), false),
+            (Some(""), false),
+            (None, false),
+        )]
+        read_only_values: (Option<&str>, bool),
+        #[values(true, false)] read_only_perm: bool,
+    ) {
+        let (maybe_read_only_env, env_is_read_only) = read_only_values;
+        let expected_update = !env_is_read_only && !read_only_perm;
+        figment::Jail::expect_with(|jail| {
+            let profile_name = "test";
+            let initial_access_token = "initial_access_token";
+            let initial_refresh_token = "initial_refresh_token";
+
+            let initial_secrets_file_contents = format!(
+                r#"
+[credentials]
+[credentials.{profile_name}]
+[credentials.{profile_name}.token_payload]
+access_token = "{initial_access_token}"
+expires_in = 3600
+id_token = "id_token"
+refresh_token = "{initial_refresh_token}"
+scope = "offline_access openid profile email"
+token_type = "Bearer"
+updated_at = "2024-01-01T00:00:00Z"
+"#
+            );
+
+            // Create a temporary secrets file
+            let secrets_path = "secrets.toml";
+            jail.create_file(secrets_path, initial_secrets_file_contents.as_str())
+                .expect("should create test secrets.toml");
+
+            if read_only_perm {
+                let mut permissions = std::fs::metadata(secrets_path)
+                    .expect("Should be able to get file metadata")
+                    .permissions();
+                permissions.set_readonly(true);
+                std::fs::set_permissions(secrets_path, permissions)
+                    .expect("Should be able to set file permissions");
+            }
+
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                let mock_server = MockServer::start_async().await;
+
+                // Set up the mock token endpoint
+                let new_access_token = "new_access_token";
+                let issuer_mock = mock_server
+                    .mock_async(|when, then| {
+                        when.method(POST).path("/v1/token");
+                        then.status(200).json_body_obj(&TokenResponse {
+                            access_token: new_access_token.to_string(),
+                            refresh_token: initial_refresh_token.to_string(),
+                        });
+                    })
+                    .await;
+
+                // Create tokens and dispatcher
+                let original_tokens = OAuthSession::from_refresh_token(
+                    RefreshToken::new(initial_refresh_token.to_string()),
+                    AuthServer::new("client_id".to_string(), mock_server.base_url()),
+                    Some(initial_refresh_token.to_string()),
+                );
+                let dispatcher: TokenDispatcher = original_tokens.into();
+
+                // Test with QCS_SECRETS_READ_ONLY set first
+                jail.set_env("QCS_SECRETS_FILE_PATH", "secrets.toml");
+                jail.set_env("QCS_PROFILE_NAME", "test");
+                if let Some(read_only_env) = maybe_read_only_env {
+                    jail.set_env("QCS_SECRETS_READ_ONLY", read_only_env);
+                }
+
+                let before_refresh = OffsetDateTime::now_utc();
+
+                dispatcher
+                    .refresh(
+                        &ConfigSource::File {
+                            settings_path: "".into(),
+                            secrets_path: "secrets.toml".into(),
+                        },
+                        profile_name,
+                    )
+                    .await
+                    .unwrap();
+
+                issuer_mock.assert_async().await;
+
+                // Verify the file was not updated if QCS_SECRETS_READ_ONLY is set truthy
+                let content = std::fs::read_to_string("secrets.toml").unwrap();
+                if !expected_update {
+                    assert!(
+                        content.eq(initial_secrets_file_contents.as_str()),
+                        "File should not be updated when QCS_SECRETS_READ_ONLY is set or file permissions are read-only"
+                    );
+                    return;
+                }
+
+                // Verify the file was updated
+                let mut toml = std::fs::read_to_string(secrets_path)
+                    .unwrap()
+                    .parse::<DocumentMut>()
+                    .unwrap();
+
+                let token_payload = toml
+                    .get_mut("credentials")
+                    .and_then(|credentials| {
+                        credentials.get_mut(profile_name)?.get_mut("token_payload")
+                    })
+                    .expect("Should be able to get token_payload table");
+
+                assert_eq!(
+                    token_payload.get("access_token").unwrap().as_str().unwrap(),
+                    new_access_token
+                );
+
+                assert!(
+                    OffsetDateTime::parse(
+                        token_payload.get("updated_at").unwrap().as_str().unwrap(),
+                        &Rfc3339
+                    )
+                    .unwrap()
+                        > before_refresh
+                );
+
+                let content = std::fs::read_to_string("secrets.toml").unwrap();
+                assert!(
+                content.contains("new_access_token"),
+                "File should be updated with new access token when QCS_SECRETS_READ_ONLY is not set or is set but disabled, and file permissions allow writing"
+                );
+            });
+            Ok(())
+        });
     }
 }

@@ -14,6 +14,9 @@
 //!
 //! * [`SETTINGS_PATH_VAR`]: Set the path of the `settings.toml` file to load.
 //! * [`SECRETS_PATH_VAR`]: Set the path of the `secrets.toml` file to load.
+//! * [`SECRETS_READ_ONLY_VAR`]: Flag indicating whether to treat the `secrets.toml` file as read-only. Disabled by default.
+//!     * Access token updates will _not_ be persisted to the secrets file, regardless of file permissions, for any of the following values (case insensitive): "true", "yes", "1".  
+//!     * Access token updates will be persisted to the secrets file if it is writeable for any other value or if unset.
 //! * [`PROFILE_NAME_VAR`]: Override the profile that is loaded by default
 //! * [`QUILC_URL_VAR`]: Override the URL used for requests to the quilc server.
 //! * [`QVM_URL_VAR`]: Override the URL used for requests to the QVM server.
@@ -46,7 +49,7 @@ mod tokens;
 pub use error::{LoadError, TokenError};
 #[cfg(feature = "python")]
 pub(crate) use py::*;
-pub use secrets::{DEFAULT_SECRETS_PATH, SECRETS_PATH_VAR};
+pub use secrets::{DEFAULT_SECRETS_PATH, SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR};
 pub use settings::{AuthServer, DEFAULT_SETTINGS_PATH, SETTINGS_PATH_VAR};
 pub use tokens::{
     ClientCredentials, ExternallyManaged, OAuthGrant, OAuthSession, RefreshFunction, RefreshToken,
@@ -133,10 +136,11 @@ pub struct ClientConfiguration {
     ///
     /// Note that the tokens are *not* shared when the `ClientConfiguration` is created multiple
     /// times, e.g. through [`ClientConfiguration::load_default`].
-    ///
-    /// This is set in a builder via the [`ClientConfigurationBuilder::credentials`]
     #[builder(default, setter(custom))]
     pub(crate) oauth_session: Option<TokenDispatcher>,
+
+    #[builder(private, default = "ConfigSource::Builder")]
+    source: ConfigSource,
 
     /// Configuration for tracing of network API calls. If `None`, tracing is disabled.
     #[cfg(feature = "tracing-config")]
@@ -146,6 +150,9 @@ pub struct ClientConfiguration {
 
 impl ClientConfigurationBuilder {
     /// The [`OAuthSession`] to use to authenticate with the QCS API.
+    ///
+    /// When set to [`None`], the configuration will not manage an OAuth Session, and access to the
+    /// QCS API will be limited to unauthenticated routes.
     pub fn oauth_session(&mut self, oauth_session: Option<OAuthSession>) -> &mut Self {
         self.oauth_session = Some(oauth_session.map(Into::into));
         self
@@ -162,6 +169,7 @@ impl ClientConfiguration {
             default_profile_name,
             mut profiles,
             mut auth_servers,
+            file_path: settings_path,
         } = settings;
         let profile_name = profile_name
             .or_else(|| env::var(PROFILE_NAME_VAR).ok())
@@ -173,6 +181,7 @@ impl ClientConfiguration {
             .remove(&profile.auth_server_name)
             .ok_or_else(|| LoadError::AuthServerNotFound(profile.auth_server_name.clone()))?;
 
+        let secrets_path = secrets.file_path;
         let credential = secrets.credentials.remove(&profile.credentials_name);
         let (access_token, refresh_token) = match credential {
             Some(Credential {
@@ -181,6 +190,7 @@ impl ClientConfiguration {
             _ => (None, None),
         };
 
+        let api_url = env::var(API_URL_VAR).unwrap_or(profile.api_url);
         let quilc_url = env::var(QUILC_URL_VAR).unwrap_or(profile.applications.pyquil.quilc_url);
         let qvm_url = env::var(QVM_URL_VAR).unwrap_or(profile.applications.pyquil.qvm_url);
         let grpc_api_url = env::var(GRPC_API_URL_VAR).unwrap_or(profile.grpc_api_url);
@@ -197,11 +207,20 @@ impl ClientConfiguration {
         let tracing_configuration =
             TracingConfiguration::from_env().map_err(LoadError::TracingFilterParseError)?;
 
+        let source = match (settings_path, secrets_path) {
+            (Some(settings_path), Some(secrets_path)) => ConfigSource::File {
+                settings_path,
+                secrets_path,
+            },
+            _ => ConfigSource::Default,
+        };
+
         let mut builder = Self::builder();
         builder
-            .profile(profile_name)
             .oauth_session(oauth_session)
-            .api_url(profile.api_url)
+            .profile(profile_name)
+            .source(source)
+            .api_url(api_url)
             .quilc_url(quilc_url)
             .qvm_url(qvm_url)
             .grpc_api_url(grpc_api_url);
@@ -300,6 +319,12 @@ impl ClientConfiguration {
         self.tracing_configuration.as_ref()
     }
 
+    /// Get the source of the configuration.
+    #[must_use]
+    pub const fn source(&self) -> &ConfigSource {
+        &self.source
+    }
+
     /// Get a copy of the current [`OAuthSession`].
     ///
     /// Note: This is a _copy_, the contained tokens will become stale once they expire.
@@ -333,7 +358,7 @@ impl ClientConfiguration {
                 #[cfg(feature = "tracing-config")]
                 tracing::debug!("Refreshing access token because current one is invalid: {e}");
                 dispatcher
-                    .refresh()
+                    .refresh(self.source(), self.profile())
                     .await
                     .map(|e| e.access_token().map(ToString::to_string))?
             }
@@ -349,9 +374,25 @@ impl ClientConfiguration {
         self.oauth_session
             .as_ref()
             .ok_or(TokenError::NoRefreshToken)?
-            .refresh()
+            .refresh(self.source(), self.profile())
             .await
     }
+}
+
+/// Describes how a [`ClientConfiguration`] was initialized.
+#[derive(Clone, Debug)]
+pub enum ConfigSource {
+    /// A [`ClientConfiguration`] derived from a [`ClientConfigurationBuilder`]
+    Builder,
+    /// A [`ClientConfiguration`] derived from at least one file.
+    File {
+        /// The path to the QCS `settings.toml` file used to initialize the [`ClientConfiguration`].
+        settings_path: PathBuf,
+        /// The path to a QCS `secrets.toml` file used to initialize the [`ClientConfiguration`].
+        secrets_path: PathBuf,
+    },
+    /// A [`ClientConfiguration`] derived from default values.
+    Default,
 }
 
 fn expand_path_from_env_or_default(
@@ -395,6 +436,7 @@ mod test {
 
     use jsonwebtoken::{encode, EncodingKey, Header};
     use serde::Serialize;
+    use time::{Duration, OffsetDateTime};
 
     use crate::configuration::{
         expand_path_from_env_or_default, secrets::Secrets, settings::Settings, AuthServer,
@@ -449,21 +491,24 @@ mod test {
         });
     }
 
-    #[test]
-    fn test_default_uses_env_var_overrides() {
+    #[tokio::test]
+    async fn test_default_uses_env_var_overrides() {
         figment::Jail::expect_with(|jail| {
             let quilc_url = "quilc_url";
             let qvm_url = "qvm_url";
             let grpc_url = "grpc_url";
+            let api_url = "api_url";
 
             jail.set_env(QUILC_URL_VAR, quilc_url);
             jail.set_env(QVM_URL_VAR, qvm_url);
             jail.set_env(GRPC_API_URL_VAR, grpc_url);
+            jail.set_env(API_URL_VAR, api_url);
 
             let config = ClientConfiguration::load_default().unwrap();
             assert_eq!(config.quilc_url, quilc_url);
             assert_eq!(config.qvm_url, qvm_url);
             assert_eq!(config.grpc_api_url, grpc_url);
+            assert_eq!(config.api_url, api_url);
 
             Ok(())
         });
@@ -658,14 +703,14 @@ token_type = "Bearer"
     impl Claims {
         fn new_valid() -> Self {
             Self {
-                exp: (chrono::Utc::now() + chrono::Duration::seconds(100)).timestamp(),
+                exp: (OffsetDateTime::now_utc() + Duration::seconds(100)).unix_timestamp(),
                 ..Self::default()
             }
         }
 
         fn new_expired() -> Self {
             Self {
-                exp: (chrono::Utc::now() - chrono::Duration::seconds(100)).timestamp(),
+                exp: (OffsetDateTime::now_utc() - Duration::seconds(100)).unix_timestamp(),
                 ..Self::default()
             }
         }

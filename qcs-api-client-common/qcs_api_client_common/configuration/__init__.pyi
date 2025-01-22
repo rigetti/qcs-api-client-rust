@@ -1,5 +1,29 @@
 from typing import Callable, final
 
+__all__ = [
+    "API_URL_VAR",
+    "AuthServer",
+    "ClientConfiguration",
+    "ClientConfigurationBuilder",
+    "ClientCredentials",
+    "DEFAULT_API_URL",
+    "DEFAULT_GRPC_API_URL",
+    "DEFAULT_PROFILE_NAME",
+    "DEFAULT_QUILC_URL",
+    "DEFAULT_QVM_URL",
+    "DEFAULT_SECRETS_PATH",
+    "DEFAULT_SETTINGS_PATH",
+    "ExternallyManaged",
+    "GRPC_API_URL_VAR",
+    "OAuthSession",
+    "PROFILE_NAME_VAR",
+    "QUILC_URL_VAR",
+    "QVM_URL_VAR",
+    "RefreshToken",
+    "SECRETS_PATH_VAR",
+    "SETTINGS_PATH_VAR",
+]
+
 DEFAULT_API_URL: str
 DEFAULT_GRPC_API_URL: str
 DEFAULT_QUILC_URL: str
@@ -33,7 +57,7 @@ class ClientConfiguration:
         ...
 
     @staticmethod
-    def load_profile(profile_name: str) -> ClientConfigurationBuilder:
+    def load_profile(profile_name: str) -> ClientConfiguration:
         """Load a `ClientConfiguration` using the given QCS profile."""
 
     @staticmethod

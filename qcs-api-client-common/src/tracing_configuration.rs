@@ -144,9 +144,10 @@ pub static QCS_API_TRACING_FILTER: &str = "QCS_API_TRACING_FILTER";
 /// Environment variable to turn the tracing filter into an exclusive filter.
 pub static QCS_API_NEGATE_TRACING_FILTER: &str = "QCS_API_NEGATE_TRACING_FILTER";
 
-/// An error indicating that a tracing filter URL pattern could not be parsed. Note that tracing
-/// filters must conform to [URL Pattern API syntax](https://wicg.github.io/urlpattern/). Only
-/// https, http, and tcp schemes are supported.
+/// An error indicating that a tracing filter URL pattern could not be parsed.
+///
+/// Note that tracing filters must conform to [URL Pattern API syntax](https://wicg.github.io/urlpattern/).
+/// Only https, http, and tcp schemes are supported.
 #[derive(Error, Debug)]
 pub enum TracingFilterError {
     /// The pattern is not a valid URL pattern.
@@ -447,7 +448,7 @@ impl TracingFilter {
     pub fn from_env() -> Result<Option<Self>, TracingFilterError> {
         if let Ok(filter) = env::var(QCS_API_TRACING_FILTER) {
             let is_negated = env::var(QCS_API_NEGATE_TRACING_FILTER)
-                .map_or(false, |_| is_env_var_true(QCS_API_NEGATE_TRACING_FILTER));
+                .is_ok_and(|_| is_env_var_true(QCS_API_NEGATE_TRACING_FILTER));
             return Ok(Self::builder()
                 .parse_strs_and_set_paths(&filter.split(',').collect::<Vec<_>>())?
                 .set_is_negated(is_negated)
@@ -464,6 +465,7 @@ impl TracingFilter {
             <UrlPattern>::parse(init.clone())
                 .and_then(|pattern| pattern.exec(input.clone()))
                 .map_err(|e| {
+                    #[cfg(feature = "tracing")]
                     tracing::error!("error matching url pattern: {}", e);
                 })
                 .ok()
