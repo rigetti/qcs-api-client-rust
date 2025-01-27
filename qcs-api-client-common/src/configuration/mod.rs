@@ -35,7 +35,7 @@ use std::{env, path::PathBuf};
 use pyo3::prelude::*;
 
 use self::{
-    secrets::{Credential, Secrets},
+    secrets::{Credential, Secrets, TokenPayload},
     settings::Settings,
 };
 
@@ -183,25 +183,37 @@ impl ClientConfiguration {
 
         let secrets_path = secrets.file_path;
         let credential = secrets.credentials.remove(&profile.credentials_name);
-        let (access_token, refresh_token) = match credential {
+        let oauth_session = match credential {
             Some(Credential {
-                token_payload: Some(token_payload),
-            }) => (token_payload.access_token, token_payload.refresh_token),
-            _ => (None, None),
+                token_payload:
+                    Some(TokenPayload {
+                        access_token,
+                        refresh_token,
+                        ..
+                    }),
+            }) => {
+                Some(OAuthSession::new(
+                    OAuthGrant::RefreshToken(RefreshToken::new(
+                        // Some configurations do not populate or may use an
+                        // empty string for the `refresh_token`, but are still
+                        // valid sessions with a valid `access_token`.
+                        //
+                        // Because we found a `token_payload`, we must assume
+                        // the user wants to construct an `OAuthSession`.
+                        // Note that this is no guarantee of session validity.
+                        refresh_token.unwrap_or_default(),
+                    )),
+                    auth_server,
+                    access_token,
+                ))
+            }
+            _ => None,
         };
 
         let api_url = env::var(API_URL_VAR).unwrap_or(profile.api_url);
         let quilc_url = env::var(QUILC_URL_VAR).unwrap_or(profile.applications.pyquil.quilc_url);
         let qvm_url = env::var(QVM_URL_VAR).unwrap_or(profile.applications.pyquil.qvm_url);
         let grpc_api_url = env::var(GRPC_API_URL_VAR).unwrap_or(profile.grpc_api_url);
-
-        let oauth_session = refresh_token.map(|refresh_token| {
-            OAuthSession::new(
-                OAuthGrant::RefreshToken(RefreshToken::new(refresh_token)),
-                auth_server.clone(),
-                access_token,
-            )
-        });
 
         #[cfg(feature = "tracing-config")]
         let tracing_configuration =
@@ -755,5 +767,73 @@ token_type = "Bearer"
             None,
         );
         assert!(tokens.validate().is_err());
+    }
+
+    #[tokio::test]
+    async fn test_session_is_present_with_empty_refresh_token_and_valid_access_token() {
+        let access_token = Claims::new_valid().to_encoded();
+        let mut config = ClientConfiguration::builder().build().unwrap();
+        figment::Jail::expect_with(|jail| {
+            let directory = jail.directory();
+            let settings_file_name = "settings.toml";
+            let settings_file_path = directory.join(settings_file_name);
+            let secrets_file_name = "secrets.toml";
+            let secrets_file_path = directory.join(secrets_file_name);
+
+            let settings_file_contents = r#"
+default_profile_name = "default"
+
+[profiles]
+[profiles.default]
+api_url = ""
+auth_server_name = "default"
+credentials_name = "default"
+
+[auth_servers]
+[auth_servers.default]
+client_id = ""
+issuer = ""
+"#;
+
+            // note this has no `refresh_token` property
+            let secrets_file_contents = format!(
+                r#"
+[credentials]
+[credentials.default]
+[credentials.default.token_payload]
+access_token = "{access_token}"
+expires_in = 3600
+id_token = "id_token"
+scope = "offline_access openid profile email"
+token_type = "Bearer"
+"#
+            );
+
+            jail.create_file(settings_file_name, settings_file_contents)
+                .expect("should create test settings.toml");
+            jail.create_file(secrets_file_name, &secrets_file_contents)
+                .expect("should create test secrets.toml");
+
+            jail.set_env(
+                "QCS_SETTINGS_FILE_PATH",
+                settings_file_path
+                    .to_str()
+                    .expect("settings file path should be a string"),
+            );
+            jail.set_env(
+                "QCS_SECRETS_FILE_PATH",
+                secrets_file_path
+                    .to_str()
+                    .expect("secrets file path should be a string"),
+            );
+
+            config = ClientConfiguration::load_default().unwrap();
+            Ok(())
+        });
+
+        assert_eq!(
+            config.get_bearer_access_token().await.unwrap(),
+            access_token.to_string()
+        );
     }
 }

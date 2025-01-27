@@ -1,3 +1,11 @@
+## 0.11.8 (2025-01-27)
+
+### Fixes
+
+#### allow oauth_session to be constructed without refresh tokens, allow JWTBearerOptional operations to skip bearer tokens
+
+#### temporarily revert python 3.13 support introduced in common/v0.11.7
+
 ## 0.11.7 (2025-01-27)
 
 ### Features

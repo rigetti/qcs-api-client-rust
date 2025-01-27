@@ -2123,7 +2123,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-common"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "async-tempfile",
  "async-trait",
@@ -2157,7 +2157,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "async-std",
  "backoff",
@@ -2203,7 +2203,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-openapi"
-version = "0.12.7"
+version = "0.12.8"
 dependencies = [
  "anyhow",
  "http",
@@ -3923,9 +3923,9 @@ checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
 
 [[package]]
 name = "winnow"
-version = "0.6.24"
+version = "0.6.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8d71a593cc5c42ad7876e2c1fda56f314f3754c084128833e64f1345ff8a03a"
+checksum = "ad699df48212c6cc6eb4435f35500ac6fd3b9913324f938aea302022ce19d310"
 dependencies = [
  "memchr",
 ]
