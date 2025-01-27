@@ -9,13 +9,14 @@ on:
 jobs:
   macos-wheels:
     name: Build macos wheels
-    runs-on: macos-12
+    runs-on: macos-latest
     env:
       CXXFLAGS: "-std=c++11 -stdlib=libc++"
     steps:
     - uses: actions/checkout@v2
     - uses: ./.github/action-common-python-release
       with:
+        artifact-key: macos
         maturin-target: universal2-apple-darwin
 
   linux-wheels:
@@ -30,6 +31,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: ./.github/action-common-python-release
       with:
+        artifact-key: linux-${{ matrix.target }}
         maturin-target: ${{ matrix.target }}
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -40,6 +42,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: ./.github/action-common-python-release
       with:
+        artifact-key: windows
         python-architecture: x64
         rust-target: x86_64-pc-windows-msvc
         repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -53,6 +56,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: ./.github/action-common-python-release
       with:
+        artifact-key: sdist
         maturin-command: sdist
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -63,10 +67,11 @@ jobs:
     permissions:
       id-token: write
     steps:
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
-        name: wheels
         path: wheels
+        pattern: wheels-*
+        merge-multiple: true
     - name: List wheels to upload
       run: ls wheels/
     - name: Publish to PyPI
