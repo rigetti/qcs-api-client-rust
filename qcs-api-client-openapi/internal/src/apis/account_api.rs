@@ -18,11 +18,29 @@ use qcs_api_client_common::configuration::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
+/// struct for typed errors of method [`activate_user`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ActivateUserError {
+    Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`add_group_user`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum AddGroupUserError {
     Status404(crate::models::Error),
+    Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`create_announcement`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum CreateAnnouncementError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
     Status422(crate::models::Error),
     UnknownValue(serde_json::Value),
 }
@@ -33,6 +51,26 @@ pub enum AddGroupUserError {
 pub enum CreateUserError {
     Status403(crate::models::Error),
     Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`delete_announcement`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum DeleteAnnouncementError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    Status404(crate::models::Error),
+    Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`dismiss_viewer_announcement`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum DismissViewerAnnouncementError {
+    Status401(crate::models::Error),
+    Status404(crate::models::Error),
     UnknownValue(serde_json::Value),
 }
 
@@ -102,6 +140,24 @@ pub enum GetUserUpcomingBillingInvoiceError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`get_viewer_user_onboarding_completed`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GetViewerUserOnboardingCompletedError {
+    Status401(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`internal_create_billing_organization`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalCreateBillingOrganizationError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    Status409(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`internal_create_event_billing_price`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -155,6 +211,25 @@ pub enum InternalCreateUserMeteredUsageRecordError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`internal_delete_billing_organization`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalDeleteBillingOrganizationError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    Status409(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`internal_delete_billing_organization_accounts`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalDeleteBillingOrganizationAccountsError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`internal_delete_event_billing_price`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -163,6 +238,15 @@ pub enum InternalDeleteEventBillingPriceError {
     Status403(crate::models::Error),
     Status404(crate::models::Error),
     Status409(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`internal_get_billing_organization`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalGetBillingOrganizationError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
     UnknownValue(serde_json::Value),
 }
 
@@ -176,6 +260,16 @@ pub enum InternalGetEventBillingPriceError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`internal_get_group_billing_organization`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalGetGroupBillingOrganizationError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    Status404(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`internal_get_group_event_billing_price`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -183,6 +277,16 @@ pub enum InternalGetGroupEventBillingPriceError {
     Status403(crate::models::Error),
     Status404(crate::models::Error),
     Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`internal_get_user_billing_organization`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalGetUserBillingOrganizationError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    Status404(crate::models::Error),
     UnknownValue(serde_json::Value),
 }
 
@@ -216,6 +320,24 @@ pub enum InternalListBillingInvoicesError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`internal_list_billing_organization_accounts`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalListBillingOrganizationAccountsError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`internal_list_billing_organizations`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalListBillingOrganizationsError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`internal_list_event_billing_prices`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -244,6 +366,25 @@ pub enum InternalListUsersError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`internal_put_billing_organization`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalPutBillingOrganizationError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    Status409(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`internal_put_billing_organization_accounts`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalPutBillingOrganizationAccountsError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`internal_update_event_billing_price`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -260,6 +401,15 @@ pub enum InternalUpdateEventBillingPriceError {
 pub enum InviteUserError {
     Status403(crate::models::Error),
     Status409(crate::models::Error),
+    Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`list_announcements`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ListAnnouncementsError {
+    Status401(crate::models::Error),
     Status422(crate::models::Error),
     UnknownValue(serde_json::Value),
 }
@@ -335,6 +485,43 @@ pub enum ListUserUpcomingBillingInvoiceLinesError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`list_viewer_announcements`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ListViewerAnnouncementsError {
+    Status401(crate::models::Error),
+    Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`put_group_balance`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PutGroupBalanceError {
+    Status403(crate::models::Error),
+    Status404(crate::models::Error),
+    Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`put_user_balance`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PutUserBalanceError {
+    Status403(crate::models::Error),
+    Status404(crate::models::Error),
+    Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`put_viewer_user_onboarding_completed`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PutViewerUserOnboardingCompletedError {
+    Status401(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`receive_stripe_webhook`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -352,6 +539,17 @@ pub enum RemoveGroupUserError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`update_announcement`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum UpdateAnnouncementError {
+    Status401(crate::models::Error),
+    Status403(crate::models::Error),
+    Status404(crate::models::Error),
+    Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`update_user`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -363,6 +561,160 @@ pub enum UpdateUserError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`update_viewer_user_profile`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum UpdateViewerUserProfileError {
+    Status401(crate::models::Error),
+    Status404(crate::models::Error),
+    Status422(crate::models::Error),
+    UnknownValue(serde_json::Value),
+}
+
+async fn activate_user_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    activate_user_request: Option<crate::models::ActivateUserRequest>,
+) -> Result<crate::models::User, Error<ActivateUserError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/users:activate",
+        local_var_configuration.qcs_config.api_url()
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="POST",
+                "making activate_user request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false;
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&activate_user_request);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<ActivateUserError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Activate a user, completing an invitation request.
+pub async fn activate_user(
+    configuration: &configuration::Configuration,
+    activate_user_request: Option<crate::models::ActivateUserRequest>,
+) -> Result<crate::models::User, Error<ActivateUserError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
+    loop {
+        let result =
+            activate_user_inner(configuration, &mut backoff, activate_user_request.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
 async fn add_group_user_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
@@ -402,9 +754,33 @@ async fn add_group_user_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&add_group_user_request);
 
@@ -482,6 +858,151 @@ pub async fn add_group_user(
         }
     }
 }
+async fn create_announcement_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    announcement_content: Option<crate::models::AnnouncementContent>,
+) -> Result<crate::models::Announcement, Error<CreateAnnouncementError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/announcements",
+        local_var_configuration.qcs_config.api_url()
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="POST",
+                "making create_announcement request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&announcement_content);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<CreateAnnouncementError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Create a new announcement.
+pub async fn create_announcement(
+    configuration: &configuration::Configuration,
+    announcement_content: Option<crate::models::AnnouncementContent>,
+) -> Result<crate::models::Announcement, Error<CreateAnnouncementError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
+    loop {
+        let result =
+            create_announcement_inner(configuration, &mut backoff, announcement_content.clone())
+                .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
 async fn create_user_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
@@ -518,9 +1039,33 @@ async fn create_user_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearerOptional" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&create_user_request);
 
@@ -559,6 +1104,292 @@ pub async fn create_user(
     loop {
         let result =
             create_user_inner(configuration, &mut backoff, create_user_request.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn delete_announcement_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    announcement_id: i64,
+) -> Result<crate::models::Announcement, Error<DeleteAnnouncementError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/announcements/{announcementId}",
+        local_var_configuration.qcs_config.api_url(),
+        announcementId = announcement_id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="DELETE",
+                "making delete_announcement request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<DeleteAnnouncementError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Soft delete an announcement, marking it as inactive and preventing it from being displayed to any user.
+pub async fn delete_announcement(
+    configuration: &configuration::Configuration,
+    announcement_id: i64,
+) -> Result<crate::models::Announcement, Error<DeleteAnnouncementError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::DELETE;
+    loop {
+        let result =
+            delete_announcement_inner(configuration, &mut backoff, announcement_id.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn dismiss_viewer_announcement_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    announcement_id: i64,
+) -> Result<(), Error<DismissViewerAnnouncementError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/viewer/announcements/{announcementId}",
+        local_var_configuration.qcs_config.api_url(),
+        announcementId = announcement_id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="DELETE",
+                "making dismiss_viewer_announcement request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        Ok(())
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<DismissViewerAnnouncementError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Dismiss an announcement for an authenticating user, indicating that they do not want to see it again.
+pub async fn dismiss_viewer_announcement(
+    configuration: &configuration::Configuration,
+    announcement_id: i64,
+) -> Result<(), Error<DismissViewerAnnouncementError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::DELETE;
+    loop {
+        let result =
+            dismiss_viewer_announcement_inner(configuration, &mut backoff, announcement_id.clone())
+                .await;
 
         match result {
             Ok(result) => return Ok(result),
@@ -639,9 +1470,33 @@ async fn get_group_balance_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -757,9 +1612,33 @@ async fn get_group_billing_customer_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -876,9 +1755,33 @@ async fn get_group_upcoming_billing_invoice_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -999,9 +1902,33 @@ async fn get_user_balance_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -1117,9 +2044,33 @@ async fn get_user_billing_customer_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -1237,9 +2188,33 @@ async fn get_user_event_billing_price_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&get_account_event_billing_price_request);
 
@@ -1364,9 +2339,33 @@ async fn get_user_upcoming_billing_invoice_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -1404,6 +2403,299 @@ pub async fn get_user_upcoming_billing_invoice(
         let result =
             get_user_upcoming_billing_invoice_inner(configuration, &mut backoff, user_id.clone())
                 .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn get_viewer_user_onboarding_completed_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+) -> Result<
+    crate::models::ViewerUserOnboardingCompleted,
+    Error<GetViewerUserOnboardingCompletedError>,
+> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/viewer/onboardingCompleted",
+        local_var_configuration.qcs_config.api_url()
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making get_viewer_user_onboarding_completed request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<GetViewerUserOnboardingCompletedError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Get the onboarding status of the authenticated user.
+pub async fn get_viewer_user_onboarding_completed(
+    configuration: &configuration::Configuration,
+) -> Result<
+    crate::models::ViewerUserOnboardingCompleted,
+    Error<GetViewerUserOnboardingCompletedError>,
+> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
+    loop {
+        let result = get_viewer_user_onboarding_completed_inner(configuration, &mut backoff).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn internal_create_billing_organization_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    create_billing_organization_request: crate::models::CreateBillingOrganizationRequest,
+) -> Result<crate::models::BillingOrganization, Error<InternalCreateBillingOrganizationError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/billingOrganizations",
+        local_var_configuration.qcs_config.api_url()
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="POST",
+                "making internal_create_billing_organization request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&create_billing_organization_request);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalCreateBillingOrganizationError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Create a billing organization, which is unique by name.
+pub async fn internal_create_billing_organization(
+    configuration: &configuration::Configuration,
+    create_billing_organization_request: crate::models::CreateBillingOrganizationRequest,
+) -> Result<crate::models::BillingOrganization, Error<InternalCreateBillingOrganizationError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::POST;
+    loop {
+        let result = internal_create_billing_organization_inner(
+            configuration,
+            &mut backoff,
+            create_billing_organization_request.clone(),
+        )
+        .await;
 
         match result {
             Ok(result) => return Ok(result),
@@ -1483,9 +2775,33 @@ async fn internal_create_event_billing_price_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder =
         local_var_req_builder.json(&internal_create_event_billing_price_request);
@@ -1612,9 +2928,33 @@ async fn internal_create_group_billing_customer_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&account_billing_customer_create_request);
 
@@ -1749,9 +3089,33 @@ async fn internal_create_group_metered_usage_record_inner(
     local_var_req_builder =
         local_var_req_builder.header("X-QCS-IDEMPOTENCY-KEY", x_qcs_idempotency_key.to_string());
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder =
         local_var_req_builder.json(&internal_create_metered_usage_record_request);
@@ -1885,9 +3249,33 @@ async fn internal_create_user_billing_customer_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&account_billing_customer_create_request);
 
@@ -2018,9 +3406,33 @@ async fn internal_create_user_metered_usage_record_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder =
         local_var_req_builder.json(&internal_create_metered_usage_record_request);
@@ -2109,6 +3521,305 @@ pub async fn internal_create_user_metered_usage_record(
         }
     }
 }
+async fn internal_delete_billing_organization_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    billing_organization_id: i64,
+) -> Result<crate::models::BillingOrganization, Error<InternalDeleteBillingOrganizationError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/billingOrganizations/{billingOrganizationId}",
+        local_var_configuration.qcs_config.api_url(),
+        billingOrganizationId = billing_organization_id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="DELETE",
+                "making internal_delete_billing_organization request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalDeleteBillingOrganizationError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Delete a billing organization, which also deletes all account associations.
+pub async fn internal_delete_billing_organization(
+    configuration: &configuration::Configuration,
+    billing_organization_id: i64,
+) -> Result<crate::models::BillingOrganization, Error<InternalDeleteBillingOrganizationError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::DELETE;
+    loop {
+        let result = internal_delete_billing_organization_inner(
+            configuration,
+            &mut backoff,
+            billing_organization_id.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn internal_delete_billing_organization_accounts_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    billing_organization_id: i64,
+    accounts: crate::models::Accounts,
+) -> Result<crate::models::Accounts, Error<InternalDeleteBillingOrganizationAccountsError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/billingOrganizations/{billingOrganizationId}/accounts",
+        local_var_configuration.qcs_config.api_url(),
+        billingOrganizationId = billing_organization_id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="DELETE",
+                "making internal_delete_billing_organization_accounts request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&accounts);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalDeleteBillingOrganizationAccountsError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Delete all associations between accounts and this billing organization.
+pub async fn internal_delete_billing_organization_accounts(
+    configuration: &configuration::Configuration,
+    billing_organization_id: i64,
+    accounts: crate::models::Accounts,
+) -> Result<crate::models::Accounts, Error<InternalDeleteBillingOrganizationAccountsError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::DELETE;
+    loop {
+        let result = internal_delete_billing_organization_accounts_inner(
+            configuration,
+            &mut backoff,
+            billing_organization_id.clone(),
+            accounts.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
 async fn internal_delete_event_billing_price_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
@@ -2149,9 +3860,33 @@ async fn internal_delete_event_billing_price_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -2190,6 +3925,153 @@ pub async fn internal_delete_event_billing_price(
             configuration,
             &mut backoff,
             event_billing_price_id.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn internal_get_billing_organization_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    billing_organization_id: i64,
+) -> Result<crate::models::BillingOrganization, Error<InternalGetBillingOrganizationError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/billingOrganizations/{billingOrganizationId}",
+        local_var_configuration.qcs_config.api_url(),
+        billingOrganizationId = billing_organization_id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_get_billing_organization request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalGetBillingOrganizationError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Get a billing organization, which is unique by name.
+pub async fn internal_get_billing_organization(
+    configuration: &configuration::Configuration,
+    billing_organization_id: i64,
+) -> Result<crate::models::BillingOrganization, Error<InternalGetBillingOrganizationError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
+    loop {
+        let result = internal_get_billing_organization_inner(
+            configuration,
+            &mut backoff,
+            billing_organization_id.clone(),
         )
         .await;
 
@@ -2272,9 +4154,33 @@ async fn internal_get_event_billing_price_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -2313,6 +4219,153 @@ pub async fn internal_get_event_billing_price(
             configuration,
             &mut backoff,
             event_billing_price_id.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn internal_get_group_billing_organization_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    group_name: &str,
+) -> Result<crate::models::BillingOrganization, Error<InternalGetGroupBillingOrganizationError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/groups/{groupName}/billingOrganization",
+        local_var_configuration.qcs_config.api_url(),
+        groupName = crate::apis::urlencode(group_name)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_get_group_billing_organization request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalGetGroupBillingOrganizationError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Fetch the group's billing organization.
+pub async fn internal_get_group_billing_organization(
+    configuration: &configuration::Configuration,
+    group_name: &str,
+) -> Result<crate::models::BillingOrganization, Error<InternalGetGroupBillingOrganizationError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
+    loop {
+        let result = internal_get_group_billing_organization_inner(
+            configuration,
+            &mut backoff,
+            group_name.clone(),
         )
         .await;
 
@@ -2396,9 +4449,33 @@ async fn internal_get_group_event_billing_price_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder =
         local_var_req_builder.json(&internal_get_account_event_billing_price_request);
@@ -2484,6 +4561,153 @@ pub async fn internal_get_group_event_billing_price(
         }
     }
 }
+async fn internal_get_user_billing_organization_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    user_id: &str,
+) -> Result<crate::models::BillingOrganization, Error<InternalGetUserBillingOrganizationError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/users/{userId}/billingOrganization",
+        local_var_configuration.qcs_config.api_url(),
+        userId = crate::apis::urlencode(user_id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_get_user_billing_organization request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalGetUserBillingOrganizationError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Fetch the user's billing organization.
+pub async fn internal_get_user_billing_organization(
+    configuration: &configuration::Configuration,
+    user_id: &str,
+) -> Result<crate::models::BillingOrganization, Error<InternalGetUserBillingOrganizationError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
+    loop {
+        let result = internal_get_user_billing_organization_inner(
+            configuration,
+            &mut backoff,
+            user_id.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
 async fn internal_get_user_event_billing_price_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
@@ -2525,9 +4749,33 @@ async fn internal_get_user_event_billing_price_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder =
         local_var_req_builder.json(&internal_get_account_event_billing_price_request);
@@ -2653,9 +4901,33 @@ async fn internal_get_user_profile_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -2786,9 +5058,33 @@ async fn internal_list_billing_invoices_inner(
             local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -2834,6 +5130,338 @@ pub async fn internal_list_billing_invoices(
             filter.clone(),
             page_size.clone(),
             page_token.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn internal_list_billing_organization_accounts_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    billing_organization_id: i64,
+    page_token: Option<&str>,
+    page_size: Option<i64>,
+) -> Result<
+    crate::models::InternalListBillingOrganizationAccountsResponse,
+    Error<InternalListBillingOrganizationAccountsError>,
+> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/billingOrganizations/{billingOrganizationId}/accounts",
+        local_var_configuration.qcs_config.api_url(),
+        billingOrganizationId = billing_organization_id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_list_billing_organization_accounts request",
+            );
+        }
+    }
+
+    if let Some(ref local_var_str) = page_token {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalListBillingOrganizationAccountsError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// List all accounts related to this billing organization.
+pub async fn internal_list_billing_organization_accounts(
+    configuration: &configuration::Configuration,
+    billing_organization_id: i64,
+    page_token: Option<&str>,
+    page_size: Option<i64>,
+) -> Result<
+    crate::models::InternalListBillingOrganizationAccountsResponse,
+    Error<InternalListBillingOrganizationAccountsError>,
+> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
+    loop {
+        let result = internal_list_billing_organization_accounts_inner(
+            configuration,
+            &mut backoff,
+            billing_organization_id.clone(),
+            page_token.clone(),
+            page_size.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn internal_list_billing_organizations_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    page_token: Option<&str>,
+    page_size: Option<i64>,
+) -> Result<
+    crate::models::InternalListBillingOrganizationsResponse,
+    Error<InternalListBillingOrganizationsError>,
+> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/billingOrganizations",
+        local_var_configuration.qcs_config.api_url()
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making internal_list_billing_organizations request",
+            );
+        }
+    }
+
+    if let Some(ref local_var_str) = page_token {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalListBillingOrganizationsError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// List all billing organizations.
+pub async fn internal_list_billing_organizations(
+    configuration: &configuration::Configuration,
+    page_token: Option<&str>,
+    page_size: Option<i64>,
+) -> Result<
+    crate::models::InternalListBillingOrganizationsResponse,
+    Error<InternalListBillingOrganizationsError>,
+> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
+    loop {
+        let result = internal_list_billing_organizations_inner(
+            configuration,
+            &mut backoff,
+            page_token.clone(),
+            page_size.clone(),
         )
         .await;
 
@@ -2941,9 +5569,33 @@ async fn internal_list_event_billing_prices_inner(
             local_var_req_builder.query(&[("showDeleted", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -3082,9 +5734,33 @@ async fn internal_list_groups_inner(
             local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -3223,9 +5899,33 @@ async fn internal_list_users_inner(
             local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -3312,6 +6012,310 @@ pub async fn internal_list_users(
         }
     }
 }
+async fn internal_put_billing_organization_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    billing_organization_id: i64,
+    update_billing_organization_request: crate::models::UpdateBillingOrganizationRequest,
+) -> Result<crate::models::BillingOrganization, Error<InternalPutBillingOrganizationError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/billingOrganizations/{billingOrganizationId}",
+        local_var_configuration.qcs_config.api_url(),
+        billingOrganizationId = billing_organization_id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making internal_put_billing_organization request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&update_billing_organization_request);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalPutBillingOrganizationError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Update a billing organization, which is unique by name.
+pub async fn internal_put_billing_organization(
+    configuration: &configuration::Configuration,
+    billing_organization_id: i64,
+    update_billing_organization_request: crate::models::UpdateBillingOrganizationRequest,
+) -> Result<crate::models::BillingOrganization, Error<InternalPutBillingOrganizationError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::PUT;
+    loop {
+        let result = internal_put_billing_organization_inner(
+            configuration,
+            &mut backoff,
+            billing_organization_id.clone(),
+            update_billing_organization_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn internal_put_billing_organization_accounts_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    billing_organization_id: i64,
+    accounts: crate::models::Accounts,
+) -> Result<crate::models::Accounts, Error<InternalPutBillingOrganizationAccountsError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/billingOrganizations/{billingOrganizationId}/accounts",
+        local_var_configuration.qcs_config.api_url(),
+        billingOrganizationId = billing_organization_id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making internal_put_billing_organization_accounts request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&accounts);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalPutBillingOrganizationAccountsError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Create an association between accounts and this billing organization if one is not already present.
+pub async fn internal_put_billing_organization_accounts(
+    configuration: &configuration::Configuration,
+    billing_organization_id: i64,
+    accounts: crate::models::Accounts,
+) -> Result<crate::models::Accounts, Error<InternalPutBillingOrganizationAccountsError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::PUT;
+    loop {
+        let result = internal_put_billing_organization_accounts_inner(
+            configuration,
+            &mut backoff,
+            billing_organization_id.clone(),
+            accounts.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
 async fn internal_update_event_billing_price_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
@@ -3353,9 +6357,33 @@ async fn internal_update_event_billing_price_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder =
         local_var_req_builder.json(&internal_update_event_billing_price_request);
@@ -3480,9 +6508,33 @@ async fn invite_user_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&invite_user_request);
 
@@ -3520,6 +6572,178 @@ pub async fn invite_user(
     loop {
         let result =
             invite_user_inner(configuration, &mut backoff, invite_user_request.clone()).await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn list_announcements_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    filter: Option<&str>,
+    order: Option<&str>,
+    page_size: Option<i64>,
+    page_token: Option<&str>,
+) -> Result<crate::models::AnnouncementsResponse, Error<ListAnnouncementsError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/announcements",
+        local_var_configuration.qcs_config.api_url()
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_announcements request",
+            );
+        }
+    }
+
+    if let Some(ref local_var_str) = filter {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("filter", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = order {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("order", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_token {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<ListAnnouncementsError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// List all announcements created on the platform.  Available filter fields include: * `id` - integer * `active` - boolean  Available order fields include: * `id`
+pub async fn list_announcements(
+    configuration: &configuration::Configuration,
+    filter: Option<&str>,
+    order: Option<&str>,
+    page_size: Option<i64>,
+    page_token: Option<&str>,
+) -> Result<crate::models::AnnouncementsResponse, Error<ListAnnouncementsError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
+    loop {
+        let result = list_announcements_inner(
+            configuration,
+            &mut backoff,
+            filter.clone(),
+            order.clone(),
+            page_size.clone(),
+            page_token.clone(),
+        )
+        .await;
 
         match result {
             Ok(result) => return Ok(result),
@@ -3616,9 +6840,33 @@ async fn list_group_billing_invoice_lines_inner(
             local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -3760,9 +7008,33 @@ async fn list_group_billing_invoices_inner(
             local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -3902,9 +7174,33 @@ async fn list_group_upcoming_billing_invoice_lines_inner(
             local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -4043,9 +7339,33 @@ async fn list_group_users_inner(
             local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -4186,9 +7506,33 @@ async fn list_user_billing_invoice_lines_inner(
             local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -4330,9 +7674,33 @@ async fn list_user_billing_invoices_inner(
             local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -4469,9 +7837,33 @@ async fn list_user_groups_inner(
             local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -4610,9 +8002,33 @@ async fn list_user_upcoming_billing_invoice_lines_inner(
             local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -4700,6 +8116,629 @@ pub async fn list_user_upcoming_billing_invoice_lines(
         }
     }
 }
+async fn list_viewer_announcements_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    page_size: Option<i64>,
+    page_token: Option<&str>,
+    include_dismissed: Option<bool>,
+) -> Result<crate::models::AnnouncementsResponse, Error<ListViewerAnnouncementsError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/viewer/announcements",
+        local_var_configuration.qcs_config.api_url()
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making list_viewer_announcements request",
+            );
+        }
+    }
+
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_token {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = include_dismissed {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("includeDismissed", &local_var_str.to_string())]);
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<ListViewerAnnouncementsError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// List all announcements relevant to the authenticating user. By default, does not include dismissed announcements.
+pub async fn list_viewer_announcements(
+    configuration: &configuration::Configuration,
+    page_size: Option<i64>,
+    page_token: Option<&str>,
+    include_dismissed: Option<bool>,
+) -> Result<crate::models::AnnouncementsResponse, Error<ListViewerAnnouncementsError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
+    loop {
+        let result = list_viewer_announcements_inner(
+            configuration,
+            &mut backoff,
+            page_size.clone(),
+            page_token.clone(),
+            include_dismissed.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn put_group_balance_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    group_name: &str,
+    update_group_account_balance_request: Option<crate::models::UpdateGroupAccountBalanceRequest>,
+) -> Result<crate::models::AccountBalance, Error<PutGroupBalanceError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/groups/{groupName}/balance",
+        local_var_configuration.qcs_config.api_url(),
+        groupName = crate::apis::urlencode(group_name)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making put_group_balance request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&update_group_account_balance_request);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<PutGroupBalanceError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Update the balance of the requested QCS group account.
+pub async fn put_group_balance(
+    configuration: &configuration::Configuration,
+    group_name: &str,
+    update_group_account_balance_request: Option<crate::models::UpdateGroupAccountBalanceRequest>,
+) -> Result<crate::models::AccountBalance, Error<PutGroupBalanceError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::PUT;
+    loop {
+        let result = put_group_balance_inner(
+            configuration,
+            &mut backoff,
+            group_name.clone(),
+            update_group_account_balance_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn put_user_balance_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    user_id: &str,
+    update_user_account_balance_request: Option<crate::models::UpdateUserAccountBalanceRequest>,
+) -> Result<crate::models::AccountBalance, Error<PutUserBalanceError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/users/{userId}/balance",
+        local_var_configuration.qcs_config.api_url(),
+        userId = crate::apis::urlencode(user_id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making put_user_balance request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&update_user_account_balance_request);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<PutUserBalanceError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Update the balance of the requested QCS user account.
+pub async fn put_user_balance(
+    configuration: &configuration::Configuration,
+    user_id: &str,
+    update_user_account_balance_request: Option<crate::models::UpdateUserAccountBalanceRequest>,
+) -> Result<crate::models::AccountBalance, Error<PutUserBalanceError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::PUT;
+    loop {
+        let result = put_user_balance_inner(
+            configuration,
+            &mut backoff,
+            user_id.clone(),
+            update_user_account_balance_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn put_viewer_user_onboarding_completed_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    viewer_user_onboarding_completed: Option<crate::models::ViewerUserOnboardingCompleted>,
+) -> Result<
+    crate::models::ViewerUserOnboardingCompleted,
+    Error<PutViewerUserOnboardingCompletedError>,
+> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/viewer/onboardingCompleted",
+        local_var_configuration.qcs_config.api_url()
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making put_viewer_user_onboarding_completed request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&viewer_user_onboarding_completed);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<PutViewerUserOnboardingCompletedError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Update the onboarding status of the authenticated user.
+pub async fn put_viewer_user_onboarding_completed(
+    configuration: &configuration::Configuration,
+    viewer_user_onboarding_completed: Option<crate::models::ViewerUserOnboardingCompleted>,
+) -> Result<
+    crate::models::ViewerUserOnboardingCompleted,
+    Error<PutViewerUserOnboardingCompletedError>,
+> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::PUT;
+    loop {
+        let result = put_viewer_user_onboarding_completed_inner(
+            configuration,
+            &mut backoff,
+            viewer_user_onboarding_completed.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
 async fn receive_stripe_webhook_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
@@ -4738,9 +8777,33 @@ async fn receive_stripe_webhook_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false;
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -4853,9 +8916,33 @@ async fn remove_group_user_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&remove_group_user_request);
 
@@ -4895,6 +8982,158 @@ pub async fn remove_group_user(
             configuration,
             &mut backoff,
             remove_group_user_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn update_announcement_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    announcement_id: i64,
+    announcement_content: Option<crate::models::AnnouncementContent>,
+) -> Result<crate::models::Announcement, Error<UpdateAnnouncementError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/announcements/{announcementId}",
+        local_var_configuration.qcs_config.api_url(),
+        announcementId = announcement_id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making update_announcement request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&announcement_content);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<UpdateAnnouncementError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Update an existing announcement's content.
+pub async fn update_announcement(
+    configuration: &configuration::Configuration,
+    announcement_id: i64,
+    announcement_content: Option<crate::models::AnnouncementContent>,
+) -> Result<crate::models::Announcement, Error<UpdateAnnouncementError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::PUT;
+    loop {
+        let result = update_announcement_inner(
+            configuration,
+            &mut backoff,
+            announcement_id.clone(),
+            announcement_content.clone(),
         )
         .await;
 
@@ -4978,9 +9217,33 @@ async fn update_user_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&update_user_request);
 
@@ -5023,6 +9286,154 @@ pub async fn update_user(
             &mut backoff,
             idp_id.clone(),
             update_user_request.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+async fn update_viewer_user_profile_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    update_viewer_user_profile_request: crate::models::UpdateViewerUserProfileRequest,
+) -> Result<crate::models::User, Error<UpdateViewerUserProfileError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/viewer/userProfile",
+        local_var_configuration.qcs_config.api_url()
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making update_viewer_user_profile request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&update_viewer_user_profile_request);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<UpdateViewerUserProfileError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Update the profile of the authenticated user.
+pub async fn update_viewer_user_profile(
+    configuration: &configuration::Configuration,
+    update_viewer_user_profile_request: crate::models::UpdateViewerUserProfileRequest,
+) -> Result<crate::models::User, Error<UpdateViewerUserProfileError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::PUT;
+    loop {
+        let result = update_viewer_user_profile_inner(
+            configuration,
+            &mut backoff,
+            update_viewer_user_profile_request.clone(),
         )
         .await;
 

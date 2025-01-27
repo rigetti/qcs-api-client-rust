@@ -40,6 +40,12 @@ pub struct InternalUpdateEndpointParameters {
         skip_serializing_if = "Option::is_none"
     )]
     pub live_instrument_access: Option<bool>,
+    /// The Slack channel to which create/update/delete notifications should be sent for this endpoint. Example: bf01
+    #[serde(
+        rename = "notificationSlackChannel",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub notification_slack_channel: Option<String>,
     /// Public identifiers for quantum processors served by this endpoint. Note: this is only used for QCS services and authorization and does not generally affect jobs run by internally-authorized users.
     #[serde(
         rename = "quantumProcessorIds",
@@ -63,6 +69,7 @@ impl InternalUpdateEndpointParameters {
             engagement_policy_options: None,
             fridge_id: None,
             live_instrument_access: None,
+            notification_slack_channel: None,
             quantum_processor_ids: None,
             template_name: None,
             ttl: None,

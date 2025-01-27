@@ -40,6 +40,9 @@ impl RefreshToken {
         &mut self,
         auth_server: &AuthServer,
     ) -> Result<String, TokenError> {
+        if self.refresh_token.is_empty() {
+            return Err(TokenError::NoRefreshToken);
+        }
         let token_url = format!("{}/v1/token", auth_server.issuer());
         let data = TokenRefreshRequest::new(auth_server.client_id(), &self.refresh_token);
         let resp = reqwest::Client::builder()

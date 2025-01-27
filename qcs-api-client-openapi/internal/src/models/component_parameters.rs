@@ -16,8 +16,8 @@ pub struct ComponentParameters {
     pub certificate_proxy: Option<Box<crate::models::CertificateProxyComponent>>,
     #[serde(rename = "controller", skip_serializing_if = "Option::is_none")]
     pub controller: Option<Box<crate::models::ControllerComponent>>,
-    #[serde(rename = "instrumentMock", skip_serializing_if = "Option::is_none")]
-    pub instrument_mock: Option<Box<crate::models::InstrumentMockComponent>>,
+    #[serde(rename = "extra", skip_serializing_if = "Option::is_none")]
+    pub extra: Option<Box<crate::models::ExtraComponents>>,
     #[serde(rename = "magsim", skip_serializing_if = "Option::is_none")]
     pub magsim: Option<Box<crate::models::MagnetoSimulatorComponent>>,
     #[serde(rename = "orchestrator", skip_serializing_if = "Option::is_none")]
@@ -29,7 +29,7 @@ impl ComponentParameters {
         ComponentParameters {
             certificate_proxy: None,
             controller: None,
-            instrument_mock: None,
+            extra: None,
             magsim: None,
             orchestrator: None,
         }

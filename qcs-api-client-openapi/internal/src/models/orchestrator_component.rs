@@ -27,6 +27,9 @@ pub struct OrchestratorComponent {
     /// Which docker tag to pull and start. [Example: v1.0.0]
     #[serde(rename = "dockerTag", skip_serializing_if = "Option::is_none")]
     pub docker_tag: Option<String>,
+    /// Whether to enable the Nomad health check script for this component's task
+    #[serde(rename = "enableHealthCheck", skip_serializing_if = "Option::is_none")]
+    pub enable_health_check: Option<bool>,
     /// Whether to send errors and data to Sentry
     #[serde(rename = "enableSentry", skip_serializing_if = "Option::is_none")]
     pub enable_sentry: Option<bool>,
@@ -42,6 +45,12 @@ pub struct OrchestratorComponent {
     /// Which branch of the relevant repository to associate with this endpoint. May be used for automatic upgrades on updates to the git branch.
     #[serde(rename = "gitBranch", skip_serializing_if = "Option::is_none")]
     pub git_branch: Option<String>,
+    /// Whether to include default command line arguments in the orchestrator start command. These include rack configuration path and certain ports. Disable this for fine-grained control over command line arguments or if using an older version of Lodgepole with different arguments.
+    #[serde(
+        rename = "includeDefaultCommandLineArgs",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub include_default_command_line_args: Option<bool>,
     /// Whether this component is a sidecar or not.
     #[serde(rename = "isSidecar", skip_serializing_if = "Option::is_none")]
     pub is_sidecar: Option<bool>,
@@ -57,9 +66,11 @@ pub struct OrchestratorComponent {
     /// Whether to start the orchestrator in \"mock\" mode, where mock responses are generated in-process rather than being dispatched to control hardware
     #[serde(rename = "mock", skip_serializing_if = "Option::is_none")]
     pub mock: Option<bool>,
-    /// The URL from which this component will request its DeployedRack configuration
-    #[serde(rename = "rackConfigUrl", skip_serializing_if = "Option::is_none")]
-    pub rack_config_url: Option<String>,
+    #[serde(rename = "rackConfig", skip_serializing_if = "Option::is_none")]
+    pub rack_config: Option<Box<crate::models::ExplicitRackConfiguration>>,
+    /// The contents of the DeployedRack/Rack YAML to deploy with the service, as a YAML string. Use this option when deploying an old version of Lodgepole with rack components not supported by the Rigetti Domain Model / Treeline (such as VNAs).
+    #[serde(rename = "rackYamlString", skip_serializing_if = "Option::is_none")]
+    pub rack_yaml_string: Option<String>,
     /// Instrument used as a reference when synchronizing time amongst instruments
     #[serde(
         rename = "timeReferenceInstrument",
@@ -81,16 +92,19 @@ impl OrchestratorComponent {
             controller_service_endpoint: None,
             cpu_limit: None,
             docker_tag: None,
+            enable_health_check: None,
             enable_sentry: None,
             environment: None,
             environment_variables: None,
             git_branch: None,
+            include_default_command_line_args: None,
             is_sidecar: None,
             listen_ports: None,
             logging_provider: None,
             memory_soft_limit: None,
             mock: None,
-            rack_config_url: None,
+            rack_config: None,
+            rack_yaml_string: None,
             time_reference_instrument: None,
             trigger_time_offset: None,
             visa_passthrough: None,

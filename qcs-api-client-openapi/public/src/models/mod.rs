@@ -19,8 +19,17 @@ pub use self::account_balance::AccountBalance;
 pub mod account_type;
 pub use self::account_type::AccountType;
 #[allow(non_snake_case)]
+pub mod activate_user_request;
+pub use self::activate_user_request::ActivateUserRequest;
+#[allow(non_snake_case)]
 pub mod add_group_user_request;
 pub use self::add_group_user_request::AddGroupUserRequest;
+#[allow(non_snake_case)]
+pub mod announcement;
+pub use self::announcement::Announcement;
+#[allow(non_snake_case)]
+pub mod announcements_response;
+pub use self::announcements_response::AnnouncementsResponse;
 #[allow(non_snake_case)]
 pub mod architecture;
 pub use self::architecture::Architecture;
@@ -226,6 +235,9 @@ pub use self::translate_native_quil_to_encrypted_binary_request::TranslateNative
 pub mod translate_native_quil_to_encrypted_binary_response;
 pub use self::translate_native_quil_to_encrypted_binary_response::TranslateNativeQuilToEncryptedBinaryResponse;
 #[allow(non_snake_case)]
+pub mod update_viewer_user_profile_request;
+pub use self::update_viewer_user_profile_request::UpdateViewerUserProfileRequest;
+#[allow(non_snake_case)]
 pub mod user;
 pub use self::user::User;
 #[allow(non_snake_case)]
@@ -240,3 +252,6 @@ pub use self::user_profile::UserProfile;
 #[allow(non_snake_case)]
 pub mod validation_error;
 pub use self::validation_error::ValidationError;
+#[allow(non_snake_case)]
+pub mod viewer_user_onboarding_completed;
+pub use self::viewer_user_onboarding_completed::ViewerUserOnboardingCompleted;

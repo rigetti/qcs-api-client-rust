@@ -14,14 +14,20 @@ src/apis/reservations_api.rs
 src/apis/translation_api.rs
 src/lib.rs
 src/models/a.rs
+src/models/account.rs
 src/models/account_balance.rs
 src/models/account_billing_customer_create_request.rs
 src/models/account_billing_customer_update_request.rs
 src/models/account_type.rs
+src/models/accounts.rs
+src/models/activate_user_request.rs
 src/models/active_reset.rs
 src/models/add_group_user_request.rs
 src/models/address.rs
 src/models/amplifier_settings.rs
+src/models/announcement.rs
+src/models/announcement_content.rs
+src/models/announcements_response.rs
 src/models/app__api__translation__models__parameter_spec.rs
 src/models/arbitrary_readout_kernel.rs
 src/models/arbitrary_waveform.rs
@@ -38,6 +44,7 @@ src/models/billing_invoice.rs
 src/models/billing_invoice_all_of.rs
 src/models/billing_invoice_line.rs
 src/models/billing_invoice_status.rs
+src/models/billing_organization.rs
 src/models/billing_price.rs
 src/models/billing_price_recurrence.rs
 src/models/billing_price_scheme.rs
@@ -63,6 +70,7 @@ src/models/controller_address.rs
 src/models/controller_addresses.rs
 src/models/controller_component.rs
 src/models/controller_instrument_type.rs
+src/models/create_billing_organization_request.rs
 src/models/create_endpoint_parameters.rs
 src/models/create_engagement_request.rs
 src/models/create_reservation_request.rs
@@ -89,6 +97,8 @@ src/models/event_billing_price.rs
 src/models/event_billing_price_rate.rs
 src/models/event_billing_price_update.rs
 src/models/execution_backend.rs
+src/models/explicit_rack_configuration.rs
+src/models/extra_components.rs
 src/models/family.rs
 src/models/feedback_instructions_inner.rs
 src/models/filters.rs
@@ -107,7 +117,6 @@ src/models/hermite_gaussian_waveform.rs
 src/models/identity.rs
 src/models/instruction_set_architecture.rs
 src/models/instrument.rs
-src/models/instrument_mock_component.rs
 src/models/instrument_type.rs
 src/models/internal_create_endpoint_parameters.rs
 src/models/internal_create_event_billing_price_request.rs
@@ -120,6 +129,8 @@ src/models/internal_event_billing_price.rs
 src/models/internal_get_account_event_billing_price_request.rs
 src/models/internal_list_billing_invoices_response.rs
 src/models/internal_list_billing_invoices_response_item.rs
+src/models/internal_list_billing_organization_accounts_response.rs
+src/models/internal_list_billing_organizations_response.rs
 src/models/internal_list_endpoints_response.rs
 src/models/internal_list_legacy_lattices_response.rs
 src/models/internal_list_legacy_quantum_processors_response.rs
@@ -238,7 +249,11 @@ src/models/swap_phases.rs
 src/models/template_name.rs
 src/models/translate_native_quil_to_encrypted_binary_request.rs
 src/models/translate_native_quil_to_encrypted_binary_response.rs
+src/models/update_billing_organization_request.rs
+src/models/update_group_account_balance_request.rs
+src/models/update_user_account_balance_request.rs
 src/models/update_user_request.rs
+src/models/update_viewer_user_profile_request.rs
 src/models/user.rs
 src/models/user_credentials.rs
 src/models/user_credentials_password.rs
@@ -246,5 +261,6 @@ src/models/user_profile.rs
 src/models/usi_card_sequencer.rs
 src/models/usi_target_sequencer.rs
 src/models/validation_error.rs
+src/models/viewer_user_onboarding_completed.rs
 src/models/waveforms.rs
 src/models/yokogawa_gs200_channel.rs

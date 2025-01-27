@@ -12,6 +12,18 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ControllerComponent {
+    /// The S3 bucket that jobs with archived results will have those results sent to.
+    #[serde(
+        rename = "archiveBackendS3Bucket",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub archive_backend_s3_bucket: Option<String>,
+    /// The AWS Role used by the `archive_backend_s3_bucket`.
+    #[serde(
+        rename = "archiveBackendS3RoleArn",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub archive_backend_s3_role_arn: Option<String>,
     /// Define the controller's relationship to hardware controls
     #[serde(rename = "backend", skip_serializing_if = "Option::is_none")]
     pub backend: Option<Box<crate::models::ExecutionBackend>>,
@@ -112,6 +124,8 @@ pub struct ControllerComponent {
 impl ControllerComponent {
     pub fn new() -> ControllerComponent {
         ControllerComponent {
+            archive_backend_s3_bucket: None,
+            archive_backend_s3_role_arn: None,
             backend: None,
             command_line_args: None,
             cpu_limit: None,

@@ -13,6 +13,12 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct InternalQuantumProcessorCalendar {
+    /// This calendar's schedule contains maintenance events for the QPU, during which execution is not available.
+    #[serde(
+        rename = "maintenanceCalendarEmail",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub maintenance_calendar_email: Option<String>,
     #[serde(rename = "public")]
     pub public: Box<crate::models::QuantumProcessorCalendar>,
     /// This calendar's schedule contains all reservation events for the QPU.
@@ -29,6 +35,7 @@ impl InternalQuantumProcessorCalendar {
         public: crate::models::QuantumProcessorCalendar,
     ) -> InternalQuantumProcessorCalendar {
         InternalQuantumProcessorCalendar {
+            maintenance_calendar_email: None,
             public: Box::new(public),
             reservation_calendar_email: None,
         }

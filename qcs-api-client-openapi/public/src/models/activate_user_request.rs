@@ -25,24 +25,26 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct InviteUserRequest {
-    #[serde(
-        rename = "billingOrganizationId",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub billing_organization_id: Option<i64>,
-    #[serde(rename = "email")]
-    pub email: String,
-    #[serde(rename = "groupName", skip_serializing_if = "Option::is_none")]
-    pub group_name: Option<String>,
+pub struct ActivateUserRequest {
+    #[serde(rename = "credentials")]
+    pub credentials: Box<crate::models::UserCredentials>,
+    #[serde(rename = "profile")]
+    pub profile: Box<crate::models::UserProfile>,
+    /// Verification token provided in invitation email.
+    #[serde(rename = "token")]
+    pub token: String,
 }
 
-impl InviteUserRequest {
-    pub fn new(email: String) -> InviteUserRequest {
-        InviteUserRequest {
-            billing_organization_id: None,
-            email,
-            group_name: None,
+impl ActivateUserRequest {
+    pub fn new(
+        credentials: crate::models::UserCredentials,
+        profile: crate::models::UserProfile,
+        token: String,
+    ) -> ActivateUserRequest {
+        ActivateUserRequest {
+            credentials: Box::new(credentials),
+            profile: Box::new(profile),
+            token,
         }
     }
 }

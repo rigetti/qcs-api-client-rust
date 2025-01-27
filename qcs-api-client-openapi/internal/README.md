@@ -72,8 +72,12 @@ All URIs are relative to *https://api.qcs.rigetti.com*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*AccountApi* | [**activate_user**](docs/AccountApi.md#activate_user) | **POST** /v1/users:activate | Activate User
 *AccountApi* | [**add_group_user**](docs/AccountApi.md#add_group_user) | **POST** /v1/groups:addUser | Add user to a group
+*AccountApi* | [**create_announcement**](docs/AccountApi.md#create_announcement) | **POST** /v1/announcements | 
 *AccountApi* | [**create_user**](docs/AccountApi.md#create_user) | **POST** /v1/users | Create User
+*AccountApi* | [**delete_announcement**](docs/AccountApi.md#delete_announcement) | **DELETE** /v1/announcements/{announcementId} | 
+*AccountApi* | [**dismiss_viewer_announcement**](docs/AccountApi.md#dismiss_viewer_announcement) | **DELETE** /v1/viewer/announcements/{announcementId} | 
 *AccountApi* | [**get_group_balance**](docs/AccountApi.md#get_group_balance) | **GET** /v1/groups/{groupName}/balance | Get Group Balance
 *AccountApi* | [**get_group_billing_customer**](docs/AccountApi.md#get_group_billing_customer) | **GET** /v1/groups/{groupName}/billingCustomer | 
 *AccountApi* | [**get_group_upcoming_billing_invoice**](docs/AccountApi.md#get_group_upcoming_billing_invoice) | **GET** /v1/groups/{groupName}/billingInvoices:getUpcoming | 
@@ -81,22 +85,34 @@ Class | Method | HTTP request | Description
 *AccountApi* | [**get_user_billing_customer**](docs/AccountApi.md#get_user_billing_customer) | **GET** /v1/users/{userId}/billingCustomer | 
 *AccountApi* | [**get_user_event_billing_price**](docs/AccountApi.md#get_user_event_billing_price) | **POST** /v1/users/{userId}/eventBillingPrices:get | 
 *AccountApi* | [**get_user_upcoming_billing_invoice**](docs/AccountApi.md#get_user_upcoming_billing_invoice) | **GET** /v1/users/{userId}/billingInvoices:getUpcoming | 
+*AccountApi* | [**get_viewer_user_onboarding_completed**](docs/AccountApi.md#get_viewer_user_onboarding_completed) | **GET** /v1/viewer/onboardingCompleted | 
+*AccountApi* | [**internal_create_billing_organization**](docs/AccountApi.md#internal_create_billing_organization) | **POST** /v1/internal/billingOrganizations | 
 *AccountApi* | [**internal_create_event_billing_price**](docs/AccountApi.md#internal_create_event_billing_price) | **POST** /v1/internal/eventBillingPrices | Internal Create Event Billing Price
 *AccountApi* | [**internal_create_group_billing_customer**](docs/AccountApi.md#internal_create_group_billing_customer) | **POST** /v1/internal/groups/{groupName}/billingCustomer | 
 *AccountApi* | [**internal_create_group_metered_usage_record**](docs/AccountApi.md#internal_create_group_metered_usage_record) | **POST** /v1/internal/groups/{groupName}/meteredUsageRecords | 
 *AccountApi* | [**internal_create_user_billing_customer**](docs/AccountApi.md#internal_create_user_billing_customer) | **POST** /v1/internal/users/{userId}/billingCustomer | 
 *AccountApi* | [**internal_create_user_metered_usage_record**](docs/AccountApi.md#internal_create_user_metered_usage_record) | **POST** /v1/internal/users/{userId}/meteredUsageRecords | 
+*AccountApi* | [**internal_delete_billing_organization**](docs/AccountApi.md#internal_delete_billing_organization) | **DELETE** /v1/internal/billingOrganizations/{billingOrganizationId} | 
+*AccountApi* | [**internal_delete_billing_organization_accounts**](docs/AccountApi.md#internal_delete_billing_organization_accounts) | **DELETE** /v1/internal/billingOrganizations/{billingOrganizationId}/accounts | 
 *AccountApi* | [**internal_delete_event_billing_price**](docs/AccountApi.md#internal_delete_event_billing_price) | **DELETE** /v1/internal/eventBillingPrices/{eventBillingPriceId} | Internal Delete Event Billing Price
+*AccountApi* | [**internal_get_billing_organization**](docs/AccountApi.md#internal_get_billing_organization) | **GET** /v1/internal/billingOrganizations/{billingOrganizationId} | 
 *AccountApi* | [**internal_get_event_billing_price**](docs/AccountApi.md#internal_get_event_billing_price) | **GET** /v1/internal/eventBillingPrices/{eventBillingPriceId} | Internal Get Event Billing Price
+*AccountApi* | [**internal_get_group_billing_organization**](docs/AccountApi.md#internal_get_group_billing_organization) | **GET** /v1/internal/groups/{groupName}/billingOrganization | Get Group Billing Organization
 *AccountApi* | [**internal_get_group_event_billing_price**](docs/AccountApi.md#internal_get_group_event_billing_price) | **POST** /v1/internal/groups/{groupName}/eventBillingPrices:get | 
+*AccountApi* | [**internal_get_user_billing_organization**](docs/AccountApi.md#internal_get_user_billing_organization) | **GET** /v1/internal/users/{userId}/billingOrganization | 
 *AccountApi* | [**internal_get_user_event_billing_price**](docs/AccountApi.md#internal_get_user_event_billing_price) | **POST** /v1/internal/users/{userId}/eventBillingPrices:get | 
 *AccountApi* | [**internal_get_user_profile**](docs/AccountApi.md#internal_get_user_profile) | **GET** /v1/internal/users/{userId}/profile | Get User Profile
 *AccountApi* | [**internal_list_billing_invoices**](docs/AccountApi.md#internal_list_billing_invoices) | **GET** /v1/internal/billingInvoices | 
+*AccountApi* | [**internal_list_billing_organization_accounts**](docs/AccountApi.md#internal_list_billing_organization_accounts) | **GET** /v1/internal/billingOrganizations/{billingOrganizationId}/accounts | 
+*AccountApi* | [**internal_list_billing_organizations**](docs/AccountApi.md#internal_list_billing_organizations) | **GET** /v1/internal/billingOrganizations | 
 *AccountApi* | [**internal_list_event_billing_prices**](docs/AccountApi.md#internal_list_event_billing_prices) | **GET** /v1/internal/eventBillingPrices | Internal List Event Billing Prices
 *AccountApi* | [**internal_list_groups**](docs/AccountApi.md#internal_list_groups) | **GET** /v1/internal/groups | List all QCS groups
 *AccountApi* | [**internal_list_users**](docs/AccountApi.md#internal_list_users) | **GET** /v1/internal/users | Internal List Users
+*AccountApi* | [**internal_put_billing_organization**](docs/AccountApi.md#internal_put_billing_organization) | **PUT** /v1/internal/billingOrganizations/{billingOrganizationId} | 
+*AccountApi* | [**internal_put_billing_organization_accounts**](docs/AccountApi.md#internal_put_billing_organization_accounts) | **PUT** /v1/internal/billingOrganizations/{billingOrganizationId}/accounts | 
 *AccountApi* | [**internal_update_event_billing_price**](docs/AccountApi.md#internal_update_event_billing_price) | **PATCH** /v1/internal/eventBillingPrices/{eventBillingPriceId} | Internal Delete Event Billing Price
 *AccountApi* | [**invite_user**](docs/AccountApi.md#invite_user) | **POST** /v1/users:invite | Invite User
+*AccountApi* | [**list_announcements**](docs/AccountApi.md#list_announcements) | **GET** /v1/announcements | 
 *AccountApi* | [**list_group_billing_invoice_lines**](docs/AccountApi.md#list_group_billing_invoice_lines) | **GET** /v1/groups/{groupName}/billingInvoices/{billingInvoiceId}/lines | 
 *AccountApi* | [**list_group_billing_invoices**](docs/AccountApi.md#list_group_billing_invoices) | **GET** /v1/groups/{groupName}/billingInvoices | 
 *AccountApi* | [**list_group_upcoming_billing_invoice_lines**](docs/AccountApi.md#list_group_upcoming_billing_invoice_lines) | **GET** /v1/groups/{groupName}/billingInvoices:listUpcomingLines | 
@@ -105,9 +121,15 @@ Class | Method | HTTP request | Description
 *AccountApi* | [**list_user_billing_invoices**](docs/AccountApi.md#list_user_billing_invoices) | **GET** /v1/users/{userId}/billingInvoices | 
 *AccountApi* | [**list_user_groups**](docs/AccountApi.md#list_user_groups) | **GET** /v1/users/{userId}/groups | List QCS groups for the requested user
 *AccountApi* | [**list_user_upcoming_billing_invoice_lines**](docs/AccountApi.md#list_user_upcoming_billing_invoice_lines) | **GET** /v1/users/{userId}/billingInvoices:listUpcomingLines | 
+*AccountApi* | [**list_viewer_announcements**](docs/AccountApi.md#list_viewer_announcements) | **GET** /v1/viewer/announcements | 
+*AccountApi* | [**put_group_balance**](docs/AccountApi.md#put_group_balance) | **PUT** /v1/groups/{groupName}/balance | Update Group Balance
+*AccountApi* | [**put_user_balance**](docs/AccountApi.md#put_user_balance) | **PUT** /v1/users/{userId}/balance | Update User Balance
+*AccountApi* | [**put_viewer_user_onboarding_completed**](docs/AccountApi.md#put_viewer_user_onboarding_completed) | **PUT** /v1/viewer/onboardingCompleted | 
 *AccountApi* | [**receive_stripe_webhook**](docs/AccountApi.md#receive_stripe_webhook) | **POST** /v1/webhooks/stripe | Receive Stripe webhook
 *AccountApi* | [**remove_group_user**](docs/AccountApi.md#remove_group_user) | **POST** /v1/groups:removeUser | Remove user from a group.
+*AccountApi* | [**update_announcement**](docs/AccountApi.md#update_announcement) | **PUT** /v1/announcements/{announcementId} | 
 *AccountApi* | [**update_user**](docs/AccountApi.md#update_user) | **PATCH** /v1/users/{idpId} | Update User
+*AccountApi* | [**update_viewer_user_profile**](docs/AccountApi.md#update_viewer_user_profile) | **PUT** /v1/viewer/userProfile | 
 *AuthenticationApi* | [**auth_email_password_reset_token**](docs/AuthenticationApi.md#auth_email_password_reset_token) | **POST** /v1/auth:emailPasswordResetToken | Email Password Reset Token
 *AuthenticationApi* | [**auth_get_user**](docs/AuthenticationApi.md#auth_get_user) | **GET** /v1/auth:getUser | Get User
 *AuthenticationApi* | [**auth_reset_password**](docs/AuthenticationApi.md#auth_reset_password) | **POST** /v1/auth:resetPassword | Reset Password
@@ -133,6 +155,7 @@ Class | Method | HTTP request | Description
 *EndpointsApi* | [**internal_get_default_endpoint**](docs/EndpointsApi.md#internal_get_default_endpoint) | **GET** /v1/internal/quantumProcessors/{quantumProcessorId}/endpoints:getDefault | Get Default Endpoint
 *EndpointsApi* | [**internal_get_endpoint**](docs/EndpointsApi.md#internal_get_endpoint) | **GET** /v1/internal/endpoints/{endpointId} | Get Endpoint
 *EndpointsApi* | [**internal_list_endpoints**](docs/EndpointsApi.md#internal_list_endpoints) | **GET** /v1/internal/endpoints | List Endpoints
+*EndpointsApi* | [**internal_put_endpoint**](docs/EndpointsApi.md#internal_put_endpoint) | **PUT** /v1/internal/endpoints/{endpointId} | Internal Put Endpoint
 *EndpointsApi* | [**internal_set_default_endpoint**](docs/EndpointsApi.md#internal_set_default_endpoint) | **PUT** /v1/internal/quantumProcessors/{quantumProcessorId}/endpoints:setDefault | Internal Set Default Endpoint
 *EndpointsApi* | [**internal_update_endpoint**](docs/EndpointsApi.md#internal_update_endpoint) | **PATCH** /v1/internal/endpoints/{endpointId} | Internal Update Endpoint
 *EndpointsApi* | [**list_endpoint_templates**](docs/EndpointsApi.md#list_endpoint_templates) | **GET** /v1/endpointTemplates | List Endpoint Templates
@@ -152,6 +175,7 @@ Class | Method | HTTP request | Description
 *InternalApi* | [**internal_get_legacy_deployed_rack**](docs/InternalApi.md#internal_get_legacy_deployed_rack) | **GET** /v1/internal/legacy/quantumProcessors/{quantumProcessorId}/deployedRack | Internal Get Legacy Deployed Rack
 *InternalApi* | [**internal_list_endpoint_engagements**](docs/InternalApi.md#internal_list_endpoint_engagements) | **GET** /v1/internal/endpoints/{endpointId}/engagements | Internal List Endpoint Engagements
 *InternalApi* | [**internal_list_endpoints**](docs/InternalApi.md#internal_list_endpoints) | **GET** /v1/internal/endpoints | List Endpoints
+*InternalApi* | [**internal_put_endpoint**](docs/InternalApi.md#internal_put_endpoint) | **PUT** /v1/internal/endpoints/{endpointId} | Internal Put Endpoint
 *InternalApi* | [**internal_put_instruction_set_architecture**](docs/InternalApi.md#internal_put_instruction_set_architecture) | **PUT** /v1/internal/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture | Internal Put Instruction Set Architecture
 *InternalApi* | [**internal_put_legacy_deployed_rack**](docs/InternalApi.md#internal_put_legacy_deployed_rack) | **PUT** /v1/internal/legacy/quantumProcessors/{quantumProcessorId}/deployedRack | Internal Put Legacy Deployed Rack
 *InternalApi* | [**internal_put_legacy_quantum_processor**](docs/InternalApi.md#internal_put_legacy_quantum_processor) | **PUT** /v1/internal/legacy/quantumProcessors/{quantumProcessorId} | Internal Put Legacy Quantum Processor
@@ -214,14 +238,20 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [A](docs/A.md)
+ - [Account](docs/Account.md)
  - [AccountBalance](docs/AccountBalance.md)
  - [AccountBillingCustomerCreateRequest](docs/AccountBillingCustomerCreateRequest.md)
  - [AccountBillingCustomerUpdateRequest](docs/AccountBillingCustomerUpdateRequest.md)
  - [AccountType](docs/AccountType.md)
+ - [Accounts](docs/Accounts.md)
+ - [ActivateUserRequest](docs/ActivateUserRequest.md)
  - [ActiveReset](docs/ActiveReset.md)
  - [AddGroupUserRequest](docs/AddGroupUserRequest.md)
  - [Address](docs/Address.md)
  - [AmplifierSettings](docs/AmplifierSettings.md)
+ - [Announcement](docs/Announcement.md)
+ - [AnnouncementContent](docs/AnnouncementContent.md)
+ - [AnnouncementsResponse](docs/AnnouncementsResponse.md)
  - [AppApiTranslationModelsParameterSpec](docs/AppApiTranslationModelsParameterSpec.md)
  - [ArbitraryReadoutKernel](docs/ArbitraryReadoutKernel.md)
  - [ArbitraryWaveform](docs/ArbitraryWaveform.md)
@@ -238,6 +268,7 @@ Class | Method | HTTP request | Description
  - [BillingInvoiceAllOf](docs/BillingInvoiceAllOf.md)
  - [BillingInvoiceLine](docs/BillingInvoiceLine.md)
  - [BillingInvoiceStatus](docs/BillingInvoiceStatus.md)
+ - [BillingOrganization](docs/BillingOrganization.md)
  - [BillingPrice](docs/BillingPrice.md)
  - [BillingPriceRecurrence](docs/BillingPriceRecurrence.md)
  - [BillingPriceScheme](docs/BillingPriceScheme.md)
@@ -263,6 +294,7 @@ Class | Method | HTTP request | Description
  - [ControllerAddresses](docs/ControllerAddresses.md)
  - [ControllerComponent](docs/ControllerComponent.md)
  - [ControllerInstrumentType](docs/ControllerInstrumentType.md)
+ - [CreateBillingOrganizationRequest](docs/CreateBillingOrganizationRequest.md)
  - [CreateEndpointParameters](docs/CreateEndpointParameters.md)
  - [CreateEngagementRequest](docs/CreateEngagementRequest.md)
  - [CreateReservationRequest](docs/CreateReservationRequest.md)
@@ -289,6 +321,8 @@ Class | Method | HTTP request | Description
  - [EventBillingPriceRate](docs/EventBillingPriceRate.md)
  - [EventBillingPriceUpdate](docs/EventBillingPriceUpdate.md)
  - [ExecutionBackend](docs/ExecutionBackend.md)
+ - [ExplicitRackConfiguration](docs/ExplicitRackConfiguration.md)
+ - [ExtraComponents](docs/ExtraComponents.md)
  - [Family](docs/Family.md)
  - [FeedbackInstructionsInner](docs/FeedbackInstructionsInner.md)
  - [Filters](docs/Filters.md)
@@ -307,7 +341,6 @@ Class | Method | HTTP request | Description
  - [Identity](docs/Identity.md)
  - [InstructionSetArchitecture](docs/InstructionSetArchitecture.md)
  - [Instrument](docs/Instrument.md)
- - [InstrumentMockComponent](docs/InstrumentMockComponent.md)
  - [InstrumentType](docs/InstrumentType.md)
  - [InternalCreateEndpointParameters](docs/InternalCreateEndpointParameters.md)
  - [InternalCreateEventBillingPriceRequest](docs/InternalCreateEventBillingPriceRequest.md)
@@ -320,6 +353,8 @@ Class | Method | HTTP request | Description
  - [InternalGetAccountEventBillingPriceRequest](docs/InternalGetAccountEventBillingPriceRequest.md)
  - [InternalListBillingInvoicesResponse](docs/InternalListBillingInvoicesResponse.md)
  - [InternalListBillingInvoicesResponseItem](docs/InternalListBillingInvoicesResponseItem.md)
+ - [InternalListBillingOrganizationAccountsResponse](docs/InternalListBillingOrganizationAccountsResponse.md)
+ - [InternalListBillingOrganizationsResponse](docs/InternalListBillingOrganizationsResponse.md)
  - [InternalListEndpointsResponse](docs/InternalListEndpointsResponse.md)
  - [InternalListLegacyLatticesResponse](docs/InternalListLegacyLatticesResponse.md)
  - [InternalListLegacyQuantumProcessorsResponse](docs/InternalListLegacyQuantumProcessorsResponse.md)
@@ -437,7 +472,11 @@ Class | Method | HTTP request | Description
  - [TemplateName](docs/TemplateName.md)
  - [TranslateNativeQuilToEncryptedBinaryRequest](docs/TranslateNativeQuilToEncryptedBinaryRequest.md)
  - [TranslateNativeQuilToEncryptedBinaryResponse](docs/TranslateNativeQuilToEncryptedBinaryResponse.md)
+ - [UpdateBillingOrganizationRequest](docs/UpdateBillingOrganizationRequest.md)
+ - [UpdateGroupAccountBalanceRequest](docs/UpdateGroupAccountBalanceRequest.md)
+ - [UpdateUserAccountBalanceRequest](docs/UpdateUserAccountBalanceRequest.md)
  - [UpdateUserRequest](docs/UpdateUserRequest.md)
+ - [UpdateViewerUserProfileRequest](docs/UpdateViewerUserProfileRequest.md)
  - [User](docs/User.md)
  - [UserCredentials](docs/UserCredentials.md)
  - [UserCredentialsPassword](docs/UserCredentialsPassword.md)
@@ -445,6 +484,7 @@ Class | Method | HTTP request | Description
  - [UsiCardSequencer](docs/UsiCardSequencer.md)
  - [UsiTargetSequencer](docs/UsiTargetSequencer.md)
  - [ValidationError](docs/ValidationError.md)
+ - [ViewerUserOnboardingCompleted](docs/ViewerUserOnboardingCompleted.md)
  - [Waveforms](docs/Waveforms.md)
  - [YokogawaGs200Channel](docs/YokogawaGs200Channel.md)
 

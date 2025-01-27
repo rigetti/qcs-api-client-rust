@@ -2,6 +2,9 @@
 pub mod a;
 pub use self::a::A;
 #[allow(non_snake_case)]
+pub mod account;
+pub use self::account::Account;
+#[allow(non_snake_case)]
 pub mod account_balance;
 pub use self::account_balance::AccountBalance;
 #[allow(non_snake_case)]
@@ -14,6 +17,12 @@ pub use self::account_billing_customer_update_request::AccountBillingCustomerUpd
 pub mod account_type;
 pub use self::account_type::AccountType;
 #[allow(non_snake_case)]
+pub mod accounts;
+pub use self::accounts::Accounts;
+#[allow(non_snake_case)]
+pub mod activate_user_request;
+pub use self::activate_user_request::ActivateUserRequest;
+#[allow(non_snake_case)]
 pub mod active_reset;
 pub use self::active_reset::ActiveReset;
 #[allow(non_snake_case)]
@@ -25,6 +34,15 @@ pub use self::address::Address;
 #[allow(non_snake_case)]
 pub mod amplifier_settings;
 pub use self::amplifier_settings::AmplifierSettings;
+#[allow(non_snake_case)]
+pub mod announcement;
+pub use self::announcement::Announcement;
+#[allow(non_snake_case)]
+pub mod announcement_content;
+pub use self::announcement_content::AnnouncementContent;
+#[allow(non_snake_case)]
+pub mod announcements_response;
+pub use self::announcements_response::AnnouncementsResponse;
 #[allow(non_snake_case)]
 pub mod app__api__translation__models__parameter_spec;
 pub use self::app__api__translation__models__parameter_spec::AppApiTranslationModelsParameterSpec;
@@ -73,6 +91,9 @@ pub use self::billing_invoice_line::BillingInvoiceLine;
 #[allow(non_snake_case)]
 pub mod billing_invoice_status;
 pub use self::billing_invoice_status::BillingInvoiceStatus;
+#[allow(non_snake_case)]
+pub mod billing_organization;
+pub use self::billing_organization::BillingOrganization;
 #[allow(non_snake_case)]
 pub mod billing_price;
 pub use self::billing_price::BillingPrice;
@@ -148,6 +169,9 @@ pub use self::controller_component::ControllerComponent;
 #[allow(non_snake_case)]
 pub mod controller_instrument_type;
 pub use self::controller_instrument_type::ControllerInstrumentType;
+#[allow(non_snake_case)]
+pub mod create_billing_organization_request;
+pub use self::create_billing_organization_request::CreateBillingOrganizationRequest;
 #[allow(non_snake_case)]
 pub mod create_endpoint_parameters;
 pub use self::create_endpoint_parameters::CreateEndpointParameters;
@@ -227,6 +251,12 @@ pub use self::event_billing_price_update::EventBillingPriceUpdate;
 pub mod execution_backend;
 pub use self::execution_backend::ExecutionBackend;
 #[allow(non_snake_case)]
+pub mod explicit_rack_configuration;
+pub use self::explicit_rack_configuration::ExplicitRackConfiguration;
+#[allow(non_snake_case)]
+pub mod extra_components;
+pub use self::extra_components::ExtraComponents;
+#[allow(non_snake_case)]
 pub mod family;
 pub use self::family::Family;
 #[allow(non_snake_case)]
@@ -281,9 +311,6 @@ pub use self::instruction_set_architecture::InstructionSetArchitecture;
 pub mod instrument;
 pub use self::instrument::Instrument;
 #[allow(non_snake_case)]
-pub mod instrument_mock_component;
-pub use self::instrument_mock_component::InstrumentMockComponent;
-#[allow(non_snake_case)]
 pub mod instrument_type;
 pub use self::instrument_type::InstrumentType;
 #[allow(non_snake_case)]
@@ -319,6 +346,12 @@ pub use self::internal_list_billing_invoices_response::InternalListBillingInvoic
 #[allow(non_snake_case)]
 pub mod internal_list_billing_invoices_response_item;
 pub use self::internal_list_billing_invoices_response_item::InternalListBillingInvoicesResponseItem;
+#[allow(non_snake_case)]
+pub mod internal_list_billing_organization_accounts_response;
+pub use self::internal_list_billing_organization_accounts_response::InternalListBillingOrganizationAccountsResponse;
+#[allow(non_snake_case)]
+pub mod internal_list_billing_organizations_response;
+pub use self::internal_list_billing_organizations_response::InternalListBillingOrganizationsResponse;
 #[allow(non_snake_case)]
 pub mod internal_list_endpoints_response;
 pub use self::internal_list_endpoints_response::InternalListEndpointsResponse;
@@ -671,8 +704,20 @@ pub use self::translate_native_quil_to_encrypted_binary_request::TranslateNative
 pub mod translate_native_quil_to_encrypted_binary_response;
 pub use self::translate_native_quil_to_encrypted_binary_response::TranslateNativeQuilToEncryptedBinaryResponse;
 #[allow(non_snake_case)]
+pub mod update_billing_organization_request;
+pub use self::update_billing_organization_request::UpdateBillingOrganizationRequest;
+#[allow(non_snake_case)]
+pub mod update_group_account_balance_request;
+pub use self::update_group_account_balance_request::UpdateGroupAccountBalanceRequest;
+#[allow(non_snake_case)]
+pub mod update_user_account_balance_request;
+pub use self::update_user_account_balance_request::UpdateUserAccountBalanceRequest;
+#[allow(non_snake_case)]
 pub mod update_user_request;
 pub use self::update_user_request::UpdateUserRequest;
+#[allow(non_snake_case)]
+pub mod update_viewer_user_profile_request;
+pub use self::update_viewer_user_profile_request::UpdateViewerUserProfileRequest;
 #[allow(non_snake_case)]
 pub mod user;
 pub use self::user::User;
@@ -694,6 +739,9 @@ pub use self::usi_target_sequencer::UsiTargetSequencer;
 #[allow(non_snake_case)]
 pub mod validation_error;
 pub use self::validation_error::ValidationError;
+#[allow(non_snake_case)]
+pub mod viewer_user_onboarding_completed;
+pub use self::viewer_user_onboarding_completed::ViewerUserOnboardingCompleted;
 #[allow(non_snake_case)]
 pub mod waveforms;
 pub use self::waveforms::Waveforms;

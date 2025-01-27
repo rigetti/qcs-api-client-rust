@@ -72,7 +72,9 @@ All URIs are relative to *https://api.qcs.rigetti.com*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*AccountApi* | [**activate_user**](docs/AccountApi.md#activate_user) | **POST** /v1/users:activate | Activate User
 *AccountApi* | [**add_group_user**](docs/AccountApi.md#add_group_user) | **POST** /v1/groups:addUser | Add user to a group
+*AccountApi* | [**dismiss_viewer_announcement**](docs/AccountApi.md#dismiss_viewer_announcement) | **DELETE** /v1/viewer/announcements/{announcementId} | 
 *AccountApi* | [**get_group_balance**](docs/AccountApi.md#get_group_balance) | **GET** /v1/groups/{groupName}/balance | Get Group Balance
 *AccountApi* | [**get_group_billing_customer**](docs/AccountApi.md#get_group_billing_customer) | **GET** /v1/groups/{groupName}/billingCustomer | 
 *AccountApi* | [**get_group_upcoming_billing_invoice**](docs/AccountApi.md#get_group_upcoming_billing_invoice) | **GET** /v1/groups/{groupName}/billingInvoices:getUpcoming | 
@@ -80,6 +82,7 @@ Class | Method | HTTP request | Description
 *AccountApi* | [**get_user_billing_customer**](docs/AccountApi.md#get_user_billing_customer) | **GET** /v1/users/{userId}/billingCustomer | 
 *AccountApi* | [**get_user_event_billing_price**](docs/AccountApi.md#get_user_event_billing_price) | **POST** /v1/users/{userId}/eventBillingPrices:get | 
 *AccountApi* | [**get_user_upcoming_billing_invoice**](docs/AccountApi.md#get_user_upcoming_billing_invoice) | **GET** /v1/users/{userId}/billingInvoices:getUpcoming | 
+*AccountApi* | [**get_viewer_user_onboarding_completed**](docs/AccountApi.md#get_viewer_user_onboarding_completed) | **GET** /v1/viewer/onboardingCompleted | 
 *AccountApi* | [**list_group_billing_invoice_lines**](docs/AccountApi.md#list_group_billing_invoice_lines) | **GET** /v1/groups/{groupName}/billingInvoices/{billingInvoiceId}/lines | 
 *AccountApi* | [**list_group_billing_invoices**](docs/AccountApi.md#list_group_billing_invoices) | **GET** /v1/groups/{groupName}/billingInvoices | 
 *AccountApi* | [**list_group_upcoming_billing_invoice_lines**](docs/AccountApi.md#list_group_upcoming_billing_invoice_lines) | **GET** /v1/groups/{groupName}/billingInvoices:listUpcomingLines | 
@@ -88,7 +91,10 @@ Class | Method | HTTP request | Description
 *AccountApi* | [**list_user_billing_invoices**](docs/AccountApi.md#list_user_billing_invoices) | **GET** /v1/users/{userId}/billingInvoices | 
 *AccountApi* | [**list_user_groups**](docs/AccountApi.md#list_user_groups) | **GET** /v1/users/{userId}/groups | List QCS groups for the requested user
 *AccountApi* | [**list_user_upcoming_billing_invoice_lines**](docs/AccountApi.md#list_user_upcoming_billing_invoice_lines) | **GET** /v1/users/{userId}/billingInvoices:listUpcomingLines | 
+*AccountApi* | [**list_viewer_announcements**](docs/AccountApi.md#list_viewer_announcements) | **GET** /v1/viewer/announcements | 
+*AccountApi* | [**put_viewer_user_onboarding_completed**](docs/AccountApi.md#put_viewer_user_onboarding_completed) | **PUT** /v1/viewer/onboardingCompleted | 
 *AccountApi* | [**remove_group_user**](docs/AccountApi.md#remove_group_user) | **POST** /v1/groups:removeUser | Remove user from a group.
+*AccountApi* | [**update_viewer_user_profile**](docs/AccountApi.md#update_viewer_user_profile) | **PUT** /v1/viewer/userProfile | 
 *AuthenticationApi* | [**auth_email_password_reset_token**](docs/AuthenticationApi.md#auth_email_password_reset_token) | **POST** /v1/auth:emailPasswordResetToken | Email Password Reset Token
 *AuthenticationApi* | [**auth_get_user**](docs/AuthenticationApi.md#auth_get_user) | **GET** /v1/auth:getUser | Get User
 *AuthenticationApi* | [**auth_reset_password**](docs/AuthenticationApi.md#auth_reset_password) | **POST** /v1/auth:resetPassword | Reset Password
@@ -125,7 +131,10 @@ Class | Method | HTTP request | Description
 
  - [AccountBalance](docs/AccountBalance.md)
  - [AccountType](docs/AccountType.md)
+ - [ActivateUserRequest](docs/ActivateUserRequest.md)
  - [AddGroupUserRequest](docs/AddGroupUserRequest.md)
+ - [Announcement](docs/Announcement.md)
+ - [AnnouncementsResponse](docs/AnnouncementsResponse.md)
  - [Architecture](docs/Architecture.md)
  - [Architecture1](docs/Architecture1.md)
  - [AuthEmailPasswordResetTokenRequest](docs/AuthEmailPasswordResetTokenRequest.md)
@@ -194,11 +203,13 @@ Class | Method | HTTP request | Description
  - [RestartEndpointRequest](docs/RestartEndpointRequest.md)
  - [TranslateNativeQuilToEncryptedBinaryRequest](docs/TranslateNativeQuilToEncryptedBinaryRequest.md)
  - [TranslateNativeQuilToEncryptedBinaryResponse](docs/TranslateNativeQuilToEncryptedBinaryResponse.md)
+ - [UpdateViewerUserProfileRequest](docs/UpdateViewerUserProfileRequest.md)
  - [User](docs/User.md)
  - [UserCredentials](docs/UserCredentials.md)
  - [UserCredentialsPassword](docs/UserCredentialsPassword.md)
  - [UserProfile](docs/UserProfile.md)
  - [ValidationError](docs/ValidationError.md)
+ - [ViewerUserOnboardingCompleted](docs/ViewerUserOnboardingCompleted.md)
 
 
 To get access to the crate's generated documentation, use:

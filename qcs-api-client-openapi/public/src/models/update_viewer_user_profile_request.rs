@@ -25,24 +25,25 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct InviteUserRequest {
-    #[serde(
-        rename = "billingOrganizationId",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub billing_organization_id: Option<i64>,
-    #[serde(rename = "email")]
-    pub email: String,
-    #[serde(rename = "groupName", skip_serializing_if = "Option::is_none")]
-    pub group_name: Option<String>,
+pub struct UpdateViewerUserProfileRequest {
+    #[serde(rename = "firstName")]
+    pub first_name: String,
+    #[serde(rename = "lastName")]
+    pub last_name: String,
+    #[serde(rename = "organization")]
+    pub organization: String,
 }
 
-impl InviteUserRequest {
-    pub fn new(email: String) -> InviteUserRequest {
-        InviteUserRequest {
-            billing_organization_id: None,
-            email,
-            group_name: None,
+impl UpdateViewerUserProfileRequest {
+    pub fn new(
+        first_name: String,
+        last_name: String,
+        organization: String,
+    ) -> UpdateViewerUserProfileRequest {
+        UpdateViewerUserProfileRequest {
+            first_name,
+            last_name,
+            organization,
         }
     }
 }

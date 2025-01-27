@@ -102,6 +102,17 @@ pub enum InternalListEndpointsError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`internal_put_endpoint`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InternalPutEndpointError {
+    Status400(crate::models::Error),
+    Status403(crate::models::Error),
+    Status404(crate::models::Error),
+    Status422(crate::models::ValidationError),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`internal_set_default_endpoint`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -186,9 +197,33 @@ async fn create_endpoint_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&create_endpoint_parameters);
 
@@ -311,9 +346,33 @@ async fn delete_endpoint_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -428,9 +487,33 @@ async fn get_default_endpoint_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -548,9 +631,33 @@ async fn get_endpoint_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -665,9 +772,33 @@ async fn internal_create_endpoint_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&internal_create_endpoint_parameters);
 
@@ -790,9 +921,33 @@ async fn internal_delete_endpoint_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -908,9 +1063,33 @@ async fn internal_get_default_endpoint_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -1031,9 +1210,33 @@ async fn internal_get_endpoint_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -1164,9 +1367,33 @@ async fn internal_list_endpoints_inner(
             local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -1251,6 +1478,158 @@ pub async fn internal_list_endpoints(
         }
     }
 }
+async fn internal_put_endpoint_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    endpoint_id: &str,
+    internal_update_endpoint_parameters: crate::models::InternalUpdateEndpointParameters,
+) -> Result<crate::models::InternalEndpoint, Error<InternalPutEndpointError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/internal/endpoints/{endpointId}",
+        local_var_configuration.qcs_config.api_url(),
+        endpointId = crate::apis::urlencode(endpoint_id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing =
+            local_var_uri_str
+                .parse::<::url::Url>()
+                .ok()
+                .map_or(true, |url| {
+                    configuration
+                        .qcs_config
+                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+                });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="PUT",
+                "making internal_put_endpoint request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
+
+    local_var_req_builder = local_var_req_builder.json(&internal_update_endpoint_parameters);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<InternalPutEndpointError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Completely replace the configuration of an endpoint by its ID, whether or not it already exists.
+pub async fn internal_put_endpoint(
+    configuration: &configuration::Configuration,
+    endpoint_id: &str,
+    internal_update_endpoint_parameters: crate::models::InternalUpdateEndpointParameters,
+) -> Result<crate::models::InternalEndpoint, Error<InternalPutEndpointError>> {
+    let mut backoff = configuration.backoff.clone();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::PUT;
+    loop {
+        let result = internal_put_endpoint_inner(
+            configuration,
+            &mut backoff,
+            endpoint_id.clone(),
+            internal_update_endpoint_parameters.clone(),
+        )
+        .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    configuration.qcs_config.refresh().await?;
+                    refreshed_credentials = true;
+                    continue;
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
 async fn internal_set_default_endpoint_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
@@ -1292,9 +1671,33 @@ async fn internal_set_default_endpoint_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&set_default_endpoint_request);
 
@@ -1419,9 +1822,33 @@ async fn internal_update_endpoint_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&internal_update_endpoint_parameters);
 
@@ -1544,9 +1971,33 @@ async fn list_endpoint_templates_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -1675,9 +2126,33 @@ async fn list_endpoints_inner(
             local_var_req_builder.query(&[("pageToken", &local_var_str.to_string())]);
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -1803,9 +2278,33 @@ async fn restart_endpoint_inner(
         }
     }
 
-    // Use QCS Bearer token
-    let token = configuration.qcs_config.get_bearer_access_token().await?;
-    local_var_req_builder = local_var_req_builder.bearer_auth(token);
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+        }
+    }
 
     local_var_req_builder = local_var_req_builder.json(&restart_endpoint_request);
 
