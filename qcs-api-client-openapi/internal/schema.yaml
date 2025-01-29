@@ -8299,6 +8299,9 @@ components:
       description: userId for `accountType` "user", group name for `accountType` "group".
       type: string
     AccountType:
+      description: "There are two types of accounts within QCS: user (representing a
+        single user in Okta) and group (representing one or more users in
+        Okta)."
       default: user
       enum:
         - group
