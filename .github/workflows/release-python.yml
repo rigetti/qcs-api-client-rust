@@ -18,6 +18,7 @@ jobs:
       with:
         artifact-key: macos
         maturin-target: universal2-apple-darwin
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   linux-wheels:
     name: Build linux wheels
