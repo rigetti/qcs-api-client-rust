@@ -517,61 +517,6 @@ paths:
       summary: Create Engagement
       tags:
         - engagements
-  /v1/healthcheck:
-    get:
-      description: Endpoint to return a status 200 for load balancer health checks
-      operationId: HealthCheck
-      responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      summary: Health Check
-  /v1/instructionSetArchitectures:
-    get:
-      description: Retrieve all Instruction Set Architectures available to the user.
-      operationId: ListInstructionSetArchitectures
-      parameters:
-        - in: query
-          name: pageSize
-          required: false
-          schema:
-            default: 5
-            exclusiveMinimum: 0
-            maximum: 5
-            title: Pagesize
-            type: integer
-        - in: query
-          name: pageToken
-          required: false
-          schema:
-            title: Pagetoken
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListInstructionSetArchitectureResponse"
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearerOptional: []
-      summary: List Instruction Set Architectures
-      tags:
-        - quantumProcessors
   /v1/internal/endpoints:
     get:
       description: List all endpoints, optionally filtering by attribute.
@@ -1355,93 +1300,6 @@ paths:
         - internal
         - legacy
         - quantumProcessors
-  "/v1/internal/quantumProcessors/{quantumProcessorId}":
-    delete:
-      description: >-
-        Delete a quantum processor. This operation will ensure no dangling
-        resources exist on
-
-        the quantum processor.
-      operationId: InternalDeleteQuantumProcessor
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
-      responses:
-        "204":
-          description: Successful Response
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Bad Request
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Internal Delete Quantum Processor
-      tags:
-        - internal
-        - quantumProcessors
-    put:
-      description: Create or replace a Quantum Processor by ID.
-      operationId: InternalPutQuantumProcessor
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InternalPutQuantumProcessorRequest"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QuantumProcessor"
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Internal Put Quantum Processor
-      tags:
-        - internal
-        - quantumProcessors
   "/v1/internal/quantumProcessors/{quantumProcessorId}/accessors":
     put:
       description: Add/update a QuantumProcessorAccessor for the target QuantumProcessor.
@@ -1621,156 +1479,6 @@ paths:
       tags:
         - endpoints
         - internal
-  "/v1/internal/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture":
-    delete:
-      description: Delete an InstuctionSetArchitecture.
-      operationId: InternalDeleteInstructionSetArchitecture
-      parameters:
-        - in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            title: Quantum Processor ID
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
-          description: Successful Response
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Internal Delete Instruction Set Architecture
-      tags:
-        - internal
-        - quantumProcessors
-    put:
-      description: >-
-        Create or replace the InstructionSetArchitecture of an existing Quantum
-        Processor.
-
-
-        Returns an error if the Quantum Processor does not exist.
-      operationId: InternalPutInstructionSetArchitecture
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PutInstructionSetArchitectureRequest"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InstructionSetArchitecture"
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Internal Put Instruction Set Architecture
-      tags:
-        - internal
-        - quantumProcessors
-  /v1/quantumProcessors:
-    get:
-      description: List all QuantumProcessors available to the user.
-      operationId: ListQuantumProcessors
-      parameters:
-        - in: query
-          name: pageSize
-          required: false
-          schema:
-            default: 10
-            title: Pagesize
-            type: integer
-        - in: query
-          name: pageToken
-          required: false
-          schema:
-            title: Pagetoken
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListQuantumProcessorsResponse"
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearerOptional: []
-      summary: List Quantum Processors
-      tags:
-        - quantumProcessors
-  "/v1/quantumProcessors/{quantumProcessorId}":
-    get:
-      description: Retrieve a single QuantumProcessor by ID.
-      operationId: GetQuantumProcessor
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QuantumProcessor"
-          description: Successful Response
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearerOptional: []
-      summary: Get Quantum Processor
-      tags:
-        - quantumProcessors
   "/v1/quantumProcessors/{quantumProcessorId}/accessors":
     get:
       description: List all means of accessing a QuantumProcessor available to the user.
@@ -1855,41 +1563,337 @@ paths:
       summary: Get Default Endpoint
       tags:
         - endpoints
-  "/v1/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture":
+  "/v1/quantumProcessors/{quantum_processor_id}":
     get:
-      description: Retrieve the Instruction Set Architecture of a QuantumProcessor by ID.
-      operationId: GetInstructionSetArchitecture
-      parameters:
-        - in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            title: Quantum Processor ID
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InstructionSetArchitecture"
-          description: Successful Response
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearerOptional: []
-      summary: Get Instruction Set Architecture
       tags:
         - quantumProcessors
+      summary: Get Quantum Processor
+      description: Retrieve a single QuantumProcessor by ID.
+      parameters:
+        - name: quantum_processor_id
+          schema:
+            type: string
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/QuantumProcessor"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearerOptional: []
+      operationId: GetQuantumProcessor
+  /v1/quantumProcessors:
+    get:
+      tags:
+        - quantumProcessors
+      summary: List Quantum Processors
+      description: |-
+        List the [`QuantumProcessor`]s that this user is authorized to access.
+
+        If no auth token is provided, only public processors will be returned.
+      parameters:
+        - name: pageSize
+          schema:
+            type: integer
+            format: uint64
+            title: How many items to return in a single page.
+            default: 10
+            minimum: 0
+            exclusiveMinimum: true
+          in: query
+          required: false
+          deprecated: false
+          explode: true
+        - name: pageToken
+          schema:
+            type: string
+            title: A page token to continue pagination across requests.
+          in: query
+          required: false
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ListQuantumProcessorsResponse"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearerOptional: []
+      operationId: ListQuantumProcessors
+  "/v1/quantumProcessors/{quantum_processor_id}/instructionSetArchitecture":
+    get:
+      tags:
+        - quantumProcessors
+      summary: Get Instruction Set Architecture
+      parameters:
+        - name: quantum_processor_id
+          schema:
+            type: string
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/InstructionSetArchitecture"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearerOptional: []
+      operationId: GetInstructionSetArchitecture
+  /v1/instructionSetArchitectures:
+    get:
+      tags:
+        - quantumProcessors
+      summary: List Instruction Set Architectures
+      parameters:
+        - name: pageSize
+          schema:
+            type: integer
+            format: uint64
+            title: How many items to return in a single page.
+            default: 5
+            maximum: 5
+            minimum: 0
+            exclusiveMinimum: true
+          in: query
+          required: false
+          deprecated: false
+          explode: true
+        - name: pageToken
+          schema:
+            type: string
+            title: A page token to continue pagination across requests.
+          in: query
+          required: false
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ListInstructionSetArchitectureResponse"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearerOptional: []
+      operationId: ListInstructionSetArchitectures
+  "/v1/internal/quantumProcessors/{quantum_processor_id}":
+    put:
+      tags:
+        - quantumProcessors
+        - internal
+      summary: Internal Put Quantum Processor
+      description: Create or replace a Quantum Processor by ID.
+      parameters:
+        - name: quantum_processor_id
+          schema:
+            type: string
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/QuantumProcessor"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearer: []
+      operationId: InternalPutQuantumProcessor
+    delete:
+      tags:
+        - quantumProcessors
+        - internal
+      summary: Internal Delete Quantum Processor
+      description: Delete a quantum processor. This operation will ensure no dangling
+        resources exist on the quantum processor.
+      parameters:
+        - name: quantum_processor_id
+          schema:
+            type: string
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      responses:
+        "204":
+          description: "`DELETE` requests conventionally do not provide a response body."
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearer: []
+      operationId: InternalDeleteQuantumProcessor
+  "/v1/internal/quantumProcessors/{quantum_processor_id}/instructionSetArchitecture":
+    put:
+      tags:
+        - quantumProcessors
+        - internal
+      summary: Internal Put Instruction Set Architecture
+      description: Create or replace the InstructionSetArchitecture of an existing
+        Quantum Processor.  Returns an error if the Quantum Processor does not
+        exist.
+      parameters:
+        - name: quantum_processor_id
+          schema:
+            type: string
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: "#/components/schemas/PutInstructionSetArchitectureRequest"
+        required: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/InstructionSetArchitecture"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearer: []
+      operationId: InternalPutInstructionSetArchitecture
+    delete:
+      tags:
+        - quantumProcessors
+        - internal
+      summary: Internal Delete Instruction Set Architecture
+      description: Delete an InstuctionSetArchitecture.
+      parameters:
+        - name: quantum_processor_id
+          schema:
+            type: string
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/null"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearer: []
+      operationId: InternalDeleteInstructionSetArchitecture
+  /v1/healthcheck:
+    get:
+      summary: Health Check
+      description: Check the health of the service.
+      responses:
+        "204":
+          description: The service is healthy, but there are no additional details.
+      operationId: HealthCheck
   /v1/auth:emailPasswordResetToken:
     post:
       description: Send a password reset link to the provided email address, if that
@@ -5583,66 +5587,6 @@ components:
         status:
           type: string
           example: PASS
-    Architecture:
-      additionalProperties: false
-      description: >-
-        Represents the logical underlying architecture of a quantum processor.
-
-
-        The architecture is defined in detail by the nodes and edges that constitute the quantum
-
-        processor. This defines the set of all nodes that could be operated upon, and indicates to
-
-        some approximation their physical layout. The main purpose of this is to support geometry
-
-        calculations that are independent of the available operations, and rendering ISA-based
-
-        information. Architecture layouts are defined by the `family`, as follows.
-
-
-        The "Aspen" family of quantum processor indicates a 2D planar grid layout of octagon unit
-
-        cells. The `node_id` in this architecture is computed as :math:`100 p_y + 10 p_x + p_u` where
-
-        :math:`p_y` is the zero-based Y position in the unit cell grid, :math:`p_x` is the zero-based
-
-        X position in the unit cell grid, and :math:`p_u` is the zero-based position in the octagon
-
-        unit cell and always ranges from 0 to 7. This scheme has a natural size limit of a 10x10
-
-        unit cell grid, which permits the architecture to scale up to 800 nodes.
-
-
-        Note that the operations that are actually available are defined entirely by `Operation`
-
-        instances. The presence of a node or edge in the `Architecture` model provides no guarantee
-
-        that any 1Q or 2Q operation will be available to users writing QUIL programs.
-      properties:
-        edges:
-          description: A list of all computational edges in the instruction set
-            architecture.
-          items:
-            $ref: "#/components/schemas/Edge"
-          title: Edges
-          type: array
-        family:
-          allOf:
-            - $ref: "#/components/schemas/Family"
-          description: The architecture family. The nodes and edges conform to this family.
-        nodes:
-          description: A list of all computational nodes in the instruction set
-            architecture.
-          items:
-            $ref: "#/components/schemas/Node"
-          title: Nodes
-          type: array
-      required:
-        - family
-        - nodes
-        - edges
-      title: Architecture
-      type: object
     Backplane:
       properties:
         identity:
@@ -5728,53 +5672,6 @@ components:
           title: Memory Soft Limit
           type: integer
       title: Certificate Proxy Component
-      type: object
-    Characteristic:
-      additionalProperties: false
-      description: A measured characteristic of an operation.
-      properties:
-        error:
-          description: The error in the characteristic value, or None otherwise.
-          title: Error
-          type: number
-        name:
-          description: The name of the characteristic.
-          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
-          title: Name
-          type: string
-        node_ids:
-          description: The list of architecture node ids for the site where the
-            characteristic is measured, if that is different from the site of
-            the enclosing operation. None if it is the same. The order of this
-            or the enclosing node ids obey the definition of node symmetry from
-            the enclosing operation.
-          items:
-            minimum: 0
-            type: integer
-          title: Node Ids
-          type: array
-        parameter_values:
-          description: The optional ordered list of parameter values used to generate the
-            characteristic. The order matches the parameters in the enclosing
-            operation, and so the lengths of these two lists must match.
-          items:
-            type: number
-          title: Parameter Values
-          type: array
-        timestamp:
-          description: The date and time at which the characteristic was measured.
-          format: date-time
-          title: Timestamp
-          type: string
-        value:
-          description: The characteristic value measured.
-          title: Value
-          type: number
-      required:
-        - name
-        - value
-        - timestamp
-      title: Characteristic
       type: object
     ComponentOptions:
       additionalProperties: false
@@ -6061,38 +5958,6 @@ components:
         - instruments
         - qpu
       title: DeployedRack
-      type: object
-    Edge:
-      additionalProperties: false
-      description: >-
-        A degree-two logical connection in the quantum processor's architecture.
-
-
-        The existence of an edge in the ISA `Architecture` does not necessarily mean that a given 2Q
-
-        operation will be available on the edge. This information is conveyed by the presence of the
-
-        two `node_id` values in instances of `Instruction`.
-
-
-        Note that edges are undirected in this model. Thus edge :math:`(a, b)` is equivalent to edge
-
-        :math:`(b, a)`.
-      properties:
-        node_ids:
-          description: The integer ids of the computational nodes at the two ends of the
-            edge. Order is not important; an architecture edge is treated as
-            undirected.
-          items:
-            minimum: 0
-            type: integer
-          maxItems: 2
-          minItems: 2
-          title: Node Ids
-          type: array
-      required:
-        - node_ids
-      title: Edge
       type: object
     Endpoint:
       description: An Endpoint is the entry point for remote access to a QuantumProcessor.
@@ -6486,26 +6351,6 @@ components:
           type: object
       title: ExtraComponents
       type: object
-    Family:
-      description: >-
-        Family identifier.
-
-
-        Value 'None' implies the architecture has no specific layout topology.
-
-        Value 'Full' implies that each node is connected to every other (a fully-connected architecture)
-
-
-        For other values based on deployed architecture layouts (e.g. `Aspen` and `Ankaa`), refer to
-
-        the architecture classes themselves for more details.
-      enum:
-        - None
-        - Full
-        - Aspen
-        - Ankaa
-      title: Family
-      type: string
     Identity:
       properties:
         revision:
@@ -6514,54 +6359,6 @@ components:
       required:
         - revision
       title: Identity
-      type: object
-    InstructionSetArchitecture:
-      additionalProperties: false
-      description: >-
-        The native instruction set architecture of a quantum processor,
-        annotated with characteristics.
-
-
-        The operations described by the `instructions` field are named by their QUIL instruction name,
-
-        while the operation described by the `benchmarks` field are named by their benchmark routine
-
-        and are a future extension point that will be populated in future iterations.
-
-
-        The characteristics that annotate both instructions and benchmarks assist the user to generate
-
-        the best native QUIL program for a desired task, and so are provided as part of the native ISA.
-      properties:
-        architecture:
-          allOf:
-            - $ref: "#/components/schemas/Architecture"
-          description: The architecture of the quantum processor.
-          title: Architecture
-        benchmarks:
-          description: The list of benchmarks that have characterized the quantum processor.
-          items:
-            $ref: "#/components/schemas/Operation"
-          title: Benchmarks
-          type: array
-        instructions:
-          description: The list of native QUIL instructions supported by the quantum
-            processor.
-          items:
-            $ref: "#/components/schemas/Operation"
-          title: Instructions
-          type: array
-        name:
-          description: The name of the quantum processor.
-          minLength: 1
-          title: Name
-          type: string
-      required:
-        - name
-        - architecture
-        - instructions
-        - benchmarks
-      title: InstructionSetArchitecture
       type: object
     Instrument:
       description: Instrument configuration.
@@ -7195,21 +6992,6 @@ components:
         - endpoints
       title: ListEndpointsResponse
       type: object
-    ListInstructionSetArchitectureResponse:
-      properties:
-        instructionSetArchitectures:
-          items:
-            $ref: "#/components/schemas/InstructionSetArchitecture"
-          title: Instruction Set Architectures
-          type: array
-        nextPageToken:
-          description: Send an opaque page token returned from a prior request
-          title: Next Page Token
-          type: string
-      required:
-        - instructionSetArchitectures
-      title: ListInstructionSetArchitectureResponse
-      type: object
     ListQuantumProcessorAccessorsResponse:
       properties:
         accessors:
@@ -7226,22 +7008,6 @@ components:
       required:
         - accessors
       title: ListQuantumProcessorAccessorsResponse
-      type: object
-    ListQuantumProcessorsResponse:
-      properties:
-        nextPageToken:
-          description: Opaque token indicating the start of the next page of results to
-            return; do not decode
-          title: Next Page Token
-          type: string
-        quantumProcessors:
-          items:
-            $ref: "#/components/schemas/QuantumProcessor"
-          title: Quantum Processors
-          type: array
-      required:
-        - quantumProcessors
-      title: ListQuantumProcessorsResponse
       type: object
     LoggingTarget:
       description: An enumeration.
@@ -7344,28 +7110,6 @@ components:
         - tsunamis
       title: MagnetoStartupConfiguration
       type: object
-    Node:
-      additionalProperties: false
-      description: >-
-        A logical node in the quantum processor's architecture.
-
-
-        The existence of a node in the ISA `Architecture` does not necessarily mean that a given 1Q
-
-        operation will be available on the node. This information is conveyed by the presence of the
-
-        specific `node_id` in instances of `Instruction`.
-      properties:
-        node_id:
-          description: An integer id assigned to the computational node. The ids may not
-            be contiguous and will be assigned based on the architecture family.
-          minimum: 0
-          title: Node Id
-          type: integer
-      required:
-        - node_id
-      title: Node
-      type: object
     NomadDynamicPort:
       properties:
         Label:
@@ -7401,72 +7145,6 @@ components:
         - Label
         - Value
       title: NomadReservedPort
-      type: object
-    Operation:
-      additionalProperties: false
-      description: An operation, with its sites and site-independent characteristics.
-      properties:
-        characteristics:
-          description: The list of site-independent characteristics of this operation.
-          items:
-            $ref: "#/components/schemas/Characteristic"
-          title: Characteristics
-          type: array
-        name:
-          description: The name of the operation.
-          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
-          title: Name
-          type: string
-        node_count:
-          description: The number of nodes that this operation applies to. None if
-            unspecified.
-          exclusiveMinimum: 0
-          title: Node Count
-          type: integer
-        parameters:
-          description: The list of parameters. Each parameter must be uniquely named. May
-            be empty.
-          items:
-            $ref: "#/components/schemas/Parameter"
-          title: Parameters
-          type: array
-        sites:
-          description: The list of sites at which this operation can be applied, together
-            with its site-dependent characteristics.
-          items:
-            $ref: "#/components/schemas/OperationSite"
-          title: Sites
-          type: array
-      required:
-        - name
-        - parameters
-        - sites
-        - characteristics
-      title: Operation
-      type: object
-    OperationSite:
-      additionalProperties: false
-      description: A site for an operation, with its site-dependent characteristics.
-      properties:
-        characteristics:
-          description: The list of site-dependent characteristics of this operation.
-          items:
-            $ref: "#/components/schemas/Characteristic"
-          title: Characteristics
-          type: array
-        node_ids:
-          description: The list of architecture node ids for the site. The order of these
-            node ids obey the definition of node symmetry from the enclosing
-            operation.
-          items:
-            minimum: 0
-            type: integer
-          title: Node Ids
-          type: array
-      required:
-        - node_ids
-        - characteristics
-      title: OperationSite
       type: object
     OptionCard:
       properties:
@@ -7612,19 +7290,6 @@ components:
         - none
       title: OtelService
       type: string
-    Parameter:
-      additionalProperties: false
-      description: A parameter to an operation.
-      properties:
-        name:
-          description: The name of the parameter, such as the name of a mathematical symbol.
-          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
-          title: Name
-          type: string
-      required:
-        - name
-      title: Parameter
-      type: object
     PropagationDirection:
       description: >-
         Direction of signal propagation.
@@ -7641,16 +7306,6 @@ components:
         - rx
       title: PropagationDirection
       type: string
-    PutInstructionSetArchitectureRequest:
-      properties:
-        instructionSetArchitecture:
-          allOf:
-            - $ref: "#/components/schemas/InstructionSetArchitecture"
-          title: Instruction Set Architecture
-      required:
-        - instructionSetArchitecture
-      title: PutInstructionSetArchitectureRequest
-      type: object
     QDOFastFluxChannel:
       description: Configuration for a single QDO Fast Flux Channel.
       properties:
@@ -8001,17 +7656,6 @@ components:
         - sequencer_index
       title: QRTx2Sequencer
       type: object
-    QuantumProcessor:
-      properties:
-        id:
-          description: "Immutable, unique identifier for a quantum processor [example:
-            Aspen-1]"
-          title: ID
-          type: string
-      required:
-        - id
-      title: QuantumProcessor
-      type: object
     QuantumProcessorAccessor:
       description: Method of accessing an available QPU.
       properties:
@@ -8221,6 +7865,369 @@ components:
         - _type
       title: YokogawaGS200Channel
       type: object
+    Architecture:
+      type: object
+      description: >-
+        Represents the logical underlying architecture of a quantum processor.
+
+
+        The architecture is defined in detail by the nodes and edges that constitute the quantum
+
+        processor. This defines the set of all nodes that could be operated upon, and indicates to
+
+        some approximation their physical layout. The main purpose of this is to support geometry
+
+        calculations that are independent of the available operations, and rendering ISA-based
+
+        information. Architecture layouts are defined by the `family`, as follows.
+
+
+        The "Aspen" family of quantum processor indicates a 2D planar grid layout of octagon unit
+
+        cells. The `node_id` in this architecture is computed as `100 p_y + 10 p_x + p_u` where
+
+        `p_y` is the zero-based Y position in the unit cell grid, `p_x` is the zero-based
+
+        X position in the unit cell grid, and `p_u` is the zero-based position in the octagon
+
+        unit cell and always ranges from 0 to 7. This scheme has a natural size limit of a 10x10
+
+        unit cell grid, which permits the architecture to scale up to 800 nodes.
+
+
+        Note that the operations that are actually available are defined entirely by `Operation`
+
+        instances. The presence of a node or edge in the `Architecture` model provides no guarantee
+
+        that any 1Q or 2Q operation will be available to users writing QUIL programs.
+      required:
+        - family
+        - nodes
+        - edges
+      properties:
+        family:
+          description: The architecture family. The nodes and edges conform to this family.
+          allOf:
+            - $ref: "#/components/schemas/Family"
+            - description: The architecture family. The nodes and edges conform to this
+                family.
+        nodes:
+          type: array
+          description: A list of all computational nodes in the instruction set
+            architecture.
+          items:
+            $ref: "#/components/schemas/Node"
+          uniqueItems: true
+        edges:
+          type: array
+          description: A list of all computational edges in the instruction set
+            architecture.
+          items:
+            $ref: "#/components/schemas/Edge"
+          uniqueItems: true
+    Characteristic:
+      type: object
+      description: A measured characteristic of an operation.
+      required:
+        - name
+        - value
+        - timestamp
+      properties:
+        name:
+          type: string
+          title: The format of a name (an identifier).
+          description: The name of the characteristic.
+        value:
+          type: number
+          format: double
+          description: The characteristic value measured.
+        error:
+          type: number
+          format: double
+          description: The error in the characteristic value, or None otherwise.
+        node_ids:
+          type: array
+          description: >-
+            The list of architecture node ids for the site where the
+            characteristic is
+
+            measured, if that is different from the site of the enclosing operation.
+
+            None if it is the same. The order of this or the enclosing node ids obey
+
+            the definition of node symmetry from the enclosing operation.
+          items:
+            type: integer
+            format: uint64
+            title: A node integer identifier; must be greater than or equal to zero.
+          minItems: 1
+          uniqueItems: true
+        timestamp:
+          type: string
+          format: date-time
+          description: The date and time at which the characteristic was measured.
+        parameter_values:
+          type: array
+          description: >-
+            The optional ordered list of parameter values used to generate the
+
+            characteristic. The order matches the parameters in the enclosing operation,
+
+            and so the lengths of these two lists must match.
+          items:
+            type: number
+            format: double
+    Code:
+      type: string
+      description: API error codes to indicate what kind of error occurred beyond what
+        an HTTP status can convey.
+      enum:
+        - conflicting_resource_access
+        - resource_exists
+        - access_forbidden
+        - internal_error
+        - invalid_request
+        - invalid_token
+        - resource_not_found
+        - under_load
+        - unauthenticated
+    Edge:
+      type: object
+      description: >-
+        A degree-two logical connection in the quantum processor's architecture.
+
+
+        The existence of an edge in the ISA `Architecture` does not necessarily mean that a given 2Q
+
+        operation will be available on the edge. This information is conveyed by the presence of the
+
+        two `node_id` values in instances of `Instruction`.
+
+
+        Note that edges are undirected in this model. Thus edge `(a, b)` is equivalent to edge
+
+        `(b, a)`.
+      required:
+        - node_ids
+      properties:
+        node_ids:
+          type: array
+          description: >-
+            The integer ids of the computational nodes at the two ends of the
+            edge.
+
+            Order is not important; an architecture edge is treated as undirected.
+          items:
+            type: integer
+            format: uint64
+            title: A node integer identifier; must be greater than or equal to zero.
+          maxLength: 2
+          minLength: 2
+    Family:
+      type: string
+      description: >-
+        Family identifier.
+
+
+        Value 'None' implies the architecture has no specific layout topology.
+
+        Value 'Full' implies that each node is connected to every other (a fully-connected architecture)
+
+
+        For other values based on deployed architecture layouts (e.g. `Aspen` and `Ankaa`), refer to
+
+        the architecture classes themselves for more details.
+      enum:
+        - None
+        - Full
+        - Aspen
+        - Ankaa
+    InstructionSetArchitecture:
+      type: object
+      description: >-
+        The native instruction set architecture of a quantum processor,
+        annotated with characteristics.
+
+
+        The operations described by the `instructions` field are named by their QUIL instruction name,
+
+        while the operation described by the `benchmarks` field are named by their benchmark routine
+
+        and are a future extension point that will be populated in future iterations.
+
+
+        The characteristics that annotate both instructions and benchmarks assist the user to generate
+
+        the best native QUIL program for a desired task, and so are provided as part of the native ISA.
+      required:
+        - name
+        - architecture
+        - instructions
+        - benchmarks
+      properties:
+        name:
+          type: string
+          description: The name of the quantum processor.
+          minLength: 1
+        architecture:
+          $ref: "#/components/schemas/Architecture"
+        instructions:
+          type: array
+          description: The list of native QUIL instructions supported by the quantum
+            processor.
+          items:
+            $ref: "#/components/schemas/Operation"
+        benchmarks:
+          type: array
+          description: The list of benchmarks that have characterized the quantum processor.
+          items:
+            $ref: "#/components/schemas/Operation"
+    ListInstructionSetArchitectureResponse:
+      type: object
+      required:
+        - instructionSetArchitectures
+      properties:
+        nextPageToken:
+          type: string
+          description: Send an opaque page token returned from a prior request
+        instructionSetArchitectures:
+          type: array
+          items:
+            $ref: "#/components/schemas/InstructionSetArchitecture"
+    ListQuantumProcessorsResponse:
+      type: object
+      required:
+        - quantumProcessors
+      properties:
+        nextPageToken:
+          type: string
+          description: Send an opaque page token returned from a prior request
+        quantumProcessors:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuantumProcessor"
+    Node:
+      type: object
+      description: >-
+        A logical node in the quantum processor's architecture.
+
+
+        The existence of a node in the ISA `Architecture` does not necessarily mean that a given 1Q
+
+        operation will be available on the node. This information is conveyed by the presence of the
+
+        specific `node_id` in instances of `Instruction`.
+      required:
+        - node_id
+      properties:
+        node_id:
+          type: integer
+          format: uint64
+          title: A node integer identifier; must be greater than or equal to zero.
+          description: >-
+            An integer id assigned to the computational node. The ids may not be
+            contiguous and will be assigned based
+
+            on the architecture family.
+    Operation:
+      type: object
+      description: An operation, with its sites and site-independent characteristics.
+      required:
+        - name
+        - parameters
+        - sites
+        - characteristics
+      properties:
+        name:
+          type: string
+          title: The format of a name (an identifier).
+          description: The name of the operation.
+        node_count:
+          type: integer
+          format: uint64
+          description: The number of nodes that this operation applies to. None if
+            unspecified.
+          minimum: 0
+          exclusiveMinimum: true
+        parameters:
+          type: array
+          description: The list of parameters. Each parameter must be uniquely named. May
+            be empty.
+          items:
+            $ref: "#/components/schemas/Parameter"
+        sites:
+          type: array
+          description: The list of sites at which this operation can be applied, together
+            with its site-dependent characteristics.
+          items:
+            $ref: "#/components/schemas/OperationSite"
+        characteristics:
+          type: array
+          description: The list of site-independent characteristics of this operation.
+          items:
+            $ref: "#/components/schemas/Characteristic"
+    OperationSite:
+      type: object
+      description: A site for an operation, with its site-dependent characteristics.
+      required:
+        - node_ids
+        - characteristics
+      properties:
+        node_ids:
+          type: array
+          description: >-
+            The list of architecture node ids for the site. The order of these
+            node ids
+
+            obey the definition of node symmetry from the enclosing operation.
+          items:
+            type: integer
+            format: uint64
+            title: A node integer identifier; must be greater than or equal to zero.
+          minItems: 1
+          uniqueItems: true
+        characteristics:
+          type: array
+          description: The list of site-dependent characteristics of this operation.
+          items:
+            $ref: "#/components/schemas/Characteristic"
+    Parameter:
+      type: object
+      description: A parameter to an operation.
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          title: The format of a name (an identifier).
+          description: The name of the parameter, such as the name of a mathematical symbol.
+    PutInstructionSetArchitectureRequest:
+      type: object
+      required:
+        - instructionSetArchitecture
+      properties:
+        instructionSetArchitecture:
+          $ref: "#/components/schemas/InstructionSetArchitecture"
+    QuantumProcessor:
+      type: object
+      description: An object representing a quantum processor.
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: "Immutable, unique identifier for a quantum processor [example:
+            Aspen-1]"
+    ValidationLocation:
+      type: string
+      enum:
+        - header
+        - query
+        - path
+        - body
+    "null":
+      enum:
+        - null
     AccountBalance:
       description: Balance of QCS account in billing system. Note, a negative balance
         signifies that the account has QCS credits to spend. A positive account
