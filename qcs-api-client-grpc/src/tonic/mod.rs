@@ -15,7 +15,7 @@ mod error;
 mod grpc_web;
 mod refresh;
 mod retry;
-#[cfg(feature = "tracing")]
+#[cfg(feature = "tracing-opentelemetry")]
 mod trace;
 
 pub use channel::*;
@@ -24,6 +24,8 @@ pub use error::*;
 pub use grpc_web::*;
 pub use refresh::*;
 pub use retry::*;
+#[cfg(feature = "tracing-opentelemetry")]
+pub use trace::*;
 
 /// An error observed while duplicating a request body. This may be returned by any
 /// [`tower::Service`] that duplicates a request body for the purpose of retrying a request.
