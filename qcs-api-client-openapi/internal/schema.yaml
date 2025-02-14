@@ -5823,6 +5823,11 @@ components:
           default: honeycomb
           description: Service to which OTEL traces should be sent
           title: OTEL trace service
+        overrideDockerImage:
+          description: "Override the Docker image to use for the Controller Service.
+            WARNING: this is temporary and will be removed in future versions."
+          title: Override Docker Image
+          type: string
         protectedTsunamiInstrumentChannelSettings:
           default: []
           description: A list of glob patterns that match protected settings for a given
