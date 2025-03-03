@@ -154,6 +154,20 @@ pub struct CancelControllerJobsResponse {}
 pub struct GetControllerJobStatusRequest {
     #[prost(string, tag = "1")]
     pub job_id: ::prost::alloc::string::String,
+    /// Required by ConServ gateway to forward requests to the correct rackhost.
+    #[prost(oneof = "get_controller_job_status_request::Target", tags = "101, 102")]
+    pub target: ::core::option::Option<get_controller_job_status_request::Target>,
+}
+/// Nested message and enum types in `GetControllerJobStatusRequest`.
+pub mod get_controller_job_status_request {
+    /// Required by ConServ gateway to forward requests to the correct rackhost.
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum Target {
+        #[prost(string, tag = "101")]
+        QuantumProcessorId(::prost::alloc::string::String),
+        #[prost(string, tag = "102")]
+        EndpointId(::prost::alloc::string::String),
+    }
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct GetControllerJobStatusResponse {

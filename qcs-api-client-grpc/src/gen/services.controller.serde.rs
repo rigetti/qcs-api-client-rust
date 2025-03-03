@@ -52,7 +52,7 @@ impl<'de> serde::Deserialize<'de> for BatchExecuteControllerJobsRequest {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -143,7 +143,7 @@ impl<'de> serde::Deserialize<'de> for BatchExecuteControllerJobsResponse {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -254,7 +254,7 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsRequest {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -353,7 +353,7 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsResponse {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -448,7 +448,7 @@ impl<'de> serde::Deserialize<'de> for EstimatedDelay {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -597,7 +597,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -724,7 +724,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobResponse {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -824,7 +824,7 @@ impl<'de> serde::Deserialize<'de> for ExecutionOptions {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -944,7 +944,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobResultsRequest {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -1051,7 +1051,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobResultsResponse {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -1114,9 +1114,22 @@ impl serde::Serialize for GetControllerJobStatusRequest {
         if !self.job_id.is_empty() {
             len += 1;
         }
+        if self.target.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("services.controller.GetControllerJobStatusRequest", len)?;
         if !self.job_id.is_empty() {
             struct_ser.serialize_field("jobId", &self.job_id)?;
+        }
+        if let Some(v) = self.target.as_ref() {
+            match v {
+                get_controller_job_status_request::Target::QuantumProcessorId(v) => {
+                    struct_ser.serialize_field("quantumProcessorId", v)?;
+                }
+                get_controller_job_status_request::Target::EndpointId(v) => {
+                    struct_ser.serialize_field("endpointId", v)?;
+                }
+            }
         }
         struct_ser.end()
     }
@@ -1130,11 +1143,17 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusRequest {
         const FIELDS: &[&str] = &[
             "job_id",
             "jobId",
+            "quantum_processor_id",
+            "quantumProcessorId",
+            "endpoint_id",
+            "endpointId",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             JobId,
+            QuantumProcessorId,
+            EndpointId,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1143,7 +1162,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusRequest {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -1157,6 +1176,8 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusRequest {
                     {
                         match value {
                             "jobId" | "job_id" => Ok(GeneratedField::JobId),
+                            "quantumProcessorId" | "quantum_processor_id" => Ok(GeneratedField::QuantumProcessorId),
+                            "endpointId" | "endpoint_id" => Ok(GeneratedField::EndpointId),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1177,6 +1198,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusRequest {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut job_id__ = None;
+                let mut target__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::JobId => {
@@ -1185,10 +1207,23 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusRequest {
                             }
                             job_id__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::QuantumProcessorId => {
+                            if target__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("quantumProcessorId"));
+                            }
+                            target__ = map_.next_value::<::std::option::Option<_>>()?.map(get_controller_job_status_request::Target::QuantumProcessorId);
+                        }
+                        GeneratedField::EndpointId => {
+                            if target__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("endpointId"));
+                            }
+                            target__ = map_.next_value::<::std::option::Option<_>>()?.map(get_controller_job_status_request::Target::EndpointId);
+                        }
                     }
                 }
                 Ok(GetControllerJobStatusRequest {
                     job_id: job_id__.unwrap_or_default(),
+                    target: target__,
                 })
             }
         }
@@ -1245,7 +1280,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusResponse {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -1342,7 +1377,7 @@ impl<'de> serde::Deserialize<'de> for get_controller_job_status_response::Status
 
         struct GeneratedVisitor;
 
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+        impl serde::de::Visitor<'_> for GeneratedVisitor {
             type Value = get_controller_job_status_response::Status;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

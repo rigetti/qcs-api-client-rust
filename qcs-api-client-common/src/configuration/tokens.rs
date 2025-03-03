@@ -703,7 +703,7 @@ pub trait TokenRefresher: Clone + std::fmt::Debug + Send {
 
         #[cfg(feature = "tracing-config")]
         self.tracing_configuration()
-            .map_or(true, |config| config.is_enabled(url))
+            .is_none_or(|config| config.is_enabled(url))
     }
 }
 

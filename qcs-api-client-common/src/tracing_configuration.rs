@@ -349,7 +349,7 @@ impl TracingConfiguration {
     pub fn is_enabled(&self, url: &UrlPatternMatchInput) -> bool {
         self.filter
             .as_ref()
-            .map_or(true, |filter| filter.is_enabled(url))
+            .is_none_or(|filter| filter.is_enabled(url))
     }
 }
 
