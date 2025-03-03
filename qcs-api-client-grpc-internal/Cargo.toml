@@ -1,6 +1,6 @@
 [package]
 name = "qcs-api-client-grpc-internal"
-version = "0.12.8"
+version = "0.12.9"
 edition = "2021"
 publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -21,7 +21,7 @@ opentelemetry_sdk = { workspace = true }
 pbjson = { workspace = true }
 pbjson-types = { workspace = true }
 prost = { workspace = true }
-qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.11.8" }
+qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.11.9" }
 serde = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["time"] }

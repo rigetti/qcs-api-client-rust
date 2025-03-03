@@ -1,3 +1,13 @@
+## 0.12.9 (2025-03-03)
+
+### Features
+
+#### update and regenerate clients
+
+### Fixes
+
+#### macos release should include repo-token for protoc install
+
 ## 0.12.8 (2025-01-27)
 
 ### Fixes
