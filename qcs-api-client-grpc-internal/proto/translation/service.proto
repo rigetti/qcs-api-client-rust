@@ -167,7 +167,8 @@ message HealthCheckResponse {
 
 service Translation {
 
-    rpc TranslateQuilToSignedControllerJob(.services.translation.TranslateQuilToSignedControllerJobRequest) returns (.services.translation.TranslateQuilToSignedControllerJobResponse);
+    rpc TranslateQuilToSignedControllerJob(.services.translation.TranslateQuilToSignedControllerJobRequest) returns (.services.translation.TranslateQuilToSignedControllerJobResponse) {
+    }
 
     // Translate multiple programs to signed Controller jobs in a single request. As a batched request, this is an atomic operation. Failure to translate one program will result in a failed
     // RPC response.
@@ -190,5 +191,6 @@ service Translation {
     rpc UpdateQuantumProcessorQuilCalibrationProgram(.services.translation.UpdateQuantumProcessorQuilTranslationConfigurationRequest) returns (.services.translation.QuantumProcessorQuilTranslationConfiguration) {
     }
 
-    rpc Check(.services.translation.HealthCheckRequest) returns (.services.translation.HealthCheckResponse);
+    rpc Check(.services.translation.HealthCheckRequest) returns (.services.translation.HealthCheckResponse) {
+    }
 }

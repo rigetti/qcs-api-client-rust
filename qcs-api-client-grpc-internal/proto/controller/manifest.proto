@@ -14,6 +14,10 @@ enum TsunamiCardType {
     QRTx2HI = 7;
     QRTx2LO = 8;
     VALON = 9;
+    OMEGABLANK = 10;
+    OMEGAWAVE = 11;
+    OMEGACLK104 = 12;
+    CARLOSISLAND = 13;
 }
 
 // A RackManifest represents the physical configuration of an entire rack.
@@ -21,11 +25,13 @@ enum TsunamiCardType {
 // which cannot be changed at runtime by QCS systems or services.
 message RackManifest {
 
-    // All instruments present in the rack, keyed by instrument name - an opaque string identifier
+    // All instruments present in the rack, keyed by instrument name - an opaque
+    // string identifier
     map<string, .models.controller.InstrumentManifest> instruments = 1;
 }
 
-// An InstrumentManifest represents the physical configuration of a single instrument.
+// An InstrumentManifest represents the physical configuration of a single
+// instrument.
 message InstrumentManifest {
     string address = 1;
     oneof instrument {
@@ -34,17 +40,20 @@ message InstrumentManifest {
     }
 }
 
-// A TsunamiInstrumentManifest represents the physical configuration of a single Tsunami instrument
+// A TsunamiInstrumentManifest represents the physical configuration of a single
+// Tsunami instrument
 message TsunamiInstrumentManifest {
     map<uint32, .models.controller.TsunamiCard> cards = 1;
 }
 
-// A YokogawaGS200Manifest represents the physical configuration of a single Yokogawa GS200 instrument
+// A YokogawaGS200Manifest represents the physical configuration of a single
+// Yokogawa GS200 instrument
 message YokogawaGS200Manifest {
 }
 
-// A TsunamiCard represents the physical configuration and characteristics of a single card mounted
-// in a Tsunami chassis.
+// A TsunamiCard represents the physical configuration and characteristics of a
+// single card mounted in a Tsunami chassis.
 message TsunamiCard {
     .models.controller.TsunamiCardType card_type = 1;
+    optional string card_revision = 2;
 }

@@ -1,6 +1,7 @@
 syntax = "proto3";
 package models.controller;
 option go_package = "gitlab.com/rigetti/share/service-model/golang/controller";
+import "controller/expression.proto";
 import "controller/job_metadata.proto";
 import "controller/readout.proto";
 import "controller/state.proto";
@@ -247,6 +248,7 @@ message MemorySubstitution {
     // How to compute the value from the user-provided parameters
     oneof computation {
         string quil_expression = 101;
+        .models.controller.StructuredExpression structured_expression = 102;
     }
 }
 message MemoryFormat {

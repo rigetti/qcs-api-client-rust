@@ -63,6 +63,8 @@ message TsunamiInstrumentSettings {
     // Keyed on card index (slot)
     map<uint32, .models.controller.TsunamiCardSettings> card_settings = 1;
 }
+
+// DEPRECATION NOTICE: issue #28: this may be renamed `QuercusCardSettings`.
 message TsunamiCardSettings {
     oneof settings {
         .models.controller.TsunamiQDOCardSettings qdo = 101;
@@ -74,7 +76,52 @@ message TsunamiCardSettings {
         .models.controller.TsunamiQRTx2HiCardSettings qrt_x2_hi = 107;
         .models.controller.TsunamiQRTx2LoCardSettings qrt_x2_lo = 108;
         .models.controller.TsunamiValonCardSettings valon = 109;
+
+        // UniformCardSettings is designed to work with Omega hardware, which uses
+        // cards with many types of channels.
+        .models.controller.UniformCardSettings uniform = 110;
     }
+}
+message UniformCardSettings {
+
+    // Uniform channels
+    map<uint32, .models.controller.UniformChannelSettings> channel_settings = 1;
+}
+
+// Channel settings for particular types of ports without necessarily
+// being limited to a specific hardware card.
+// Values should not require any unit conversions prior to being applied to the
+// hardware; they should match the Quercus API ranges and semantics:
+// https://gitlab.com/rigetti/control-system/som_software/-/blob/develop/source/server/docs/api.md
+message UniformChannelSettings {
+
+    // DC offset of the RF DAC, as a (dimensionless) 16-bit signed value.
+    optional int32 dac_dc_offset = 1;
+
+    // Raw slow flux DAC code
+    optional int32 slow_flux_dac_code = 2;
+
+    // Center frequency relative to which signals will be generated in hertz (must be a multiple of 1MHz).
+    // Also used for the output frequency for frequency synthesizers.
+    optional uint64 center_frequency = 3;
+
+    // Synthesizer gain. Controls the output full scale of the RF DACs and the frequency synthesizers.
+    optional int32 synth_gain = 4;
+
+    // Digital attenuator step
+    optional int32 attenuation_step = 5;
+
+    // RF output power in dBm
+    optional float output_power = 6;
+
+    // Enable or disable the output
+    optional bool output_enabled = 7;
+
+    // IIR coefficients
+    repeated .models.controller.SinglePoleInfiniteImpulseResponseFilter iir_filters = 8;
+
+    // FIR coefficients
+    optional .models.controller.FiniteImpulseResponseFilter fir_filter = 9;
 }
 message TsunamiQDOCardSettings {
     map<uint32, .models.controller.TsunamiQDOChannelSettings> channel_settings = 1;

@@ -132,6 +132,13 @@ message GetControllerJobStatusResponse {
     // maximum estimate uses the execution timeout enforced by the controller
     // service.
     .services.controller.EstimatedDelay estimated_job_completion_delay = 2;
+
+    // Information about the Queue in which the job has been enqueued; typically,
+    // this will not change throughout the job's lifecycle, though it is possible
+    // for a job to be moved from one queue to another (for instance if a job's
+    // reservation expires before the job is run, in which case it will be
+    // "demoted" to the on-demand queue).
+    optional .services.controller.QueueInfo queue_info = 3;
     enum Status {
         UNKNOWN = 0;
         QUEUED = 1;
@@ -141,6 +148,16 @@ message GetControllerJobStatusResponse {
         CANCELED = 5;
         POST_PROCESSING = 6;
     }
+}
+message QueueInfo {
+
+    // Important: this field cannot be relied upon as a proxy for checking
+    // whether a job has exclusive access to a QPU or that it has been assigned
+    // to a particular queue.
+    //
+    // For more about reservations and on-demand access, see
+    // https://docs.rigetti.com/qcs/guides/access-a-qpu
+    optional bool permits_parallel_execution = 1;
 }
 
 // An estimation of the delay before a specific event, such as when a queued job
@@ -189,9 +206,11 @@ service Controller {
     rpc CancelControllerJobs(.services.controller.CancelControllerJobsRequest) returns (.services.controller.CancelControllerJobsResponse) {
     }
 
-    rpc GetRackManifest(.services.controller.GetRackManifestRequest) returns (.services.controller.GetRackManifestResponse);
+    rpc GetRackManifest(.services.controller.GetRackManifestRequest) returns (.services.controller.GetRackManifestResponse) {
+    }
 
-    rpc Check(.services.controller.HealthCheckRequest) returns (.services.controller.HealthCheckResponse);
+    rpc Check(.services.controller.HealthCheckRequest) returns (.services.controller.HealthCheckResponse) {
+    }
 
     rpc GetControllerJobStatus(.services.controller.GetControllerJobStatusRequest) returns (.services.controller.GetControllerJobStatusResponse) {
     }
