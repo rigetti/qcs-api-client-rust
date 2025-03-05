@@ -5861,7 +5861,6 @@ components:
         startupConfigurationSource:
           allOf:
             - $ref: "#/components/schemas/StartupConfigurationSource"
-          default: deployedRack
           description: Selet the data soure from which the endpoint's startup
             configuration should be retrieved
           title: Startup Configuration Source
@@ -7098,7 +7097,6 @@ components:
         startupConfigurationSource:
           allOf:
             - $ref: "#/components/schemas/StartupConfigurationSource"
-          default: deployedRack
           description: Selet the data soure from which the endpoint's startup
             configuration should be retrieved
           title: Startup Configuration Source
