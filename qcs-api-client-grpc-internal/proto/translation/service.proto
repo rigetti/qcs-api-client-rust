@@ -123,6 +123,16 @@ message GetQuantumProcessorQuilCalibrationProgramRequest {
     // The quantum processor for which to retrieve the calibration program.
     string quantum_processor_id = 1;
 }
+message QuantumProcessorControllerSettings {
+
+    // The controller settings to be attached to compiled jobs
+    .models.controller.ControllerSettings controller_settings = 1;
+}
+message GetQuantumProcessorControllerSettingsRequest {
+
+    // The quantum processor for which to retrieve the controller settings
+    string quantum_processor_id = 1;
+}
 
 // Data required as inputs to the translation process.
 //
@@ -185,6 +195,10 @@ service Translation {
 
     // Get the current calibration program for the given quantum processor.
     rpc GetQuantumProcessorQuilCalibrationProgram(.services.translation.GetQuantumProcessorQuilCalibrationProgramRequest) returns (.services.translation.QuantumProcessorQuilCalibrationProgram) {
+    }
+
+    // Get the current controller settings for the given quantum processor.
+    rpc GetQuantumProcessorControllerSettings(.services.translation.GetQuantumProcessorControllerSettingsRequest) returns (.services.translation.QuantumProcessorControllerSettings) {
     }
 
     // Update the input translation configuration stored by the service.
