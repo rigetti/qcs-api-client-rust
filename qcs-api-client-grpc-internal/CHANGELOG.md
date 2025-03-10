@@ -1,3 +1,9 @@
+## 0.12.10 (2025-03-10)
+
+### Features
+
+#### update protos from service-model v1.28.0
+
 ## 0.12.9 (2025-03-03)
 
 ### Features
