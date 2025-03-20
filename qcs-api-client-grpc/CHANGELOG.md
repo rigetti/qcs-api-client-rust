@@ -1,3 +1,9 @@
+## 0.12.0 (2025-03-20)
+
+### Breaking Changes
+
+#### bump OTEL dependency versions
+
 ## 0.11.9 (2025-03-03)
 
 ### Features

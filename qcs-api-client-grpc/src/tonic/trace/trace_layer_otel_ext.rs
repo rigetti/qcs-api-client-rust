@@ -100,8 +100,8 @@ impl<B> tower_http::trace::MakeSpan<B> for MakeSpan {
             && should_trace_request(self.base_url.as_str(), request, self.filter.as_ref())
         {
             let span = make_grpc_request_span(request);
-
             span.set_parent(opentelemetry::Context::current());
+
             set_metadata_attribute(
                 &span,
                 &self.request_headers,
@@ -203,6 +203,7 @@ type BaseTraceService = tower_http::trace::Trace<
 /// An implementation of [`GrpcService`] that propagates the OpenTelemetry context
 /// via the [`TraceContextPropagator`]. It additionally extends the base
 /// [`tower_http::trace::Trace`] implementation to include gRPC span attributes.
+#[derive(Clone)]
 pub struct CustomTraceService {
     propagate_trace_id: bool,
     filter: Option<TracingFilter>,
