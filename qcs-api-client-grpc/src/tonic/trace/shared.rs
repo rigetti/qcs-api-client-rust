@@ -14,7 +14,6 @@
 
 //! Shared utilities for tracing gRPC requests across the "tracing-opentelemetry" and
 //! base "tracing" feature sets.
-use opentelemetry::trace::TraceContextExt;
 use qcs_api_client_common::tracing_configuration::TracingFilter;
 use tower_http::classify::GrpcFailureClass;
 use tracing::Span;

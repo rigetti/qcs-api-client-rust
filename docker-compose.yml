@@ -1,9 +1,0 @@
-services:
-  socks5:
-    image: serjs/go-socks5-proxy
-    ports:
-      - "1080:1080"
-  squid:
-    image: ubuntu/squid
-    ports:
-     - "3128:3128"

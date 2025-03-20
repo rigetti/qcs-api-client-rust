@@ -1,8 +1,0 @@
-{{#models}}
-{{#model}}
-{{! We cannot control the generated file names from templates, so allow whatever we receive }}
-#[allow(non_snake_case)]
-pub mod {{{classFilename}}};
-pub use self::{{{classFilename}}}::{{{classname}}};
-{{/model}}
-{{/models}}

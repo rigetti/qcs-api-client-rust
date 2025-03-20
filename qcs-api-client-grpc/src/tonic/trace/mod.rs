@@ -37,15 +37,11 @@ mod trace_layer;
 mod trace_layer_otel_ext;
 
 #[cfg(feature = "tracing-opentelemetry")]
-pub(crate) use trace_layer_otel_ext::{
-    build_layer as build_trace_layer, CustomTraceLayer,
-};
-#[cfg(feature = "tracing-opentelemetry")]
 pub use trace_layer_otel_ext::CustomTraceService;
+#[cfg(feature = "tracing-opentelemetry")]
+pub(crate) use trace_layer_otel_ext::{build_layer as build_trace_layer, CustomTraceLayer};
 
 #[cfg(not(feature = "tracing-opentelemetry"))]
-pub(crate) use trace_layer::{
-    build_layer as build_trace_layer, CustomTraceLayer,
-};
-#[cfg(not(feature = "tracing-opentelemetry"))]
 pub use trace_layer::CustomTraceService;
+#[cfg(not(feature = "tracing-opentelemetry"))]
+pub(crate) use trace_layer::{build_layer as build_trace_layer, CustomTraceLayer};

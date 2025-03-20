@@ -1,3 +1,13 @@
+## 0.12.0-rc.0 (2025-03-20)
+
+### Breaking Changes
+
+#### Bump OTEL dependency versions
+
+### Fixes
+
+#### enable trace module for base tracing feature
+
 ## 0.11.9 (2025-03-03)
 
 ### Features
