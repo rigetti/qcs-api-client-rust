@@ -59,7 +59,8 @@ impl RefreshToken {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Deserialize)]
+#[expect(missing_debug_implementations, reason = "contains secret data")]
 #[cfg_attr(feature = "python", pyo3::pyclass)]
 /// A pair of Client ID and Client Secret, used to request an OAuth Client Credentials Grant
 pub struct ClientCredentials {
@@ -132,7 +133,7 @@ impl ClientCredentials {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 #[cfg_attr(feature = "python", derive(pyo3::FromPyObject))]
 /// Specifies the [OAuth2 grant type](https://oauth.net/2/grant-types/) to use, along with the data
 /// needed to request said grant type.
@@ -180,6 +181,16 @@ impl OAuthGrant {
     }
 }
 
+impl std::fmt::Debug for OAuthGrant {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::RefreshToken(_) => f.write_str("RefreshToken"),
+            Self::ClientCredentials(_) => f.write_str("ClientCredentials"),
+            Self::ExternallyManaged(_) => f.write_str("ExternallyManaged"),
+        }
+    }
+}
+
 /// Manages the `OAuth2` authorization process and token lifecycle for accessing the QCS API.
 ///
 /// This struct encapsulates the necessary information to request an access token
@@ -191,7 +202,7 @@ impl OAuthGrant {
 /// * `payload` - The `OAuth2` grant type and associated data that will be used to request an access token.
 /// * `access_token` - The access token currently in use, if any. If no token has been provided or requested yet, this will be `None`.
 /// * `auth_server` - The authorization server responsible for issuing tokens.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 #[cfg_attr(feature = "python", pyo3::pyclass)]
 pub struct OAuthSession {
     /// The grant type to use to request an access token.
@@ -331,6 +342,21 @@ impl OAuthSession {
                     .map_err(TokenError::InvalidAccessToken)
             },
         )
+    }
+}
+
+impl std::fmt::Debug for OAuthSession {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let token_populated = if self.access_token.is_some() {
+            Some(())
+        } else {
+            None
+        };
+        f.debug_struct("OAuthSession")
+            .field("payload", &self.payload)
+            .field("access_token", &token_populated)
+            .field("auth_server", &self.auth_server)
+            .finish()
     }
 }
 
@@ -958,5 +984,19 @@ updated_at = "2024-01-01T00:00:00Z"
             });
             Ok(())
         });
+    }
+
+    #[test]
+    fn test_auth_session_debug_fmt() {
+        let session = OAuthSession {
+            payload: OAuthGrant::ClientCredentials(ClientCredentials {
+                client_id: "hidden_id".into(),
+                client_secret: "hidden_secret".into(),
+            }),
+            access_token: Some("token".into()),
+            auth_server: AuthServer::new("some_id".into(), "some_url".into()),
+        };
+
+        assert_eq!("OAuthSession { payload: ClientCredentials, access_token: Some(()), auth_server: AuthServer { client_id: \"some_id\", issuer: \"some_url\" } }", &format!("{session:?}"));
     }
 }

@@ -74,7 +74,7 @@ impl RefreshToken {
 }
 
 impl_eq!(ClientCredentials);
-impl_repr!(ClientCredentials);
+// Does not implement `__repr__`, since the data contains a secret value.
 #[pymethods]
 impl ClientCredentials {
     #[new]

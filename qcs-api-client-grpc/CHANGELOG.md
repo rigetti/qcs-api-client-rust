@@ -1,3 +1,9 @@
+## 0.12.1 (2025-05-08)
+
+### Fixes
+
+- make ClientCredentials deserializable; make sure secrets are not printed by 'Debug'
+
 ## 0.12.0 (2025-03-20)
 
 ### Breaking Changes
