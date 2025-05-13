@@ -26,7 +26,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ListQuantumProcessorsResponse {
-    /// Send an opaque page token returned from a prior request
+    /// Opaque token indicating the start of the next page of results to return; do not decode
     #[serde(rename = "nextPageToken", skip_serializing_if = "Option::is_none")]
     pub next_page_token: Option<String>,
     #[serde(rename = "quantumProcessors")]

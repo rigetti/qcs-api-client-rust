@@ -1,3 +1,9 @@
+## 0.12.3 (2025-05-13)
+
+### Fixes
+
+- revert "feat: regenerate mustache template"
+
 ## 0.12.2 (2025-05-13)
 
 ### Features

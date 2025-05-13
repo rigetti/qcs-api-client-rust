@@ -112,8 +112,8 @@ Class | Method | HTTP request | Description
 *EndpointsApi* | [**list_endpoints**](docs/EndpointsApi.md#list_endpoints) | **GET** /v1/endpoints | List Endpoints
 *EndpointsApi* | [**restart_endpoint**](docs/EndpointsApi.md#restart_endpoint) | **POST** /v1/endpoints/{endpointId}:restart | Restart Endpoint
 *EngagementsApi* | [**create_engagement**](docs/EngagementsApi.md#create_engagement) | **POST** /v1/engagements | Create Engagement
-*QuantumProcessorsApi* | [**get_instruction_set_architecture**](docs/QuantumProcessorsApi.md#get_instruction_set_architecture) | **GET** /v1/quantumProcessors/{quantum_processor_id}/instructionSetArchitecture | Get Instruction Set Architecture
-*QuantumProcessorsApi* | [**get_quantum_processor**](docs/QuantumProcessorsApi.md#get_quantum_processor) | **GET** /v1/quantumProcessors/{quantum_processor_id} | Get Quantum Processor
+*QuantumProcessorsApi* | [**get_instruction_set_architecture**](docs/QuantumProcessorsApi.md#get_instruction_set_architecture) | **GET** /v1/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture | Get Instruction Set Architecture
+*QuantumProcessorsApi* | [**get_quantum_processor**](docs/QuantumProcessorsApi.md#get_quantum_processor) | **GET** /v1/quantumProcessors/{quantumProcessorId} | Get Quantum Processor
 *QuantumProcessorsApi* | [**list_instruction_set_architectures**](docs/QuantumProcessorsApi.md#list_instruction_set_architectures) | **GET** /v1/instructionSetArchitectures | List Instruction Set Architectures
 *QuantumProcessorsApi* | [**list_quantum_processor_accessors**](docs/QuantumProcessorsApi.md#list_quantum_processor_accessors) | **GET** /v1/quantumProcessors/{quantumProcessorId}/accessors | List Quantum Processor Accessors
 *QuantumProcessorsApi* | [**list_quantum_processors**](docs/QuantumProcessorsApi.md#list_quantum_processors) | **GET** /v1/quantumProcessors | List Quantum Processors
@@ -123,6 +123,8 @@ Class | Method | HTTP request | Description
 *ReservationsApi* | [**get_quantum_processor_calendar**](docs/ReservationsApi.md#get_quantum_processor_calendar) | **GET** /v1/calendars/{quantumProcessorId} | Get Quantum Processor Calendar
 *ReservationsApi* | [**list_group_reservations**](docs/ReservationsApi.md#list_group_reservations) | **GET** /v1/groups/{groupName}/reservations | List Group Reservations
 *ReservationsApi* | [**list_reservations**](docs/ReservationsApi.md#list_reservations) | **GET** /v1/reservations | List Reservations
+*TranslationApi* | [**get_quilt_calibrations**](docs/TranslationApi.md#get_quilt_calibrations) | **GET** /v1/quantumProcessors/{quantumProcessorId}/quiltCalibrations | Get Quilt Calibrations
+*TranslationApi* | [**translate_native_quil_to_encrypted_binary**](docs/TranslationApi.md#translate_native_quil_to_encrypted_binary) | **POST** /v1/quantumProcessors/{quantumProcessorId}:translateNativeQuilToEncryptedBinary | Translate Native Quil To Encrypted Binary
 
 
 ## Documentation For Models
@@ -134,6 +136,7 @@ Class | Method | HTTP request | Description
  - [Announcement](docs/Announcement.md)
  - [AnnouncementsResponse](docs/AnnouncementsResponse.md)
  - [Architecture](docs/Architecture.md)
+ - [Architecture1](docs/Architecture1.md)
  - [AuthEmailPasswordResetTokenRequest](docs/AuthEmailPasswordResetTokenRequest.md)
  - [AuthResetPasswordRequest](docs/AuthResetPasswordRequest.md)
  - [AuthResetPasswordWithTokenRequest](docs/AuthResetPasswordWithTokenRequest.md)
@@ -156,7 +159,6 @@ Class | Method | HTTP request | Description
  - [ChecksumDescription](docs/ChecksumDescription.md)
  - [ClientApplication](docs/ClientApplication.md)
  - [ClientApplicationsDownloadLink](docs/ClientApplicationsDownloadLink.md)
- - [Code](docs/Code.md)
  - [CreateEndpointParameters](docs/CreateEndpointParameters.md)
  - [CreateEngagementRequest](docs/CreateEngagementRequest.md)
  - [CreateReservationRequest](docs/CreateReservationRequest.md)
@@ -170,6 +172,7 @@ Class | Method | HTTP request | Description
  - [Family](docs/Family.md)
  - [FindAvailableReservationsResponse](docs/FindAvailableReservationsResponse.md)
  - [GetAccountEventBillingPriceRequest](docs/GetAccountEventBillingPriceRequest.md)
+ - [GetQuiltCalibrationsResponse](docs/GetQuiltCalibrationsResponse.md)
  - [Group](docs/Group.md)
  - [Health](docs/Health.md)
  - [InstructionSetArchitecture](docs/InstructionSetArchitecture.md)
@@ -189,6 +192,7 @@ Class | Method | HTTP request | Description
  - [Operation](docs/Operation.md)
  - [OperationSite](docs/OperationSite.md)
  - [Parameter](docs/Parameter.md)
+ - [ParameterSpec](docs/ParameterSpec.md)
  - [Product](docs/Product.md)
  - [QuantumProcessor](docs/QuantumProcessor.md)
  - [QuantumProcessorAccessor](docs/QuantumProcessorAccessor.md)
@@ -197,13 +201,14 @@ Class | Method | HTTP request | Description
  - [RemoveGroupUserRequest](docs/RemoveGroupUserRequest.md)
  - [Reservation](docs/Reservation.md)
  - [RestartEndpointRequest](docs/RestartEndpointRequest.md)
+ - [TranslateNativeQuilToEncryptedBinaryRequest](docs/TranslateNativeQuilToEncryptedBinaryRequest.md)
+ - [TranslateNativeQuilToEncryptedBinaryResponse](docs/TranslateNativeQuilToEncryptedBinaryResponse.md)
  - [UpdateViewerUserProfileRequest](docs/UpdateViewerUserProfileRequest.md)
  - [User](docs/User.md)
  - [UserCredentials](docs/UserCredentials.md)
  - [UserCredentialsPassword](docs/UserCredentialsPassword.md)
  - [UserProfile](docs/UserProfile.md)
  - [ValidationError](docs/ValidationError.md)
- - [ValidationLocation](docs/ValidationLocation.md)
  - [ViewerUserOnboardingCompleted](docs/ViewerUserOnboardingCompleted.md)
 
 

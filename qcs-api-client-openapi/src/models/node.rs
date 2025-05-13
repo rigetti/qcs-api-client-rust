@@ -29,12 +29,12 @@ use serde::{Deserialize, Serialize};
 pub struct Node {
     /// An integer id assigned to the computational node. The ids may not be contiguous and will be assigned based on the architecture family.
     #[serde(rename = "node_id")]
-    pub node_id: i32,
+    pub node_id: i64,
 }
 
 impl Node {
     /// A logical node in the quantum processor's architecture.  The existence of a node in the ISA `Architecture` does not necessarily mean that a given 1Q operation will be available on the node. This information is conveyed by the presence of the specific `node_id` in instances of `Instruction`.
-    pub fn new(node_id: i32) -> Node {
+    pub fn new(node_id: i64) -> Node {
         Node { node_id }
     }
 }

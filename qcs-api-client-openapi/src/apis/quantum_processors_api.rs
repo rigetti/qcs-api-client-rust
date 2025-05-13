@@ -36,8 +36,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetInstructionSetArchitectureError {
+    Status404(crate::models::Error),
     Status422(crate::models::ValidationError),
-    DefaultResponse(crate::models::Error),
     UnknownValue(serde_json::Value),
 }
 
@@ -45,8 +45,8 @@ pub enum GetInstructionSetArchitectureError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetQuantumProcessorError {
+    Status404(crate::models::Error),
     Status422(crate::models::ValidationError),
-    DefaultResponse(crate::models::Error),
     UnknownValue(serde_json::Value),
 }
 
@@ -55,7 +55,6 @@ pub enum GetQuantumProcessorError {
 #[serde(untagged)]
 pub enum ListInstructionSetArchitecturesError {
     Status422(crate::models::ValidationError),
-    DefaultResponse(crate::models::Error),
     UnknownValue(serde_json::Value),
 }
 
@@ -72,7 +71,6 @@ pub enum ListQuantumProcessorAccessorsError {
 #[serde(untagged)]
 pub enum ListQuantumProcessorsError {
     Status422(crate::models::ValidationError),
-    DefaultResponse(crate::models::Error),
     UnknownValue(serde_json::Value),
 }
 
@@ -86,9 +84,9 @@ async fn get_instruction_set_architecture_inner(
     let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
-        "{}/v1/quantumProcessors/{quantum_processor_id}/instructionSetArchitecture",
+        "{}/v1/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture",
         local_var_configuration.qcs_config.api_url(),
-        quantum_processor_id = crate::apis::urlencode(quantum_processor_id)
+        quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -168,6 +166,7 @@ async fn get_instruction_set_architecture_inner(
     }
 }
 
+/// Retrieve the Instruction Set Architecture of a QuantumProcessor by ID.
 pub async fn get_instruction_set_architecture(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
@@ -232,9 +231,9 @@ async fn get_quantum_processor_inner(
     let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
-        "{}/v1/quantumProcessors/{quantum_processor_id}",
+        "{}/v1/quantumProcessors/{quantumProcessorId}",
         local_var_configuration.qcs_config.api_url(),
-        quantum_processor_id = crate::apis::urlencode(quantum_processor_id)
+        quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -369,7 +368,7 @@ pub async fn get_quantum_processor(
 async fn list_instruction_set_architectures_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::ListInstructionSetArchitectureResponse,
@@ -470,9 +469,10 @@ async fn list_instruction_set_architectures_inner(
     }
 }
 
+/// Retrieve all Instruction Set Architectures available to the user.
 pub async fn list_instruction_set_architectures(
     configuration: &configuration::Configuration,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::ListInstructionSetArchitectureResponse,
@@ -700,7 +700,7 @@ pub async fn list_quantum_processor_accessors(
 async fn list_quantum_processors_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListQuantumProcessorsResponse, Error<ListQuantumProcessorsError>> {
     let local_var_configuration = configuration;
@@ -798,10 +798,10 @@ async fn list_quantum_processors_inner(
     }
 }
 
-/// List the [`QuantumProcessor`]s that this user is authorized to access.  If no auth token is provided, only public processors will be returned.
+/// List all QuantumProcessors available to the user.
 pub async fn list_quantum_processors(
     configuration: &configuration::Configuration,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListQuantumProcessorsResponse, Error<ListQuantumProcessorsError>> {
     let mut backoff = configuration.backoff.clone();

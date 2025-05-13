@@ -34,6 +34,9 @@ pub use self::announcements_response::AnnouncementsResponse;
 pub mod architecture;
 pub use self::architecture::Architecture;
 #[allow(non_snake_case)]
+pub mod architecture_1;
+pub use self::architecture_1::Architecture1;
+#[allow(non_snake_case)]
 pub mod auth_email_password_reset_token_request;
 pub use self::auth_email_password_reset_token_request::AuthEmailPasswordResetTokenRequest;
 #[allow(non_snake_case)]
@@ -100,9 +103,6 @@ pub use self::client_application::ClientApplication;
 pub mod client_applications_download_link;
 pub use self::client_applications_download_link::ClientApplicationsDownloadLink;
 #[allow(non_snake_case)]
-pub mod code;
-pub use self::code::Code;
-#[allow(non_snake_case)]
 pub mod create_endpoint_parameters;
 pub use self::create_endpoint_parameters::CreateEndpointParameters;
 #[allow(non_snake_case)]
@@ -141,6 +141,9 @@ pub use self::find_available_reservations_response::FindAvailableReservationsRes
 #[allow(non_snake_case)]
 pub mod get_account_event_billing_price_request;
 pub use self::get_account_event_billing_price_request::GetAccountEventBillingPriceRequest;
+#[allow(non_snake_case)]
+pub mod get_quilt_calibrations_response;
+pub use self::get_quilt_calibrations_response::GetQuiltCalibrationsResponse;
 #[allow(non_snake_case)]
 pub mod group;
 pub use self::group::Group;
@@ -199,6 +202,9 @@ pub use self::operation_site::OperationSite;
 pub mod parameter;
 pub use self::parameter::Parameter;
 #[allow(non_snake_case)]
+pub mod parameter_spec;
+pub use self::parameter_spec::ParameterSpec;
+#[allow(non_snake_case)]
 pub mod product;
 pub use self::product::Product;
 #[allow(non_snake_case)]
@@ -223,6 +229,12 @@ pub use self::reservation::Reservation;
 pub mod restart_endpoint_request;
 pub use self::restart_endpoint_request::RestartEndpointRequest;
 #[allow(non_snake_case)]
+pub mod translate_native_quil_to_encrypted_binary_request;
+pub use self::translate_native_quil_to_encrypted_binary_request::TranslateNativeQuilToEncryptedBinaryRequest;
+#[allow(non_snake_case)]
+pub mod translate_native_quil_to_encrypted_binary_response;
+pub use self::translate_native_quil_to_encrypted_binary_response::TranslateNativeQuilToEncryptedBinaryResponse;
+#[allow(non_snake_case)]
 pub mod update_viewer_user_profile_request;
 pub use self::update_viewer_user_profile_request::UpdateViewerUserProfileRequest;
 #[allow(non_snake_case)]
@@ -240,9 +252,6 @@ pub use self::user_profile::UserProfile;
 #[allow(non_snake_case)]
 pub mod validation_error;
 pub use self::validation_error::ValidationError;
-#[allow(non_snake_case)]
-pub mod validation_location;
-pub use self::validation_location::ValidationLocation;
 #[allow(non_snake_case)]
 pub mod viewer_user_onboarding_completed;
 pub use self::viewer_user_onboarding_completed::ViewerUserOnboardingCompleted;
