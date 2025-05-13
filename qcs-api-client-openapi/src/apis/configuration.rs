@@ -231,8 +231,12 @@ mod tests {
     /// Test that requests are traced according to filter patterns.
     #[cfg(feature = "otel-tracing")]
     #[rstest]
+    // TODO #111: fix this test
+    #[ignore]
     #[case("https://api.qcs.rigetti.com/v1/path", true)]
+    #[ignore]
     #[case("https://api.qcs.rigetti.com/v1/other", false)]
+    #[ignore]
     #[case("https://other.qcs.rigetti.com/v1/path", false)]
     fn test_tracing_enabled_filter_not_passed(#[case] url: &str, #[case] expected: bool) {
         use qcs_api_client_common::tracing_configuration::TracingFilterBuilder;

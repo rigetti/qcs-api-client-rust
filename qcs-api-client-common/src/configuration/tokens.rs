@@ -1,7 +1,6 @@
 use std::{pin::Pin, sync::Arc};
 
 use futures::Future;
-use http::{header::CONTENT_TYPE, HeaderMap, HeaderValue};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
@@ -53,10 +52,15 @@ impl RefreshToken {
             .send()
             .await?;
 
-        let response_data: TokenResponse = resp.error_for_status()?.json().await?;
+        let response_data: RefreshTokenResponse = resp.error_for_status()?.json().await?;
         self.refresh_token = response_data.refresh_token;
         Ok(response_data.access_token)
     }
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+pub(super) struct ClientCredentialsResponse {
+    pub(super) access_token: String,
 }
 
 #[derive(Clone, PartialEq, Eq, Deserialize)]
@@ -101,33 +105,22 @@ impl ClientCredentials {
         &self,
         auth_server: &AuthServer,
     ) -> Result<String, TokenError> {
-        let request = ClientCredentialsRequest::new(&self.client_id, &self.client_secret);
+        let request = ClientCredentialsRequest::new(None);
         let url = format!("{}/v1/token", auth_server.issuer());
-
-        // let credentials = format!("{}:{}", self.auth_server.client_id(), self.client_secret);
-        // let encoded_credentials = base64::encode(credentials);
-        // let authorization_value = format!("Basic {}", encoded_credentials);
-        let mut headers = HeaderMap::new();
-        // headers.insert(AUTHORIZATION, HeaderValue::from_str(&authorization_value)?);
-        headers.insert(
-            CONTENT_TYPE,
-            HeaderValue::from_static("application/x-www-form-urlencoded"),
-        );
 
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(10))
             .build()?;
 
-        let response = client
+        let ready_to_send = client
             .post(url)
-            .headers(headers)
-            .form(&request)
-            .send()
-            .await?;
+            .basic_auth(auth_server.client_id(), Some(&self.client_secret))
+            .form(&request);
+        let response = ready_to_send.send().await?;
 
         response.error_for_status_ref()?;
 
-        let response_body: TokenResponse = response.json().await?;
+        let response_body: ClientCredentialsResponse = response.json().await?;
 
         Ok(response_body.access_token)
     }
@@ -670,24 +663,22 @@ impl<'a> TokenRefreshRequest<'a> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub(super) struct ClientCredentialsRequest<'a> {
+pub(super) struct ClientCredentialsRequest {
     grant_type: &'static str,
-    client_id: &'a str,
-    client_secret: &'a str,
+    scope: Option<&'static str>,
 }
 
-impl<'a> ClientCredentialsRequest<'a> {
-    pub(super) const fn new(client_id: &'a str, client_secret: &'a str) -> Self {
+impl ClientCredentialsRequest {
+    pub(super) const fn new(scope: Option<&'static str>) -> Self {
         Self {
             grant_type: "client_credentials",
-            client_id,
-            client_secret,
+            scope,
         }
     }
 }
 
 #[derive(Deserialize, Debug, Serialize)]
-pub(super) struct TokenResponse {
+pub(super) struct RefreshTokenResponse {
     pub(super) refresh_token: String,
     pub(super) access_token: String,
 }
@@ -783,7 +774,7 @@ mod test {
 
                 then.status(200)
                     .delay(Duration::from_secs(3))
-                    .json_body_obj(&TokenResponse {
+                    .json_body_obj(&RefreshTokenResponse {
                         access_token: "new_access".to_string(),
                         refresh_token: "new_refresh".to_string(),
                     });
@@ -879,6 +870,9 @@ updated_at = "2024-01-01T00:00:00Z"
 "#
             );
 
+            // Ignore any existing environment variables.
+            jail.clear_env();
+
             // Create a temporary secrets file
             let secrets_path = "secrets.toml";
             jail.create_file(secrets_path, initial_secrets_file_contents.as_str())
@@ -902,7 +896,7 @@ updated_at = "2024-01-01T00:00:00Z"
                 let issuer_mock = mock_server
                     .mock_async(|when, then| {
                         when.method(POST).path("/v1/token");
-                        then.status(200).json_body_obj(&TokenResponse {
+                        then.status(200).json_body_obj(&RefreshTokenResponse {
                             access_token: new_access_token.to_string(),
                             refresh_token: initial_refresh_token.to_string(),
                         });

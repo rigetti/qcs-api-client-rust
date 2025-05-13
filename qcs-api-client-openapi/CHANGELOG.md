@@ -1,3 +1,10 @@
+## 0.13.2 (2025-05-13)
+
+### Features
+
+- support for client-credentials flow
+- regenerate mustache template
+
 ## 0.13.1 (2025-05-08)
 
 ### Fixes
