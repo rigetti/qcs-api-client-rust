@@ -12,14 +12,17 @@ pub use ::backoff::*;
 
 /// Create a default [`ExponentialBackoff`] for use with QCS.
 ///
-/// This backoff will retry for up to 5 minutes, with a maximum interval of 30 seconds and some
-/// randomized jitter.
+/// This backoff will retry for up to 5 minutes. The initial interval is 30 seconds,
+/// and the backoff will double the interval each time it is used, up to the maximum
+/// interval of 2 minutes.
 #[allow(clippy::module_name_repetitions)]
 #[must_use]
 pub fn default_backoff() -> ExponentialBackoff {
     ExponentialBackoffBuilder::new()
         .with_max_elapsed_time(Some(Duration::from_secs(300)))
-        .with_max_interval(Duration::from_secs(30))
+        .with_initial_interval(Duration::from_secs(30))
+        .with_max_interval(Duration::from_secs(120))
+        .with_multiplier(2.0)
         .build()
 }
 
