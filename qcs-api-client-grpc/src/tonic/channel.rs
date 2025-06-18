@@ -146,8 +146,6 @@ pub struct ChannelBuilder<O = ()> {
     endpoint: Endpoint,
     #[cfg(feature = "tracing")]
     trace_layer: CustomTraceLayer,
-    http_proxy: Option<Uri>,
-    https_proxy: Option<Uri>,
     options: O,
 }
 
@@ -166,8 +164,6 @@ impl From<Endpoint> for ChannelBuilder<()> {
         #[cfg(not(feature = "tracing"))]
         return Self {
             endpoint,
-            http_proxy: None,
-            https_proxy: None,
             options: (),
         };
     }
@@ -404,13 +400,9 @@ fn get_uri_socks_auth(uri: &Uri) -> Result<Option<Auth>, url::ParseError> {
 /// # Errors
 ///
 /// See [`ChannelError`].
-pub fn get_channel(
-    uri: Uri,
-    http_proxy: Option<Uri>,
-    https_proxy: Option<Uri>,
-) -> Result<Channel, ChannelError> {
+pub fn get_channel(uri: Uri) -> Result<Channel, ChannelError> {
     let endpoint = get_endpoint(uri);
-    get_channel_with_endpoint(&endpoint, http_proxy, https_proxy)
+    get_channel_with_endpoint(&endpoint)
 }
 
 /// Get a [`Channel`] to the given [`Uri`], with an optional timeout. If set to [`None`], no timeout is
@@ -431,12 +423,10 @@ pub fn get_channel(
 /// See [`ChannelError`].
 pub fn get_channel_with_timeout(
     uri: Uri,
-    https_proxy: Option<Uri>,
-    http_proxy: Option<Uri>,
     timeout: Option<Duration>,
 ) -> Result<Channel, ChannelError> {
     let endpoint = get_endpoint_with_timeout(uri, timeout);
-    get_channel_with_endpoint(&endpoint, https_proxy, http_proxy)
+    get_channel_with_endpoint(&endpoint)
 }
 
 /// Get a [`Channel`] to the given [`Endpoint`]. Useful if [`get_channel`] or
@@ -458,18 +448,9 @@ pub fn get_channel_with_timeout(
 ///
 /// Returns a [`ChannelError`] if the channel cannot be constructed.
 #[allow(clippy::similar_names)] // http(s)_proxy are similar but precise in this case.
-pub fn get_channel_with_endpoint(
-    endpoint: &Endpoint,
-    mut https_proxy: Option<Uri>,
-    mut http_proxy: Option<Uri>,
-) -> Result<Channel, ChannelError> {
-    if https_proxy.is_none() {
-        https_proxy = get_env_uri("HTTPS_PROXY")?;
-    }
-
-    if http_proxy.is_none() {
-        http_proxy = get_env_uri("HTTP_PROXY")?;
-    }
+pub fn get_channel_with_endpoint(endpoint: &Endpoint) -> Result<Channel, ChannelError> {
+    let https_proxy = get_env_uri("HTTPS_PROXY")?;
+    let http_proxy = get_env_uri("HTTP_PROXY")?;
 
     let mut connector = HttpConnector::new();
     connector.enforce_http(false);
@@ -542,10 +523,8 @@ pub fn get_channel_with_endpoint(
 /// See [`Error`]
 pub fn get_wrapped_channel(
     uri: Uri,
-    https_proxy: Option<Uri>,
-    http_proxy: Option<Uri>,
 ) -> Result<RefreshService<Channel, ClientConfiguration>, Error<TokenError>> {
-    wrap_channel(get_channel(uri, https_proxy, http_proxy)?)
+    wrap_channel(get_channel(uri)?)
 }
 
 /// Set up the given `channel` with QCS authentication.
