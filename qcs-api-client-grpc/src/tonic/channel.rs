@@ -340,7 +340,10 @@ pub fn parse_uri(s: &str) -> Result<Uri, Error<TokenError>> {
     s.parse().map_err(Error::from)
 }
 
-/// Get an [`Endpoint`] for the given [`Uri`]
+/// Get an [`Endpoint`] for the given [`Uri`] with default settings.
+/// This endpoint will default to using a 2 minute timeout, and will
+/// keep the connection alive while idle, with a 60 second keep-alive 
+/// interval.
 #[allow(clippy::missing_panics_doc)]
 pub fn get_endpoint(uri: Uri) -> Endpoint {
     Channel::builder(uri)
@@ -351,9 +354,12 @@ pub fn get_endpoint(uri: Uri) -> Endpoint {
         .expect("user agent string should be valid")
         .tls_config(ClientTlsConfig::new().with_enabled_roots())
         .expect("tls setup should succeed")
+        .keep_alive_while_idle(true)
+        .http2_keep_alive_interval(Duration::from_secs(60))
+        .timeout(Duration::from_secs(120))
 }
 
-/// Get an [`Endpoint`] for the given [`Uri`] and timeout.
+/// Get an [`Endpoint`] for the given [`Uri`] and custom timeout duration.
 pub fn get_endpoint_with_timeout(uri: Uri, timeout: Option<Duration>) -> Endpoint {
     if let Some(duration) = timeout {
         get_endpoint(uri).timeout(duration)
