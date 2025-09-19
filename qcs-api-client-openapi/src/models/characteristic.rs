@@ -35,7 +35,7 @@ pub struct Characteristic {
     pub name: String,
     /// The list of architecture node ids for the site where the characteristic is measured, if that is different from the site of the enclosing operation. None if it is the same. The order of this or the enclosing node ids obey the definition of node symmetry from the enclosing operation.
     #[serde(rename = "node_ids", skip_serializing_if = "Option::is_none")]
-    pub node_ids: Option<Vec<i64>>,
+    pub node_ids: Option<Vec<i32>>,
     /// The optional ordered list of parameter values used to generate the characteristic. The order matches the parameters in the enclosing operation, and so the lengths of these two lists must match.
     #[serde(rename = "parameter_values", skip_serializing_if = "Option::is_none")]
     pub parameter_values: Option<Vec<f64>>,

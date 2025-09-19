@@ -34,7 +34,7 @@ Example usage:
 
     # Set custom settings, e.g., a custom OAuth session
     oauth = OAuthSession(ClientCredentials("client_id", "client_secret"), AuthServer.default())
-    builder.oauth_session(oauth)
+    builder.oauth_session = oauth
 
     # Build and retrieve the configuration
     configuration = builder.build()

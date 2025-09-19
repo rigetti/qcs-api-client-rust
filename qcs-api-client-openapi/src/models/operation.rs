@@ -35,7 +35,7 @@ pub struct Operation {
     pub name: String,
     /// The number of nodes that this operation applies to. None if unspecified.
     #[serde(rename = "node_count", skip_serializing_if = "Option::is_none")]
-    pub node_count: Option<i64>,
+    pub node_count: Option<i32>,
     /// The list of parameters. Each parameter must be uniquely named. May be empty.
     #[serde(rename = "parameters")]
     pub parameters: Vec<crate::models::Parameter>,

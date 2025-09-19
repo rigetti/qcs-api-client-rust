@@ -1,3 +1,9 @@
+## 0.14.0-rc.0 (2025-09-19)
+
+### Breaking Changes
+
+#### regenerate OpenAPI code
+
 ## 0.13.3 (2025-05-13)
 
 ### Fixes
