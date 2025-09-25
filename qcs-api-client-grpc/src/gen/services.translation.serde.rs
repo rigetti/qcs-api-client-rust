@@ -702,12 +702,18 @@ impl serde::Serialize for TranslationOptions {
         if self.q_ctrl.is_some() {
             len += 1;
         }
+        if self.riverlane.is_some() {
+            len += 1;
+        }
         if self.translation_backend.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("services.translation.TranslationOptions", len)?;
         if let Some(v) = self.q_ctrl.as_ref() {
             struct_ser.serialize_field("qCtrl", v)?;
+        }
+        if let Some(v) = self.riverlane.as_ref() {
+            struct_ser.serialize_field("riverlane", v)?;
         }
         if let Some(v) = self.translation_backend.as_ref() {
             match v {
@@ -731,6 +737,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
         const FIELDS: &[&str] = &[
             "q_ctrl",
             "qCtrl",
+            "riverlane",
             "v1",
             "v2",
         ];
@@ -738,6 +745,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             QCtrl,
+            Riverlane,
             V1,
             V2,
         }
@@ -762,6 +770,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                     {
                         match value {
                             "qCtrl" | "q_ctrl" => Ok(GeneratedField::QCtrl),
+                            "riverlane" => Ok(GeneratedField::Riverlane),
                             "v1" => Ok(GeneratedField::V1),
                             "v2" => Ok(GeneratedField::V2),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -784,6 +793,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut q_ctrl__ = None;
+                let mut riverlane__ = None;
                 let mut translation_backend__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
@@ -792,6 +802,12 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                                 return Err(serde::de::Error::duplicate_field("qCtrl"));
                             }
                             q_ctrl__ = map_.next_value()?;
+                        }
+                        GeneratedField::Riverlane => {
+                            if riverlane__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("riverlane"));
+                            }
+                            riverlane__ = map_.next_value()?;
                         }
                         GeneratedField::V1 => {
                             if translation_backend__.is_some() {
@@ -811,6 +827,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                 }
                 Ok(TranslationOptions {
                     q_ctrl: q_ctrl__,
+                    riverlane: riverlane__,
                     translation_backend: translation_backend__,
                 })
             }

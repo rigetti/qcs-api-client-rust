@@ -201,4 +201,14 @@ pub mod controller_job_execution_result {
         }
     }
 }
+/// Riverlane metadata; this is public so that it can be used as part of the Translation API.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct RiverlaneMetadata {
+    /// The (opaque) configuration data, per instrument, to send to Riverlane's DS2 box(es).
+    #[prost(map = "string, bytes", tag = "2")]
+    pub ds2_configuration_data: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::vec::Vec<u8>,
+    >,
+}
 

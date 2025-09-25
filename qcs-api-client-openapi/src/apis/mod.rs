@@ -121,6 +121,5 @@ pub mod endpoints_api;
 pub mod engagements_api;
 pub mod quantum_processors_api;
 pub mod reservations_api;
-pub mod translation_api;
 
 pub mod configuration;
