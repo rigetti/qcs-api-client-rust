@@ -1,8 +1,12 @@
-## 0.13.4-rc.0 (2025-09-25)
+## 0.13.4-rc-riverlane.0 (2025-09-26)
 
 ### Features
 
 #### empty commit to permit creating release candidate
+
+### Fixes
+
+#### updates the 'patch_schema' script to prevent unintentional int-type breakage
 
 ## 0.13.3 (2025-05-13)
 

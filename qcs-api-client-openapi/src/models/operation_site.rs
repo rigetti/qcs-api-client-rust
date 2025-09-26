@@ -32,14 +32,14 @@ pub struct OperationSite {
     pub characteristics: Vec<crate::models::Characteristic>,
     /// The list of architecture node ids for the site. The order of these node ids obey the definition of node symmetry from the enclosing operation.
     #[serde(rename = "node_ids")]
-    pub node_ids: Vec<i32>,
+    pub node_ids: Vec<i64>,
 }
 
 impl OperationSite {
     /// A site for an operation, with its site-dependent characteristics.
     pub fn new(
         characteristics: Vec<crate::models::Characteristic>,
-        node_ids: Vec<i32>,
+        node_ids: Vec<i64>,
     ) -> OperationSite {
         OperationSite {
             characteristics,

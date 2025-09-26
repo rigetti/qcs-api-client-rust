@@ -369,7 +369,7 @@ pub async fn get_quantum_processor(
 async fn list_instruction_set_architectures_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::ListInstructionSetArchitectureResponse,
@@ -472,7 +472,7 @@ async fn list_instruction_set_architectures_inner(
 
 pub async fn list_instruction_set_architectures(
     configuration: &configuration::Configuration,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<
     crate::models::ListInstructionSetArchitectureResponse,
@@ -700,7 +700,7 @@ pub async fn list_quantum_processor_accessors(
 async fn list_quantum_processors_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListQuantumProcessorsResponse, Error<ListQuantumProcessorsError>> {
     let local_var_configuration = configuration;
@@ -801,7 +801,7 @@ async fn list_quantum_processors_inner(
 /// List the [`QuantumProcessor`]s that this user is authorized to access.  If no auth token is provided, only public processors will be returned.
 pub async fn list_quantum_processors(
     configuration: &configuration::Configuration,
-    page_size: Option<i32>,
+    page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<crate::models::ListQuantumProcessorsResponse, Error<ListQuantumProcessorsError>> {
     let mut backoff = configuration.backoff.clone();
