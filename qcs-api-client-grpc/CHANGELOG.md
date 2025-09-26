@@ -1,3 +1,9 @@
+## 0.12.4-rc-fixints.0 (2025-09-26)
+
+### Fixes
+
+#### updates the 'patch_schema' script to prevent unintentional breakage due to a mismatch between how Poem and OpenAPI-generator use the 'format' property
+
 ## 0.12.3 (2025-05-13)
 
 ### Fixes
