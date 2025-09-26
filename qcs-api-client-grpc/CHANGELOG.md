@@ -1,3 +1,9 @@
+## 0.12.4 (2025-09-26)
+
+### Fixes
+
+#### updates the 'patch_schema' script to prevent unintentional int-type breakage
+
 ## 0.12.3 (2025-05-13)
 
 ### Fixes

@@ -583,7 +583,7 @@ paths:
       tags:
         - quantumProcessors
       summary: Get Quantum Processor
-      description: Retrieve a single QuantumProcessor by ID.
+      description: Retrieve a single `QuantumProcessor` by ID.
       parameters:
         - name: quantum_processor_id
           schema:

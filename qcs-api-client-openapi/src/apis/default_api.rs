@@ -43,7 +43,6 @@ pub enum GetHealthError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum HealthCheckError {
-    Status422(crate::models::ValidationError),
     UnknownValue(serde_json::Value),
 }
 
@@ -194,7 +193,7 @@ pub async fn get_health(
 async fn health_check_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
-) -> Result<serde_json::Value, Error<HealthCheckError>> {
+) -> Result<(), Error<HealthCheckError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -263,8 +262,7 @@ async fn health_check_inner(
     let local_var_status = local_var_resp.status();
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        let local_var_content = local_var_resp.text().await?;
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_retry_delay =
             duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
@@ -281,10 +279,10 @@ async fn health_check_inner(
     }
 }
 
-/// Endpoint to return a status 200 for load balancer health checks
+/// Check the health of the service.
 pub async fn health_check(
     configuration: &configuration::Configuration,
-) -> Result<serde_json::Value, Error<HealthCheckError>> {
+) -> Result<(), Error<HealthCheckError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
