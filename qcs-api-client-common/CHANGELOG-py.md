@@ -1,8 +1,10 @@
-## 0.12.4-rc-riverlane.0 (2025-09-26)
+## 0.12.5-rc-riverlane.0 (2025-09-27)
 
 ### Features
 
 #### empty commit to permit creating release candidate
+
+## 0.12.4 (2025-09-26)
 
 ### Fixes
 
