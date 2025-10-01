@@ -1,3 +1,9 @@
+## 0.12.5 (2025-10-01)
+
+### Features
+
+#### update service-model protos for Riverlane DF2 support
+
 ## 0.12.4 (2025-09-26)
 
 ### Fixes

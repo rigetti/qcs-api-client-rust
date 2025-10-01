@@ -702,12 +702,18 @@ impl serde::Serialize for TranslationOptions {
         if self.q_ctrl.is_some() {
             len += 1;
         }
+        if self.riverlane.is_some() {
+            len += 1;
+        }
         if self.translation_backend.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("services.translation.TranslationOptions", len)?;
         if let Some(v) = self.q_ctrl.as_ref() {
             struct_ser.serialize_field("qCtrl", v)?;
+        }
+        if let Some(v) = self.riverlane.as_ref() {
+            struct_ser.serialize_field("riverlane", v)?;
         }
         if let Some(v) = self.translation_backend.as_ref() {
             match v {
@@ -731,6 +737,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
         const FIELDS: &[&str] = &[
             "q_ctrl",
             "qCtrl",
+            "riverlane",
             "v1",
             "v2",
         ];
@@ -738,6 +745,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             QCtrl,
+            Riverlane,
             V1,
             V2,
         }
@@ -762,6 +770,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                     {
                         match value {
                             "qCtrl" | "q_ctrl" => Ok(GeneratedField::QCtrl),
+                            "riverlane" => Ok(GeneratedField::Riverlane),
                             "v1" => Ok(GeneratedField::V1),
                             "v2" => Ok(GeneratedField::V2),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -784,6 +793,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut q_ctrl__ = None;
+                let mut riverlane__ = None;
                 let mut translation_backend__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
@@ -792,6 +802,12 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                                 return Err(serde::de::Error::duplicate_field("qCtrl"));
                             }
                             q_ctrl__ = map_.next_value()?;
+                        }
+                        GeneratedField::Riverlane => {
+                            if riverlane__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("riverlane"));
+                            }
+                            riverlane__ = map_.next_value()?;
                         }
                         GeneratedField::V1 => {
                             if translation_backend__.is_some() {
@@ -811,6 +827,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                 }
                 Ok(TranslationOptions {
                     q_ctrl: q_ctrl__,
+                    riverlane: riverlane__,
                     translation_backend: translation_backend__,
                 })
             }
@@ -908,6 +925,103 @@ impl<'de> serde::Deserialize<'de> for translation_options::QCtrl {
             }
         }
         deserializer.deserialize_struct("services.translation.TranslationOptions.QCtrl", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for translation_options::Riverlane {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.ds2_configuration_data.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("services.translation.TranslationOptions.Riverlane", len)?;
+        if !self.ds2_configuration_data.is_empty() {
+            let v: std::collections::HashMap<_, _> = self.ds2_configuration_data.iter()
+                .map(|(k, v)| (k, pbjson::private::base64::encode(v))).collect();
+            struct_ser.serialize_field("ds2ConfigurationData", &v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for translation_options::Riverlane {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "ds2_configuration_data",
+            "ds2ConfigurationData",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Ds2ConfigurationData,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "ds2ConfigurationData" | "ds2_configuration_data" => Ok(GeneratedField::Ds2ConfigurationData),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = translation_options::Riverlane;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct services.translation.TranslationOptions.Riverlane")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<translation_options::Riverlane, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut ds2_configuration_data__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Ds2ConfigurationData => {
+                            if ds2_configuration_data__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("ds2ConfigurationData"));
+                            }
+                            ds2_configuration_data__ = Some(
+                                map_.next_value::<std::collections::HashMap<_, ::pbjson::private::BytesDeserialize<_>>>()?
+                                    .into_iter().map(|(k,v)| (k, v.0)).collect()
+                            );
+                        }
+                    }
+                }
+                Ok(translation_options::Riverlane {
+                    ds2_configuration_data: ds2_configuration_data__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("services.translation.TranslationOptions.Riverlane", FIELDS, GeneratedVisitor)
     }
 }
 

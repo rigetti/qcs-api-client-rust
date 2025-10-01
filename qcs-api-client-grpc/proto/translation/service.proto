@@ -11,6 +11,7 @@ message TranslationOptions {
     // When set, the client program will be pre-processed via the Q-CTRL API
     // before translation.
     .services.translation.TranslationOptions.QCtrl q_ctrl = 1;
+    .services.translation.TranslationOptions.Riverlane riverlane = 2;
     message QCtrl {
 
         // Indicates whether Q-CTRL pre-processing should consider the set of
@@ -24,6 +25,11 @@ message TranslationOptions {
         // at once, while Rigetti's `TranslationOptions` are currently scoped to a
         // single program. As such, we use `fixed_layout` rather than `fixed_layouts`.
         optional bool fixed_layout = 1;
+    }
+    message Riverlane {
+
+        // The (opaque) configuration data, per instrument, to send to Riverlane's DS2 box(es).
+        map<string, bytes> ds2_configuration_data = 2;
     }
 
     // The backend to use for translation, to include relevant options.
