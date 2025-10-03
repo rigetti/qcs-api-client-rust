@@ -2067,7 +2067,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-common"
-version = "0.12.5"
+version = "0.12.6-dev.0"
 dependencies = [
  "async-tempfile",
  "async-trait",
@@ -2101,7 +2101,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc"
-version = "0.12.5"
+version = "0.12.6-dev.0"
 dependencies = [
  "async-std",
  "backoff",
@@ -2147,7 +2147,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-openapi"
-version = "0.13.5"
+version = "0.13.6-dev.0"
 dependencies = [
  "anyhow",
  "http",
@@ -3453,9 +3453,9 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 
 [[package]]
 name = "typenum"
-version = "1.18.0"
+version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
+checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 
 [[package]]
 name = "uncased"
