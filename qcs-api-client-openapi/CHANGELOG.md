@@ -1,3 +1,13 @@
+## 0.13.6-dev.2 (2025-10-03)
+
+### Fixes
+
+#### publish to code-artifact
+
+#### docs for release
+
+#### explicitly set 'publish' in all crates
+
 ## 0.13.6-dev.1 (2025-10-03)
 
 ### Fixes

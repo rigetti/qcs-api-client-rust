@@ -1,6 +1,6 @@
 [package]
 name = "qcs-api-client-common"
-version = "0.12.6-dev.1"
+version = "0.12.6-dev.2"
 edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
@@ -9,6 +9,7 @@ homepage = "https://github.com/rigetti/qcs-api-client-rust"
 categories = ["api-bindings", "authentication"]
 keywords = ["qcs", "quantum", "rigetti", "api"]
 description = "Common code for QCS API clients"
+publish = true
 
 [package.metadata.docs.rs]
 features = ["python", "tracing"]

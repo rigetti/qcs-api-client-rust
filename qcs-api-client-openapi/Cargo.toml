@@ -1,18 +1,19 @@
 [package]
 name = "qcs-api-client-openapi"
 description = "Auto-generated bindings to the QCS OpenAPI"
-version = "0.13.6-dev.1"
+version = "0.13.6-dev.2"
 edition = "2021"
 license = "Apache-2.0"
 repository = "https://github.com/rigetti/qcs-api-client-rust"
 homepage = "https://github.com/rigetti/qcs-api-client-rust"
 keywords = ["API", "QCS", "Rigetti", "quantum"]
 categories = ["api-bindings"]
+publish = true
 
 [dependencies]
 anyhow = { version = "1.0.68", optional = true }
 http = { workspace = true }
-qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.12.6-dev.1" }
+qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.12.6-dev.2" }
 reqwest-middleware = { workspace = true, optional = true }
 reqwest-tracing = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }

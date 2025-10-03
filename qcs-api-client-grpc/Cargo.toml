@@ -1,6 +1,6 @@
 [package]
 name = "qcs-api-client-grpc"
-version = "0.12.6-dev.1"
+version = "0.12.6-dev.2"
 edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
@@ -9,6 +9,7 @@ homepage = "https://github.com/rigetti/qcs-api-client-rust"
 categories = ["api-bindings", "authentication"]
 keywords = ["qcs", "quantum", "rigetti", "api"]
 description = "gRPC client for the QCS API"
+publish = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -27,7 +28,7 @@ opentelemetry_sdk = { workspace = true }
 pbjson = { workspace = true }
 pbjson-types = { workspace = true }
 prost = { workspace = true }
-qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.12.6-dev.1" }
+qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.12.6-dev.2" }
 serde = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["time"] }
