@@ -1,9 +1,3 @@
-## 0.12.6-dev.0 (2025-10-03)
-
-### Fixes
-
-#### publish to code-artifact
-
 ## 0.12.5 (2025-10-01)
 
 ### Features
