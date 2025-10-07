@@ -1515,6 +1515,39 @@ paths:
       tags:
         - reservations
   "/v1/reservations/{reservationId}":
+    get:
+      description: Find an existing reservation by ID.
+      operationId: GetReservation
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: User not authorized to retrieve reservation.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Requested reservation does not exist.
+      security:
+        - JWTBearer: []
+      summary: Get Reservation
+      tags:
+        - reservations
     delete:
       description: Cancel an existing reservation for the user.
       operationId: DeleteReservation
