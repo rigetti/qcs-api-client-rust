@@ -1,3 +1,15 @@
+## 0.13.6-dev.3 (2025-10-07)
+
+### Fixes
+
+#### publish to code-artifact
+
+#### docs for release
+
+#### explicitly set 'publish' in all crates
+
+#### set publish to 'false' for public crates, so they don't get double-published
+
 ## 0.13.6-dev.2 (2025-10-03)
 
 ### Fixes

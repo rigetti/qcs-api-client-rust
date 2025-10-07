@@ -1,109 +1,174 @@
-[package]
-name = "qcs-api-client-common"
-version = "0.12.6-dev.2"
-edition = "2021"
-license = "Apache-2.0"
-readme = "README.md"
-repository = "https://github.com/rigetti/qcs-api-client-rust"
-homepage = "https://github.com/rigetti/qcs-api-client-rust"
-categories = ["api-bindings", "authentication"]
-keywords = ["qcs", "quantum", "rigetti", "api"]
-description = "Common code for QCS API clients"
-publish = true
-
-[package.metadata.docs.rs]
-features = ["python", "tracing"]
-
-[lib]
-# The name of the native library. This is the name which will be used in Python to import the
-# library. If you change this, you must also change the name of the
-# `#[pymodule]` in `src/lib.rs`.
-name = "qcs_api_client_common"
-crate-type = ["cdylib", "rlib"]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[features]
-tracing = ["dep:tracing", "url", "urlpattern"]
-tracing-config = ["tracing"]
-python = ["dep:pyo3", "dep:pyo3-asyncio", "dep:paste", "dep:rigetti-pyo3", "tokio/macros", "pyo3-build-config"]
+[build-dependencies]
+  [build-dependencies.pyo3-build-config]
+    optional = true
+    version = '0.22.1'
 
 [dependencies]
-async-tempfile = { version = "0.6.0", features = ["uuid"] }
-async-trait = "0.1"
-backoff = { workspace = true }
-derive_builder = "0.20.0"
-figment = { version = "0.10.18", features = ["env", "toml"] }
-futures = "0.3.26"
-home = "0.5.5"
-http = { workspace = true }
-jsonwebtoken = { workspace = true }
-paste = { version = "1.0.15", optional = true }
-pyo3 = { version = "0.20.3", features = ["multiple-pymethods"], optional = true }
-pyo3-asyncio = { version = "0.20.0", features = ["tokio-runtime"], optional = true }
-reqwest = { workspace = true, default-features = false, features = ["socks"] }
-rigetti-pyo3 = { version = "0.3.6", optional = true }
-serde = { workspace = true, features = ["derive"] }
-shellexpand = "3.1.0"
-thiserror = { workspace = true }
-time = { version = "0.3.34", features = ["macros", "parsing", "serde"] }
-tokio = { workspace = true, features = ["rt-multi-thread", "sync", "fs"] }
-toml = { version = "0.8.19", features = ["preserve_order"] }
-toml_edit = "0.22.22"
-tracing = { workspace = true, optional = true }
-url = { workspace = true, optional = true }
-urlpattern = { workspace = true, optional = true }
+  async-trait = '0.1'
+  derive_builder = '0.20.0'
+  futures = '0.3.26'
+  home = '0.5.5'
+  shellexpand = '3.1.0'
+  toml_edit = '0.22.22'
+
+  [dependencies.async-tempfile]
+    features = ['uuid']
+    version = '0.6.0'
+
+  [dependencies.backoff]
+    workspace = true
+
+  [dependencies.figment]
+    features = ['env', 'toml']
+    version = '0.10.18'
+
+  [dependencies.http]
+    workspace = true
+
+  [dependencies.jsonwebtoken]
+    workspace = true
+
+  [dependencies.paste]
+    optional = true
+    version = '1.0.15'
+
+  [dependencies.pyo3]
+    features = ['multiple-pymethods']
+    optional = true
+    version = '0.20.3'
+
+  [dependencies.pyo3-asyncio]
+    features = ['tokio-runtime']
+    optional = true
+    version = '0.20.0'
+
+  [dependencies.reqwest]
+    default-features = false
+    features = ['socks']
+    workspace = true
+
+  [dependencies.rigetti-pyo3]
+    optional = true
+    version = '0.3.6'
+
+  [dependencies.serde]
+    features = ['derive']
+    workspace = true
+
+  [dependencies.thiserror]
+    workspace = true
+
+  [dependencies.time]
+    features = ['macros', 'parsing', 'serde']
+    version = '0.3.34'
+
+  [dependencies.tokio]
+    features = ['rt-multi-thread', 'sync', 'fs']
+    workspace = true
+
+  [dependencies.toml]
+    features = ['preserve_order']
+    version = '0.8.19'
+
+  [dependencies.tracing]
+    optional = true
+    workspace = true
+
+  [dependencies.url]
+    optional = true
+    workspace = true
+
+  [dependencies.urlpattern]
+    optional = true
+    workspace = true
 
 [dev-dependencies]
-figment = { version = "0.10.18", features = ["env", "toml", "test"] }
-httpmock = "0.8.0-alpha.1"
-rstest = { workspace = true }
-serial_test = "3.1.1"
-tokio = { workspace = true, features = ["fs", "macros"] }
+  httpmock = '0.8.0-alpha.1'
+  serial_test = '3.1.1'
 
-[build-dependencies]
-pyo3-build-config = { version = "0.22.1", optional = true }
+  [dev-dependencies.figment]
+    features = ['env', 'toml', 'test']
+    version = '0.10.18'
 
-[lints.clippy]
-# Covers correctness, suspicious, style, complexity, and perf
-all = "deny"
-# negative 'priority' makes overriding specific lints easier
-pedantic = { level = "warn", priority = -1 }
-nursery = { level = "warn", priority = -2 }
-module_name_repetitions = "allow"    # This lint just seems silly
-redundant_pub_crate = "allow"        # Has false positives that conflict with unreachable_pub
-unsafe_derive_deserialize = "allow"  # Deriving `Deserialize` on a `pyclass` triggers this lint, but is not an issue.
+  [dev-dependencies.rstest]
+    workspace = true
 
-[lints.rust]
-# Extra non-clippy lints
-absolute_paths_not_starting_with_crate = "warn"
-anonymous_parameters = "warn"
-bad_style = "warn"
-dead_code = "warn"
-keyword_idents = "warn"
-improper_ctypes = "warn"
-macro_use_extern_crate = "warn"
-meta_variable_misuse = "warn"
-missing_abi = "warn"
-missing_debug_implementations = "warn"
-missing_docs = "warn"
-no_mangle_generic_items = "warn"
-non_shorthand_field_patterns = "warn"
-noop_method_call = "warn"
-overflowing_literals = "warn"
-path_statements = "warn"
-patterns_in_fns_without_body = "warn"
-semicolon_in_expressions_from_macros = "warn"
-trivial_casts = "warn"
-trivial_numeric_casts = "warn"
-unconditional_recursion = "warn"
-unreachable_pub = "warn"
-unsafe_code = "warn"
-unused = "warn"
-unused_allocation = "warn"
-unused_comparisons = "warn"
-unused_extern_crates = "warn"
-unused_import_braces = "warn"
-unused_lifetimes = "warn"
-unused_parens = "warn"
-unused_qualifications = "warn"
-while_true = "warn"
+  [dev-dependencies.tokio]
+    features = ['fs', 'macros']
+    workspace = true
+
+[features]
+  python = ['dep:pyo3', 'dep:pyo3-asyncio', 'dep:paste', 'dep:rigetti-pyo3', 'tokio/macros', 'pyo3-build-config']
+  tracing = ['dep:tracing', 'url', 'urlpattern']
+  tracing-config = ['tracing']
+
+[lib]
+  crate-type = ['cdylib', 'rlib']
+  name = 'qcs_api_client_common'
+
+[lints]
+  [lints.clippy]
+    all = 'deny'
+    module_name_repetitions = 'allow'
+    redundant_pub_crate = 'allow'
+    unsafe_derive_deserialize = 'allow'
+
+    [lints.clippy.nursery]
+      level = 'warn'
+      priority = -2
+
+    [lints.clippy.pedantic]
+      level = 'warn'
+      priority = -1
+
+  [lints.rust]
+    absolute_paths_not_starting_with_crate = 'warn'
+    anonymous_parameters = 'warn'
+    bad_style = 'warn'
+    dead_code = 'warn'
+    improper_ctypes = 'warn'
+    keyword_idents = 'warn'
+    macro_use_extern_crate = 'warn'
+    meta_variable_misuse = 'warn'
+    missing_abi = 'warn'
+    missing_debug_implementations = 'warn'
+    missing_docs = 'warn'
+    no_mangle_generic_items = 'warn'
+    non_shorthand_field_patterns = 'warn'
+    noop_method_call = 'warn'
+    overflowing_literals = 'warn'
+    path_statements = 'warn'
+    patterns_in_fns_without_body = 'warn'
+    semicolon_in_expressions_from_macros = 'warn'
+    trivial_casts = 'warn'
+    trivial_numeric_casts = 'warn'
+    unconditional_recursion = 'warn'
+    unreachable_pub = 'warn'
+    unsafe_code = 'warn'
+    unused = 'warn'
+    unused_allocation = 'warn'
+    unused_comparisons = 'warn'
+    unused_extern_crates = 'warn'
+    unused_import_braces = 'warn'
+    unused_lifetimes = 'warn'
+    unused_parens = 'warn'
+    unused_qualifications = 'warn'
+    while_true = 'warn'
+
+[package]
+  categories = ['api-bindings', 'authentication']
+  description = 'Common code for QCS API clients'
+  edition = '2021'
+  homepage = 'https://github.com/rigetti/qcs-api-client-rust'
+  keywords = ['qcs', 'quantum', 'rigetti', 'api']
+  license = 'Apache-2.0'
+  name = 'qcs-api-client-common'
+  publish = true
+  readme = 'README.md'
+  repository = 'https://github.com/rigetti/qcs-api-client-rust'
+  version = '0.12.6-dev.3'
+
+  [package.metadata]
+    [package.metadata.docs]
+      [package.metadata.docs.rs]
+        features = ['python', 'tracing']

@@ -1,85 +1,169 @@
-[package]
-name = "qcs-api-client-grpc"
-version = "0.12.6-dev.2"
-edition = "2021"
-license = "Apache-2.0"
-readme = "README.md"
-repository = "https://github.com/rigetti/qcs-api-client-rust"
-homepage = "https://github.com/rigetti/qcs-api-client-rust"
-categories = ["api-bindings", "authentication"]
-keywords = ["qcs", "quantum", "rigetti", "api"]
-description = "gRPC client for the QCS API"
-publish = true
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[build-dependencies]
+  [build-dependencies.pbjson-build]
+    workspace = true
+
+  [build-dependencies.prost-build]
+    workspace = true
+
+  [build-dependencies.tonic-build]
+    workspace = true
 
 [dependencies]
-backoff = { workspace = true, features = ["tokio"] }
-futures-util = { workspace = true }
-http = { workspace = true }
-http-body = { workspace = true }
-http-body-util = { workspace = true }
-hyper = { workspace = true }
-hyper-proxy2 = { workspace = true, default-features = false, features = ["rustls"] }
-hyper-socks2 = { workspace = true, default-features = false }
-hyper-util = { workspace = true, features = ["client-legacy"] }
-opentelemetry = { workspace = true, optional = true }
-opentelemetry-http = { workspace = true, optional = true }
-opentelemetry_sdk = { workspace = true }
-pbjson = { workspace = true }
-pbjson-types = { workspace = true }
-prost = { workspace = true }
-qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.12.6-dev.2" }
-serde = { workspace = true }
-thiserror = { workspace = true }
-tokio = { workspace = true, features = ["time"] }
-tonic = { workspace = true }
-tonic-web = { workspace = true, optional = true }
-tower = { workspace = true, features = ["retry"] }
-tower-http = { workspace = true, features = ["trace"] }
-tracing = { workspace = true, optional = true }
-tracing-opentelemetry = { workspace = true }
-url = { workspace = true }
-urlpattern = { workspace = true, optional = true }
-uuid = { workspace = true, features = ["v4"] }
+  [dependencies.backoff]
+    features = ['tokio']
+    workspace = true
+
+  [dependencies.futures-util]
+    workspace = true
+
+  [dependencies.http]
+    workspace = true
+
+  [dependencies.http-body]
+    workspace = true
+
+  [dependencies.http-body-util]
+    workspace = true
+
+  [dependencies.hyper]
+    workspace = true
+
+  [dependencies.hyper-proxy2]
+    default-features = false
+    features = ['rustls']
+    workspace = true
+
+  [dependencies.hyper-socks2]
+    default-features = false
+    workspace = true
+
+  [dependencies.hyper-util]
+    features = ['client-legacy']
+    workspace = true
+
+  [dependencies.opentelemetry]
+    optional = true
+    workspace = true
+
+  [dependencies.opentelemetry-http]
+    optional = true
+    workspace = true
+
+  [dependencies.opentelemetry_sdk]
+    workspace = true
+
+  [dependencies.pbjson]
+    workspace = true
+
+  [dependencies.pbjson-types]
+    workspace = true
+
+  [dependencies.prost]
+    workspace = true
+
+  [dependencies.qcs-api-client-common]
+    path = '../qcs-api-client-common'
+    version = '0.12.6-dev.3'
+
+  [dependencies.serde]
+    workspace = true
+
+  [dependencies.thiserror]
+    workspace = true
+
+  [dependencies.tokio]
+    features = ['time']
+    workspace = true
+
+  [dependencies.tonic]
+    workspace = true
+
+  [dependencies.tonic-web]
+    optional = true
+    workspace = true
+
+  [dependencies.tower]
+    features = ['retry']
+    workspace = true
+
+  [dependencies.tower-http]
+    features = ['trace']
+    workspace = true
+
+  [dependencies.tracing]
+    optional = true
+    workspace = true
+
+  [dependencies.tracing-opentelemetry]
+    workspace = true
+
+  [dependencies.url]
+    workspace = true
+
+  [dependencies.urlpattern]
+    optional = true
+    workspace = true
+
+  [dependencies.uuid]
+    features = ['v4']
+    workspace = true
 
 [dev-dependencies]
-async-std = { workspace = true, features = ["attributes"] }
-jsonwebtoken = { workspace = true }
-once_cell = { workspace = true }
-opentelemetry = { workspace = true, features = ["trace"] }
-rstest = { workspace = true }
-serde_json = { workspace = true }
-tempfile = { workspace = true }
-tokio = { workspace = true, features = ["parking_lot", "rt-multi-thread"] }
-tokio-stream = { workspace = true, features = ["net"] }
-tonic-health = { workspace = true }
-tracing-subscriber = { workspace = true }
+  [dev-dependencies.async-std]
+    features = ['attributes']
+    workspace = true
 
-[build-dependencies]
-pbjson-build = { workspace = true }
-prost-build = { workspace = true }
-tonic-build = { workspace = true }
+  [dev-dependencies.jsonwebtoken]
+    workspace = true
+
+  [dev-dependencies.once_cell]
+    workspace = true
+
+  [dev-dependencies.opentelemetry]
+    features = ['trace']
+    workspace = true
+
+  [dev-dependencies.rstest]
+    workspace = true
+
+  [dev-dependencies.serde_json]
+    workspace = true
+
+  [dev-dependencies.tempfile]
+    workspace = true
+
+  [dev-dependencies.tokio]
+    features = ['parking_lot', 'rt-multi-thread']
+    workspace = true
+
+  [dev-dependencies.tokio-stream]
+    features = ['net']
+    workspace = true
+
+  [dev-dependencies.tonic-health]
+    workspace = true
+
+  [dev-dependencies.tracing-subscriber]
+    workspace = true
 
 [features]
-server = []
-regen = []
-# Can be used to provide HTTP/1.1 support.
-grpc-web = ["dep:tonic-web"]
-# The old name of the tracing-opentelemetry feature, here for backwards compatibility
-otel-tracing = ["tracing-opentelemetry"]
-tracing-opentelemetry = [
-    "dep:opentelemetry",
-    "dep:opentelemetry-http",
-    "qcs-api-client-common/tracing-config",
-    "tracing-config",
-    "tracing",
-]
-tracing = [
-    "dep:tracing",
-    "qcs-api-client-common/tracing-config",
-    "urlpattern",
-]
-tracing-config = [
-    "qcs-api-client-common/tracing-config",
-    "tracing",
-]
+  grpc-web = ['dep:tonic-web']
+  otel-tracing = ['tracing-opentelemetry']
+  regen = []
+  server = []
+  tracing = ['dep:tracing', 'qcs-api-client-common/tracing-config', 'urlpattern']
+  tracing-config = ['qcs-api-client-common/tracing-config', 'tracing']
+  tracing-opentelemetry = ['dep:opentelemetry', 'dep:opentelemetry-http', 'qcs-api-client-common/tracing-config', 'tracing-config', 'tracing']
+
+[package]
+  categories = ['api-bindings', 'authentication']
+  description = 'gRPC client for the QCS API'
+  edition = '2021'
+  homepage = 'https://github.com/rigetti/qcs-api-client-rust'
+  keywords = ['qcs', 'quantum', 'rigetti', 'api']
+  license = 'Apache-2.0'
+  name = 'qcs-api-client-grpc'
+  publish = true
+  readme = 'README.md'
+  repository = 'https://github.com/rigetti/qcs-api-client-rust'
+  version = '0.12.6-dev.3'
