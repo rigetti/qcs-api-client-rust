@@ -1,3 +1,19 @@
+## 0.12.6-dev.5 (2025-10-08)
+
+### Fixes
+
+#### publish to code-artifact
+
+#### docs for release
+
+#### explicitly set 'publish' in all crates
+
+#### set publish to 'false' for public crates, so they don't get double-published
+
+#### map scope tags to crates
+
+#### force token auth for crates-io; run all publishing on a single tag
+
 ## 0.12.6-dev.4 (2025-10-07)
 
 ### Fixes
