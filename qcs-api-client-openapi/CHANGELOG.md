@@ -1,4 +1,4 @@
-## 0.13.6-dev.6 (2025-10-08)
+## 0.13.6-dev.7 (2025-10-08)
 
 ### Fixes
 
@@ -17,74 +17,6 @@
 #### explicitly use the variable for the cargo-registry token
 
 #### import public-grpc 'tonic' crate instead of including the file
-
-## 0.13.6-dev.5 (2025-10-08)
-
-### Fixes
-
-#### publish to code-artifact
-
-#### docs for release
-
-#### explicitly set 'publish' in all crates
-
-#### set publish to 'false' for public crates, so they don't get double-published
-
-#### map scope tags to crates
-
-#### force token auth for crates-io; run all publishing on a single tag
-
-## 0.13.6-dev.4 (2025-10-07)
-
-### Fixes
-
-#### publish to code-artifact
-
-#### docs for release
-
-#### explicitly set 'publish' in all crates
-
-#### set publish to 'false' for public crates, so they don't get double-published
-
-#### map scope tags to crates
-
-## 0.13.6-dev.3 (2025-10-07)
-
-### Fixes
-
-#### publish to code-artifact
-
-#### docs for release
-
-#### explicitly set 'publish' in all crates
-
-#### set publish to 'false' for public crates, so they don't get double-published
-
-## 0.13.6-dev.2 (2025-10-03)
-
-### Fixes
-
-#### publish to code-artifact
-
-#### docs for release
-
-#### explicitly set 'publish' in all crates
-
-## 0.13.6-dev.1 (2025-10-03)
-
-### Fixes
-
-#### publish to code-artifact
-
-#### docs for release
-
-## 0.13.6-dev.0 (2025-10-03)
-
-### Fixes
-
-#### publish to code-artifact
-
-#### docs for release
 
 ## 0.13.5 (2025-10-01)
 
