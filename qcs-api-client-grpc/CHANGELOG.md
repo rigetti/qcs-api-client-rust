@@ -1,3 +1,29 @@
+## 0.12.6-dev.11 (2025-10-09)
+
+### Fixes
+
+#### publish to code-artifact
+
+#### docs for release
+
+#### explicitly set 'publish' in all crates
+
+#### set publish to 'false' for public crates, so they don't get double-published
+
+#### map scope tags to crates
+
+#### force token auth for crates-io; run all publishing on a single tag
+
+#### explicitly use the variable for the cargo-registry token
+
+#### import public-grpc 'tonic' crate instead of including the file
+
+#### push tags individually
+
+#### non-interruptible; don't permit running knope releases on release commits
+
+#### separate 'release'/'prerelease' flows in knope are not necessary
+
 ## 0.12.6-dev.10 (2025-10-09)
 
 ### Fixes
