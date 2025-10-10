@@ -1,52 +1,75 @@
-[package]
-name = "qcs-api-client-openapi"
-description = "Auto-generated bindings to the QCS OpenAPI"
-version = "0.13.5"
-edition = "2021"
-license = "Apache-2.0"
-repository = "https://github.com/rigetti/qcs-api-client-rust"
-homepage = "https://github.com/rigetti/qcs-api-client-rust"
-keywords = ["API", "QCS", "Rigetti", "quantum"]
-categories = ["api-bindings"]
-
 [dependencies]
-anyhow = { version = "1.0.68", optional = true }
-http = { workspace = true }
-qcs-api-client-common = { path = "../qcs-api-client-common", version = "0.12.5" }
-reqwest-middleware = { workspace = true, optional = true }
-reqwest-tracing = { workspace = true, optional = true }
-serde = { workspace = true, features = ["derive"] }
-serde_json = { workspace = true } 
-tokio = { workspace = true, features = ["time"] }
-tracing = { workspace = true, optional = true }
-tracing-opentelemetry = { workspace = true, optional = true }
-url = { workspace = true }
-urlpattern = { workspace = true, optional = true }
+  [dependencies.anyhow]
+    optional = true
+    version = '1.0.68'
 
-[dependencies.reqwest]
-workspace = true
-features = ["json", "multipart", "rustls-tls-native-roots"]
+  [dependencies.http]
+    workspace = true
+
+  [dependencies.qcs-api-client-common]
+    path = '../qcs-api-client-common'
+    version = '0.12.6'
+
+  [dependencies.reqwest]
+    features = ['json', 'multipart', 'rustls-tls-native-roots']
+    workspace = true
+
+  [dependencies.reqwest-middleware]
+    optional = true
+    workspace = true
+
+  [dependencies.reqwest-tracing]
+    optional = true
+    workspace = true
+
+  [dependencies.serde]
+    features = ['derive']
+    workspace = true
+
+  [dependencies.serde_json]
+    workspace = true
+
+  [dependencies.tokio]
+    features = ['time']
+    workspace = true
+
+  [dependencies.tracing]
+    optional = true
+    workspace = true
+
+  [dependencies.tracing-opentelemetry]
+    optional = true
+    workspace = true
+
+  [dependencies.url]
+    workspace = true
+
+  [dependencies.urlpattern]
+    optional = true
+    workspace = true
 
 [dev-dependencies]
-rstest = { workspace = true }
-tokio = { workspace = true, features = ["rt-multi-thread", "rt", "macros"] }
+  [dev-dependencies.rstest]
+    workspace = true
+
+  [dev-dependencies.tokio]
+    features = ['rt-multi-thread', 'rt', 'macros']
+    workspace = true
 
 [features]
-# The old name of the tracing-opentelemetry feature, here for backwards compatibility
-otel-tracing = ["tracing-opentelemetry"]
-tracing = [
-  "dep:tracing",
-  "qcs-api-client-common/tracing",
-  "urlpattern", 
- ]
-tracing-config = [
-  "qcs-api-client-common/tracing-config",
-  "tracing", 
-]
-tracing-opentelemetry = [
-  "dep:anyhow",
-  "dep:reqwest-middleware",
-  "dep:reqwest-tracing",
-  "dep:tracing-opentelemetry",
-  "tracing-config",
-]
+  otel-tracing = ['tracing-opentelemetry']
+  tracing = ['dep:tracing', 'qcs-api-client-common/tracing', 'urlpattern']
+  tracing-config = ['qcs-api-client-common/tracing-config', 'tracing']
+  tracing-opentelemetry = ['dep:anyhow', 'dep:reqwest-middleware', 'dep:reqwest-tracing', 'dep:tracing-opentelemetry', 'tracing-config']
+
+[package]
+  categories = ['api-bindings']
+  description = 'Auto-generated bindings to the QCS OpenAPI'
+  edition = '2021'
+  homepage = 'https://github.com/rigetti/qcs-api-client-rust'
+  keywords = ['API', 'QCS', 'Rigetti', 'quantum']
+  license = 'Apache-2.0'
+  name = 'qcs-api-client-openapi'
+  publish = true
+  repository = 'https://github.com/rigetti/qcs-api-client-rust'
+  version = '0.13.6'
