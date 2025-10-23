@@ -1,3 +1,9 @@
+## 0.13.7 (2025-10-23)
+
+### Fixes
+
+#### upgrade 'urlpattern' to version that doesn't rely on unmaintained crates
+
 ## 0.13.6 (2025-10-10)
 
 ### Fixes
