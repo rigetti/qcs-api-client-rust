@@ -935,14 +935,22 @@ impl serde::Serialize for translation_options::Riverlane {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if !self.ds2_configuration_data.is_empty() {
+        if !self.qeci_configuration_data.is_empty() {
+            len += 1;
+        }
+        if self.qeci_max_nanoseconds_until_read_available != 0 {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("services.translation.TranslationOptions.Riverlane", len)?;
-        if !self.ds2_configuration_data.is_empty() {
-            let v: std::collections::HashMap<_, _> = self.ds2_configuration_data.iter()
+        if !self.qeci_configuration_data.is_empty() {
+            let v: std::collections::HashMap<_, _> = self.qeci_configuration_data.iter()
                 .map(|(k, v)| (k, pbjson::private::base64::encode(v))).collect();
-            struct_ser.serialize_field("ds2ConfigurationData", &v)?;
+            struct_ser.serialize_field("qeciConfigurationData", &v)?;
+        }
+        if self.qeci_max_nanoseconds_until_read_available != 0 {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("qeciMaxNanosecondsUntilReadAvailable", ToString::to_string(&self.qeci_max_nanoseconds_until_read_available).as_str())?;
         }
         struct_ser.end()
     }
@@ -954,13 +962,16 @@ impl<'de> serde::Deserialize<'de> for translation_options::Riverlane {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "ds2_configuration_data",
-            "ds2ConfigurationData",
+            "qeci_configuration_data",
+            "qeciConfigurationData",
+            "qeci_max_nanoseconds_until_read_available",
+            "qeciMaxNanosecondsUntilReadAvailable",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            Ds2ConfigurationData,
+            QeciConfigurationData,
+            QeciMaxNanosecondsUntilReadAvailable,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -982,7 +993,8 @@ impl<'de> serde::Deserialize<'de> for translation_options::Riverlane {
                         E: serde::de::Error,
                     {
                         match value {
-                            "ds2ConfigurationData" | "ds2_configuration_data" => Ok(GeneratedField::Ds2ConfigurationData),
+                            "qeciConfigurationData" | "qeci_configuration_data" => Ok(GeneratedField::QeciConfigurationData),
+                            "qeciMaxNanosecondsUntilReadAvailable" | "qeci_max_nanoseconds_until_read_available" => Ok(GeneratedField::QeciMaxNanosecondsUntilReadAvailable),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1002,22 +1014,32 @@ impl<'de> serde::Deserialize<'de> for translation_options::Riverlane {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut ds2_configuration_data__ = None;
+                let mut qeci_configuration_data__ = None;
+                let mut qeci_max_nanoseconds_until_read_available__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
-                        GeneratedField::Ds2ConfigurationData => {
-                            if ds2_configuration_data__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("ds2ConfigurationData"));
+                        GeneratedField::QeciConfigurationData => {
+                            if qeci_configuration_data__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("qeciConfigurationData"));
                             }
-                            ds2_configuration_data__ = Some(
+                            qeci_configuration_data__ = Some(
                                 map_.next_value::<std::collections::HashMap<_, ::pbjson::private::BytesDeserialize<_>>>()?
                                     .into_iter().map(|(k,v)| (k, v.0)).collect()
                             );
                         }
+                        GeneratedField::QeciMaxNanosecondsUntilReadAvailable => {
+                            if qeci_max_nanoseconds_until_read_available__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("qeciMaxNanosecondsUntilReadAvailable"));
+                            }
+                            qeci_max_nanoseconds_until_read_available__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
                     }
                 }
                 Ok(translation_options::Riverlane {
-                    ds2_configuration_data: ds2_configuration_data__.unwrap_or_default(),
+                    qeci_configuration_data: qeci_configuration_data__.unwrap_or_default(),
+                    qeci_max_nanoseconds_until_read_available: qeci_max_nanoseconds_until_read_available__.unwrap_or_default(),
                 })
             }
         }

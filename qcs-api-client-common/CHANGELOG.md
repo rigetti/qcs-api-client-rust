@@ -1,3 +1,9 @@
+## 0.12.8-dev.0 (2025-10-30)
+
+### Fixes
+
+#### update service-model again
+
 ## 0.12.7 (2025-10-23)
 
 ### Fixes

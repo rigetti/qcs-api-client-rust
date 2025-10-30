@@ -28,8 +28,12 @@ message TranslationOptions {
     }
     message Riverlane {
 
-        // The (opaque) configuration data, per instrument, to send to Riverlane's DS2 box(es).
-        map<string, bytes> ds2_configuration_data = 2;
+        // The (opaque) configuration data, per instrument, to send to Riverlane's QECi box(es).
+        map<string, bytes> qeci_configuration_data = 2;
+
+        // The maximum expected latency between a `qeci_csr_read_request` extern
+        // call and receiving the data with the `is_qeci_csr_read_complete` extern
+        uint64 qeci_max_nanoseconds_until_read_available = 3;
     }
 
     // The backend to use for translation, to include relevant options.
