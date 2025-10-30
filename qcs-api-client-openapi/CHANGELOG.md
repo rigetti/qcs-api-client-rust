@@ -1,3 +1,11 @@
+## 0.13.8-dev.1 (2025-10-30)
+
+### Fixes
+
+#### update service-model again
+
+#### 'unhide' the cargo-config for private registry
+
 ## 0.13.8-dev.0 (2025-10-30)
 
 ### Fixes

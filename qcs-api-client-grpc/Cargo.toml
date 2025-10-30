@@ -63,7 +63,7 @@
 
   [dependencies.qcs-api-client-common]
     path = '../qcs-api-client-common'
-    version = '0.12.8-dev.0'
+    version = '0.12.8-dev.1'
 
   [dependencies.serde]
     workspace = true
@@ -166,4 +166,4 @@
   publish = true
   readme = 'README.md'
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.12.8-dev.0'
+  version = '0.12.8-dev.1'
