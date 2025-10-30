@@ -51,12 +51,16 @@ pub mod translation_options {
     }
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Riverlane {
-        /// The (opaque) configuration data, per instrument, to send to Riverlane's DS2 box(es).
+        /// The (opaque) configuration data, per instrument, to send to Riverlane's QECi box(es).
         #[prost(map = "string, bytes", tag = "2")]
-        pub ds2_configuration_data: ::std::collections::HashMap<
+        pub qeci_configuration_data: ::std::collections::HashMap<
             ::prost::alloc::string::String,
             ::prost::alloc::vec::Vec<u8>,
         >,
+        /// The maximum expected latency between a `qeci_csr_read_request` extern
+        /// call and receiving the data with the `is_qeci_csr_read_complete` extern
+        #[prost(uint64, tag = "3")]
+        pub qeci_max_nanoseconds_until_read_available: u64,
     }
     /// The backend to use for translation, to include relevant options.
     /// If neither is specified, the implementing service may select the
