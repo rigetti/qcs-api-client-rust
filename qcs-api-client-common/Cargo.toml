@@ -192,7 +192,7 @@
   publish = true
   readme = 'README.md'
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.12.9'
+  version = '0.12.10'
 
   [package.metadata]
     [package.metadata.docs]

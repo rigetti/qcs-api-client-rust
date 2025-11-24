@@ -1,3 +1,9 @@
+## 0.13.10 (2025-11-24)
+
+### Fixes
+
+#### redirect should only bind locally
+
 ## 0.13.9 (2025-11-24)
 
 ### Features

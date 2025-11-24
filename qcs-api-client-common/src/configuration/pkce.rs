@@ -212,7 +212,7 @@ impl RedirectListener {
         cancel: CancellationToken,
         port: u16,
     ) -> Result<Self, RedirectListenerSpawnError> {
-        let bind_addr = format!("0.0.0.0:{port}");
+        let bind_addr = format!("127.0.0.1:{port}");
         let listener = TcpListener::bind(&bind_addr).await?;
         let bind_port = listener.local_addr()?.port();
 
