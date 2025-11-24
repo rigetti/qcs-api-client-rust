@@ -1,15 +1,17 @@
 #![allow(unused_qualifications)]
 
 use pyo3::{
-    exceptions::{PyFileNotFoundError, PyOSError, PyValueError},
+    exceptions::{PyFileNotFoundError, PyOSError, PyRuntimeError, PyValueError},
     prelude::*,
     types::PyFunction,
 };
+use pyo3_asyncio::tokio::get_runtime;
 use rigetti_pyo3::{create_init_submodule, py_function_sync_async};
+use tokio_util::sync::CancellationToken;
 
 use crate::{
     configuration::{
-        API_URL_VAR, DEFAULT_API_URL, DEFAULT_GRPC_API_URL, DEFAULT_PROFILE_NAME,
+        PkceFlow, API_URL_VAR, DEFAULT_API_URL, DEFAULT_GRPC_API_URL, DEFAULT_PROFILE_NAME,
         DEFAULT_QUILC_URL, DEFAULT_QVM_URL, DEFAULT_SECRETS_PATH, DEFAULT_SETTINGS_PATH,
         GRPC_API_URL_VAR, PROFILE_NAME_VAR, QUILC_URL_VAR, QVM_URL_VAR, SECRETS_PATH_VAR,
         SETTINGS_PATH_VAR,
@@ -31,7 +33,8 @@ create_init_submodule! {
         OAuthSession,
         RefreshToken,
         ClientCredentials,
-        ExternallyManaged
+        ExternallyManaged,
+        PkceFlow
     ],
     consts: [
         DEFAULT_API_URL,
@@ -122,6 +125,37 @@ impl ExternallyManaged {
     }
 }
 
+impl_eq!(PkceFlow);
+// Does not implement `__repr__`, since the data contains a secret value.
+#[pymethods]
+impl PkceFlow {
+    #[new]
+    fn __new__(py: Python<'_>, auth_server: AuthServer) -> PyResult<Self> {
+        py.allow_threads(move || {
+            let runtime = get_runtime();
+            runtime.block_on(async move {
+                let cancel_token = cancel_token_with_ctrl_c();
+                PkceFlow::new_login_flow(cancel_token, &auth_server).await
+            })
+        })
+        .map_err(|err| PyRuntimeError::new_err(err.to_string()))
+    }
+
+    #[getter]
+    #[pyo3(name = "access_token")]
+    fn py_access_token(&self) -> &str {
+        &self.access_token
+    }
+
+    #[getter]
+    #[pyo3(name = "refresh_token")]
+    fn py_refresh_token(&self) -> Option<&str> {
+        self.refresh_token
+            .as_ref()
+            .map(|rt| rt.refresh_token.as_str())
+    }
+}
+
 impl_repr!(OAuthSession);
 #[pymethods]
 impl OAuthSession {
@@ -151,6 +185,7 @@ impl OAuthSession {
             OAuthGrant::ExternallyManaged(ref externally_managed) => {
                 externally_managed.clone().into_py(py)
             }
+            OAuthGrant::PkceFlow(ref pkce_tokens) => pkce_tokens.clone().into_py(py),
         }
     }
 
@@ -207,6 +242,19 @@ impl ClientConfiguration {
     }
 
     #[staticmethod]
+    #[pyo3(name = "load_default_with_login")]
+    fn py_load_default_with_login(py: Python<'_>) -> PyResult<Self> {
+        py.allow_threads(move || {
+            let runtime = get_runtime();
+            runtime.block_on(async move {
+                let cancel_token = cancel_token_with_ctrl_c();
+                Self::load_with_login(cancel_token, None).await
+            })
+        })
+        .map_err(|err| PyRuntimeError::new_err(err.to_string()))
+    }
+
+    #[staticmethod]
     #[pyo3(name = "builder")]
     fn py_builder() -> PyClientConfigurationBuilder {
         PyClientConfigurationBuilder::default()
@@ -252,7 +300,7 @@ impl ClientConfiguration {
     ///
     /// # Errors
     ///
-    /// - Raises a TokenError if there is a problem fetching the tokens
+    /// - Raises a `TokenError` if there is a problem fetching the tokens
     pub fn get_oauth_session(&self, py: Python<'_>) -> PyResult<OAuthSession> {
         py_get_oauth_session(py, self.oauth_session.clone())
     }
@@ -357,7 +405,8 @@ impl From<LoadError> for PyErr {
             LoadError::Load(_)
             | LoadError::Build(_)
             | LoadError::ProfileNotFound(_)
-            | LoadError::AuthServerNotFound(_) => PyValueError::new_err(message),
+            | LoadError::AuthServerNotFound(_)
+            | LoadError::PkceFlow(_) => PyValueError::new_err(message),
             LoadError::EnvVar { .. } | LoadError::Io(_) => PyOSError::new_err(message),
             LoadError::Path { .. } => PyFileNotFoundError::new_err(message),
             #[cfg(feature = "tracing-config")]
@@ -377,7 +426,20 @@ impl From<TokenError> for PyErr {
             | TokenError::InvalidAccessToken(_)
             | TokenError::Fetch(_)
             | TokenError::ExternallyManaged(_)
-            | TokenError::Write(_) => PyValueError::new_err(message),
+            | TokenError::Write(_)
+            | TokenError::Discovery(_) => PyValueError::new_err(message),
         }
     }
+}
+
+fn cancel_token_with_ctrl_c() -> CancellationToken {
+    let cancel_token = CancellationToken::new();
+    let cancel_token_ctrl_c = cancel_token.clone();
+    tokio::spawn(cancel_token.clone().run_until_cancelled_owned(async move {
+        match tokio::signal::ctrl_c().await {
+            Ok(()) => cancel_token_ctrl_c.cancel(),
+            Err(error) => eprintln!("Failed to register signal handler: {error}"),
+        }
+    }));
+    cancel_token
 }

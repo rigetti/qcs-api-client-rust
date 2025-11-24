@@ -15,7 +15,7 @@
 //! * [`SETTINGS_PATH_VAR`]: Set the path of the `settings.toml` file to load.
 //! * [`SECRETS_PATH_VAR`]: Set the path of the `secrets.toml` file to load.
 //! * [`SECRETS_READ_ONLY_VAR`]: Flag indicating whether to treat the `secrets.toml` file as read-only. Disabled by default.
-//!     * Access token updates will _not_ be persisted to the secrets file, regardless of file permissions, for any of the following values (case insensitive): "true", "yes", "1".  
+//!     * Access token updates will _not_ be persisted to the secrets file, regardless of file permissions, for any of the following values (case insensitive): "true", "yes", "1".
 //!     * Access token updates will be persisted to the secrets file if it is writeable for any other value or if unset.
 //! * [`PROFILE_NAME_VAR`]: Override the profile that is loaded by default
 //! * [`QUILC_URL_VAR`]: Override the URL used for requests to the quilc server.
@@ -26,10 +26,12 @@
 //! The [`ClientConfiguration`] exposes an API for loading and accessing your
 //! configuration.
 
+use crate::configuration::tokens::insecure_validate_token_exp;
 #[cfg(feature = "tracing-config")]
 use crate::tracing_configuration::TracingConfiguration;
 use derive_builder::Builder;
 use std::{env, path::PathBuf};
+use tokio_util::sync::CancellationToken;
 
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
@@ -40,6 +42,8 @@ use self::{
 };
 
 mod error;
+mod oidc;
+mod pkce;
 #[cfg(feature = "python")]
 mod py;
 mod secrets;
@@ -52,11 +56,9 @@ pub(crate) use py::*;
 pub use secrets::{DEFAULT_SECRETS_PATH, SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR};
 pub use settings::{AuthServer, DEFAULT_SETTINGS_PATH, SETTINGS_PATH_VAR};
 pub use tokens::{
-    ClientCredentials, ExternallyManaged, OAuthGrant, OAuthSession, RefreshFunction, RefreshToken,
-    TokenDispatcher, TokenRefresher,
+    ClientCredentials, ExternallyManaged, OAuthGrant, OAuthSession, PkceFlow, RefreshFunction,
+    RefreshToken, TokenDispatcher, TokenRefresher,
 };
-
-const QCS_AUDIENCE: &str = "api://qcs";
 
 /// Default profile name.
 pub const DEFAULT_PROFILE_NAME: &str = "default";
@@ -159,8 +161,26 @@ impl ClientConfigurationBuilder {
     }
 }
 
-impl ClientConfiguration {
-    fn new(
+/// The common context used to build a [`ClientConfiguration`].
+struct ConfigurationContext {
+    builder: ClientConfigurationBuilder,
+    auth_server: AuthServer,
+    credential: Option<Credential>,
+}
+
+impl ConfigurationContext {
+    fn from_profile(profile_name: Option<String>) -> Result<Self, LoadError> {
+        #[cfg(feature = "tracing-config")]
+        match profile_name.as_ref() {
+            None => tracing::debug!("loading default QCS profile"),
+            Some(profile) => tracing::debug!("loading QCS profile {profile}"),
+        }
+        let settings = Settings::load()?;
+        let secrets = Secrets::load()?;
+        Self::from_sources(settings, secrets, profile_name)
+    }
+
+    fn from_sources(
         settings: Settings,
         mut secrets: Secrets,
         profile_name: Option<String>,
@@ -183,32 +203,6 @@ impl ClientConfiguration {
 
         let secrets_path = secrets.file_path;
         let credential = secrets.credentials.remove(&profile.credentials_name);
-        let oauth_session = match credential {
-            Some(Credential {
-                token_payload:
-                    Some(TokenPayload {
-                        access_token,
-                        refresh_token,
-                        ..
-                    }),
-            }) => {
-                Some(OAuthSession::new(
-                    OAuthGrant::RefreshToken(RefreshToken::new(
-                        // Some configurations do not populate or may use an
-                        // empty string for the `refresh_token`, but are still
-                        // valid sessions with a valid `access_token`.
-                        //
-                        // Because we found a `token_payload`, we must assume
-                        // the user wants to construct an `OAuthSession`.
-                        // Note that this is no guarantee of session validity.
-                        refresh_token.unwrap_or_default(),
-                    )),
-                    auth_server,
-                    access_token,
-                ))
-            }
-            _ => None,
-        };
 
         let api_url = env::var(API_URL_VAR).unwrap_or(profile.api_url);
         let quilc_url = env::var(QUILC_URL_VAR).unwrap_or(profile.applications.pyquil.quilc_url);
@@ -227,9 +221,8 @@ impl ClientConfiguration {
             _ => ConfigSource::Default,
         };
 
-        let mut builder = Self::builder();
+        let mut builder = ClientConfiguration::builder();
         builder
-            .oauth_session(oauth_session)
             .profile(profile_name)
             .source(source)
             .api_url(api_url)
@@ -240,13 +233,51 @@ impl ClientConfiguration {
         #[cfg(feature = "tracing-config")]
         {
             builder.tracing_configuration(tracing_configuration);
-        };
+        }
 
-        Ok({
-            builder
-                .build()
-                .expect("curated build process should not fail")
+        Ok(Self {
+            builder,
+            auth_server,
+            credential,
         })
+    }
+}
+
+fn credential_to_oauth_session(
+    credential: Option<Credential>,
+    auth_server: AuthServer,
+) -> Option<OAuthSession> {
+    match credential {
+        Some(Credential {
+            token_payload:
+                Some(TokenPayload {
+                    access_token,
+                    refresh_token,
+                    ..
+                }),
+        }) => Some(OAuthSession::new(
+            OAuthGrant::RefreshToken(RefreshToken::new(refresh_token.unwrap_or_default())),
+            auth_server,
+            access_token,
+        )),
+        _ => None,
+    }
+}
+
+impl ClientConfiguration {
+    #[cfg(test)]
+    fn new(
+        settings: Settings,
+        secrets: Secrets,
+        profile_name: Option<String>,
+    ) -> Result<Self, LoadError> {
+        let ConfigurationContext {
+            mut builder,
+            auth_server,
+            credential,
+        } = ConfigurationContext::from_sources(settings, secrets, profile_name)?;
+        let oauth_session = credential_to_oauth_session(credential, auth_server);
+        Ok(builder.oauth_session(oauth_session).build()?)
     }
 
     /// Attempts to load config files
@@ -271,21 +302,89 @@ impl ClientConfiguration {
 
     /// Attempts to load a QCS configuration and creates a [`ClientConfiguration`] using the
     /// specified profile. If no `profile_name` is provided, then a default configuration is
+    /// loaded. When stored OAuth credentials are unavailable, this method falls back to an
+    /// interactive PKCE login flow.
+    ///
+    /// # Errors
+    ///
+    /// See [`LoadError`]
+    pub async fn load_with_login(
+        cancel_token: CancellationToken,
+        profile_name: Option<String>,
+    ) -> Result<Self, LoadError> {
+        let ConfigurationContext {
+            mut builder,
+            auth_server,
+            credential,
+        } = ConfigurationContext::from_profile(profile_name)?;
+
+        // If the stored access or refresh tokens are valid, skip the login flow
+        if let Some(Credential {
+            token_payload:
+                Some(TokenPayload {
+                    access_token,
+                    refresh_token,
+                    ..
+                }),
+        }) = credential
+        {
+            // The current access token is valid, use it
+            if let Some(access_token) = access_token {
+                if insecure_validate_token_exp(&access_token).is_ok() {
+                    let refresh_token = RefreshToken::new(refresh_token.unwrap_or_default());
+                    let oauth_session = OAuthSession::new(
+                        OAuthGrant::RefreshToken(refresh_token),
+                        auth_server,
+                        Some(access_token),
+                    );
+                    return Ok(builder.oauth_session(Some(oauth_session)).build()?);
+                }
+            }
+
+            // The access token is invalid, try to refresh it
+            if let Some(refresh_token) = refresh_token {
+                if !refresh_token.is_empty() {
+                    let mut refresh_token = RefreshToken::new(refresh_token);
+
+                    // If the refresh token is valid, use it
+                    if let Ok(access_token) = refresh_token.request_access_token(&auth_server).await
+                    {
+                        let oauth_session = OAuthSession::new(
+                            OAuthGrant::RefreshToken(refresh_token),
+                            auth_server,
+                            Some(access_token),
+                        );
+
+                        return Ok(builder.oauth_session(Some(oauth_session)).build()?);
+                    }
+                }
+            }
+        }
+
+        // At this point the stored credentials are known to be invalid, so a login is required
+        let pkce_flow = PkceFlow::new_login_flow(cancel_token, &auth_server).await?;
+        let access_token = pkce_flow.access_token.clone();
+        let oauth_session =
+            OAuthSession::from_pkce_flow(pkce_flow, auth_server, Some(access_token));
+
+        Ok(builder.oauth_session(Some(oauth_session)).build()?)
+    }
+
+    /// Attempts to load a QCS configuration and creates a [`ClientConfiguration`] using the
+    /// specified profile. If no `profile_name` is provided, then a default configuration is
     /// loaded.
     ///
     /// # Errors
     ///
     /// See [`LoadError`]
     fn load(profile_name: Option<String>) -> Result<Self, LoadError> {
-        #[cfg(feature = "tracing-config")]
-        match profile_name.as_ref() {
-            None => tracing::debug!("loading default QCS profile"),
-            Some(profile) => tracing::debug!("loading QCS profile {profile}"),
-        }
-        let settings = Settings::load()?;
-        let secrets = Secrets::load()?;
-
-        Self::new(settings, secrets, profile_name)
+        let ConfigurationContext {
+            mut builder,
+            auth_server,
+            credential,
+        } = ConfigurationContext::from_profile(profile_name)?;
+        let oauth_session = credential_to_oauth_session(credential, auth_server);
+        Ok(builder.oauth_session(oauth_session).build()?)
     }
 
     /// Get a [`ClientConfigurationBuilder`]
@@ -424,7 +523,9 @@ fn expand_path_from_env_or_default(
             Ok(path_buf)
         }
         Err(env::VarError::NotPresent) => {
-            let expanded_path = shellexpand::tilde(default);
+            let expanded_path = shellexpand::tilde_with_context(default, || {
+                env::home_dir().map(|path| path.display().to_string())
+            });
             let path_buf: PathBuf = expanded_path.as_ref().into();
             if !path_buf.exists() {
                 return Err(LoadError::Path {
@@ -445,20 +546,20 @@ fn expand_path_from_env_or_default(
 
 #[cfg(test)]
 mod test {
-
     use jsonwebtoken::{encode, EncodingKey, Header};
     use serde::Serialize;
     use time::{Duration, OffsetDateTime};
+    use tokio_util::sync::CancellationToken;
 
     use crate::configuration::{
-        expand_path_from_env_or_default, secrets::Secrets, settings::Settings, AuthServer,
-        ClientConfiguration, OAuthSession, RefreshToken, API_URL_VAR, DEFAULT_QUILC_URL,
-        GRPC_API_URL_VAR, QUILC_URL_VAR, QVM_URL_VAR,
+        expand_path_from_env_or_default, pkce::tests::PkceTestServerHarness, secrets::Secrets,
+        settings::Settings, AuthServer, ClientConfiguration, OAuthSession, RefreshToken,
+        API_URL_VAR, DEFAULT_QUILC_URL, GRPC_API_URL_VAR, QUILC_URL_VAR, QVM_URL_VAR,
+        SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR, SETTINGS_PATH_VAR,
     };
 
     use super::{
         settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, tokens::ClientCredentials, TokenRefresher,
-        QCS_AUDIENCE,
     };
 
     #[test]
@@ -696,7 +797,6 @@ token_type = "Bearer"
     #[derive(Clone, Debug, Serialize)]
     struct Claims {
         exp: i64,
-        aud: String,
         iss: String,
         sub: String,
     }
@@ -705,7 +805,6 @@ token_type = "Bearer"
         fn default() -> Self {
             Self {
                 exp: 0,
-                aud: QCS_AUDIENCE.to_string(),
                 iss: QCS_DEFAULT_AUTH_ISSUER_PRODUCTION.to_string(),
                 sub: "qcs@rigetti.com".to_string(),
             }
@@ -835,5 +934,128 @@ token_type = "Bearer"
             config.get_bearer_access_token().await.unwrap(),
             access_token.to_string()
         );
+    }
+
+    /// Exercises the PKCE login flow end-to-end, ensuring that the token is persisted to the secrets file.
+    #[test]
+    #[serial_test::serial(oauth2_test_server)]
+    fn test_pkce_flow_persists_token() {
+        // Because we need to block on the runtime inside the jail function,
+        // we have to create one manually here instead of relying on #[tokio::test].
+        let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+
+        let PkceTestServerHarness {
+            server,
+            client,
+            discovery: _,
+            redirect_port: _,
+        } = runtime.block_on(PkceTestServerHarness::new());
+
+        let client_id = client.client_id;
+        let issuer = server.issuer().to_string();
+
+        figment::Jail::expect_with(|jail| {
+            // In CI, the secrets file is mounted as read-only,
+            // but these tmp testing files should be writable.
+            jail.set_env(SECRETS_READ_ONLY_VAR, "false");
+
+            let directory = jail.directory();
+            let settings_file_name = "settings.toml";
+            let settings_file_path = directory.join(settings_file_name);
+
+            let secrets_file_name = "secrets.toml";
+            let secrets_file_path = directory.join(secrets_file_name);
+
+            let settings_file_contents = format!(
+                r#"
+default_profile_name = "default"
+
+[profiles]
+[profiles.default]
+api_url = ""
+auth_server_name = "default"
+credentials_name = "default"
+
+[auth_servers]
+[auth_servers.default]
+client_id = "{client_id}"
+issuer = "{issuer}"
+"#
+            );
+
+            let secrets_file_contents = r#"
+[credentials]
+[credentials.default]
+[credentials.default.token_payload]
+access_token = ""
+"#;
+
+            jail.create_file(settings_file_name, &settings_file_contents)
+                .expect("should create test settings.toml");
+
+            jail.set_env(
+                SETTINGS_PATH_VAR,
+                settings_file_path
+                    .to_str()
+                    .expect("settings file path should be a string"),
+            );
+
+            jail.create_file(secrets_file_name, secrets_file_contents)
+                .expect("should create test secrets.toml");
+
+            jail.set_env(
+                SECRETS_PATH_VAR,
+                secrets_file_path
+                    .to_str()
+                    .expect("secrets file path should be a string"),
+            );
+
+            // should perform a login flow, which persists the token to the secrets file.
+            runtime.block_on(async {
+                let cancel_token = CancellationToken::new();
+                // should load the configuration and perform a login flow
+                let configuration = ClientConfiguration::load_with_login(cancel_token, None)
+                    .await
+                    .expect("should load configuration");
+                let oauth_session = configuration.refresh().await.expect("should refresh");
+                let token = oauth_session.validate().expect("token should be valid");
+
+                // now, the configuration should load without needing to perform a login flow
+                let configuration =
+                    ClientConfiguration::load_default().expect("should load configuration");
+
+                let oauth_session = configuration
+                    .oauth_session()
+                    .await
+                    .expect("should get oauth session");
+
+                let token_payload = Secrets::load_from_path(&secrets_file_path)
+                    .expect("should load secrets")
+                    .credentials
+                    .remove("default")
+                    .expect("should get default credentials")
+                    .token_payload
+                    .expect("should get token payload");
+
+                assert_eq!(
+                    token,
+                    oauth_session.validate().expect("should contain token"),
+                    "session: {oauth_session:?}, token_payload: {token_payload:?}",
+                );
+                assert_eq!(
+                    token_payload.access_token,
+                    Some(token),
+                    "session: {oauth_session:?}, token_payload: {token_payload:?}"
+                );
+                assert_ne!(
+                    token_payload.refresh_token, None,
+                    "session: {oauth_session:?}, token_payload: {token_payload:?}"
+                );
+            });
+
+            Ok(())
+        });
+
+        drop(server);
     }
 }

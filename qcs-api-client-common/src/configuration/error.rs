@@ -1,5 +1,7 @@
 use std::{error::Error, path::PathBuf};
 
+use crate::configuration::{oidc::DISCOVERY_REQUIRED_SCOPE, tokens::PkceFlowError};
+
 use super::ClientConfigurationBuilderError;
 
 /// Errors that can occur when loading a configuration.
@@ -37,6 +39,9 @@ pub enum LoadError {
     /// Provided authorization server not found.
     #[error("Expected auth server {0} in settings.auth_servers but it does not exist")]
     AuthServerNotFound(String),
+    /// Failed to complete a PKCE login flow.
+    #[error("Failed to complete PKCE login: {0}")]
+    PkceFlow(#[from] PkceFlowError),
     #[cfg(feature = "tracing-config")]
     /// Failed to parse tracing filter. These should be a comma separated list of URL patterns. See
     /// <https://wicg.github.io/urlpattern> for reference.
@@ -86,6 +91,28 @@ pub enum TokenError {
     /// Failure writing the new access token to the secrets file.
     #[error("Failed to write the new access token to the secrets file: {0}")]
     Write(#[from] WriteError),
+    /// Failure fetching the OIDC discovery document.
+    #[error("Failed to fetch the OIDC discovery document: {0}")]
+    Discovery(#[from] DiscoveryError),
+}
+
+/// Errors that can occur when attempting to fetch and process an OIDC discovery document.
+#[derive(Debug, thiserror::Error)]
+pub enum DiscoveryError {
+    #[error("invalid issuer URL: {0}")]
+    Url(#[from] url::ParseError),
+    #[error("error fetching discovery document: {0}")]
+    Fetch(#[from] reqwest::Error),
+    #[error("failed to parse discovery document: {0}")]
+    Json(#[from] serde_json::Error),
+    #[error("issuer URL ({issuer}) is invalid: {reason}")]
+    InvalidIssuer { issuer: String, reason: String },
+    #[error("discovery document is invalid: {reason}")]
+    InvalidDocument { reason: String },
+    #[error("discovery document issuer ({document}) does not match the queried issuer ({query})")]
+    IssuerMismatch { document: String, query: String },
+    #[error("discovery document `supported_scopes` does not include the required minimum scope \"{expected}\", received: {0:?}", expected = DISCOVERY_REQUIRED_SCOPE)]
+    InvalidScopes(Vec<String>),
 }
 
 /// Errors that can occur when trying to write or update a configuration file.

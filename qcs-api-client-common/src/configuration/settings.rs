@@ -105,13 +105,22 @@ pub(crate) const QCS_DEFAULT_CLIENT_ID_PRODUCTION: &str = "0oa3ykoirzDKpkfzk357"
 pub(crate) const QCS_DEFAULT_AUTH_ISSUER_PRODUCTION: &str =
     "https://auth.qcs.rigetti.com/oauth2/aus8jcovzG0gW2TUG355";
 
-/// Okta authorization server.
+/// OAuth 2.0 authorization server.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[cfg_attr(feature = "python", pyo3::pyclass)]
 pub struct AuthServer {
-    /// Okta client id.
+    /// OAuth 2.0 client id.
     client_id: String,
-    /// Okta issuer URL.
+    /// OAuth 2.0 issuer URL.
+    ///
+    /// This is the base URL of the identity provider.
+    /// For Okta, this usually looks like `https://example.okta.com/oauth2/default`.
+    /// For Cognito, it might look like `https://cognito-idp.us-west-2.amazonaws.com/us-west-2_example`.
+    ///
+    /// Note that this is technically distinct from the `issuer` field in [`OidcDiscovery`],
+    /// which is the canonical URI that the identity provider uses to sign and validate tokens,
+    /// but the OpenID specification requires that they match exactly,
+    /// and that they match the `iss` claim in Tokens issued by this identity provider.
     issuer: String,
 }
 
@@ -131,24 +140,24 @@ impl AuthServer {
         Self { client_id, issuer }
     }
 
-    /// Get the configured Okta client id.
+    /// Get the configured OAuth 2.0 client id.
     #[must_use]
     pub fn client_id(&self) -> &str {
         &self.client_id
     }
 
-    /// Set an Okta client id.
+    /// Set an OAuth 2.0 client id.
     pub fn set_client_id(&mut self, id: String) {
         self.client_id = id;
     }
 
-    /// Get the Okta issuer URL.
+    /// Get the OAuth 2.0 issuer URL.
     #[must_use]
     pub fn issuer(&self) -> &str {
         &self.issuer
     }
 
-    /// Set an Okta issuer URL.
+    /// Set an OAuth 2.0 issuer URL.
     pub fn set_issuer(&mut self, issuer: String) {
         self.issuer = issuer;
     }

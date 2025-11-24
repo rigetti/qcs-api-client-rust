@@ -86,7 +86,7 @@ impl Secrets {
         Ok(is_read_only)
     }
 
-    /// Attempts to write an access token to the QCS [`Secrets`] file at
+    /// Attempts to write a refresh and access token to the QCS [`Secrets`] file at
     /// the given path.
     ///
     /// The access token will only be updated if the access token currently stored in the file is
@@ -95,9 +95,10 @@ impl Secrets {
     /// # Errors
     ///
     /// - [`TokenError`] for possible errors.
-    pub(crate) async fn write_access_token(
+    pub(crate) async fn write_tokens(
         secrets_path: impl AsRef<Path> + Send + Sync + std::fmt::Debug,
         profile_name: &str,
+        refresh_token: Option<&str>,
         access_token: &str,
         updated_at: OffsetDateTime,
     ) -> Result<(), WriteError> {
@@ -122,13 +123,25 @@ impl Secrets {
             .and_then(|s| PrimitiveDateTime::parse(s, &Rfc3339).ok())
             .map(PrimitiveDateTime::assume_utc);
 
-        let should_update = current_updated_at.is_none_or(|dt| dt < updated_at);
-
-        if should_update {
-            // Update the `access_token` and `updated_at` fields
+        let did_update_access_token = if current_updated_at.is_none_or(|dt| dt < updated_at) {
             token_payload["access_token"] = access_token.into();
             token_payload["updated_at"] = updated_at.format(&Rfc3339)?.into();
+            true
+        } else {
+            false
+        };
 
+        let did_update_refresh_token = refresh_token.is_some_and(|new_refresh_token| {
+            let current_refresh_token = token_payload.get("refresh_token").and_then(|v| v.as_str());
+
+            let is_changed = current_refresh_token != Some(new_refresh_token);
+            if is_changed {
+                token_payload["refresh_token"] = new_refresh_token.into();
+            }
+            is_changed
+        });
+
+        if did_update_access_token || did_update_refresh_token {
             // Create a temporary file
             // Write the updated TOML content to a temporary file.
             // The file is named using a newly generated UUIDv4 to avoid collisions
@@ -317,7 +330,7 @@ token_type = "Bearer"
                 ];
 
                 for (access_token, updated_at) in token_updates {
-                    Secrets::write_access_token("secrets.toml", "test", access_token, updated_at)
+                    Secrets::write_tokens("secrets.toml", "test", None, access_token, updated_at)
                         .await
                         .expect("Should be able to write access token");
                 }

@@ -104,7 +104,6 @@ impl HeaderAttributesFilter for IncludeExclude<String> {
     /// Note, this implementation intentionally scales linearly with the number of included headers
     /// when [`Self::Include`] is used and scales linearly with [`http::HeaderMap::len`]
     /// when [`Self::Exclude`] is used.
-    #[must_use]
     fn get_header_attributes(&self, headers: &http::HeaderMap) -> Vec<(String, String)> {
         match self {
             Self::Include(set) => {

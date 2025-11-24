@@ -1,3 +1,17 @@
+## 0.13.9 (2025-11-24)
+
+### Features
+
+#### also retry on 502: Bad Gateway, as these often succeed on manual retry
+
+#### support arbitrary oauth providers
+
+#### implement PKCE login flow
+
+### Fixes
+
+#### remove problematic 'dirs' from dependencies
+
 ## 0.13.8 (2025-10-30)
 
 ### Fixes

@@ -20,6 +20,7 @@ __all__ = [
     "QUILC_URL_VAR",
     "QVM_URL_VAR",
     "RefreshToken",
+    "PkceFlow",
     "SECRETS_PATH_VAR",
     "SETTINGS_PATH_VAR",
 ]
@@ -54,6 +55,11 @@ class ClientConfiguration:
     @staticmethod
     def load_default() -> ClientConfiguration:
         """Load a `ClientConfiguration` using your default QCS profile."""
+        ...
+
+    @staticmethod
+    def load_default_with_login() -> ClientConfiguration:
+        """Similar to `ClientConfiguration#load_default`, but will attempt a browser redirect login if the stored credentials are not available or invalid. Avoid using this in hosted (non-local) Jupyter notebook environments."""
         ...
 
     @staticmethod
@@ -192,13 +198,25 @@ class ExternallyManaged:
         """
 
 @final
+class PkceFlow:
+    """Represents a PKCE flow. This will automatically initiate a browser redirect flow when constructed. Avoid using this in hosted (non-local) Jupyter notebook environments."""
+    def __new__(cls, auth_server: AuthServer) -> PkceFlow: ...
+    @property
+    def access_token(self) -> str:
+        """The access token."""
+    @property
+    def refresh_token(self) -> str | None:
+        """The refresh token."""
+
+@final
 class OAuthSession:
     def __new__(
         cls,
-        grant_payload: RefreshToken | ClientCredentials | ExternallyManaged,
+        payload: RefreshToken | ClientCredentials | ExternallyManaged | PkceFlow,
         auth_server: AuthServer,
         access_token: str | None = None,
     ) -> OAuthSession: ...
+
     @property
     def access_token(self) -> str:
         """Get the current access token.
@@ -211,7 +229,7 @@ class OAuthSession:
         """The auth server."""
 
     @property
-    def payload(self) -> RefreshToken | ClientCredentials:
+    def payload(self) -> RefreshToken | ClientCredentials | ExternallyManaged | PkceFlow:
         """Get the payload used to request an access token."""
 
     def request_access_token(self) -> str:

@@ -8,12 +8,12 @@
   derive_builder = '0.20.0'
   futures = '0.3.26'
   home = '0.5.5'
-  shellexpand = '3.1.0'
-  toml_edit = '0.22.22'
+  toml_edit = '0.23.7'
+  webbrowser = '0.8.15'
 
   [dependencies.async-tempfile]
     features = ['uuid']
-    version = '0.6.0'
+    version = '0.7.0'
 
   [dependencies.backoff]
     workspace = true
@@ -25,8 +25,23 @@
   [dependencies.http]
     workspace = true
 
+  [dependencies.http-body-util]
+    workspace = true
+
+  [dependencies.hyper]
+    features = ['server']
+    workspace = true
+
+  [dependencies.hyper-util]
+    workspace = true
+
   [dependencies.jsonwebtoken]
     workspace = true
+
+  [dependencies.oauth2]
+    default-features = false
+    features = ['reqwest', 'native-tls']
+    version = '5.0'
 
   [dependencies.paste]
     optional = true
@@ -44,7 +59,7 @@
 
   [dependencies.reqwest]
     default-features = false
-    features = ['socks']
+    features = ['socks', 'rustls-tls-native-roots']
     workspace = true
 
   [dependencies.rigetti-pyo3]
@@ -55,6 +70,14 @@
     features = ['derive']
     workspace = true
 
+  [dependencies.serde_json]
+    workspace = true
+
+  [dependencies.shellexpand]
+    default-features = false
+    features = ['base-0']
+    version = '3.1.0'
+
   [dependencies.thiserror]
     workspace = true
 
@@ -63,19 +86,21 @@
     version = '0.3.34'
 
   [dependencies.tokio]
-    features = ['rt-multi-thread', 'sync', 'fs']
+    features = ['rt-multi-thread', 'sync', 'fs', 'signal']
+    workspace = true
+
+  [dependencies.tokio-util]
     workspace = true
 
   [dependencies.toml]
     features = ['preserve_order']
-    version = '0.8.19'
+    version = '0.9.8'
 
   [dependencies.tracing]
     optional = true
     workspace = true
 
   [dependencies.url]
-    optional = true
     workspace = true
 
   [dependencies.urlpattern]
@@ -84,6 +109,7 @@
 
 [dev-dependencies]
   httpmock = '0.8.0-alpha.1'
+  oauth2-test-server = '=0.1.2'
   serial_test = '3.1.1'
 
   [dev-dependencies.figment]
@@ -99,7 +125,7 @@
 
 [features]
   python = ['dep:pyo3', 'dep:pyo3-asyncio', 'dep:paste', 'dep:rigetti-pyo3', 'tokio/macros', 'pyo3-build-config']
-  tracing = ['dep:tracing', 'url', 'urlpattern']
+  tracing = ['dep:tracing', 'urlpattern']
   tracing-config = ['tracing']
 
 [lib]
@@ -166,7 +192,7 @@
   publish = true
   readme = 'README.md'
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.12.8'
+  version = '0.12.9'
 
   [package.metadata]
     [package.metadata.docs]

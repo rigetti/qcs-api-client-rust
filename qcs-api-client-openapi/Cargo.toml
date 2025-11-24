@@ -8,7 +8,7 @@
 
   [dependencies.qcs-api-client-common]
     path = '../qcs-api-client-common'
-    version = '0.12.8'
+    version = '0.12.9'
 
   [dependencies.reqwest]
     features = ['json', 'multipart', 'rustls-tls-native-roots']
@@ -72,4 +72,4 @@
   name = 'qcs-api-client-openapi'
   publish = true
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.13.8'
+  version = '0.13.9'

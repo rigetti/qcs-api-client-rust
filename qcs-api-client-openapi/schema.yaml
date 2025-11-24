@@ -755,7 +755,7 @@ paths:
       summary: Health Check
       description: Check the health of the service.
       responses:
-        "204":
+        "200":
           description: The service is healthy, but there are no additional details.
       operationId: HealthCheck
   /v1/auth:emailPasswordResetToken:

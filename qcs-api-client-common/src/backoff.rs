@@ -28,7 +28,7 @@ pub fn default_backoff() -> ExponentialBackoff {
 pub const fn status_code_is_retry(code: StatusCode) -> bool {
     matches!(
         code,
-        StatusCode::SERVICE_UNAVAILABLE | StatusCode::TOO_MANY_REQUESTS
+        StatusCode::SERVICE_UNAVAILABLE | StatusCode::BAD_GATEWAY | StatusCode::TOO_MANY_REQUESTS
     )
 }
 
@@ -49,9 +49,10 @@ pub fn duration_from_response(
                     return Some(Duration::from_secs(value));
                 } else if let Ok(date) = OffsetDateTime::parse(value, &Rfc2822) {
                     let duration = date - OffsetDateTime::now_utc();
+                    // Convert from time::Duration to std::time::Duration
                     // This will fail if the number is too large or negative
-                    let millis = duration.whole_milliseconds().try_into().ok()?;
-                    return Some(Duration::from_millis(millis));
+                    let std_duration: Duration = duration.try_into().ok()?;
+                    return Some(std_duration);
                 }
             }
         }

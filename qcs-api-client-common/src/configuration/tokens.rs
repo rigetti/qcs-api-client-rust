@@ -2,13 +2,18 @@ use std::{pin::Pin, sync::Arc};
 
 use futures::Future;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
+use oauth2::TokenResponse;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use tokio::sync::{Mutex, Notify, RwLock};
+use tokio_util::sync::CancellationToken;
 
 use super::{
-    secrets::Secrets, settings::AuthServer, ClientConfiguration, ConfigSource, TokenError,
-    QCS_AUDIENCE,
+    oidc, secrets::Secrets, settings::AuthServer, ClientConfiguration, ConfigSource, TokenError,
+};
+use crate::configuration::{
+    error::DiscoveryError,
+    pkce::{pkce_login, PkceLoginError, PkceLoginRequest},
 };
 #[cfg(feature = "tracing-config")]
 use crate::tracing_configuration::TracingConfiguration;
@@ -42,15 +47,13 @@ impl RefreshToken {
         if self.refresh_token.is_empty() {
             return Err(TokenError::NoRefreshToken);
         }
-        let token_url = format!("{}/v1/token", auth_server.issuer());
+
+        let client = default_http_client()?;
+        let token_url = oidc::fetch_discovery(&client, auth_server.issuer())
+            .await?
+            .token_endpoint;
         let data = TokenRefreshRequest::new(auth_server.client_id(), &self.refresh_token);
-        let resp = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(10))
-            .build()?
-            .post(token_url)
-            .form(&data)
-            .send()
-            .await?;
+        let resp = client.post(token_url).form(&data).send().await?;
 
         let response_data: RefreshTokenResponse = resp.error_for_status()?.json().await?;
         self.refresh_token = response_data.refresh_token;
@@ -106,12 +109,11 @@ impl ClientCredentials {
         auth_server: &AuthServer,
     ) -> Result<String, TokenError> {
         let request = ClientCredentialsRequest::new(None);
-        let url = format!("{}/v1/token", auth_server.issuer());
+        let client = default_http_client()?;
 
-        let client = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(10))
-            .build()?;
-
+        let url = oidc::fetch_discovery(&client, auth_server.issuer())
+            .await?
+            .token_endpoint;
         let ready_to_send = client
             .post(url)
             .basic_auth(auth_server.client_id(), Some(&self.client_secret))
@@ -126,6 +128,84 @@ impl ClientCredentials {
     }
 }
 
+#[derive(Clone, PartialEq, Eq, Deserialize)]
+#[expect(missing_debug_implementations, reason = "contains secret data")]
+#[cfg_attr(feature = "python", pyo3::pyclass)]
+/// The Access (Bearer) and refresh (if available) tokens from a PKCE login.
+pub struct PkceFlow {
+    /// The access token.
+    pub access_token: String,
+    /// The refresh token, if available.
+    pub refresh_token: Option<RefreshToken>,
+}
+
+/// Errors that can occur when attempting to perform a PKCE login flow.
+#[derive(Debug, thiserror::Error)]
+pub enum PkceFlowError {
+    #[error(transparent)]
+    PkceLogin(#[from] PkceLoginError),
+    #[error(transparent)]
+    Discovery(#[from] DiscoveryError),
+    #[error(transparent)]
+    Request(#[from] reqwest::Error),
+}
+
+impl PkceFlow {
+    /// Starts a new PKCE login flow to acquire a new set of tokens.
+    ///
+    /// # Errors
+    ///
+    /// See [`PkceFlowError`]
+    pub async fn new_login_flow(
+        cancel_token: CancellationToken,
+        auth_server: &AuthServer,
+    ) -> Result<Self, PkceFlowError> {
+        let issuer = auth_server.issuer().to_string();
+
+        let client = default_http_client()?;
+        let discovery = oidc::fetch_discovery(&client, &issuer).await?;
+
+        let response = pkce_login(
+            cancel_token,
+            PkceLoginRequest {
+                client_id: auth_server.client_id().to_string(),
+                redirect_port: None,
+                discovery,
+            },
+        )
+        .await?;
+
+        Ok(Self {
+            access_token: response.access_token().secret().to_string(),
+            refresh_token: response
+                .refresh_token()
+                .map(|rt| RefreshToken::new(rt.secret().to_string())),
+        })
+    }
+
+    /// Returns the access token if it is valid, otherwise requests a new access token using the refresh token if available.
+    ///
+    /// # Errors
+    ///
+    /// See [`TokenError`]
+    pub async fn request_access_token(
+        &mut self,
+        auth_server: &AuthServer,
+    ) -> Result<String, TokenError> {
+        if let Ok(access_token) = insecure_validate_token_exp(&self.access_token) {
+            return Ok(access_token);
+        }
+
+        if let Some(refresh_token) = &mut self.refresh_token {
+            let access_token = refresh_token.request_access_token(auth_server).await?;
+            self.access_token.clone_from(&access_token);
+            return Ok(access_token);
+        }
+
+        Err(TokenError::NoRefreshToken)
+    }
+}
+
 #[derive(Clone)]
 #[cfg_attr(feature = "python", derive(pyo3::FromPyObject))]
 /// Specifies the [OAuth2 grant type](https://oauth.net/2/grant-types/) to use, along with the data
@@ -137,6 +217,8 @@ pub enum OAuthGrant {
     ClientCredentials(ClientCredentials),
     /// Defers to a user provided function for access token requests.
     ExternallyManaged(ExternallyManaged),
+    /// The tokens returned by the PKCE login that are an [Authorization Code grant type](https://oauth.net/2/pkce/).
+    PkceFlow(PkceFlow),
 }
 
 impl From<ExternallyManaged> for OAuthGrant {
@@ -157,6 +239,12 @@ impl From<RefreshToken> for OAuthGrant {
     }
 }
 
+impl From<PkceFlow> for OAuthGrant {
+    fn from(v: PkceFlow) -> Self {
+        Self::PkceFlow(v)
+    }
+}
+
 impl OAuthGrant {
     /// Request a new access token from the given issuer using this grant type and payload.
     async fn request_access_token(
@@ -170,6 +258,7 @@ impl OAuthGrant {
                 .request_access_token(auth_server)
                 .await
                 .map_err(|e| TokenError::ExternallyManaged(e.to_string())),
+            Self::PkceFlow(tokens) => tokens.request_access_token(auth_server).await,
         }
     }
 }
@@ -180,6 +269,7 @@ impl std::fmt::Debug for OAuthGrant {
             Self::RefreshToken(_) => f.write_str("RefreshToken"),
             Self::ClientCredentials(_) => f.write_str("ClientCredentials"),
             Self::ExternallyManaged(_) => f.write_str("ExternallyManaged"),
+            Self::PkceFlow(_) => f.write_str("PkceTokens"),
         }
     }
 }
@@ -271,6 +361,19 @@ impl OAuthSession {
         )
     }
 
+    /// Initialize a new set of [`Credentials`] using [`PkceFlow`].
+    ///
+    /// Optionally include an `access_token`, if not included, then one can be requested
+    /// with [`Self::request_access_token`].
+    #[must_use]
+    pub const fn from_pkce_flow(
+        flow: PkceFlow,
+        auth_server: AuthServer,
+        access_token: Option<String>,
+    ) -> Self {
+        Self::new(OAuthGrant::PkceFlow(flow), auth_server, access_token)
+    }
+
     /// Get the current access token.
     ///
     /// This is an unvalidated copy of the access token. Meaning it can become stale, or may
@@ -323,19 +426,24 @@ impl OAuthSession {
     pub fn validate(&self) -> Result<String, TokenError> {
         self.access_token().map_or_else(
             |_| Err(TokenError::NoAccessToken),
-            |access_token| {
-                let placeholder_key = DecodingKey::from_secret(&[]);
-                let mut validation = Validation::new(Algorithm::RS256);
-                validation.validate_exp = true;
-                validation.leeway = 60;
-                validation.set_audience(&[QCS_AUDIENCE]);
-                validation.insecure_disable_signature_validation();
-                jsonwebtoken::decode::<toml::Value>(access_token, &placeholder_key, &validation)
-                    .map(|_| access_token.to_string())
-                    .map_err(TokenError::InvalidAccessToken)
-            },
+            insecure_validate_token_exp,
         )
     }
+}
+
+/// Validates the access token's format and `exp` claim, but no other claims or
+/// signature. We do this only to determine if the token is expired and needs refreshing,
+/// there is no way to securely validate the token's signature on the client side.
+pub(crate) fn insecure_validate_token_exp(access_token: &str) -> Result<String, TokenError> {
+    let placeholder_key = DecodingKey::from_secret(&[]);
+    let mut validation = Validation::new(Algorithm::RS256);
+    validation.validate_exp = true;
+    validation.leeway = 60;
+    validation.validate_aud = false;
+    validation.insecure_disable_signature_validation();
+    jsonwebtoken::decode::<toml::Value>(access_token, &placeholder_key, &validation)
+        .map(|_| access_token.to_string())
+        .map_err(TokenError::InvalidAccessToken)
 }
 
 impl std::fmt::Debug for OAuthSession {
@@ -453,10 +561,20 @@ impl TokenDispatcher {
         } = source
         {
             if !Secrets::is_read_only(secrets_path).await? {
+                // If the payload is a PkceFlow, write the fresh refresh token if available.
+                let refresh_token = match &oauth_session.payload {
+                    OAuthGrant::PkceFlow(payload) => payload
+                        .refresh_token
+                        .as_ref()
+                        .map(|rt| rt.refresh_token.as_str()),
+                    _ => None,
+                };
+
                 let now = OffsetDateTime::now_utc();
-                Secrets::write_access_token(
+                Secrets::write_tokens(
                     secrets_path,
                     profile,
+                    refresh_token,
                     oauth_session.access_token()?,
                     now,
                 )
@@ -753,6 +871,13 @@ impl TokenRefresher for ClientConfiguration {
     }
 }
 
+/// Get a default http client.
+fn default_http_client() -> Result<reqwest::Client, reqwest::Error> {
+    reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+}
+
 #[cfg(test)]
 mod test {
     use std::time::Duration;
@@ -767,6 +892,16 @@ mod test {
     #[tokio::test]
     async fn test_tokens_blocked_during_refresh() {
         let mock_server = MockServer::start_async().await;
+
+        let oidc_mock = mock_server
+            .mock_async(|when, then| {
+                when.method(GET).path("/.well-known/openid-configuration");
+                then.status(200)
+                    .json_body_obj(&oidc::Discovery::new_for_test(
+                        mock_server.base_url().parse().unwrap(),
+                    ));
+            })
+            .await;
 
         let issuer_mock = mock_server
             .mock_async(|when, then| {
@@ -809,6 +944,7 @@ mod test {
         let write_duration = start_write.elapsed();
         let read_duration = start_read.elapsed();
 
+        oidc_mock.assert_async().await;
         issuer_mock.assert_async().await;
 
         assert!(
@@ -891,6 +1027,14 @@ updated_at = "2024-01-01T00:00:00Z"
             rt.block_on(async {
                 let mock_server = MockServer::start_async().await;
 
+                let oidc_mock = mock_server
+                    .mock_async(|when, then| {
+                        when.method(GET).path("/.well-known/openid-configuration");
+                        then.status(200)
+                            .json_body_obj(&oidc::Discovery::new_for_test(mock_server.base_url().parse().unwrap()));
+                    })
+                    .await;
+
                 // Set up the mock token endpoint
                 let new_access_token = "new_access_token";
                 let issuer_mock = mock_server
@@ -931,6 +1075,7 @@ updated_at = "2024-01-01T00:00:00Z"
                     .await
                     .unwrap();
 
+                oidc_mock.assert_async().await;
                 issuer_mock.assert_async().await;
 
                 // Verify the file was not updated if QCS_SECRETS_READ_ONLY is set truthy

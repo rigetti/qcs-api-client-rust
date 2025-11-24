@@ -7,7 +7,7 @@ const VAR_NAME_CLIENT_ID: &str = "ISSUER_CLIENT_ID";
 const VAR_NAME_CLIENT_SECRET: &str = "ISSUER_CLIENT_SECRET";
 
 fn require_var(key: &str) -> String {
-    std::env::var(key).unwrap_or_else(|_| panic!("must set {}", key))
+    std::env::var(key).unwrap_or_else(|_| panic!("must set {key}"))
 }
 
 #[tokio::test]
