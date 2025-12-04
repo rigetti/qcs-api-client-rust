@@ -1,3 +1,9 @@
+## 0.13.11 (2025-12-04)
+
+### Fixes
+
+#### regenerate from new schema
+
 ## 0.13.10 (2025-11-24)
 
 ### Fixes

@@ -2477,6 +2477,7 @@ components:
       type: object
     Architecture:
       type: object
+      title: Architecture
       description: >-
         Represents the logical underlying architecture of a quantum processor.
 
@@ -2537,6 +2538,7 @@ components:
           uniqueItems: true
     Characteristic:
       type: object
+      title: Characteristic
       description: A measured characteristic of an operation.
       required:
         - name
@@ -2603,6 +2605,7 @@ components:
         - unauthenticated
     Edge:
       type: object
+      title: Edge
       description: >-
         A degree-two logical connection in the quantum processor's architecture.
 
@@ -2654,6 +2657,7 @@ components:
         - Ankaa
     InstructionSetArchitecture:
       type: object
+      title: InstructionSetArchitecture
       description: >-
         The native instruction set architecture of a quantum processor,
         annotated with characteristics.
@@ -2718,6 +2722,7 @@ components:
             $ref: "#/components/schemas/QuantumProcessor"
     Node:
       type: object
+      title: Node
       description: >-
         A logical node in the quantum processor's architecture.
 
@@ -2741,6 +2746,7 @@ components:
             on the architecture family.
     Operation:
       type: object
+      title: Operation
       description: An operation, with its sites and site-independent characteristics.
       required:
         - name
@@ -2778,6 +2784,7 @@ components:
             $ref: "#/components/schemas/Characteristic"
     OperationSite:
       type: object
+      title: OperationSite
       description: A site for an operation, with its site-dependent characteristics.
       required:
         - node_ids
@@ -2803,6 +2810,7 @@ components:
             $ref: "#/components/schemas/Characteristic"
     Parameter:
       type: object
+      title: Parameter
       description: A parameter to an operation.
       required:
         - name
@@ -2813,6 +2821,7 @@ components:
           description: The name of the parameter, such as the name of a mathematical symbol.
     QuantumProcessor:
       type: object
+      title: QuantumProcessor
       description: An object representing a quantum processor.
       required:
         - id

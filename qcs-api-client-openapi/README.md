@@ -121,6 +121,7 @@ Class | Method | HTTP request | Description
 *ReservationsApi* | [**delete_reservation**](docs/ReservationsApi.md#delete_reservation) | **DELETE** /v1/reservations/{reservationId} | Delete Reservation
 *ReservationsApi* | [**find_available_reservations**](docs/ReservationsApi.md#find_available_reservations) | **GET** /v1/reservations:findAvailable | Find Available Reservations
 *ReservationsApi* | [**get_quantum_processor_calendar**](docs/ReservationsApi.md#get_quantum_processor_calendar) | **GET** /v1/calendars/{quantumProcessorId} | Get Quantum Processor Calendar
+*ReservationsApi* | [**get_reservation**](docs/ReservationsApi.md#get_reservation) | **GET** /v1/reservations/{reservationId} | Get Reservation
 *ReservationsApi* | [**list_group_reservations**](docs/ReservationsApi.md#list_group_reservations) | **GET** /v1/groups/{groupName}/reservations | List Group Reservations
 *ReservationsApi* | [**list_reservations**](docs/ReservationsApi.md#list_reservations) | **GET** /v1/reservations | List Reservations
 
