@@ -2,6 +2,7 @@ use std::{error::Error, path::PathBuf};
 
 use crate::configuration::{oidc::DISCOVERY_REQUIRED_SCOPE, tokens::PkceFlowError};
 
+use super::secrets::SECRETS_READ_ONLY_VAR;
 use super::ClientConfigurationBuilderError;
 
 /// Errors that can occur when loading a configuration.
@@ -89,7 +90,7 @@ pub enum TokenError {
     #[error("Failed to request an externally managed access token: {0}")]
     ExternallyManaged(String),
     /// Failure writing the new access token to the secrets file.
-    #[error("Failed to write the new access token to the secrets file: {0}")]
+    #[error("Failed to write the new access token to the secrets file. Setting `{SECRETS_READ_ONLY_VAR}=true` in the environment will skip persistence of newly acquired tokens. Error details: {0}")]
     Write(#[from] WriteError),
     /// Failure fetching the OIDC discovery document.
     #[error("Failed to fetch the OIDC discovery document: {0}")]

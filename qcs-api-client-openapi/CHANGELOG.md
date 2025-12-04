@@ -1,3 +1,9 @@
+## 0.13.12 (2025-12-04)
+
+### Fixes
+
+#### add additional help information for TokenError::Write
+
 ## 0.13.11 (2025-12-04)
 
 ### Fixes
