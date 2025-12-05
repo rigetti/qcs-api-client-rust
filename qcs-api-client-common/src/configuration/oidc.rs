@@ -83,9 +83,9 @@ pub(crate) async fn fetch_discovery(
     fetch_discovery_impl(
         http,
         issuer,
-        #[cfg(not(test))]
+        #[cfg(not(any(test, feature = "_insecure-issuer-validation")))]
         ValidationStrategy::strict(),
-        #[cfg(test)]
+        #[cfg(any(test, feature = "_insecure-issuer-validation"))]
         ValidationStrategy::insecure(),
     )
     .await
@@ -199,7 +199,7 @@ impl ValidationStrategy {
     }
 
     /// Validate an issuer as [`ValidationStrategy::strict`], but skips the `scheme` check.
-    #[cfg(test)]
+    #[cfg(any(test, feature = "_insecure-issuer-validation"))]
     const fn insecure() -> Self {
         Self {
             scheme: false,

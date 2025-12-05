@@ -1,3 +1,9 @@
+## 0.12.12 (2025-12-05)
+
+### Fixes
+
+#### add test feature to enable insecure issuer validation
+
 ## 0.12.11 (2025-12-04)
 
 ### Fixes

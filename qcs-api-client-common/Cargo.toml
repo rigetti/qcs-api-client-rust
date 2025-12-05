@@ -124,7 +124,9 @@
     workspace = true
 
 [features]
+  _insecure-issuer-validation = []
   python = ['dep:pyo3', 'dep:pyo3-asyncio', 'dep:paste', 'dep:rigetti-pyo3', 'tokio/macros', 'pyo3-build-config']
+  test = ['_insecure-issuer-validation']
   tracing = ['dep:tracing', 'urlpattern']
   tracing-config = ['tracing']
 
@@ -192,7 +194,7 @@
   publish = true
   readme = 'README.md'
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.12.11'
+  version = '0.12.12'
 
   [package.metadata]
     [package.metadata.docs]
