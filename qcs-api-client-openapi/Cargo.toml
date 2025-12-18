@@ -7,7 +7,6 @@
     workspace = true
 
   [dependencies.qcs-api-client-common]
-    version = '0.13.0-kstrand.1'
     workspace = true
 
   [dependencies.reqwest]
@@ -72,4 +71,4 @@
   name = 'qcs-api-client-openapi'
   publish = true
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.14.0-kstrand.1'
+  version = '0.14.0-kstrand.2'

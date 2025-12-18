@@ -1,4 +1,4 @@
-## 0.13.0-kstrand.1 (2025-12-18)
+## 0.13.0-kstrand.2 (2025-12-18)
 
 ### Breaking Changes
 
