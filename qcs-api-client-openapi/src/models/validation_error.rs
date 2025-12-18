@@ -44,10 +44,12 @@ impl ValidationError {
     }
 }
 
-///
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Default, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum In {
     #[serde(rename = "header")]
+    #[default]
     Header,
     #[serde(rename = "query")]
     Query,
@@ -55,10 +57,4 @@ pub enum In {
     Path,
     #[serde(rename = "body")]
     Body,
-}
-
-impl Default for In {
-    fn default() -> In {
-        Self::Header
-    }
 }

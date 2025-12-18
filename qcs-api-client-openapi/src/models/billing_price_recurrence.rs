@@ -54,9 +54,12 @@ impl BillingPriceRecurrence {
 }
 
 /// How to determine the aggregate usage over the `interval` when `usageType=metered`. Using `sum` is recommended.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Default, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum AggregateUsage {
     #[serde(rename = "last_during_period")]
+    #[default]
     LastDuringPeriod,
     #[serde(rename = "last_ever")]
     LastEver,
@@ -66,15 +69,13 @@ pub enum AggregateUsage {
     Sum,
 }
 
-impl Default for AggregateUsage {
-    fn default() -> AggregateUsage {
-        Self::LastDuringPeriod
-    }
-}
 /// The frequency at which recurring usage should be billed. Using `month` is recommended.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Default, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum Interval {
     #[serde(rename = "day")]
+    #[default]
     Day,
     #[serde(rename = "month")]
     Month,
@@ -84,22 +85,14 @@ pub enum Interval {
     Year,
 }
 
-impl Default for Interval {
-    fn default() -> Interval {
-        Self::Day
-    }
-}
 /// Use `metered` to calculate a dynamic quantity based on reported usage records (recommended). Use `licensed` when you provide a fixed quantity, e.g. a TV subscription.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Default, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum UsageType {
     #[serde(rename = "licensed")]
+    #[default]
     Licensed,
     #[serde(rename = "metered")]
     Metered,
-}
-
-impl Default for UsageType {
-    fn default() -> UsageType {
-        Self::Licensed
-    }
 }

@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use super::BoxBody;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use tonic::body::BoxBody;
 use tonic::client::GrpcService;
 use tonic::codegen::http::{Request, Response};
 use tonic_web::{GrpcWebCall, GrpcWebClientService};

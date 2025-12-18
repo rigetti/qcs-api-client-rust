@@ -7,7 +7,7 @@ import grpc  # type: ignore
 from grpc import ClientCallDetails  # type: ignore
 from grpc.aio import Call, UnaryUnaryClientInterceptor  # type: ignore
 
-from qcs_api_client_common.configuration import ClientConfiguration
+from qcs_api_client_common.configuration import ClientConfiguration, SecretAccessToken
 
 
 class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
@@ -25,7 +25,7 @@ class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
             client_configuration = ClientConfiguration.load_default()
         self.configuration = client_configuration
 
-    async def _get_access_token(self) -> str:
+    async def _get_access_token(self) -> SecretAccessToken:
         return await self.configuration.get_bearer_access_token_async()
 
     async def intercept_unary_unary(

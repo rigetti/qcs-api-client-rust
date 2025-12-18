@@ -74,17 +74,13 @@ impl BillingInvoiceLine {
     }
 }
 
-///
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Default, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum LineItemType {
     #[serde(rename = "invoiceitem")]
+    #[default]
     Invoiceitem,
     #[serde(rename = "subscription")]
     Subscription,
-}
-
-impl Default for LineItemType {
-    fn default() -> LineItemType {
-        Self::Invoiceitem
-    }
 }

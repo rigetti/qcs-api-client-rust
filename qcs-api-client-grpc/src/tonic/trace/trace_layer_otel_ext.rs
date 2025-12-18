@@ -30,6 +30,7 @@
 //! All of this behavior is configurable via
 //! [`qcs_api_client_common::tracing_configuration::TracingConfiguration`].
 use crate::tonic::common::get_status_code_from_headers;
+use crate::tonic::BoxBody;
 use http::{HeaderMap, HeaderValue};
 use opentelemetry::propagation::TextMapPropagator;
 use opentelemetry::trace::FutureExt;
@@ -40,7 +41,7 @@ use qcs_api_client_common::tracing_configuration::HeaderAttributesFilter;
 use qcs_api_client_common::tracing_configuration::{
     IncludeExclude, TracingConfiguration, TracingFilter,
 };
-use tonic::{body::BoxBody, client::GrpcService};
+use tonic::client::GrpcService;
 use tracing::Span;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
@@ -100,7 +101,7 @@ impl<B> tower_http::trace::MakeSpan<B> for MakeSpan {
             && should_trace_request(self.base_url.as_str(), request, self.filter.as_ref())
         {
             let span = make_grpc_request_span(request);
-            span.set_parent(opentelemetry::Context::current());
+            let _ = span.set_parent(opentelemetry::Context::current());
 
             set_metadata_attribute(
                 &span,
@@ -218,9 +219,9 @@ impl CustomTraceService {
     ///
     /// * `propagate_trace_id` - Whether to propagate the OpenTelemetry context.
     /// * `base_url` - The base URL of the gRPC service. This is used for matching
-    ///    against the configured `TracingFilter`.
+    ///   against the configured `TracingFilter`.
     /// * `filter` - A filter to determine which requests should be traced. If `None`,
-    ///    all requests will be traced.
+    ///   all requests will be traced.
     /// * `inner` - The base trace service.
     pub fn new(
         propagate_trace_id: bool,

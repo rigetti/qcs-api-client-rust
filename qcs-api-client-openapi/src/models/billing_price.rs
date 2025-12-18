@@ -74,28 +74,23 @@ impl BillingPrice {
 }
 
 /// This object's type, which is always `price`.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Default, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum Object {
     #[serde(rename = "price")]
+    #[default]
     Price,
 }
 
-impl Default for Object {
-    fn default() -> Object {
-        Self::Price
-    }
-}
 /// Use `one_time` to invoice immediately based on a single usage report, e.g. purchasing a QPU reservation. Use `recurring` to aggregate usage reports over an interval and then invoice once based on `BillingPriceRecurrence`, e.g. on-demand QPU usage.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Default, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum PriceType {
     #[serde(rename = "one_time")]
+    #[default]
     OneTime,
     #[serde(rename = "recurring")]
     Recurring,
-}
-
-impl Default for PriceType {
-    fn default() -> PriceType {
-        Self::OneTime
-    }
 }
