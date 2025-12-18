@@ -1,4 +1,5 @@
 #![allow(unused_qualifications)]
+#![allow(non_local_definitions, reason = "necessary for pyo3::pymethods")]
 
 use pyo3::{
     exceptions::{PyFileNotFoundError, PyOSError, PyRuntimeError, PyValueError},
@@ -11,17 +12,21 @@ use tokio_util::sync::CancellationToken;
 
 use crate::{
     configuration::{
-        PkceFlow, API_URL_VAR, DEFAULT_API_URL, DEFAULT_GRPC_API_URL, DEFAULT_PROFILE_NAME,
-        DEFAULT_QUILC_URL, DEFAULT_QVM_URL, DEFAULT_SECRETS_PATH, DEFAULT_SETTINGS_PATH,
-        GRPC_API_URL_VAR, PROFILE_NAME_VAR, QUILC_URL_VAR, QVM_URL_VAR, SECRETS_PATH_VAR,
-        SETTINGS_PATH_VAR,
+        secrets::{DEFAULT_SECRETS_PATH, SECRETS_PATH_VAR},
+        settings::{DEFAULT_SETTINGS_PATH, SETTINGS_PATH_VAR},
+        API_URL_VAR, DEFAULT_API_URL, DEFAULT_GRPC_API_URL, DEFAULT_PROFILE_NAME,
+        DEFAULT_QUILC_URL, DEFAULT_QVM_URL, GRPC_API_URL_VAR, PROFILE_NAME_VAR, QUILC_URL_VAR,
+        QVM_URL_VAR,
     },
     impl_eq, impl_repr,
 };
 
 use super::{
-    error::TokenError, settings::AuthServer, tokens::ClientCredentials, ClientConfiguration,
-    ClientConfigurationBuilder, ExternallyManaged, LoadError, OAuthGrant, OAuthSession,
+    error::TokenError,
+    secrets::{SecretAccessToken, SecretRefreshToken},
+    settings::AuthServer,
+    tokens::{ClientCredentials, ClientSecret, ExternallyManaged, PkceFlow},
+    ClientConfiguration, ClientConfigurationBuilder, LoadError, OAuthGrant, OAuthSession,
     RefreshToken, TokenDispatcher,
 };
 
@@ -33,8 +38,11 @@ create_init_submodule! {
         OAuthSession,
         RefreshToken,
         ClientCredentials,
+        ClientSecret,
         ExternallyManaged,
-        PkceFlow
+        PkceFlow,
+        SecretAccessToken,
+        SecretRefreshToken
     ],
     consts: [
         DEFAULT_API_URL,
@@ -59,30 +67,30 @@ impl_repr!(RefreshToken);
 #[pymethods]
 impl RefreshToken {
     #[new]
-    const fn __new__(refresh_token: String) -> Self {
+    const fn __new__(refresh_token: SecretRefreshToken) -> Self {
         Self::new(refresh_token)
     }
 
     #[getter]
     #[pyo3(name = "refresh_token")]
-    fn py_refresh_token(&self) -> &str {
-        &self.refresh_token
+    fn py_refresh_token(&self) -> SecretRefreshToken {
+        self.refresh_token.clone()
     }
 
     #[setter]
     #[pyo3(name = "refresh_token")]
-    fn py_set_refresh_token(&mut self, refresh_token: String) {
+    fn py_set_refresh_token(&mut self, refresh_token: SecretRefreshToken) {
         self.refresh_token = refresh_token;
     }
 }
 
 impl_eq!(ClientCredentials);
-// Does not implement `__repr__`, since the data contains a secret value.
+impl_repr!(ClientCredentials);
 #[pymethods]
 impl ClientCredentials {
     #[new]
-    const fn __new__(client_id: String, client_secret: String) -> Self {
-        Self::new(client_id, client_secret)
+    fn __new__(client_id: String, client_secret: String) -> Self {
+        Self::new(client_id, ClientSecret::from(client_secret))
     }
 
     #[getter]
@@ -93,8 +101,8 @@ impl ClientCredentials {
 
     #[getter]
     #[pyo3(name = "client_secret")]
-    fn py_client_secret(&self) -> &str {
-        self.client_secret()
+    fn py_client_secret(&self) -> ClientSecret {
+        self.client_secret().clone()
     }
 }
 
@@ -135,7 +143,7 @@ impl PkceFlow {
             let runtime = get_runtime();
             runtime.block_on(async move {
                 let cancel_token = cancel_token_with_ctrl_c();
-                PkceFlow::new_login_flow(cancel_token, &auth_server).await
+                Self::new_login_flow(cancel_token, &auth_server).await
             })
         })
         .map_err(|err| PyRuntimeError::new_err(err.to_string()))
@@ -143,16 +151,16 @@ impl PkceFlow {
 
     #[getter]
     #[pyo3(name = "access_token")]
-    fn py_access_token(&self) -> &str {
-        &self.access_token
+    fn py_access_token(&self) -> SecretAccessToken {
+        self.access_token.clone()
     }
 
     #[getter]
     #[pyo3(name = "refresh_token")]
-    fn py_refresh_token(&self) -> Option<&str> {
+    fn py_refresh_token(&self) -> Option<SecretRefreshToken> {
         self.refresh_token
             .as_ref()
-            .map(|rt| rt.refresh_token.as_str())
+            .map(|rt| rt.refresh_token.clone())
     }
 }
 
@@ -163,15 +171,15 @@ impl OAuthSession {
     const fn __new__(
         payload: OAuthGrant,
         auth_server: AuthServer,
-        access_token: Option<String>,
+        access_token: Option<SecretAccessToken>,
     ) -> Self {
         Self::new(payload, auth_server, access_token)
     }
 
     #[getter]
     #[pyo3(name = "access_token")]
-    fn py_access_token(&self) -> Result<&str, TokenError> {
-        self.access_token()
+    fn py_access_token(&self) -> Result<SecretAccessToken, TokenError> {
+        self.access_token().cloned()
     }
 
     #[getter]
@@ -196,12 +204,12 @@ impl OAuthSession {
     }
 
     #[pyo3(name = "validate")]
-    fn py_validate(&self) -> Result<String, TokenError> {
+    fn py_validate(&self) -> Result<SecretAccessToken, TokenError> {
         self.validate()
     }
 
     #[pyo3(name = "request_access_token")]
-    fn py_request_access_token(&self, py: Python<'_>) -> PyResult<String> {
+    fn py_request_access_token(&self, py: Python<'_>) -> PyResult<SecretAccessToken> {
         py_request_access_token(py, self.clone())
     }
 
@@ -220,15 +228,15 @@ py_function_sync_async! {
 
 py_function_sync_async! {
     #[pyfunction]
-    async fn get_bearer_access_token(configuration: ClientConfiguration) -> PyResult<String> {
+    async fn get_bearer_access_token(configuration: ClientConfiguration) -> PyResult<SecretAccessToken> {
         configuration.get_bearer_access_token().await.map_err(PyErr::from)
     }
 }
 
 py_function_sync_async! {
     #[pyfunction]
-    async fn request_access_token(session: OAuthSession) -> PyResult<String> {
-        session.clone().request_access_token().await.map(std::string::ToString::to_string).map_err(PyErr::from)
+    async fn request_access_token(session: OAuthSession) -> PyResult<SecretAccessToken> {
+        session.clone().request_access_token().await.cloned().map_err(PyErr::from)
     }
 }
 
@@ -287,7 +295,7 @@ impl ClientConfiguration {
     }
 
     #[pyo3(name = "get_bearer_access_token")]
-    fn py_get_bearer_access_token(&self, py: Python<'_>) -> PyResult<String> {
+    fn py_get_bearer_access_token(&self, py: Python<'_>) -> PyResult<SecretAccessToken> {
         py_get_bearer_access_token(py, self.clone())
     }
 
@@ -362,7 +370,7 @@ impl_eq!(AuthServer);
 impl AuthServer {
     #[new]
     const fn py_new(client_id: String, issuer: String) -> Self {
-        Self::new(client_id, issuer)
+        Self { client_id, issuer }
     }
 
     #[staticmethod]
@@ -375,26 +383,26 @@ impl AuthServer {
     #[getter]
     #[must_use]
     pub fn get_client_id(&self) -> &str {
-        self.client_id()
+        &self.client_id
     }
 
     /// Set an Okta client id.
     #[setter(client_id)]
-    pub fn py_set_client_id(&mut self, id: String) {
-        self.set_client_id(id);
+    pub fn py_set_client_id(&mut self, client_id: String) {
+        self.client_id = client_id;
     }
 
     /// Get the Okta issuer URL.
     #[getter]
     #[must_use]
     pub fn get_issuer(&self) -> &str {
-        self.issuer()
+        &self.issuer
     }
 
     /// Set an Okta issuer URL.
     #[setter(issuer)]
     pub fn py_set_issuer(&mut self, issuer: String) {
-        self.set_issuer(issuer);
+        self.issuer = issuer;
     }
 }
 

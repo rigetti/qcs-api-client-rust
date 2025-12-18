@@ -17,5 +17,6 @@ bacon.toml
 **/__pycache__
 **/*.pyc
 **/*.so
+**/uv.lock
 # sphinx build artifacts
 qcs_api_client_common/docs/build

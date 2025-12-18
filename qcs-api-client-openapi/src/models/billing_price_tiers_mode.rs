@@ -26,9 +26,10 @@
 use serde::{Deserialize, Serialize};
 
 /// Use `graduated` to apply each tier calculation to the portion of relevant quantity, e.g. how US federal tax brackets work. Use `volume` to apply the highest relevant tier to the entire quantity.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum BillingPriceTiersMode {
     #[serde(rename = "graduated")]
+    #[default]
     Graduated,
     #[serde(rename = "volume")]
     Volume,
@@ -44,11 +45,5 @@ impl std::fmt::Display for BillingPriceTiersMode {
             Self::Volume => write!(f, "volume"),
             Self::Unknown(s) => s.fmt(f),
         }
-    }
-}
-
-impl Default for BillingPriceTiersMode {
-    fn default() -> BillingPriceTiersMode {
-        Self::Graduated
     }
 }

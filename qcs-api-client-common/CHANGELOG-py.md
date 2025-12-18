@@ -1,3 +1,10 @@
+## 0.13.0-kstrand.0 (2025-12-18)
+
+### Breaking Changes
+
+- export Secrets and Settings structs, add secret value wrappers to help prevent accidental leakage.
+- upgrade tonic (prerelease)
+
 ## 0.12.12 (2025-12-05)
 
 ### Fixes

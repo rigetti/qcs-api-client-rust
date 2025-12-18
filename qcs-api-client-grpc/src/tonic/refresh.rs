@@ -4,15 +4,17 @@ use std::{
     task::{Context, Poll},
 };
 
+use super::BoxBody;
 use http::StatusCode;
 use tonic::{
-    body::BoxBody,
     client::GrpcService,
     codegen::http::{Request, Response},
 };
 use tower::Layer;
 
-use qcs_api_client_common::configuration::{ClientConfiguration, TokenError, TokenRefresher};
+use qcs_api_client_common::configuration::{
+    secrets::SecretAccessToken, tokens::TokenRefresher, ClientConfiguration, TokenError,
+};
 
 use super::error::Error;
 
@@ -44,6 +46,7 @@ impl RefreshLayer<ClientConfiguration> {
     /// # Errors
     ///
     /// Will fail with error if loading the [`ClientConfiguration`] fails.
+    #[allow(clippy::result_large_err)]
     pub fn new() -> Result<Self, Error<TokenError>> {
         let config = ClientConfiguration::load_default()?;
         Ok(Self::with_config(config))
@@ -54,6 +57,7 @@ impl RefreshLayer<ClientConfiguration> {
     /// # Errors
     ///
     /// Will fail if loading the [`ClientConfiguration`] fails.
+    #[allow(clippy::result_large_err)]
     pub fn with_profile(profile: String) -> Result<Self, Error<TokenError>> {
         let config = ClientConfiguration::load_profile(profile)?;
         Ok(Self::with_config(config))
@@ -162,7 +166,7 @@ where
         }
         // Ensure that the service is ready before trying to use it.
         // Failure to do this *will* cause a panic.
-        poll_fn(|cx| channel.poll_ready(cx))
+        poll_fn(|cx| -> Poll<Result<(), _>> { channel.poll_ready(cx) })
             .await
             .map_err(super::error::Error::from)?;
         make_request(&mut channel, retry_req, token).await
@@ -174,7 +178,7 @@ where
 async fn make_request<C, E: std::error::Error>(
     service: &mut C,
     mut request: Request<BoxBody>,
-    token: String,
+    access_token: SecretAccessToken,
 ) -> Result<Response<<C as GrpcService<BoxBody>>::ResponseBody>, Error<E>>
 where
     C: GrpcService<BoxBody> + Send,
@@ -182,7 +186,7 @@ where
     <C as GrpcService<BoxBody>>::Future: Send,
     Error<E>: From<C::Error>,
 {
-    let header_val = format!("Bearer {token}")
+    let header_val = format!("Bearer {}", access_token.secret())
         .try_into()
         .map_err(Error::InvalidAccessToken)?;
     request.headers_mut().insert("authorization", header_val);

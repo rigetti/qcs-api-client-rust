@@ -318,6 +318,7 @@ pub(in crate::configuration) mod tests {
 
     use crate::configuration::{
         oidc::{fetch_discovery, DISCOVERY_REQUIRED_SCOPE},
+        secrets::SecretAccessToken,
         tokens::insecure_validate_token_exp,
     };
 
@@ -391,8 +392,9 @@ pub(in crate::configuration) mod tests {
             .await
             .expect("pkce_login should succeed");
 
-        let access_token = token_result.access_token().secret().clone();
-        let _ = insecure_validate_token_exp(&access_token).expect("token should be valid");
+        let access_token = SecretAccessToken::from(token_result.access_token().secret().clone());
+
+        insecure_validate_token_exp(&access_token).expect("token should be valid");
 
         drop(server);
     }
