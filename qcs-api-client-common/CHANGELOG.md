@@ -1,3 +1,14 @@
+## 0.13.0-dev2.2 (2025-12-19)
+
+### Breaking Changes
+
+- export Secrets and Settings structs, add secret value wrappers to help prevent accidental leakage.
+
+### Fixes
+
+- update knope usage
+- format fix
+
 ## 0.13.0-dev2.1 (2025-12-19)
 
 ### Breaking Changes
