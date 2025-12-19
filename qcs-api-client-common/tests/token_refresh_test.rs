@@ -3,7 +3,8 @@
 use std::time::Duration;
 
 use qcs_api_client_common::configuration::{
-    ClientConfiguration, ConfigSource, SECRETS_READ_ONLY_VAR,
+    secrets::{SecretAccessToken, SECRETS_READ_ONLY_VAR},
+    ClientConfiguration, ConfigSource,
 };
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
 use toml_edit::DocumentMut;
@@ -25,7 +26,7 @@ async fn test_token_refresh() {
         .await
         .expect("Should be able to fetch recently refreshed token.");
 
-    assert_eq!(fresh_tokens.access_token().unwrap(), access_token, "Testing that a newly refreshed token is not refreshed when fetching the token immediately after, implying that JWT validation is working as expected.");
+    assert_eq!(fresh_tokens.access_token().unwrap(), &access_token, "Testing that a newly refreshed token is not refreshed when fetching the token immediately after, implying that JWT validation is working as expected.");
 
     tokio::time::sleep(Duration::from_secs_f64(2.0)).await;
 
@@ -53,8 +54,13 @@ async fn test_token_refresh() {
             .and_then(|profile| profile.get("token_payload"))
         {
             assert_eq!(
-                token_payload.get("access_token").unwrap().as_str().unwrap(),
-                access_token
+                token_payload
+                    .get("access_token")
+                    .unwrap()
+                    .as_str()
+                    .map(str::to_string)
+                    .map(SecretAccessToken::from),
+                Some(access_token)
             );
 
             assert!(

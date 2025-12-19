@@ -26,9 +26,10 @@
 use serde::{Deserialize, Serialize};
 
 /// Use `per_unit` to charge a linear rate per quantity (recommended). Use `tiered` to charge a dynamic rate based on quantity as defined in the `tiers` of a `BillingPice`.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum BillingPriceScheme {
     #[serde(rename = "per_unit")]
+    #[default]
     PerUnit,
     #[serde(rename = "tiered")]
     Tiered,
@@ -44,11 +45,5 @@ impl std::fmt::Display for BillingPriceScheme {
             Self::Tiered => write!(f, "tiered"),
             Self::Unknown(s) => s.fmt(f),
         }
-    }
-}
-
-impl Default for BillingPriceScheme {
-    fn default() -> BillingPriceScheme {
-        Self::PerUnit
     }
 }

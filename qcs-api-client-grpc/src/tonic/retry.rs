@@ -180,6 +180,7 @@ mod tests {
             }
         }
 
+        #[allow(clippy::result_large_err)]
         fn make_response(&self) -> Result<tonic_health::pb::HealthCheckResponse, Status> {
             let remaining = self.required_tries_count.fetch_sub(1, Ordering::SeqCst);
             if remaining == 0 {
