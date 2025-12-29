@@ -117,11 +117,11 @@
 
     [workspace.dependencies.qcs-api-client-common]
       path = 'qcs-api-client-common'
-      version = '0.13.0-jselig-cli.8'
+      version = '0.13.0-jselig-cli.9'
 
     [workspace.dependencies.qcs-api-client-grpc]
       path = 'qcs-api-client-grpc'
-      version = '0.13.0-jselig-cli.8'
+      version = '0.13.0-jselig-cli.9'
 
     [workspace.dependencies.qcs-api-client-grpc-internal]
       path = 'qcs-api-client-grpc-internal'
