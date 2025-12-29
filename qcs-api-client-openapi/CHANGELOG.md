@@ -1,3 +1,21 @@
+## 0.14.0-jselig-cli.3 (2025-12-29)
+
+### Breaking Changes
+
+- export Secrets and Settings structs, add secret value wrappers to help prevent accidental leakage.
+- allow scopes to be specified explicitly
+
+### Features
+
+- template changes for openapi clap commands
+- generate template changes for openapi clap commands
+- add qcs-cli base crate, dependencies
+- implement initial qcs-cli, adding api commands + secrets + settings + tools
+
+### Fixes
+
+- upgrade knope usage
+
 ## 0.14.0-jselig-cli.2 (2025-12-29)
 
 ### Breaking Changes
