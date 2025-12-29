@@ -101,10 +101,8 @@ pub type CustomTraceService = tower_http::trace::Trace<
 ///
 /// # Arguments
 ///
-/// * `base_url` - The base URL of the gRPC service. This is used for matching
-///  against the configured [`TracingFilter`].
-/// * `configuration` - The tracing configuration. If `None`, no requests will
-///  be traced.
+/// * `base_url` - The base URL of the gRPC service. This is used for matching against the configured [`TracingFilter`].
+/// * `configuration` - The tracing configuration. If `None`, no requests will be traced.
 #[must_use]
 pub fn build_layer(
     base_url: String,

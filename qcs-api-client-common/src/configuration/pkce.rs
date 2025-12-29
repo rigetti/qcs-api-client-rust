@@ -1,4 +1,4 @@
-use std::convert::Infallible;
+use std::{collections::HashSet, convert::Infallible};
 
 use http::{Response, StatusCode};
 use http_body_util::Full;
@@ -17,7 +17,7 @@ use tokio::net::TcpListener;
 use tokio_util::sync::CancellationToken;
 use url::form_urlencoded;
 
-use crate::configuration::oidc::Discovery;
+use crate::configuration::oidc::{Discovery, DISCOVERY_REQUIRED_SCOPE};
 
 /// The scheme for the redirect URL.
 const PKCE_REDIRECT_URL_SCHEME: &str = "http";
@@ -76,6 +76,9 @@ pub(crate) struct PkceLoginRequest {
     pub(crate) redirect_port: Option<u16>,
     /// The discovery document to use for the PKCE login.
     pub(crate) discovery: Discovery,
+    /// The scopes to request in the token authorization to request.
+    /// If `None`, all scopes from [`Discovery::scopes_supported`] will be requested.
+    pub(crate) scopes: Option<Vec<String>>,
 }
 
 /// Launch a PKCE login, requiring the user to authenticate via browser.
@@ -97,18 +100,22 @@ pub(crate) async fn pkce_login(
         .set_token_uri(TokenUrl::from_url(request.discovery.token_endpoint))
         .set_redirect_uri(redirect_url);
 
+    let scopes = {
+        let mut unique_scopes = request
+            .scopes
+            .unwrap_or(request.discovery.scopes_supported)
+            .into_iter()
+            .collect::<HashSet<_>>();
+        unique_scopes.insert(DISCOVERY_REQUIRED_SCOPE.to_string());
+        unique_scopes
+    };
+
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
     let (auth_url, csrf_token) = client
         .authorize_url(CsrfToken::new_random)
-        .add_scopes(
-            request
-                .discovery
-                .scopes_supported
-                .into_iter()
-                .map(Scope::new),
-        )
         .set_pkce_challenge(pkce_challenge)
+        .add_scopes(scopes.into_iter().map(Scope::new))
         .url();
 
     if cfg!(test) {
@@ -318,6 +325,7 @@ pub(in crate::configuration) mod tests {
 
     use crate::configuration::{
         oidc::{fetch_discovery, DISCOVERY_REQUIRED_SCOPE},
+        secrets::SecretAccessToken,
         tokens::insecure_validate_token_exp,
     };
 
@@ -385,14 +393,16 @@ pub(in crate::configuration) mod tests {
             client_id: client.client_id,
             redirect_port: Some(redirect_port),
             discovery,
+            scopes: None,
         };
 
         let token_result = pkce_login(CancellationToken::new(), request)
             .await
             .expect("pkce_login should succeed");
 
-        let access_token = token_result.access_token().secret().clone();
-        let _ = insecure_validate_token_exp(&access_token).expect("token should be valid");
+        let access_token = SecretAccessToken::from(token_result.access_token().secret().clone());
+
+        insecure_validate_token_exp(&access_token).expect("token should be valid");
 
         drop(server);
     }

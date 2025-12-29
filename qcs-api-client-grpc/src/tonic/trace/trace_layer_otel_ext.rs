@@ -218,9 +218,9 @@ impl CustomTraceService {
     ///
     /// * `propagate_trace_id` - Whether to propagate the OpenTelemetry context.
     /// * `base_url` - The base URL of the gRPC service. This is used for matching
-    ///    against the configured `TracingFilter`.
+    ///   against the configured `TracingFilter`.
     /// * `filter` - A filter to determine which requests should be traced. If `None`,
-    ///    all requests will be traced.
+    ///   all requests will be traced.
     /// * `inner` - The base trace service.
     pub fn new(
         propagate_trace_id: bool,

@@ -26,9 +26,11 @@
 use serde::{Deserialize, Serialize};
 
 /// API error codes to indicate what kind of error occurred beyond what an HTTP status can convey.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum Code {
     #[serde(rename = "conflicting_resource_access")]
+    #[default]
     ConflictingResourceAccess,
     #[serde(rename = "resource_exists")]
     ResourceExists,
@@ -47,6 +49,7 @@ pub enum Code {
     #[serde(rename = "unauthenticated")]
     Unauthenticated,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }
@@ -65,11 +68,5 @@ impl std::fmt::Display for Code {
             Self::Unauthenticated => write!(f, "unauthenticated"),
             Self::Unknown(s) => s.fmt(f),
         }
-    }
-}
-
-impl Default for Code {
-    fn default() -> Code {
-        Self::ConflictingResourceAccess
     }
 }

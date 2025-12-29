@@ -28,9 +28,127 @@ use ::qcs_api_client_common::backoff::{
     duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
 };
 #[cfg(feature = "tracing")]
-use qcs_api_client_common::configuration::TokenRefresher;
+use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
+
+/// Serialize command-line arguments for [`get_instruction_set_architecture`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetInstructionSetArchitectureClapParams {
+    #[arg(long)]
+    pub quantum_processor_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetInstructionSetArchitectureClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::InstructionSetArchitecture, anyhow::Error> {
+        get_instruction_set_architecture(configuration, self.quantum_processor_id.as_str())
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`get_quantum_processor`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetQuantumProcessorClapParams {
+    #[arg(long)]
+    pub quantum_processor_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetQuantumProcessorClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::QuantumProcessor, anyhow::Error> {
+        get_quantum_processor(configuration, self.quantum_processor_id.as_str())
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_instruction_set_architectures`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListInstructionSetArchitecturesClapParams {
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListInstructionSetArchitecturesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListInstructionSetArchitectureResponse, anyhow::Error> {
+        list_instruction_set_architectures(
+            configuration,
+            self.page_size,
+            self.page_token.as_deref(),
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_quantum_processor_accessors`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListQuantumProcessorAccessorsClapParams {
+    /// Public identifier for a quantum processor [example: Aspen-1]
+    #[arg(long)]
+    pub quantum_processor_id: String,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListQuantumProcessorAccessorsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListQuantumProcessorAccessorsResponse, anyhow::Error> {
+        list_quantum_processor_accessors(
+            configuration,
+            self.quantum_processor_id.as_str(),
+            self.page_size,
+            self.page_token.as_deref(),
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_quantum_processors`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListQuantumProcessorsClapParams {
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListQuantumProcessorsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListQuantumProcessorsResponse, anyhow::Error> {
+        list_quantum_processors(configuration, self.page_size, self.page_token.as_deref())
+            .await
+            .map_err(Into::into)
+    }
+}
 
 /// struct for typed errors of method [`get_instruction_set_architecture`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -97,15 +215,14 @@ async fn get_instruction_set_architecture_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -140,7 +257,7 @@ async fn get_instruction_set_architecture_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -243,15 +360,14 @@ async fn get_quantum_processor_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -286,7 +402,7 @@ async fn get_quantum_processor_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -390,15 +506,14 @@ async fn list_instruction_set_architectures_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -442,7 +557,7 @@ async fn list_instruction_set_architectures_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -555,15 +670,14 @@ async fn list_quantum_processor_accessors_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -607,7 +721,7 @@ async fn list_quantum_processor_accessors_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -718,15 +832,14 @@ async fn list_quantum_processors_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -770,7 +883,7 @@ async fn list_quantum_processors_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 

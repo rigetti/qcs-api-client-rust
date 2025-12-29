@@ -72,7 +72,7 @@ fn main() {
     tonic_build::configure()
         .server_mod_attribute("services.controller", r#"#[cfg(feature = "server")]"#)
         .server_mod_attribute("services.translation", r#"#[cfg(feature = "server")]"#)
-        .compile_with_config(config, &proto_files, &[root])
+        .compile_protos_with_config(config, &proto_files, &[root])
         .expect("Should compile protobuf code for server and client");
 
     let descriptor_set =

@@ -26,7 +26,7 @@
 //! The [`ClientConfiguration`] exposes an API for loading and accessing your
 //! configuration.
 
-use crate::configuration::tokens::insecure_validate_token_exp;
+use crate::configuration::{secrets::SecretAccessToken, tokens::insecure_validate_token_exp};
 #[cfg(feature = "tracing-config")]
 use crate::tracing_configuration::TracingConfiguration;
 use derive_builder::Builder;
@@ -46,19 +46,17 @@ mod oidc;
 mod pkce;
 #[cfg(feature = "python")]
 mod py;
-mod secrets;
-mod settings;
-mod tokens;
+mod secret_string;
+pub mod secrets;
+pub mod settings;
+pub mod tokens;
 
 pub use error::{LoadError, TokenError};
 #[cfg(feature = "python")]
 pub(crate) use py::*;
-pub use secrets::{DEFAULT_SECRETS_PATH, SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR};
-pub use settings::{AuthServer, DEFAULT_SETTINGS_PATH, SETTINGS_PATH_VAR};
-pub use tokens::{
-    ClientCredentials, ExternallyManaged, OAuthGrant, OAuthSession, PkceFlow, RefreshFunction,
-    RefreshToken, TokenDispatcher, TokenRefresher,
-};
+
+use settings::AuthServer;
+use tokens::{OAuthGrant, OAuthSession, PkceFlow, RefreshToken, TokenDispatcher};
 
 /// Default profile name.
 pub const DEFAULT_PROFILE_NAME: &str = "default";
@@ -331,9 +329,10 @@ impl ClientConfiguration {
             // The current access token is valid, use it
             if let Some(access_token) = access_token {
                 if insecure_validate_token_exp(&access_token).is_ok() {
-                    let refresh_token = RefreshToken::new(refresh_token.unwrap_or_default());
+                    let refresh_token = refresh_token.unwrap_or_default();
+
                     let oauth_session = OAuthSession::new(
-                        OAuthGrant::RefreshToken(refresh_token),
+                        OAuthGrant::RefreshToken(RefreshToken::new(refresh_token)),
                         auth_server,
                         Some(access_token),
                     );
@@ -457,7 +456,7 @@ impl ClientConfiguration {
     /// # Errors
     ///
     /// See [`TokenError`].
-    pub async fn get_bearer_access_token(&self) -> Result<String, TokenError> {
+    pub async fn get_bearer_access_token(&self) -> Result<SecretAccessToken, TokenError> {
         let dispatcher = self
             .oauth_session
             .as_ref()
@@ -471,7 +470,7 @@ impl ClientConfiguration {
                 dispatcher
                     .refresh(self.source(), self.profile())
                     .await
-                    .map(|e| e.access_token().map(ToString::to_string))?
+                    .map(|e| e.access_token().cloned())?
             }
         }
     }
@@ -552,15 +551,18 @@ mod test {
     use tokio_util::sync::CancellationToken;
 
     use crate::configuration::{
-        expand_path_from_env_or_default, pkce::tests::PkceTestServerHarness, secrets::Secrets,
-        settings::Settings, AuthServer, ClientConfiguration, OAuthSession, RefreshToken,
-        API_URL_VAR, DEFAULT_QUILC_URL, GRPC_API_URL_VAR, QUILC_URL_VAR, QVM_URL_VAR,
-        SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR, SETTINGS_PATH_VAR,
+        expand_path_from_env_or_default,
+        pkce::tests::PkceTestServerHarness,
+        secrets::{
+            SecretAccessToken, SecretRefreshToken, Secrets, SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR,
+        },
+        settings::{Settings, SETTINGS_PATH_VAR},
+        tokens::TokenRefresher,
+        AuthServer, ClientConfiguration, OAuthSession, RefreshToken, API_URL_VAR,
+        DEFAULT_QUILC_URL, GRPC_API_URL_VAR, QUILC_URL_VAR, QVM_URL_VAR,
     };
 
-    use super::{
-        settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, tokens::ClientCredentials, TokenRefresher,
-    };
+    use super::{settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, tokens::ClientCredentials};
 
     #[test]
     fn expands_env_var() {
@@ -789,8 +791,8 @@ token_type = "Bearer"
             Ok(())
         });
         assert_eq!(
-            config.get_access_token().await.unwrap(),
-            Some(access_token.to_string())
+            config.get_access_token().await.unwrap().unwrap(),
+            SecretAccessToken::from(access_token)
         );
     }
 
@@ -829,13 +831,17 @@ token_type = "Bearer"
         fn to_encoded(&self) -> String {
             encode(&Header::default(), &self, &EncodingKey::from_secret(&[])).unwrap()
         }
+
+        fn to_access_token(&self) -> SecretAccessToken {
+            SecretAccessToken::from(self.to_encoded())
+        }
     }
 
     #[test]
     fn test_valid_token() {
-        let valid_token = Claims::new_valid().to_encoded();
+        let valid_token = Claims::new_valid().to_access_token();
         let tokens = OAuthSession::from_refresh_token(
-            RefreshToken::new(valid_token.clone()),
+            RefreshToken::new(SecretRefreshToken::from("unused")),
             AuthServer::default(),
             Some(valid_token.clone()),
         );
@@ -849,11 +855,11 @@ token_type = "Bearer"
 
     #[test]
     fn test_expired_token() {
-        let invalid_token = Claims::new_expired().to_encoded();
+        let invalid_token = Claims::new_expired().to_access_token();
         let tokens = OAuthSession::from_refresh_token(
-            RefreshToken::new(invalid_token),
+            RefreshToken::new(SecretRefreshToken::from("unused")),
             AuthServer::default(),
-            None,
+            Some(invalid_token),
         );
         assert!(tokens.validate().is_err());
     }
@@ -861,7 +867,7 @@ token_type = "Bearer"
     #[test]
     fn test_client_credentials_without_access_token() {
         let tokens = OAuthSession::from_client_credentials(
-            ClientCredentials::new("client_id".to_string(), "client_secret".to_string()),
+            ClientCredentials::new("client_id", "client_secret"),
             AuthServer::default(),
             None,
         );
@@ -932,7 +938,7 @@ token_type = "Bearer"
 
         assert_eq!(
             config.get_bearer_access_token().await.unwrap(),
-            access_token.to_string()
+            SecretAccessToken::from(access_token)
         );
     }
 

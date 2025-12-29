@@ -1,9 +1,14 @@
+//! Models and utilities for managing QCS settings.
 use std::collections::HashMap;
 use std::path::PathBuf;
 
 use figment::providers::Format;
 use figment::{providers::Toml, Figment};
 use serde::{Deserialize, Serialize};
+
+use crate::configuration::error::DiscoveryError;
+use crate::configuration::oidc::{fetch_discovery, DISCOVERY_REQUIRED_SCOPE};
+use crate::configuration::tokens::default_http_client;
 
 use super::{
     env_or_default_quilc_url, env_or_default_qvm_url, expand_path_from_env_or_default, LoadError,
@@ -16,25 +21,49 @@ pub const SETTINGS_PATH_VAR: &str = "QCS_SETTINGS_FILE_PATH";
 /// The default path that [`Settings`] will be loaded from;
 pub const DEFAULT_SETTINGS_PATH: &str = "~/.qcs/settings.toml";
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub(crate) struct Settings {
+/// The structure of QCS settings, typically serialized as a TOML file at [`DEFAULT_SETTINGS_PATH`].
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+pub struct Settings {
+    /// The default profile to use - this should match a key of [`Settings::profiles`].
     #[serde(default = "default_profile_name")]
-    pub(crate) default_profile_name: String,
+    pub default_profile_name: String,
+
+    /// All named [`Profile`]s defined in the settings file.
     #[serde(default = "default_profiles")]
-    pub(crate) profiles: HashMap<String, Profile>,
+    pub profiles: HashMap<String, Profile>,
+
+    /// All named [`AuthServer`]s defined in the settings file.
     #[serde(default = "default_auth_servers")]
-    pub(crate) auth_servers: HashMap<String, AuthServer>,
+    pub auth_servers: HashMap<String, AuthServer>,
+
+    /// The path to the settings file this [`Settings`] was loaded from,
+    /// if it was loaded from a file. This is not stored in the settings file itself.
     #[serde(skip)]
-    pub(crate) file_path: Option<PathBuf>,
+    pub file_path: Option<PathBuf>,
 }
 
 impl Settings {
-    pub(crate) fn load() -> Result<Self, LoadError> {
+    /// Load [`Settings`] from the path specified by the [`SETTINGS_PATH_VAR`] environment variable if set,
+    /// or else the default path at [`DEFAULT_SETTINGS_PATH`].
+    ///
+    /// # Errors
+    ///
+    /// [`LoadError`] if the settings file cannot be loaded.
+    pub fn load() -> Result<Self, LoadError> {
         let path = expand_path_from_env_or_default(SETTINGS_PATH_VAR, DEFAULT_SETTINGS_PATH)?;
         #[cfg(feature = "tracing")]
         tracing::debug!("loading QCS settings from {path:?}");
-        let mut settings: Self = Figment::from(Toml::file(&path)).extract()?;
-        settings.file_path = Some(path);
+        Self::load_from_path(&path)
+    }
+
+    /// Load [`Settings`] from the path specified by `path`.
+    ///
+    /// # Errors
+    ///
+    /// [`LoadError`] if the settings file cannot be loaded.
+    pub fn load_from_path(path: &PathBuf) -> Result<Self, LoadError> {
+        let mut settings: Self = Figment::from(Toml::file(path)).extract()?;
+        settings.file_path = Some(path.into());
         Ok(settings)
     }
 }
@@ -62,23 +91,25 @@ fn default_auth_servers() -> HashMap<String, AuthServer> {
     HashMap::from([(DEFAULT_PROFILE_NAME.to_string(), AuthServer::default())])
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub(crate) struct Profile {
+/// A particular profile of [`Settings`], which defines all the configurable options
+/// for connecting to a particular QCS instance using a particular set of credentials.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+pub struct Profile {
     /// URL of the QCS REST API.
     #[serde(default = "default_api_url")]
-    pub(crate) api_url: String,
+    pub api_url: String,
     /// URL of the QCS gRPC API.
     #[serde(default = "default_grpc_api_url")]
-    pub(crate) grpc_api_url: String,
-    /// Name of the auth server to use.
+    pub grpc_api_url: String,
+    /// Name of the [`AuthServer`] to use.
     #[serde(default = "default_profile_name")]
-    pub(crate) auth_server_name: String,
-    /// Name of the credentials to use.
+    pub auth_server_name: String,
+    /// Name of the [`Credential`][`super::secrets::Credential`] to use from the corresponding [`Secrets`][`super::secrets::Secrets`].
     #[serde(default = "default_profile_name")]
-    pub(crate) credentials_name: String,
+    pub credentials_name: String,
     /// Application specific settings.
     #[serde(default)]
-    pub(crate) applications: Applications,
+    pub applications: Applications,
 }
 
 impl Default for Profile {
@@ -110,7 +141,7 @@ pub(crate) const QCS_DEFAULT_AUTH_ISSUER_PRODUCTION: &str =
 #[cfg_attr(feature = "python", pyo3::pyclass)]
 pub struct AuthServer {
     /// OAuth 2.0 client id.
-    client_id: String,
+    pub client_id: String,
     /// OAuth 2.0 issuer URL.
     ///
     /// This is the base URL of the identity provider.
@@ -121,7 +152,12 @@ pub struct AuthServer {
     /// which is the canonical URI that the identity provider uses to sign and validate tokens,
     /// but the OpenID specification requires that they match exactly,
     /// and that they match the `iss` claim in Tokens issued by this identity provider.
-    issuer: String,
+    pub issuer: String,
+
+    /// OAuth 2.0 scopes to request during authorization requests.
+    /// If not specified, `supported_scopes` from the discovery document hosted at `issuer` will be used.
+    /// The scope `openid` is always requested, even if not present in this list.
+    pub scopes: Option<Vec<String>>,
 }
 
 impl Default for AuthServer {
@@ -129,53 +165,67 @@ impl Default for AuthServer {
         Self {
             client_id: QCS_DEFAULT_CLIENT_ID_PRODUCTION.to_string(),
             issuer: QCS_DEFAULT_AUTH_ISSUER_PRODUCTION.to_string(),
+            scopes: Some(vec![DISCOVERY_REQUIRED_SCOPE.to_string()]),
         }
     }
 }
 
+/// Errors that can occur when attempting to perform a PKCE login flow.
+#[derive(Debug, thiserror::Error)]
+pub enum AuthServerIssuerScopesError {
+    /// Error that occurred while fetching the discovery document from the `OAuth2` issuer.
+    #[error(transparent)]
+    Discovery(#[from] DiscoveryError),
+    /// Error that occurred while making http requests.
+    #[error(transparent)]
+    Request(#[from] reqwest::Error),
+}
+
 impl AuthServer {
-    /// Create a new [`AuthServer`] with a ``client_id`` and ``issuer``.
+    /// Create a new [`AuthServer`] with a ``client_id`` and ``issuer``, and an optional list of scopes to request during authorization requests.
+    /// If not specified, `supported_scopes` from the discovery document hosted at `issuer` will be used.
+    /// Note that the required scope `openid` is always requested, even if not present in this list.
     #[must_use]
-    pub const fn new(client_id: String, issuer: String) -> Self {
-        Self { client_id, issuer }
+    pub const fn new(client_id: String, issuer: String, scopes: Option<Vec<String>>) -> Self {
+        Self {
+            client_id,
+            issuer,
+            scopes,
+        }
     }
 
-    /// Get the configured OAuth 2.0 client id.
-    #[must_use]
-    pub fn client_id(&self) -> &str {
-        &self.client_id
-    }
-
-    /// Set an OAuth 2.0 client id.
-    pub fn set_client_id(&mut self, id: String) {
-        self.client_id = id;
-    }
-
-    /// Get the OAuth 2.0 issuer URL.
-    #[must_use]
-    pub fn issuer(&self) -> &str {
-        &self.issuer
-    }
-
-    /// Set an OAuth 2.0 issuer URL.
-    pub fn set_issuer(&mut self, issuer: String) {
-        self.issuer = issuer;
+    /// Fetch the supported scopes from the [`AuthServer::issuer`]'s well-known discovery document,
+    /// updating the [`AuthServer::scopes`] field.
+    ///
+    /// # Errors
+    /// Returns an error if the discovery document cannot be fetched or parsed.
+    pub async fn fetch_all_scopes_supported(
+        &self,
+    ) -> Result<Vec<String>, AuthServerIssuerScopesError> {
+        let client = default_http_client()?;
+        let discovery = fetch_discovery(&client, &self.issuer).await?;
+        Ok(discovery.scopes_supported)
     }
 }
 
-#[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
-pub(crate) struct Applications {
+/// Settings for secondary applications used by QCS SDKs.
+#[derive(Deserialize, Clone, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct Applications {
+    /// Settings for use of the pyquil SDK.
     #[serde(default)]
-    pub(crate) pyquil: Pyquil,
+    pub pyquil: Pyquil,
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
-pub(crate) struct Pyquil {
-    #[serde(default = "env_or_default_quilc_url")]
-    pub(crate) quilc_url: String,
-
+/// Settings for secondary applications used by pyquil.
+#[derive(Deserialize, Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Pyquil {
+    /// URL of the QVM server.
     #[serde(default = "env_or_default_qvm_url")]
-    pub(crate) qvm_url: String,
+    pub qvm_url: String,
+
+    /// URL of the Quilc compiler server.
+    #[serde(default = "env_or_default_quilc_url")]
+    pub quilc_url: String,
 }
 
 impl Default for Pyquil {

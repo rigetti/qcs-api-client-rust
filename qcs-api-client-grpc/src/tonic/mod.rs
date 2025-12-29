@@ -238,6 +238,8 @@ mod otel_tests {
     use opentelemetry::trace::{TraceContextExt, TraceId};
     use opentelemetry_http::HeaderExtractor;
     use opentelemetry_sdk::propagation::TraceContextPropagator;
+    use qcs_api_client_common::configuration::secrets::{SecretAccessToken, SecretRefreshToken};
+    use qcs_api_client_common::configuration::tokens::RefreshToken;
     use serde::{Deserialize, Serialize};
     use std::time::{Duration, SystemTime};
     use tonic::codegen::http::{HeaderMap, HeaderValue};
@@ -249,7 +251,7 @@ mod otel_tests {
 
     use crate::tonic::{uds_grpc_stream, wrap_channel_with_tracing};
     use qcs_api_client_common::configuration::ClientConfiguration;
-    use qcs_api_client_common::configuration::{AuthServer, OAuthSession, RefreshToken};
+    use qcs_api_client_common::configuration::{settings::AuthServer, tokens::OAuthSession};
 
     static HEALTH_CHECK_PATH: &str = "/grpc.health.v1.Health/Check";
 
@@ -266,7 +268,7 @@ mod otel_tests {
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
             .oauth_session(Some(OAuthSession::from_refresh_token(
-                RefreshToken::new("refresh_token".to_string()),
+                RefreshToken::new(SecretRefreshToken::from("refresh_token")),
                 AuthServer::default(),
                 Some(create_jwt()),
             )))
@@ -285,7 +287,7 @@ mod otel_tests {
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
             .oauth_session(Some(OAuthSession::from_refresh_token(
-                RefreshToken::new("refresh_token".to_string()),
+                RefreshToken::new(SecretRefreshToken::from("refresh_token")),
                 AuthServer::default(),
                 Some(create_jwt()),
             )))
@@ -313,7 +315,7 @@ mod otel_tests {
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
             .oauth_session(Some(OAuthSession::from_refresh_token(
-                RefreshToken::new("refresh_token".to_string()),
+                RefreshToken::new(SecretRefreshToken::from("refresh_token")),
                 AuthServer::default(),
                 Some(create_jwt()),
             )))
@@ -411,7 +413,7 @@ mod otel_tests {
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
             .oauth_session(Some(OAuthSession::from_refresh_token(
-                RefreshToken::new("refresh_token".to_string()),
+                RefreshToken::new(SecretRefreshToken::from("refresh_token")),
                 AuthServer::default(),
                 Some(create_jwt()),
             )))
@@ -476,7 +478,7 @@ mod otel_tests {
 
     /// Create an HS256 signed JWT token with sub and exp claims. This is good enough to pass the
     /// [`RefreshService`] token validation.
-    pub(crate) fn create_jwt() -> String {
+    pub(crate) fn create_jwt() -> SecretAccessToken {
         use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
         let expiration = SystemTime::now()
             .checked_add(Duration::from_secs(60))
@@ -492,7 +494,9 @@ mod otel_tests {
         // The client doesn't check the signature, so for convenience here, we just sign with HS256
         // instead of RS256.
         let header = Header::new(Algorithm::HS256);
-        encode(&header, &claims, &EncodingKey::from_secret(JWT_SECRET)).unwrap()
+        encode(&header, &claims, &EncodingKey::from_secret(JWT_SECRET))
+            .map(SecretAccessToken::from)
+            .unwrap()
     }
 
     #[derive(Debug, thiserror::Error)]
@@ -512,6 +516,7 @@ mod otel_tests {
 
     /// Given an incoming gRPC request, validate that the the specified [`TraceId`] is propagated
     /// via the `traceparent` metadata header.
+    #[allow(clippy::result_large_err)]
     fn validate_trace_id_propagated(
         trace_id: TraceId,
         req: Request<()>,
@@ -558,6 +563,7 @@ mod otel_tests {
 
     /// Simply validate that the `traceparent` and `tracestate` metadata headers are not present
     /// on the incoming gRPC.
+    #[allow(clippy::result_large_err)]
     fn validate_otel_context_not_propagated(
         req: Request<()>,
     ) -> Result<Request<()>, tonic::Status> {

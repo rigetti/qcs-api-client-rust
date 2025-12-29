@@ -28,9 +28,96 @@ use ::qcs_api_client_common::backoff::{
     duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
 };
 #[cfg(feature = "tracing")]
-use qcs_api_client_common::configuration::TokenRefresher;
+use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
+
+/// Serialize command-line arguments for [`auth_email_password_reset_token`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct AuthEmailPasswordResetTokenClapParams {
+    pub auth_email_password_reset_token_request: Option<
+        crate::clap_utils::JsonMaybeStdin<crate::models::AuthEmailPasswordResetTokenRequest>,
+    >,
+}
+
+#[cfg(feature = "clap")]
+impl AuthEmailPasswordResetTokenClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), anyhow::Error> {
+        let request = self
+            .auth_email_password_reset_token_request
+            .map(|body| body.into_inner().into_inner());
+
+        auth_email_password_reset_token(configuration, request)
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`auth_get_user`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct AuthGetUserClapParams {}
+
+#[cfg(feature = "clap")]
+impl AuthGetUserClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::User, anyhow::Error> {
+        auth_get_user(configuration).await.map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`auth_reset_password`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct AuthResetPasswordClapParams {
+    pub auth_reset_password_request:
+        crate::clap_utils::JsonMaybeStdin<crate::models::AuthResetPasswordRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl AuthResetPasswordClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), anyhow::Error> {
+        let request = self.auth_reset_password_request.into_inner().into_inner();
+
+        auth_reset_password(configuration, request)
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`auth_reset_password_with_token`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct AuthResetPasswordWithTokenClapParams {
+    pub auth_reset_password_with_token_request:
+        crate::clap_utils::JsonMaybeStdin<crate::models::AuthResetPasswordWithTokenRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl AuthResetPasswordWithTokenClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), anyhow::Error> {
+        let request = self
+            .auth_reset_password_with_token_request
+            .into_inner()
+            .into_inner();
+
+        auth_reset_password_with_token(configuration, request)
+            .await
+            .map_err(Into::into)
+    }
+}
 
 /// struct for typed errors of method [`auth_email_password_reset_token`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -89,15 +176,14 @@ async fn auth_email_password_reset_token_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -132,7 +218,7 @@ async fn auth_email_password_reset_token_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -237,15 +323,14 @@ async fn auth_get_user_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -280,7 +365,7 @@ async fn auth_get_user_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -377,15 +462,14 @@ async fn auth_reset_password_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -420,7 +504,7 @@ async fn auth_reset_password_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -524,15 +608,14 @@ async fn auth_reset_password_with_token_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -567,7 +650,7 @@ async fn auth_reset_password_with_token_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 

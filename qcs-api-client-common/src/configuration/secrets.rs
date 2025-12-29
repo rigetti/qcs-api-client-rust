@@ -1,3 +1,5 @@
+//! Models and utilities for managing QCS secret credentials.
+
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
@@ -15,6 +17,8 @@ use crate::configuration::LoadError;
 use super::error::{IoErrorWithPath, IoOperation, WriteError};
 use super::{expand_path_from_env_or_default, DEFAULT_PROFILE_NAME};
 
+pub use super::secret_string::{SecretAccessToken, SecretRefreshToken};
+
 /// Setting the `QCS_SECRETS_FILE_PATH` environment variable will change which file is used for loading secrets
 pub const SECRETS_PATH_VAR: &str = "QCS_SECRETS_FILE_PATH";
 /// `QCS_SECRETS_READ_ONLY` indicates whether to treat the `secrets.toml` file as read-only. Disabled by default.
@@ -24,12 +28,16 @@ pub const SECRETS_READ_ONLY_VAR: &str = "QCS_SECRETS_READ_ONLY";
 /// The default path that [`Secrets`] will be loaded from
 pub const DEFAULT_SECRETS_PATH: &str = "~/.qcs/secrets.toml";
 
-#[derive(Deserialize, Debug, PartialEq, Serialize)]
-pub(crate) struct Secrets {
+/// The structure of QCS secrets, typically serialized as a TOML file at [`DEFAULT_SECRETS_PATH`].
+#[derive(Deserialize, Debug, PartialEq, Eq, Serialize)]
+pub struct Secrets {
+    /// All named [`Credential`]s defined in the secrets file.
     #[serde(default = "default_credentials")]
-    pub(crate) credentials: HashMap<String, Credential>,
+    pub credentials: HashMap<String, Credential>,
+    /// The path to the secrets file this [`Secrets`] was loaded from,
+    /// if it was loaded from a file. This is not stored in the secrets file itself.
     #[serde(skip)]
-    pub(crate) file_path: Option<PathBuf>,
+    pub file_path: Option<PathBuf>,
 }
 
 fn default_credentials() -> HashMap<String, Credential> {
@@ -46,14 +54,25 @@ impl Default for Secrets {
 }
 
 impl Secrets {
-    pub(crate) fn load() -> Result<Self, LoadError> {
+    /// Load [`Secrets`] from the path specified by the [`SECRETS_PATH_VAR`] environment variable if set,
+    /// or else the default path at [`DEFAULT_SECRETS_PATH`].
+    ///
+    /// # Errors
+    ///
+    /// [`LoadError`] if the secrets file cannot be loaded.
+    pub fn load() -> Result<Self, LoadError> {
         let path = expand_path_from_env_or_default(SECRETS_PATH_VAR, DEFAULT_SECRETS_PATH)?;
         #[cfg(feature = "tracing")]
         tracing::debug!("loading QCS secrets from {path:?}");
         Self::load_from_path(&path)
     }
 
-    pub(crate) fn load_from_path(path: &PathBuf) -> Result<Self, LoadError> {
+    /// Load [`Secrets`] from the path specified by `path`.
+    ///
+    /// # Errors
+    ///
+    /// [`LoadError`] if the secrets file cannot be loaded.
+    pub fn load_from_path(path: &PathBuf) -> Result<Self, LoadError> {
         let mut secrets: Self = Figment::from(Toml::file(path)).extract()?;
         secrets.file_path = Some(path.into());
         Ok(secrets)
@@ -61,9 +80,13 @@ impl Secrets {
 
     /// Returns a bool indicating whether or not the QCS [`Secrets`] file is read-only.
     ///
-    /// The file is considered read-only if the `QCS_SECRETS_READ_ONLY` environment variable is set,
+    /// The file is considered read-only if the [`SECRETS_READ_ONLY_VAR`] environment variable is set,
     /// or if the file permissions indicate that it is read-only.
-    pub(crate) async fn is_read_only(
+    ///
+    /// # Errors
+    ///
+    /// [`WriteError`] if the file permissions cannot be checked.
+    pub async fn is_read_only(
         secrets_path: impl AsRef<Path> + Send + Sync,
     ) -> Result<bool, WriteError> {
         // Check if the QCS_SECRETS_READ_ONLY environment variable is set
@@ -98,8 +121,8 @@ impl Secrets {
     pub(crate) async fn write_tokens(
         secrets_path: impl AsRef<Path> + Send + Sync + std::fmt::Debug,
         profile_name: &str,
-        refresh_token: Option<&str>,
-        access_token: &str,
+        refresh_token: Option<&SecretRefreshToken>,
+        access_token: &SecretAccessToken,
         updated_at: OffsetDateTime,
     ) -> Result<(), WriteError> {
         // Read the current contents of the secrets file
@@ -124,7 +147,7 @@ impl Secrets {
             .map(PrimitiveDateTime::assume_utc);
 
         let did_update_access_token = if current_updated_at.is_none_or(|dt| dt < updated_at) {
-            token_payload["access_token"] = access_token.into();
+            token_payload["access_token"] = access_token.secret().into();
             token_payload["updated_at"] = updated_at.format(&Rfc3339)?.into();
             true
         } else {
@@ -133,6 +156,7 @@ impl Secrets {
 
         let did_update_refresh_token = refresh_token.is_some_and(|new_refresh_token| {
             let current_refresh_token = token_payload.get("refresh_token").and_then(|v| v.as_str());
+            let new_refresh_token = new_refresh_token.secret();
 
             let is_changed = current_refresh_token != Some(new_refresh_token);
             if is_changed {
@@ -220,20 +244,30 @@ impl Secrets {
     }
 }
 
-#[derive(Deserialize, Debug, Default, PartialEq, Serialize)]
-pub(crate) struct Credential {
-    pub(crate) token_payload: Option<TokenPayload>,
+/// A QCS credential, containing sensitive authentication secrets.
+#[derive(Deserialize, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct Credential {
+    /// The [`TokenPayload`] for this credential.
+    pub token_payload: Option<TokenPayload>,
 }
 
-#[derive(Deserialize, Debug, Default, PartialEq, Serialize)]
-pub(crate) struct TokenPayload {
-    pub(crate) refresh_token: Option<String>,
-    pub(crate) access_token: Option<String>,
+/// A QCS token payload, containing sensitive authentication secrets.
+#[derive(Deserialize, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct TokenPayload {
+    /// The refresh token for this credential.
+    pub refresh_token: Option<SecretRefreshToken>,
+    /// The access token for this credential.
+    pub access_token: Option<SecretAccessToken>,
+    /// The time at which this token was last updated.
     #[serde(
         default,
-        deserialize_with = "time::serde::rfc3339::option::deserialize"
+        deserialize_with = "time::serde::rfc3339::option::deserialize",
+        serialize_with = "time::serde::rfc3339::option::serialize"
     )]
-    pub(crate) updated_at: Option<OffsetDateTime>,
+    pub updated_at: Option<OffsetDateTime>,
+
+    // The below fields are retained for (de)serialization for compatibility with other
+    // libraries that use token payloads, but are not relevant here.
     scope: Option<String>,
     expires_in: Option<u32>,
     id_token: Option<String>,
@@ -247,6 +281,8 @@ mod describe_load {
     use std::path::PathBuf;
 
     use time::{macros::datetime, OffsetDateTime};
+
+    use crate::configuration::secrets::SecretAccessToken;
 
     use super::{Credential, Secrets, SECRETS_PATH_VAR};
 
@@ -330,9 +366,15 @@ token_type = "Bearer"
                 ];
 
                 for (access_token, updated_at) in token_updates {
-                    Secrets::write_tokens("secrets.toml", "test", None, access_token, updated_at)
-                        .await
-                        .expect("Should be able to write access token");
+                    Secrets::write_tokens(
+                        "secrets.toml",
+                        "test",
+                        None,
+                        &SecretAccessToken::from(access_token),
+                        updated_at,
+                    )
+                    .await
+                    .expect("Should be able to write access token");
                 }
 
                 // Verify the final state
@@ -344,7 +386,10 @@ token_type = "Bearer"
                     .token_payload
                     .unwrap();
 
-                assert_eq!(payload.access_token.unwrap(), "new_access_token");
+                assert_eq!(
+                    payload.access_token.unwrap(),
+                    SecretAccessToken::from("new_access_token")
+                );
                 assert_eq!(payload.updated_at.unwrap(), max_rfc3339());
                 let new_permissions = std::fs::metadata("secrets.toml")
                     .expect("Should be able to get file metadata")

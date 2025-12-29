@@ -1,6 +1,6 @@
 //! Client-credentials (i.e. service authorization) test
 
-use qcs_api_client_common::configuration::{AuthServer, ClientCredentials};
+use qcs_api_client_common::configuration::{settings::AuthServer, tokens::ClientCredentials};
 
 const VAR_NAME_ISSUER_URL: &str = "ISSUER_URL";
 const VAR_NAME_CLIENT_ID: &str = "ISSUER_CLIENT_ID";
@@ -12,13 +12,14 @@ fn require_var(key: &str) -> String {
 
 #[tokio::test]
 async fn test_client_credentials() {
-    let credentials = ClientCredentials {
-        client_id: require_var(VAR_NAME_CLIENT_ID),
-        client_secret: require_var(VAR_NAME_CLIENT_SECRET),
-    };
+    let credentials = ClientCredentials::new(
+        require_var(VAR_NAME_CLIENT_ID),
+        require_var(VAR_NAME_CLIENT_SECRET),
+    );
     let issuer = AuthServer::new(
         credentials.client_id.clone(),
         require_var(VAR_NAME_ISSUER_URL),
+        None,
     );
 
     credentials
