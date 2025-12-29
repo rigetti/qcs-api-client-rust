@@ -1,6 +1,6 @@
 [project]
 name = "qcs-api-client-common"
-version = "0.13.0-jselig-cli.0"
+version = "0.13.0-jselig-cli.1"
 description = "Contains core QCS client functionality and middleware implementations."
 readme = "README-py.md"
 license = { text = "Apache-2.0" }
