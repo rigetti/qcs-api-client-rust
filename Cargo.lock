@@ -2620,7 +2620,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-common"
-version = "0.13.0-jselig-cli.1"
+version = "0.13.0-jselig-cli.2"
 dependencies = [
  "async-tempfile",
  "async-trait",
@@ -2662,7 +2662,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc"
-version = "0.13.0-jselig-cli.1"
+version = "0.13.0-jselig-cli.2"
 dependencies = [
  "async-std",
  "backoff",
@@ -2708,7 +2708,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-openapi"
-version = "0.14.0-jselig-cli.1"
+version = "0.14.0-jselig-cli.2"
 dependencies = [
  "anyhow",
  "clap",
