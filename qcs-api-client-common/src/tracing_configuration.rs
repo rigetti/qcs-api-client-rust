@@ -113,7 +113,7 @@ impl HeaderAttributesFilter for IncludeExclude<String> {
                         .get(header_name)
                         .and_then(|header_value| header_value.to_str().ok())
                     {
-                        header_attributes.push((header_name.to_string(), header_value.to_string()));
+                        header_attributes.push((header_name.clone(), header_value.to_string()));
                     }
                 }
                 header_attributes

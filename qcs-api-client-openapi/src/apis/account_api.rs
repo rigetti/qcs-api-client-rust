@@ -28,9 +28,605 @@ use ::qcs_api_client_common::backoff::{
     duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
 };
 #[cfg(feature = "tracing")]
-use qcs_api_client_common::configuration::TokenRefresher;
+use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
+
+/// Serialize command-line arguments for [`activate_user`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ActivateUserClapParams {
+    pub activate_user_request:
+        Option<crate::clap_utils::JsonMaybeStdin<crate::models::ActivateUserRequest>>,
+}
+
+#[cfg(feature = "clap")]
+impl ActivateUserClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::User, anyhow::Error> {
+        let request = self
+            .activate_user_request
+            .map(|body| body.into_inner().into_inner());
+
+        activate_user(configuration, request)
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`add_group_user`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct AddGroupUserClapParams {
+    pub add_group_user_request:
+        crate::clap_utils::JsonMaybeStdin<crate::models::AddGroupUserRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl AddGroupUserClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), anyhow::Error> {
+        let request = self.add_group_user_request.into_inner().into_inner();
+
+        add_group_user(configuration, request)
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`dismiss_viewer_announcement`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct DismissViewerAnnouncementClapParams {
+    /// The ID of an existing announcement.
+    #[arg(long)]
+    pub announcement_id: i64,
+}
+
+#[cfg(feature = "clap")]
+impl DismissViewerAnnouncementClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), anyhow::Error> {
+        dismiss_viewer_announcement(configuration, self.announcement_id)
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`get_group_balance`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetGroupBalanceClapParams {
+    /// URL encoded name of group for which to retrieve account balance.
+    #[arg(long)]
+    pub group_name: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetGroupBalanceClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::AccountBalance, anyhow::Error> {
+        get_group_balance(configuration, self.group_name.as_str())
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`get_group_billing_customer`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetGroupBillingCustomerClapParams {
+    /// URL-encoded name of group.
+    #[arg(long)]
+    pub group_name: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetGroupBillingCustomerClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::BillingCustomer, anyhow::Error> {
+        get_group_billing_customer(configuration, self.group_name.as_str())
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`get_group_upcoming_billing_invoice`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetGroupUpcomingBillingInvoiceClapParams {
+    /// URL-encoded name of group.
+    #[arg(long)]
+    pub group_name: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetGroupUpcomingBillingInvoiceClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::BillingUpcomingInvoice, anyhow::Error> {
+        get_group_upcoming_billing_invoice(configuration, self.group_name.as_str())
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`get_user_balance`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetUserBalanceClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetUserBalanceClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::AccountBalance, anyhow::Error> {
+        get_user_balance(configuration, self.user_id.as_str())
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`get_user_billing_customer`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetUserBillingCustomerClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetUserBillingCustomerClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::BillingCustomer, anyhow::Error> {
+        get_user_billing_customer(configuration, self.user_id.as_str())
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`get_user_event_billing_price`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetUserEventBillingPriceClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+    pub get_account_event_billing_price_request:
+        crate::clap_utils::JsonMaybeStdin<crate::models::GetAccountEventBillingPriceRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl GetUserEventBillingPriceClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::EventBillingPriceRate, anyhow::Error> {
+        let request = self
+            .get_account_event_billing_price_request
+            .into_inner()
+            .into_inner();
+
+        get_user_event_billing_price(configuration, self.user_id.as_str(), request)
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`get_user_upcoming_billing_invoice`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetUserUpcomingBillingInvoiceClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetUserUpcomingBillingInvoiceClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::BillingUpcomingInvoice, anyhow::Error> {
+        get_user_upcoming_billing_invoice(configuration, self.user_id.as_str())
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`get_viewer_user_onboarding_completed`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetViewerUserOnboardingCompletedClapParams {}
+
+#[cfg(feature = "clap")]
+impl GetViewerUserOnboardingCompletedClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ViewerUserOnboardingCompleted, anyhow::Error> {
+        get_viewer_user_onboarding_completed(configuration)
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_group_billing_invoice_lines`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListGroupBillingInvoiceLinesClapParams {
+    /// URL-encoded name of group.
+    #[arg(long)]
+    pub group_name: String,
+    /// URL-encoded billing invoice id.
+    #[arg(long)]
+    pub billing_invoice_id: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListGroupBillingInvoiceLinesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoiceLinesResponse, anyhow::Error> {
+        list_group_billing_invoice_lines(
+            configuration,
+            self.group_name.as_str(),
+            self.billing_invoice_id.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_group_billing_invoices`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListGroupBillingInvoicesClapParams {
+    /// URL-encoded name of group.
+    #[arg(long)]
+    pub group_name: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListGroupBillingInvoicesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoicesResponse, anyhow::Error> {
+        list_group_billing_invoices(
+            configuration,
+            self.group_name.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_group_upcoming_billing_invoice_lines`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListGroupUpcomingBillingInvoiceLinesClapParams {
+    /// URL-encoded name of group.
+    #[arg(long)]
+    pub group_name: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListGroupUpcomingBillingInvoiceLinesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoiceLinesResponse, anyhow::Error> {
+        list_group_upcoming_billing_invoice_lines(
+            configuration,
+            self.group_name.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_group_users`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListGroupUsersClapParams {
+    /// URL encoded name of group for which to retrieve users.
+    #[arg(long)]
+    pub group_name: String,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListGroupUsersClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListGroupUsersResponse, anyhow::Error> {
+        list_group_users(
+            configuration,
+            self.group_name.as_str(),
+            self.page_size,
+            self.page_token.as_deref(),
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_user_billing_invoice_lines`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListUserBillingInvoiceLinesClapParams {
+    /// URL-encoded QCS id of user. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+    /// URL-encoded billing invoice id.
+    #[arg(long)]
+    pub billing_invoice_id: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListUserBillingInvoiceLinesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoiceLinesResponse, anyhow::Error> {
+        list_user_billing_invoice_lines(
+            configuration,
+            self.user_id.as_str(),
+            self.billing_invoice_id.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_user_billing_invoices`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListUserBillingInvoicesClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListUserBillingInvoicesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoicesResponse, anyhow::Error> {
+        list_user_billing_invoices(
+            configuration,
+            self.user_id.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_user_groups`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListUserGroupsClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListUserGroupsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListGroupsResponse, anyhow::Error> {
+        list_user_groups(
+            configuration,
+            self.user_id.as_str(),
+            self.page_size,
+            self.page_token.as_deref(),
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_user_upcoming_billing_invoice_lines`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListUserUpcomingBillingInvoiceLinesClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListUserUpcomingBillingInvoiceLinesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoiceLinesResponse, anyhow::Error> {
+        list_user_upcoming_billing_invoice_lines(
+            configuration,
+            self.user_id.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_viewer_announcements`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListViewerAnnouncementsClapParams {
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    /// Include dismissed announcements in the response.
+    #[arg(long)]
+    pub include_dismissed: Option<bool>,
+}
+
+#[cfg(feature = "clap")]
+impl ListViewerAnnouncementsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::AnnouncementsResponse, anyhow::Error> {
+        list_viewer_announcements(
+            configuration,
+            self.page_size,
+            self.page_token.as_deref(),
+            self.include_dismissed,
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`put_viewer_user_onboarding_completed`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct PutViewerUserOnboardingCompletedClapParams {
+    pub viewer_user_onboarding_completed:
+        Option<crate::clap_utils::JsonMaybeStdin<crate::models::ViewerUserOnboardingCompleted>>,
+}
+
+#[cfg(feature = "clap")]
+impl PutViewerUserOnboardingCompletedClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ViewerUserOnboardingCompleted, anyhow::Error> {
+        let request = self
+            .viewer_user_onboarding_completed
+            .map(|body| body.into_inner().into_inner());
+
+        put_viewer_user_onboarding_completed(configuration, request)
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`remove_group_user`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct RemoveGroupUserClapParams {
+    pub remove_group_user_request:
+        crate::clap_utils::JsonMaybeStdin<crate::models::RemoveGroupUserRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl RemoveGroupUserClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), anyhow::Error> {
+        let request = self.remove_group_user_request.into_inner().into_inner();
+
+        remove_group_user(configuration, request)
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`update_viewer_user_profile`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct UpdateViewerUserProfileClapParams {
+    pub update_viewer_user_profile_request:
+        crate::clap_utils::JsonMaybeStdin<crate::models::UpdateViewerUserProfileRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl UpdateViewerUserProfileClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::User, anyhow::Error> {
+        let request = self
+            .update_viewer_user_profile_request
+            .into_inner()
+            .into_inner();
+
+        update_viewer_user_profile(configuration, request)
+            .await
+            .map_err(Into::into)
+    }
+}
 
 /// struct for typed errors of method [`activate_user`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -259,15 +855,14 @@ async fn activate_user_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -302,7 +897,7 @@ async fn activate_user_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -403,15 +998,14 @@ async fn add_group_user_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -446,7 +1040,7 @@ async fn add_group_user_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -547,15 +1141,14 @@ async fn dismiss_viewer_announcement_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -590,7 +1183,7 @@ async fn dismiss_viewer_announcement_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -690,15 +1283,14 @@ async fn get_group_balance_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -733,7 +1325,7 @@ async fn get_group_balance_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -832,15 +1424,14 @@ async fn get_group_billing_customer_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -875,7 +1466,7 @@ async fn get_group_billing_customer_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -975,15 +1566,14 @@ async fn get_group_upcoming_billing_invoice_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -1018,7 +1608,7 @@ async fn get_group_upcoming_billing_invoice_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -1122,15 +1712,14 @@ async fn get_user_balance_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -1165,7 +1754,7 @@ async fn get_user_balance_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -1264,15 +1853,14 @@ async fn get_user_billing_customer_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -1307,7 +1895,7 @@ async fn get_user_billing_customer_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -1408,15 +1996,14 @@ async fn get_user_event_billing_price_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -1451,7 +2038,7 @@ async fn get_user_event_billing_price_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -1559,15 +2146,14 @@ async fn get_user_upcoming_billing_invoice_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -1602,7 +2188,7 @@ async fn get_user_upcoming_billing_invoice_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -1704,15 +2290,14 @@ async fn get_viewer_user_onboarding_completed_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -1747,7 +2332,7 @@ async fn get_viewer_user_onboarding_completed_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -1855,15 +2440,14 @@ async fn list_group_billing_invoice_lines_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -1907,7 +2491,7 @@ async fn list_group_billing_invoice_lines_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -2023,15 +2607,14 @@ async fn list_group_billing_invoices_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -2075,7 +2658,7 @@ async fn list_group_billing_invoices_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -2189,15 +2772,14 @@ async fn list_group_upcoming_billing_invoice_lines_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -2241,7 +2823,7 @@ async fn list_group_upcoming_billing_invoice_lines_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -2354,15 +2936,14 @@ async fn list_group_users_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -2406,7 +2987,7 @@ async fn list_group_users_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -2521,15 +3102,14 @@ async fn list_user_billing_invoice_lines_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -2573,7 +3153,7 @@ async fn list_user_billing_invoice_lines_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -2689,15 +3269,14 @@ async fn list_user_billing_invoices_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -2741,7 +3320,7 @@ async fn list_user_billing_invoices_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -2852,15 +3431,14 @@ async fn list_user_groups_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -2904,7 +3482,7 @@ async fn list_user_groups_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -3017,15 +3595,14 @@ async fn list_user_upcoming_billing_invoice_lines_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -3069,7 +3646,7 @@ async fn list_user_upcoming_billing_invoice_lines_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -3181,15 +3758,14 @@ async fn list_viewer_announcements_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -3237,7 +3813,7 @@ async fn list_viewer_announcements_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -3347,15 +3923,14 @@ async fn put_viewer_user_onboarding_completed_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -3390,7 +3965,7 @@ async fn put_viewer_user_onboarding_completed_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -3498,15 +4073,14 @@ async fn remove_group_user_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -3541,7 +4115,7 @@ async fn remove_group_user_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -3645,15 +4219,14 @@ async fn update_viewer_user_profile_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -3688,7 +4261,7 @@ async fn update_viewer_user_profile_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 

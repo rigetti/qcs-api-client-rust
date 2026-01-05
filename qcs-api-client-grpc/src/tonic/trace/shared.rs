@@ -64,9 +64,7 @@ pub(super) fn should_trace_request<B>(
     let url = parsed.ok();
     filter
         .and_then(|filter| url.map(|url| (filter, url)))
-        .map_or(true, |(filter, url)| {
-            filter.is_enabled(&UrlPatternMatchInput::Url(url))
-        })
+        .is_none_or(|(filter, url)| filter.is_enabled(&UrlPatternMatchInput::Url(url)))
 }
 
 /// A [`tower_http::trace::OnFailure`] implementation for gRPC requests.

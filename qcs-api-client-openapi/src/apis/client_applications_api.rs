@@ -28,9 +28,71 @@ use ::qcs_api_client_common::backoff::{
     duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
 };
 #[cfg(feature = "tracing")]
-use qcs_api_client_common::configuration::TokenRefresher;
+use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
+
+/// Serialize command-line arguments for [`check_client_application`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct CheckClientApplicationClapParams {
+    pub check_client_application_request:
+        crate::clap_utils::JsonMaybeStdin<crate::models::CheckClientApplicationRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl CheckClientApplicationClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::CheckClientApplicationResponse, anyhow::Error> {
+        let request = self
+            .check_client_application_request
+            .into_inner()
+            .into_inner();
+
+        check_client_application(configuration, request)
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`get_client_application`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetClientApplicationClapParams {
+    #[arg(long)]
+    pub client_application_name: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetClientApplicationClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ClientApplication, anyhow::Error> {
+        get_client_application(configuration, self.client_application_name.as_str())
+            .await
+            .map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`list_client_applications`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListClientApplicationsClapParams {}
+
+#[cfg(feature = "clap")]
+impl ListClientApplicationsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListClientApplicationsResponse, anyhow::Error> {
+        list_client_applications(configuration)
+            .await
+            .map_err(Into::into)
+    }
+}
 
 /// struct for typed errors of method [`check_client_application`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -76,15 +138,14 @@ async fn check_client_application_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -119,7 +180,7 @@ async fn check_client_application_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -225,15 +286,14 @@ async fn get_client_application_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -268,7 +328,7 @@ async fn get_client_application_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -370,15 +430,14 @@ async fn list_client_applications_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -413,7 +472,7 @@ async fn list_client_applications_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 

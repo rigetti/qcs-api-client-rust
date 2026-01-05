@@ -28,9 +28,42 @@ use ::qcs_api_client_common::backoff::{
     duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
 };
 #[cfg(feature = "tracing")]
-use qcs_api_client_common::configuration::TokenRefresher;
+use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
+
+/// Serialize command-line arguments for [`create_engagement`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct CreateEngagementClapParams {
+    pub create_engagement_request:
+        crate::clap_utils::JsonMaybeStdin<crate::models::CreateEngagementRequest>,
+    /// Either the client's user ID or the name of a group on behalf of which the client wishes to engage. May be overriden by accountId set in body.
+    #[arg(long)]
+    pub x_qcs_account_id: Option<String>,
+    /// Indicates whether the engagement request should be made for the user or on behalf of a group. May be overriden by accountType set in body.
+    #[arg(long)]
+    pub x_qcs_account_type: Option<crate::models::AccountType>,
+}
+
+#[cfg(feature = "clap")]
+impl CreateEngagementClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::EngagementWithCredentials, anyhow::Error> {
+        let request = self.create_engagement_request.into_inner().into_inner();
+
+        create_engagement(
+            configuration,
+            request,
+            self.x_qcs_account_id.as_deref(),
+            self.x_qcs_account_type,
+        )
+        .await
+        .map_err(Into::into)
+    }
+}
 
 /// struct for typed errors of method [`create_engagement`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -65,15 +98,14 @@ async fn create_engagement_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -117,7 +149,7 @@ async fn create_engagement_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 

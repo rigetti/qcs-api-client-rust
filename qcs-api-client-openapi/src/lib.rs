@@ -42,3 +42,42 @@ pub use url;
 pub mod apis;
 pub mod models;
 pub use qcs_api_client_common as common;
+
+#[cfg(feature = "clap")]
+pub mod clap_utils {
+    use serde::de::DeserializeOwned;
+    use std::str::FromStr;
+
+    pub type JsonMaybeStdin<T> = clap_stdin::MaybeStdin<JsonFromStr<T>>;
+
+    #[derive(Debug, Clone)]
+    pub struct JsonFromStr<T>(T)
+    where
+        T: Clone + DeserializeOwned;
+
+    impl<T> FromStr for JsonFromStr<T>
+    where
+        T: Clone + DeserializeOwned,
+    {
+        type Err = anyhow::Error;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            let d = &mut serde_json::Deserializer::from_str(s);
+            let v = serde_path_to_error::deserialize(d).map_err(|e| {
+                let full_type_name = std::any::type_name::<T>();
+                let simple_type_name = full_type_name.rsplit("::").next().unwrap_or(full_type_name);
+                anyhow::anyhow!("Failed to parse {}: {}", simple_type_name, e)
+            })?;
+            Ok(Self(v))
+        }
+    }
+
+    impl<T> JsonFromStr<T>
+    where
+        T: Clone + DeserializeOwned,
+    {
+        pub fn into_inner(self) -> T {
+            self.0
+        }
+    }
+}

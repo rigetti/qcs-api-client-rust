@@ -206,11 +206,11 @@ mod tests {
     #[cfg(feature = "otel-tracing")]
     use rstest::rstest;
 
-    /// https://docs.rs/reqwest_mock doesn't seem well maintained and requires setting the
-    /// Configuration::client field to be a trait or struct from the reqwest_mock crate.
-    ///
-    /// Additionally, reqwest still doesn't support Unix domain sockets, so unit testing is fairly
-    /// limited for here. See more info on UDS, see <https://github.com/seanmonstar/reqwest/issues/39>.
+    // https://docs.rs/reqwest_mock doesn't seem well maintained and requires setting the
+    // Configuration::client field to be a trait or struct from the reqwest_mock crate.
+    //
+    // Additionally, reqwest still doesn't support Unix domain sockets, so unit testing is fairly
+    // limited for here. See more info on UDS, see <https://github.com/seanmonstar/reqwest/issues/39>.
 
     /// Test that all requests are traced when no filter is specified.
     #[cfg(feature = "otel-tracing")]

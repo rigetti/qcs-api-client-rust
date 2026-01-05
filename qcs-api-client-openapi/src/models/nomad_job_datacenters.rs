@@ -26,15 +26,18 @@
 use serde::{Deserialize, Serialize};
 
 /// An enumeration.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum NomadJobDatacenters {
     #[serde(rename = "berkeley-775")]
+    #[default]
     Berkeley775,
     #[serde(rename = "fremont-fab")]
     FremontFab,
     #[serde(rename = "rigetti-gb-1")]
     RigettiGb1,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }
@@ -47,11 +50,5 @@ impl std::fmt::Display for NomadJobDatacenters {
             Self::RigettiGb1 => write!(f, "rigetti-gb-1"),
             Self::Unknown(s) => s.fmt(f),
         }
-    }
-}
-
-impl Default for NomadJobDatacenters {
-    fn default() -> NomadJobDatacenters {
-        Self::Berkeley775
     }
 }

@@ -28,9 +28,56 @@ use ::qcs_api_client_common::backoff::{
     duration_from_io_error, duration_from_reqwest_error, duration_from_response, ExponentialBackoff,
 };
 #[cfg(feature = "tracing")]
-use qcs_api_client_common::configuration::TokenRefresher;
+use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
+
+/// Serialize command-line arguments for [`get_health`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetHealthClapParams {}
+
+#[cfg(feature = "clap")]
+impl GetHealthClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::Health, anyhow::Error> {
+        get_health(configuration).await.map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`health_check`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct HealthCheckClapParams {}
+
+#[cfg(feature = "clap")]
+impl HealthCheckClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), anyhow::Error> {
+        health_check(configuration).await.map_err(Into::into)
+    }
+}
+
+/// Serialize command-line arguments for [`health_check_deprecated`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct HealthCheckDeprecatedClapParams {}
+
+#[cfg(feature = "clap")]
+impl HealthCheckDeprecatedClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<serde_json::Value, anyhow::Error> {
+        health_check_deprecated(configuration)
+            .await
+            .map_err(Into::into)
+    }
+}
 
 /// struct for typed errors of method [`get_health`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -70,15 +117,14 @@ async fn get_health_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -113,7 +159,7 @@ async fn get_health_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -209,15 +255,14 @@ async fn health_check_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -252,7 +297,7 @@ async fn health_check_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 
@@ -344,15 +389,14 @@ async fn health_check_deprecated_inner(
     {
         // Ignore parsing errors if the URL is invalid for some reason.
         // If it is invalid, it will turn up as an error later when actually making the request.
-        let local_var_do_tracing =
-            local_var_uri_str
-                .parse::<::url::Url>()
-                .ok()
-                .map_or(true, |url| {
-                    configuration
-                        .qcs_config
-                        .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
-                });
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
 
         if local_var_do_tracing {
             ::tracing::debug!(
@@ -387,7 +431,7 @@ async fn health_check_deprecated_inner(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
-            local_var_req_builder = local_var_req_builder.bearer_auth(token?);
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
         }
     }
 

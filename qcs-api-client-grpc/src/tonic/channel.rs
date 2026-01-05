@@ -18,7 +18,7 @@ use url::Url;
 
 use qcs_api_client_common::{
     backoff::{self, default_backoff},
-    configuration::{ClientConfiguration, LoadError, TokenError, TokenRefresher},
+    configuration::{tokens::TokenRefresher, ClientConfiguration, LoadError, TokenError},
 };
 
 #[cfg(feature = "tracing")]
@@ -316,6 +316,7 @@ where
     /// # Errors
     ///
     /// Returns a [`ChannelError`] if the service cannot be built.
+    #[allow(clippy::result_large_err)]
     pub fn build(self) -> Result<O::Service, ChannelError> {
         let channel = get_channel_with_endpoint(&self.endpoint)?;
         #[cfg(feature = "tracing")]
@@ -336,6 +337,7 @@ where
 /// # Errors
 ///
 /// [`Error::InvalidUri`] if the string is an invalid URI.
+#[allow(clippy::result_large_err)]
 pub fn parse_uri(s: &str) -> Result<Uri, Error<TokenError>> {
     s.parse().map_err(Error::from)
 }
@@ -400,6 +402,7 @@ fn get_uri_socks_auth(uri: &Uri) -> Result<Option<Auth>, url::ParseError> {
 /// # Errors
 ///
 /// See [`ChannelError`].
+#[allow(clippy::result_large_err)]
 pub fn get_channel(uri: Uri) -> Result<Channel, ChannelError> {
     let endpoint = get_endpoint(uri);
     get_channel_with_endpoint(&endpoint)
@@ -421,6 +424,7 @@ pub fn get_channel(uri: Uri) -> Result<Channel, ChannelError> {
 /// # Errors
 ///
 /// See [`ChannelError`].
+#[allow(clippy::result_large_err)]
 pub fn get_channel_with_timeout(
     uri: Uri,
     timeout: Option<Duration>,
@@ -447,7 +451,11 @@ pub fn get_channel_with_timeout(
 /// # Errors
 ///
 /// Returns a [`ChannelError`] if the channel cannot be constructed.
-#[allow(clippy::similar_names)] // http(s)_proxy are similar but precise in this case.
+#[allow(
+    clippy::similar_names,
+    reason = "http(s)_proxy are similar but precise in this case"
+)]
+#[allow(clippy::result_large_err)]
 pub fn get_channel_with_endpoint(endpoint: &Endpoint) -> Result<Channel, ChannelError> {
     let https_proxy = get_env_uri("HTTPS_PROXY")?;
     let http_proxy = get_env_uri("HTTP_PROXY")?;
@@ -521,6 +529,7 @@ pub fn get_channel_with_endpoint(endpoint: &Endpoint) -> Result<Channel, Channel
 /// # Errors
 ///
 /// See [`Error`]
+#[allow(clippy::result_large_err)]
 pub fn get_wrapped_channel(
     uri: Uri,
 ) -> Result<RefreshService<Channel, ClientConfiguration>, Error<TokenError>> {
@@ -562,6 +571,7 @@ where
 /// # Errors
 ///
 /// See [`Error`]
+#[allow(clippy::result_large_err)]
 pub fn wrap_channel<C>(
     channel: C,
 ) -> Result<RefreshService<C, ClientConfiguration>, Error<TokenError>>
@@ -578,6 +588,7 @@ where
 /// # Errors
 ///
 /// See [`Error`]
+#[allow(clippy::result_large_err)]
 pub fn wrap_channel_with_profile<C>(
     channel: C,
     profile: String,
