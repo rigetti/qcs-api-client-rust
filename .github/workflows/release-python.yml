@@ -21,7 +21,7 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   linux-wheels:
-    name: Build linux wheels
+    name: Build linux wheels (${{ matrix.target }})
     runs-on: ubuntu-latest
     env:
       CXXFLAGS: "-std=c++11"
@@ -30,6 +30,11 @@ jobs:
         target: [x86_64, aarch64]
     steps:
     - uses: actions/checkout@v2
+    - name: Set up QEMU
+      if: matrix.target == 'aarch64'
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: arm64
     - uses: ./.github/action-common-python-release
       with:
         artifact-key: linux-${{ matrix.target }}

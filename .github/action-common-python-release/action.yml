@@ -51,13 +51,13 @@ runs:
       docker-options: -e CI
       before-script-linux: |
         if command -v yum &> /dev/null; then
-          yum install -y openssl-devel
+          yum install -y openssl-devel perl-IPC-Cmd
         elif command -v dnf &> /dev/null; then
-          dnf install -y openssl-devel
+          dnf install -y openssl-devel perl-IPC-Cmd
         elif command -v apk &> /dev/null; then
-          apk add openssl-dev
+          apk add openssl-dev perl
         elif command -v apt-get &> /dev/null; then
-          apt-get update && apt-get install -y libssl-dev
+          apt-get update && apt-get install -y libssl-dev perl
         fi
   - if: inputs.maturin-command == 'sdist'
     name: Maturin - Source Distribution
