@@ -92,11 +92,11 @@
 
     [workspace.dependencies.qcs-api-client-common]
       path = 'qcs-api-client-common'
-      version = '0.13.1-dev.0'
+      version = '0.13.1-dev.1'
 
     [workspace.dependencies.qcs-api-client-grpc]
       path = 'qcs-api-client-grpc'
-      version = '0.13.1-dev.0'
+      version = '0.13.1-dev.1'
 
     [workspace.dependencies.qcs-api-client-grpc-internal]
       path = 'qcs-api-client-grpc-internal'
