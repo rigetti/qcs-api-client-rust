@@ -38,6 +38,11 @@ runs:
     with:
       repo-token: ${{ inputs.repo-token }}
       version: '3.20.1'
+  - name: Install OpenSSL development libraries (Linux)
+    if: runner.os == 'Linux'
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y libssl-dev
 
   # must be build or sdist
   - if: inputs.maturin-command == 'build'
