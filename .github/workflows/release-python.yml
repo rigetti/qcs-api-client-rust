@@ -30,6 +30,11 @@ jobs:
         target: [x86_64, aarch64]
     steps:
     - uses: actions/checkout@v2
+    - name: Install OpenSSL development libraries
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev
     - uses: ./.github/action-common-python-release
       with:
         artifact-key: linux-${{ matrix.target }}
