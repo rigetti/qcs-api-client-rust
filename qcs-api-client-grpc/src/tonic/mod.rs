@@ -4,9 +4,8 @@ use std::convert::Infallible;
 ///
 use futures_util::pin_mut;
 use http::Request;
-use http_body::Body;
+use http_body::Body as HttpBody;
 use http_body_util::BodyExt;
-use tonic::body::BoxBody;
 
 mod channel;
 mod common;
@@ -24,9 +23,9 @@ pub use error::*;
 pub use grpc_web::*;
 pub use refresh::*;
 pub use retry::*;
+use tonic::body::Body;
 #[cfg(feature = "tracing")]
 pub use trace::*;
-
 /// An error observed while duplicating a request body. This may be returned by any
 /// [`tower::Service`] that duplicates a request body for the purpose of retrying a request.
 #[derive(Debug, thiserror::Error)]
@@ -59,8 +58,8 @@ type RequestBodyDuplicationResult<T> = Result<T, RequestBodyDuplicationError>;
 /// (i.e. the stream cannot contain any trailers); if a trailer frame is found,
 /// the cancelled status will be returned.
 async fn build_duplicate_frame_bytes(
-    mut request: Request<tonic::body::BoxBody>,
-) -> RequestBodyDuplicationResult<(tonic::body::BoxBody, tonic::body::BoxBody)> {
+    mut request: Request<tonic::body::Body>,
+) -> RequestBodyDuplicationResult<(tonic::body::Body, tonic::body::Body)> {
     let mut bytes = Vec::new();
 
     let body = request.body_mut();
@@ -77,16 +76,16 @@ async fn build_duplicate_frame_bytes(
     let bytes = http_body_util::Full::from(bytes)
         .map_err(|_: Infallible| -> tonic::Status { unreachable!() });
     Ok((
-        tonic::body::BoxBody::new(bytes.clone()),
-        tonic::body::BoxBody::new(bytes),
+        tonic::body::Body::new(bytes.clone()),
+        tonic::body::Body::new(bytes),
     ))
 }
 
 /// This function should only be used with Unary requests; Stream requests are
 /// untested. See comment on `build_duplicate_frame_bytes`.
 async fn build_duplicate_request(
-    req: Request<BoxBody>,
-) -> RequestBodyDuplicationResult<(Request<BoxBody>, Request<BoxBody>)> {
+    req: Request<Body>,
+) -> RequestBodyDuplicationResult<(Request<Body>, Request<Body>)> {
     let mut builder_1 = Request::builder()
         .method(req.method().clone())
         .uri(req.uri().clone())
@@ -98,8 +97,8 @@ async fn build_duplicate_request(
         .version(req.version());
 
     for (key, val) in req.headers() {
-        builder_1 = builder_1.header(key.clone(), val.clone());
-        builder_2 = builder_2.header(key.clone(), val.clone());
+        builder_1 = builder_1.header(key, val);
+        builder_2 = builder_2.header(key, val);
     }
 
     let (body_1, body_2) = build_duplicate_frame_bytes(req).await?;
@@ -198,17 +197,20 @@ pub(crate) mod uds_grpc_stream {
     ///
     /// See [`Error`].
     #[allow(clippy::significant_drop_tightening)]
-    pub async fn serve<S, F, R>(service: S, f: F) -> Result<(), Error>
+    pub async fn serve<S, F, R, B>(service: S, f: F) -> Result<(), Error>
     where
         S: tower::Service<
-                http::Request<tonic::body::BoxBody>,
-                Response = http::Response<tonic::body::BoxBody>,
+                http::Request<tonic::body::Body>,
+                Response = http::Response<B>,
                 Error = Infallible,
             > + NamedService
             + Clone
             + Send
+            + Sync
             + 'static,
-        S::Future: Send,
+        S::Future: Send + 'static,
+        B: http_body::Body<Data = tonic::codegen::Bytes> + Send + 'static,
+        B::Error: Into<Box<dyn std::error::Error + Send + Sync>> + Send + Sync,
         F: FnOnce(Channel) -> R + Send,
         R: std::future::Future<Output = ()> + Send,
     {
@@ -238,6 +240,8 @@ mod otel_tests {
     use opentelemetry::trace::{TraceContextExt, TraceId};
     use opentelemetry_http::HeaderExtractor;
     use opentelemetry_sdk::propagation::TraceContextPropagator;
+    use qcs_api_client_common::configuration::secrets::{SecretAccessToken, SecretRefreshToken};
+    use qcs_api_client_common::configuration::tokens::RefreshToken;
     use serde::{Deserialize, Serialize};
     use std::time::{Duration, SystemTime};
     use tonic::codegen::http::{HeaderMap, HeaderValue};
@@ -249,7 +253,7 @@ mod otel_tests {
 
     use crate::tonic::{uds_grpc_stream, wrap_channel_with_tracing};
     use qcs_api_client_common::configuration::ClientConfiguration;
-    use qcs_api_client_common::configuration::{AuthServer, OAuthSession, RefreshToken};
+    use qcs_api_client_common::configuration::{settings::AuthServer, tokens::OAuthSession};
 
     static HEALTH_CHECK_PATH: &str = "/grpc.health.v1.Health/Check";
 
@@ -266,7 +270,7 @@ mod otel_tests {
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
             .oauth_session(Some(OAuthSession::from_refresh_token(
-                RefreshToken::new("refresh_token".to_string()),
+                RefreshToken::new(SecretRefreshToken::from("refresh_token")),
                 AuthServer::default(),
                 Some(create_jwt()),
             )))
@@ -285,7 +289,7 @@ mod otel_tests {
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
             .oauth_session(Some(OAuthSession::from_refresh_token(
-                RefreshToken::new("refresh_token".to_string()),
+                RefreshToken::new(SecretRefreshToken::from("refresh_token")),
                 AuthServer::default(),
                 Some(create_jwt()),
             )))
@@ -313,7 +317,7 @@ mod otel_tests {
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
             .oauth_session(Some(OAuthSession::from_refresh_token(
-                RefreshToken::new("refresh_token".to_string()),
+                RefreshToken::new(SecretRefreshToken::from("refresh_token")),
                 AuthServer::default(),
                 Some(create_jwt()),
             )))
@@ -331,7 +335,7 @@ mod otel_tests {
         let propagate_otel_context = client_configuration.tracing_configuration().is_some_and(
             qcs_api_client_common::tracing_configuration::TracingConfiguration::propagate_otel_context,
         );
-        let spans = tracing_test::start(
+        let spans: Vec<opentelemetry_sdk::trace::SpanData> = tracing_test::start(
             "test_trace_id_propagation",
             |trace_id, _span_id| async move {
                 let sleepy_health_service = SleepyHealthService {
@@ -411,7 +415,7 @@ mod otel_tests {
         let client_config = ClientConfiguration::builder()
             .tracing_configuration(Some(tracing_configuration))
             .oauth_session(Some(OAuthSession::from_refresh_token(
-                RefreshToken::new("refresh_token".to_string()),
+                RefreshToken::new(SecretRefreshToken::from("refresh_token")),
                 AuthServer::default(),
                 Some(create_jwt()),
             )))
@@ -427,7 +431,7 @@ mod otel_tests {
     async fn assert_grpc_health_check_not_traced(client_configuration: ClientConfiguration) {
         use opentelemetry::trace::FutureExt;
 
-        let spans =
+        let spans: Vec<opentelemetry_sdk::trace::SpanData> =
             tracing_test::start("test_tracing_disabled", |_trace_id, _span_id| async move {
                 let interceptor = validate_otel_context_not_propagated;
                 let health_server = HealthServer::with_interceptor(
@@ -476,7 +480,7 @@ mod otel_tests {
 
     /// Create an HS256 signed JWT token with sub and exp claims. This is good enough to pass the
     /// [`RefreshService`] token validation.
-    pub(crate) fn create_jwt() -> String {
+    pub(crate) fn create_jwt() -> SecretAccessToken {
         use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
         let expiration = SystemTime::now()
             .checked_add(Duration::from_secs(60))
@@ -492,7 +496,9 @@ mod otel_tests {
         // The client doesn't check the signature, so for convenience here, we just sign with HS256
         // instead of RS256.
         let header = Header::new(Algorithm::HS256);
-        encode(&header, &claims, &EncodingKey::from_secret(JWT_SECRET)).unwrap()
+        encode(&header, &claims, &EncodingKey::from_secret(JWT_SECRET))
+            .map(SecretAccessToken::from)
+            .unwrap()
     }
 
     #[derive(Debug, thiserror::Error)]
@@ -512,6 +518,7 @@ mod otel_tests {
 
     /// Given an incoming gRPC request, validate that the the specified [`TraceId`] is propagated
     /// via the `traceparent` metadata header.
+    #[allow(clippy::result_large_err)]
     fn validate_trace_id_propagated(
         trace_id: TraceId,
         req: Request<()>,
@@ -558,6 +565,7 @@ mod otel_tests {
 
     /// Simply validate that the `traceparent` and `tracestate` metadata headers are not present
     /// on the incoming gRPC.
+    #[allow(clippy::result_large_err)]
     fn validate_otel_context_not_propagated(
         req: Request<()>,
     ) -> Result<Request<()>, tonic::Status> {
@@ -620,13 +628,13 @@ mod otel_tests {
         use futures_util::Future;
         use opentelemetry::global::BoxedTracer;
         use opentelemetry::trace::{
-            mark_span_as_active, FutureExt, Span, SpanId, TraceId, TraceResult, Tracer,
-            TracerProvider,
+            mark_span_as_active, FutureExt, Span, SpanId, TraceId, Tracer, TracerProvider,
         };
-        use opentelemetry_sdk::export::trace::SpanData;
-        use opentelemetry_sdk::trace::SpanProcessor;
+        use opentelemetry_sdk::error::OTelSdkError;
+        use opentelemetry_sdk::trace::{SpanData, SpanProcessor};
         use std::collections::HashMap;
         use std::sync::{Arc, RwLock};
+        use tokio::sync::oneshot;
 
         /// Start a new test span and run the specified callback with the span as the active span.
         /// The call back is provided the span and trace ids. At the end of the callback, we wait
@@ -645,7 +653,7 @@ mod otel_tests {
             let cache = CACHE
                 .get()
                 .expect("cache should be initialized with cache tracer");
-            cache.subscribe(span_id)?;
+            let span_rx = cache.subscribe(span_id);
             async {
                 let _guard = mark_span_as_active(span);
                 f(trace_id, span_id).with_current_context().await;
@@ -653,10 +661,10 @@ mod otel_tests {
             .await;
 
             // wait for test span to be processed.
-            cache.notified(span_id).await?;
+            span_rx.await.unwrap();
 
             // remove and return the spans processed for this test.
-            let mut data = cache.data.write().map_err(|e| e.to_string())?;
+            let mut data = cache.data.write().map_err(|e| format!("{e:?}"))?;
             Ok(data.remove(&trace_id).unwrap_or_default())
         }
 
@@ -665,7 +673,7 @@ mod otel_tests {
         #[derive(Debug, Clone, Default)]
         struct CacheProcessor {
             data: Arc<RwLock<HashMap<TraceId, Vec<SpanData>>>>,
-            notifications: Arc<RwLock<HashMap<SpanId, Arc<tokio::sync::Notify>>>>,
+            notifications: Arc<RwLock<HashMap<SpanId, tokio::sync::oneshot::Sender<()>>>>,
         }
 
         impl CacheProcessor {
@@ -676,7 +684,7 @@ mod otel_tests {
 
                 CACHE.get_or_init(|| {
                     let processor = Self::default();
-                    let provider = opentelemetry_sdk::trace::TracerProvider::builder()
+                    let provider = opentelemetry_sdk::trace::SdkTracerProvider::builder()
                         .with_span_processor(processor.clone())
                         .build();
                     opentelemetry::global::set_tracer_provider(provider.clone());
@@ -691,26 +699,10 @@ mod otel_tests {
             }
 
             /// Ensure that a [`Notification`] exists for the provided span id.
-            fn subscribe(&self, span_id: SpanId) -> Result<(), String> {
-                let notify = Arc::new(tokio::sync::Notify::new());
-                self.notifications
-                    .write()
-                    .map_err(|e| e.to_string())?
-                    .insert(span_id, notify);
-                Ok(())
-            }
-
-            /// Wait for the specified [`SpanId`] to be processed.
-            async fn notified(&self, span_id: SpanId) -> Result<(), String> {
-                let notify = {
-                    let notifications = self.notifications.read().map_err(|e| format!("{e}"))?;
-                    notifications
-                        .get(&span_id)
-                        .ok_or("span notification never subscribed")?
-                        .clone()
-                };
-                notify.notified().await;
-                Ok(())
+            fn subscribe(&self, span_id: SpanId) -> oneshot::Receiver<()> {
+                let (tx, rx) = oneshot::channel();
+                self.notifications.write().unwrap().insert(span_id, tx);
+                rx
             }
         }
 
@@ -730,29 +722,32 @@ mod otel_tests {
                         .data
                         .write()
                         .expect("failed to write access cache span data");
-                    if let Some(spans) = data.get_mut(&trace_id) {
-                        spans.push(span);
-                    } else {
-                        data.insert(trace_id, vec![span]);
-                    }
+                    data.entry(trace_id).or_default().push(span);
                 }
 
                 if let Some(notify) = self
                     .notifications
-                    .read()
+                    .write()
                     .expect("failed to read access span notifications during span processing")
-                    .get(&span_id)
+                    .remove(&span_id)
                 {
-                    notify.notify_waiters();
+                    notify.send(()).unwrap();
                 }
             }
 
             /// This is a no-op because spans are processed synchronously in `on_end`.
-            fn force_flush(&self) -> TraceResult<()> {
+            fn force_flush(&self) -> Result<(), OTelSdkError> {
                 Ok(())
             }
 
-            fn shutdown(&self) -> TraceResult<()> {
+            fn shutdown(&self) -> Result<(), OTelSdkError> {
+                Ok(())
+            }
+
+            fn shutdown_with_timeout(
+                &self,
+                _timeout: std::time::Duration,
+            ) -> Result<(), OTelSdkError> {
                 Ok(())
             }
         }

@@ -1,26 +1,29 @@
 [build-dependencies]
   [build-dependencies.pyo3-build-config]
     optional = true
-    version = '0.22.1'
+    workspace = true
 
 [dependencies]
-  async-trait = '0.1'
-  derive_builder = '0.20.0'
-  futures = '0.3.26'
-  home = '0.5.5'
-  toml_edit = '0.23.7'
-  webbrowser = '0.8.15'
-
   [dependencies.async-tempfile]
-    features = ['uuid']
-    version = '0.7.0'
+    workspace = true
+
+  [dependencies.async-trait]
+    workspace = true
 
   [dependencies.backoff]
     workspace = true
 
+  [dependencies.derive_builder]
+    workspace = true
+
   [dependencies.figment]
-    features = ['env', 'toml']
-    version = '0.10.18'
+    workspace = true
+
+  [dependencies.futures]
+    workspace = true
+
+  [dependencies.home]
+    workspace = true
 
   [dependencies.http]
     workspace = true
@@ -39,23 +42,19 @@
     workspace = true
 
   [dependencies.oauth2]
-    default-features = false
-    features = ['reqwest', 'native-tls']
-    version = '5.0'
+    workspace = true
 
   [dependencies.paste]
     optional = true
-    version = '1.0.15'
+    workspace = true
 
   [dependencies.pyo3]
-    features = ['multiple-pymethods']
     optional = true
-    version = '0.20.3'
+    workspace = true
 
   [dependencies.pyo3-asyncio]
-    features = ['tokio-runtime']
     optional = true
-    version = '0.20.0'
+    workspace = true
 
   [dependencies.reqwest]
     default-features = false
@@ -64,7 +63,7 @@
 
   [dependencies.rigetti-pyo3]
     optional = true
-    version = '0.3.6'
+    workspace = true
 
   [dependencies.serde]
     features = ['derive']
@@ -74,16 +73,13 @@
     workspace = true
 
   [dependencies.shellexpand]
-    default-features = false
-    features = ['base-0']
-    version = '3.1.0'
+    workspace = true
 
   [dependencies.thiserror]
     workspace = true
 
   [dependencies.time]
-    features = ['macros', 'parsing', 'serde']
-    version = '0.3.34'
+    workspace = true
 
   [dependencies.tokio]
     features = ['rt-multi-thread', 'sync', 'fs', 'signal']
@@ -93,8 +89,10 @@
     workspace = true
 
   [dependencies.toml]
-    features = ['preserve_order']
-    version = '0.9.8'
+    workspace = true
+
+  [dependencies.toml_edit]
+    workspace = true
 
   [dependencies.tracing]
     optional = true
@@ -107,16 +105,24 @@
     optional = true
     workspace = true
 
-[dev-dependencies]
-  httpmock = '0.8.0-alpha.1'
-  oauth2-test-server = '=0.1.2'
-  serial_test = '3.1.1'
+  [dependencies.webbrowser]
+    workspace = true
 
+[dev-dependencies]
   [dev-dependencies.figment]
-    features = ['env', 'toml', 'test']
-    version = '0.10.18'
+    features = ['test']
+    workspace = true
+
+  [dev-dependencies.httpmock]
+    workspace = true
+
+  [dev-dependencies.oauth2-test-server]
+    workspace = true
 
   [dev-dependencies.rstest]
+    workspace = true
+
+  [dev-dependencies.serial_test]
     workspace = true
 
   [dev-dependencies.tokio]
@@ -194,7 +200,7 @@
   publish = true
   readme = 'README.md'
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.12.12'
+  version = '0.13.0'
 
   [package.metadata]
     [package.metadata.docs]

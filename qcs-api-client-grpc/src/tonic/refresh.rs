@@ -4,15 +4,17 @@ use std::{
     task::{Context, Poll},
 };
 
+use super::Body;
 use http::StatusCode;
 use tonic::{
-    body::BoxBody,
     client::GrpcService,
     codegen::http::{Request, Response},
 };
 use tower::Layer;
 
-use qcs_api_client_common::configuration::{ClientConfiguration, TokenError, TokenRefresher};
+use qcs_api_client_common::configuration::{
+    secrets::SecretAccessToken, tokens::TokenRefresher, ClientConfiguration, TokenError,
+};
 
 use super::error::Error;
 
@@ -20,7 +22,7 @@ use super::error::Error;
 ///
 /// See also: [`RefreshLayer`].
 #[derive(Clone, Debug)]
-pub struct RefreshService<S: GrpcService<BoxBody>, T: TokenRefresher> {
+pub struct RefreshService<S: GrpcService<Body>, T: TokenRefresher> {
     service: S,
     token_refresher: T,
 }
@@ -44,6 +46,7 @@ impl RefreshLayer<ClientConfiguration> {
     /// # Errors
     ///
     /// Will fail with error if loading the [`ClientConfiguration`] fails.
+    #[allow(clippy::result_large_err)]
     pub fn new() -> Result<Self, Error<TokenError>> {
         let config = ClientConfiguration::load_default()?;
         Ok(Self::with_config(config))
@@ -54,6 +57,7 @@ impl RefreshLayer<ClientConfiguration> {
     /// # Errors
     ///
     /// Will fail if loading the [`ClientConfiguration`] fails.
+    #[allow(clippy::result_large_err)]
     pub fn with_profile(profile: String) -> Result<Self, Error<TokenError>> {
         let config = ClientConfiguration::load_profile(profile)?;
         Ok(Self::with_config(config))
@@ -68,7 +72,7 @@ impl RefreshLayer<ClientConfiguration> {
 
 impl<S, T> Layer<S> for RefreshLayer<T>
 where
-    S: GrpcService<BoxBody>,
+    S: GrpcService<Body>,
     T: TokenRefresher + Clone,
 {
     type Service = RefreshService<S, T>;
@@ -81,17 +85,17 @@ where
     }
 }
 
-impl<S, T> GrpcService<BoxBody> for RefreshService<S, T>
+impl<S, T> GrpcService<Body> for RefreshService<S, T>
 where
-    S: GrpcService<BoxBody> + Clone + Send + 'static,
-    <S as GrpcService<BoxBody>>::Future: Send,
-    <S as GrpcService<BoxBody>>::ResponseBody: Send,
+    S: GrpcService<Body> + Clone + Send + 'static,
+    <S as GrpcService<Body>>::Future: Send,
+    <S as GrpcService<Body>>::ResponseBody: Send,
     T: TokenRefresher + Clone + Send + 'static,
     T::Error: std::error::Error + Sync,
     Error<T::Error>: From<S::Error>,
     <T as TokenRefresher>::Error: Send,
 {
-    type ResponseBody = <S as GrpcService<BoxBody>>::ResponseBody;
+    type ResponseBody = <S as GrpcService<Body>>::ResponseBody;
     type Error = Error<T::Error>;
     type Future =
         Pin<Box<dyn Future<Output = Result<Response<Self::ResponseBody>, Self::Error>> + Send>>;
@@ -100,7 +104,7 @@ where
         self.service.poll_ready(cx).map_err(Error::from)
     }
 
-    fn call(&mut self, req: Request<BoxBody>) -> Self::Future {
+    fn call(&mut self, req: Request<Body>) -> Self::Future {
         let service = self.service.clone();
         // It is necessary to replace self.service with the above clone
         // because the cloned version may not be "ready".
@@ -118,14 +122,14 @@ where
 }
 
 async fn service_call<C, T>(
-    req: Request<BoxBody>,
+    req: Request<Body>,
     token_refresher: T,
     mut channel: C,
-) -> Result<Response<<C as GrpcService<BoxBody>>::ResponseBody>, Error<T::Error>>
+) -> Result<Response<<C as GrpcService<Body>>::ResponseBody>, Error<T::Error>>
 where
-    C: GrpcService<BoxBody> + Send,
-    <C as GrpcService<BoxBody>>::ResponseBody: Send,
-    <C as GrpcService<BoxBody>>::Future: Send,
+    C: GrpcService<Body> + Send,
+    <C as GrpcService<Body>>::ResponseBody: Send,
+    <C as GrpcService<Body>>::Future: Send,
     T: TokenRefresher + Send,
     T::Error: std::error::Error,
     Error<T::Error>: From<C::Error>,
@@ -162,7 +166,7 @@ where
         }
         // Ensure that the service is ready before trying to use it.
         // Failure to do this *will* cause a panic.
-        poll_fn(|cx| channel.poll_ready(cx))
+        poll_fn(|cx| -> Poll<Result<(), _>> { channel.poll_ready(cx) })
             .await
             .map_err(super::error::Error::from)?;
         make_request(&mut channel, retry_req, token).await
@@ -173,16 +177,16 @@ where
 
 async fn make_request<C, E: std::error::Error>(
     service: &mut C,
-    mut request: Request<BoxBody>,
-    token: String,
-) -> Result<Response<<C as GrpcService<BoxBody>>::ResponseBody>, Error<E>>
+    mut request: Request<Body>,
+    access_token: SecretAccessToken,
+) -> Result<Response<<C as GrpcService<Body>>::ResponseBody>, Error<E>>
 where
-    C: GrpcService<BoxBody> + Send,
-    <C as GrpcService<BoxBody>>::ResponseBody: Send,
-    <C as GrpcService<BoxBody>>::Future: Send,
+    C: GrpcService<Body> + Send,
+    <C as GrpcService<Body>>::ResponseBody: Send,
+    <C as GrpcService<Body>>::Future: Send,
     Error<E>: From<C::Error>,
 {
-    let header_val = format!("Bearer {token}")
+    let header_val = format!("Bearer {}", access_token.secret())
         .try_into()
         .map_err(Error::InvalidAccessToken)?;
     request.headers_mut().insert("authorization", header_val);

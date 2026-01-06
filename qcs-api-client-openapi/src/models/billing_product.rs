@@ -57,14 +57,11 @@ impl BillingProduct {
 }
 
 /// This object's type, which is always `product`.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Default, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum Object {
     #[serde(rename = "product")]
+    #[default]
     ProductObject,
-}
-
-impl Default for Object {
-    fn default() -> Object {
-        Self::ProductObject
-    }
 }

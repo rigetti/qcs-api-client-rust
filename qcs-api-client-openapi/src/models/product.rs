@@ -26,9 +26,10 @@
 use serde::{Deserialize, Serialize};
 
 /// The set of known QCS service products.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Product {
     #[serde(rename = "reservationCreation")]
+    #[default]
     ReservationCreation,
     #[serde(rename = "qpuJobCompletion")]
     QpuJobCompletion,
@@ -47,11 +48,5 @@ impl std::fmt::Display for Product {
             Self::QpuJobTime => write!(f, "qpuJobTime"),
             Self::Unknown(s) => s.fmt(f),
         }
-    }
-}
-
-impl Default for Product {
-    fn default() -> Product {
-        Self::ReservationCreation
     }
 }

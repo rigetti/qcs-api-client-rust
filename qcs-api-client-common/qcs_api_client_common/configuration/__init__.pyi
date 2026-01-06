@@ -6,6 +6,7 @@ __all__ = [
     "ClientConfiguration",
     "ClientConfigurationBuilder",
     "ClientCredentials",
+    "ClientSecret",
     "DEFAULT_API_URL",
     "DEFAULT_GRPC_API_URL",
     "DEFAULT_PROFILE_NAME",
@@ -21,6 +22,8 @@ __all__ = [
     "QVM_URL_VAR",
     "RefreshToken",
     "PkceFlow",
+    "SecretAccessToken",
+    "SecretRefreshToken",
     "SECRETS_PATH_VAR",
     "SETTINGS_PATH_VAR",
 ]
@@ -92,10 +95,10 @@ class ClientConfiguration:
     async def get_oauth_session_async(self) -> OAuthSession:
         """Get the credentials used to authenticate with the QCS API."""
 
-    def get_bearer_access_token(self) -> str:
+    def get_bearer_access_token(self) -> SecretAccessToken:
         """Gets the `Bearer` access token, refreshing it if is expired."""
 
-    async def get_bearer_access_token_async(self) -> str:
+    async def get_bearer_access_token_async(self) -> SecretAccessToken:
         """Gets the `Bearer` access token, refreshing it if is expired."""
 
 @final
@@ -147,27 +150,44 @@ class ClientConfigurationBuilder:
 
 @final
 class AuthServer:
-    def __new__(cls, client_id: str, issuer: str) -> AuthServer: ...
+    def __new__(cls, client_id: str, issuer: str, scopes: list[str] | None = None) -> AuthServer:
+        """
+        Create a new AuthServer.
+
+        Args:
+            client_id: The client's OAuth OIDC client ID.
+            issuer: The OAuth OIDC issuer URL.
+            scopes: Optional list of scopes to request when requesting authorization tokens. If None, all scopes from the issuer's discovery document will be used.
+        """
+
     @staticmethod
     def default() -> AuthServer:
-        """Get the default Okta auth server."""
+        """Get the default OAuth OIDC auth server."""
 
     @property
     def client_id(self) -> str:
-        """The client's Okta ID."""
+        """The client's OAuth OIDC client ID."""
 
     @property
     def issuer(self) -> str:
-        """The Okta issuer URL."""
+        """The OAuth OIDC issuer URL."""
+
+    @property
+    def scopes(self) -> list[str] | None:
+        """
+        The list of scopes to request when requesting authorization tokens, if explicitly configured.
+
+        Note that this property does not return the supported scopes from the issuer's discovery document in the case where scopes were not explicitly configured. 
+        """
 
 @final
 class RefreshToken:
     def __new__(cls, refresh_token: str) -> RefreshToken: ...
     @property
-    def refresh_token(self) -> str:
+    def refresh_token(self) -> SecretRefreshToken:
         """The refresh token."""
     @refresh_token.setter
-    def refresh_token(self, refresh_token: str):
+    def refresh_token(self, refresh_token: SecretRefreshToken):
         """Set the refresh token."""
 
 @final
@@ -202,10 +222,10 @@ class PkceFlow:
     """Represents a PKCE flow. This will automatically initiate a browser redirect flow when constructed. Avoid using this in hosted (non-local) Jupyter notebook environments."""
     def __new__(cls, auth_server: AuthServer) -> PkceFlow: ...
     @property
-    def access_token(self) -> str:
+    def access_token(self) -> SecretAccessToken:
         """The access token."""
     @property
-    def refresh_token(self) -> str | None:
+    def refresh_token(self) -> SecretRefreshToken | None:
         """The refresh token."""
 
 @final
@@ -214,11 +234,11 @@ class OAuthSession:
         cls,
         payload: RefreshToken | ClientCredentials | ExternallyManaged | PkceFlow,
         auth_server: AuthServer,
-        access_token: str | None = None,
+        access_token: SecretAccessToken | None = None,
     ) -> OAuthSession: ...
 
     @property
-    def access_token(self) -> str:
+    def access_token(self) -> SecretAccessToken:
         """Get the current access token.
 
         This is an unvalidated copy of the access token. Meaning it can become stale, or may already be stale. See the `validate` `request_access_token` and methods.
@@ -232,14 +252,53 @@ class OAuthSession:
     def payload(self) -> RefreshToken | ClientCredentials | ExternallyManaged | PkceFlow:
         """Get the payload used to request an access token."""
 
-    def request_access_token(self) -> str:
+    def request_access_token(self) -> SecretAccessToken:
         """Request a new access token."""
 
-    async def request_access_token_async(self) -> str:
+    async def request_access_token_async(self) -> SecretAccessToken:
         """Request a new access token."""
 
-    def validate(self) -> str:
+    def validate(self) -> SecretAccessToken:
         """Validate the current access token, returning it if it is valid.
 
         If the token is invalid, a `ValueError` will be raised with a description of why the token failed validation.
         """
+
+
+@final
+class SecretAccessToken:
+    """A secret access token, which redacts the sensitive value when printed. The actual value can be retrieved using the `secret` property."""
+
+    def __new__(cls, value: str) -> SecretAccessToken: ...
+    
+    @property
+    def is_empty(self) -> bool:
+        """Check if the access token is empty."""
+    @property
+    def secret(self) -> str:
+        """CAUTION: Take care not to reveal this value to untrusted parties, as it can be used to authenticate on your behalf!"""
+
+@final
+class SecretRefreshToken:
+    """A secret refresh token, which redacts the sensitive value when printed. The actual value can be retrieved using the `secret` property."""
+
+    def __new__(cls, value: str) -> SecretRefreshToken: ...
+    @property
+    def is_empty(self) -> bool:
+        """Check if the access token is empty."""
+    @property
+    def secret(self) -> str:
+        """CAUTION: Take care not to reveal this value to untrusted parties, as it can be used to authenticate on your behalf!"""
+
+
+@final
+class ClientSecret:
+    """A client secret, which redacts the sensitive value when printed. The actual value can be retrieved using the `secret` property."""
+
+    def __new__(cls, value: str) -> ClientSecret: ...
+    @property
+    def is_empty(self) -> bool:
+        """Check if the client secret is empty."""
+    @property
+    def secret(self) -> str:
+        """CAUTION: Take care not to reveal this value to untrusted parties, as it can be used to authenticate on your behalf!"""

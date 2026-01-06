@@ -24,10 +24,10 @@
 
 use serde::{Deserialize, Serialize};
 
-///
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum BillingInvoiceStatus {
     #[serde(rename = "draft")]
+    #[default]
     Draft,
     #[serde(rename = "open")]
     Open,
@@ -52,11 +52,5 @@ impl std::fmt::Display for BillingInvoiceStatus {
             Self::Void => write!(f, "void"),
             Self::Unknown(s) => s.fmt(f),
         }
-    }
-}
-
-impl Default for BillingInvoiceStatus {
-    fn default() -> BillingInvoiceStatus {
-        Self::Draft
     }
 }

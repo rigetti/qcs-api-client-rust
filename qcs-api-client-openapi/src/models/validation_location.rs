@@ -24,10 +24,10 @@
 
 use serde::{Deserialize, Serialize};
 
-///
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum ValidationLocation {
     #[serde(rename = "header")]
+    #[default]
     Header,
     #[serde(rename = "query")]
     Query,
@@ -49,11 +49,5 @@ impl std::fmt::Display for ValidationLocation {
             Self::Body => write!(f, "body"),
             Self::Unknown(s) => s.fmt(f),
         }
-    }
-}
-
-impl Default for ValidationLocation {
-    fn default() -> ValidationLocation {
-        Self::Header
     }
 }

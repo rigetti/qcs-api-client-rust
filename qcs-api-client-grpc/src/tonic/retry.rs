@@ -1,9 +1,10 @@
+use super::Body;
 use http::{HeaderValue, Request, Response};
 use qcs_api_client_common::{
     backoff::{self, backoff::Backoff, ExponentialBackoff},
     configuration::TokenError,
 };
-use tonic::{body::BoxBody, client::GrpcService, Status};
+use tonic::{client::GrpcService, Status};
 
 use qcs_api_client_common::backoff::duration_from_response as duration_from_http_response;
 use std::{
@@ -30,7 +31,7 @@ impl Default for RetryLayer {
     }
 }
 
-impl<S: GrpcService<BoxBody>> Layer<S> for RetryLayer {
+impl<S: GrpcService<Body>> Layer<S> for RetryLayer {
     type Service = RetryService<S>;
 
     fn layer(&self, service: S) -> Self::Service {
@@ -50,7 +51,7 @@ impl<S: GrpcService<BoxBody>> Layer<S> for RetryLayer {
 ///
 /// See also: [`RetryLayer`].
 #[derive(Clone, Debug)]
-pub struct RetryService<S: GrpcService<BoxBody>> {
+pub struct RetryService<S: GrpcService<Body>> {
     backoff: ExponentialBackoff,
     service: S,
 }
@@ -75,14 +76,14 @@ fn duration_from_response<T>(
     }
 }
 
-impl<S> GrpcService<BoxBody> for RetryService<S>
+impl<S> GrpcService<Body> for RetryService<S>
 where
-    S: GrpcService<BoxBody> + Send + Clone + 'static,
+    S: GrpcService<Body> + Send + Clone + 'static,
     S::Future: Send,
     S::ResponseBody: Send,
     super::error::Error<TokenError>: From<S::Error> + From<RequestBodyDuplicationError>,
 {
-    type ResponseBody = <S as GrpcService<BoxBody>>::ResponseBody;
+    type ResponseBody = <S as GrpcService<Body>>::ResponseBody;
     type Error = super::error::Error<TokenError>;
     type Future =
         Pin<Box<dyn Future<Output = Result<Response<Self::ResponseBody>, Self::Error>> + Send>>;
@@ -93,7 +94,7 @@ where
             .map_err(super::error::Error::from)
     }
 
-    fn call(&mut self, mut req: Request<BoxBody>) -> Self::Future {
+    fn call(&mut self, mut req: Request<Body>) -> Self::Future {
         if let Ok(request_id) = new_request_id() {
             req.headers_mut().insert(KEY_X_REQUEST_ID, request_id);
         }
@@ -117,7 +118,7 @@ where
 
                 // Ensure that the service is ready before trying to use it.
                 // Failure to do this *will* cause a panic.
-                poll_fn(|cx| service.poll_ready(cx))
+                poll_fn(|cx| -> Poll<Result<(), _>> { service.poll_ready(cx) })
                     .await
                     .map_err(super::error::Error::from)?;
 
@@ -180,6 +181,7 @@ mod tests {
             }
         }
 
+        #[allow(clippy::result_large_err)]
         fn make_response(&self) -> Result<tonic_health::pb::HealthCheckResponse, Status> {
             let remaining = self.required_tries_count.fetch_sub(1, Ordering::SeqCst);
             if remaining == 0 {

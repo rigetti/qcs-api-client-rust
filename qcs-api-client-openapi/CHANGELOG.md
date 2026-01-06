@@ -1,3 +1,15 @@
+## 0.14.0 (2026-01-06)
+
+### Breaking Changes
+
+- export Secrets and Settings structs, add secret value wrappers to help prevent accidental leakage.
+- add AuthServer::scopes and fix reqwest-middleware dependency version mismatch
+- upgrade tonic
+
+### Fixes
+
+- upgrade knope usage
+
 ## 0.13.13 (2025-12-05)
 
 ### Fixes

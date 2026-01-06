@@ -6,6 +6,8 @@ from qcs_api_client_common.configuration import (
     ExternallyManaged,
     OAuthSession,
     RefreshToken,
+    SecretAccessToken,
+    SecretRefreshToken,
 )
 
 
@@ -27,7 +29,7 @@ class TestClientConfigurationBuilder:
         builder.quilc_url = "builder_quilc_url"
         builder.qvm_url = "builder_qvm_url"
         auth_server = AuthServer("builder_client_id", "builder_issuer")
-        builder.oauth_session = OAuthSession(RefreshToken("builder_refresh_token"), auth_server, "builder_access_token")
+        builder.oauth_session = OAuthSession(RefreshToken(SecretRefreshToken("builder_refresh_token")), auth_server, SecretAccessToken("builder_access_token"))
         assert builder.build() == snapshot
 
 
@@ -47,10 +49,10 @@ class TestAuthServer:
 
 class TestCredentials:
     def test_properties(self):
-        payload = RefreshToken("refresh")
+        payload = RefreshToken(SecretRefreshToken("refresh"))
         auth_server = AuthServer("some_client_id", "some_issuer")
-        credentials = OAuthSession(payload, auth_server, "access")
-        assert credentials.access_token == "access"
+        credentials = OAuthSession(payload, auth_server, SecretAccessToken("access"))
+        assert credentials.access_token.secret == "access"
         assert credentials.auth_server == auth_server
         assert credentials.payload == payload
 
@@ -68,4 +70,18 @@ class TestOAuthSession:
         session = OAuthSession(manager, expected_auth_server)
 
         token = session.request_access_token()
-        assert token == "access_token_from_refresh_function"
+        assert token.secret == "access_token_from_refresh_function"
+
+
+class TestSecrets:
+    def test_secret_access_token(self):
+        secret = "super_secret"
+        secret_access_token = SecretAccessToken(secret)
+        assert secret not in repr(secret_access_token)
+        assert secret_access_token.secret == secret
+
+    def test_secret_refresh_token(self):
+        secret = "super_secret"
+        secret_refresh_token = SecretRefreshToken(secret)
+        assert secret not in repr(secret_refresh_token)
+        assert secret_refresh_token.secret == secret

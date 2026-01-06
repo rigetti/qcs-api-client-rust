@@ -1,3 +1,4 @@
+//! Models and utilities for managing `OAuth2` sessions.
 use std::{pin::Pin, sync::Arc};
 
 use futures::Future;
@@ -14,24 +15,27 @@ use super::{
 use crate::configuration::{
     error::DiscoveryError,
     pkce::{pkce_login, PkceLoginError, PkceLoginRequest},
+    secrets::{Credential, SecretAccessToken, SecretRefreshToken, TokenPayload},
 };
 #[cfg(feature = "tracing-config")]
 use crate::tracing_configuration::TracingConfiguration;
 #[cfg(feature = "tracing")]
 use urlpattern::UrlPatternMatchInput;
 
+pub use super::secret_string::ClientSecret;
+
 /// A single type containing an access token and an associated refresh token.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::pyclass)]
 pub struct RefreshToken {
     /// The token used to refresh the access token.
-    pub refresh_token: String,
+    pub refresh_token: SecretRefreshToken,
 }
 
 impl RefreshToken {
     /// Create a new [`RefreshToken`] with the given refresh token.
     #[must_use]
-    pub const fn new(refresh_token: String) -> Self {
+    pub const fn new(refresh_token: SecretRefreshToken) -> Self {
         Self { refresh_token }
     }
 
@@ -43,47 +47,52 @@ impl RefreshToken {
     pub async fn request_access_token(
         &mut self,
         auth_server: &AuthServer,
-    ) -> Result<String, TokenError> {
+    ) -> Result<SecretAccessToken, TokenError> {
         if self.refresh_token.is_empty() {
             return Err(TokenError::NoRefreshToken);
         }
 
         let client = default_http_client()?;
-        let token_url = oidc::fetch_discovery(&client, auth_server.issuer())
+        let token_url = oidc::fetch_discovery(&client, &auth_server.issuer)
             .await?
             .token_endpoint;
-        let data = TokenRefreshRequest::new(auth_server.client_id(), &self.refresh_token);
+        let data = TokenRefreshRequest::new(&auth_server.client_id, self.refresh_token.secret());
         let resp = client.post(token_url).form(&data).send().await?;
 
-        let response_data: RefreshTokenResponse = resp.error_for_status()?.json().await?;
-        self.refresh_token = response_data.refresh_token;
-        Ok(response_data.access_token)
+        let RefreshTokenResponse {
+            access_token,
+            refresh_token,
+        } = resp.error_for_status()?.json().await?;
+
+        if let Some(refresh_token) = refresh_token {
+            self.refresh_token = refresh_token;
+        }
+        Ok(access_token)
     }
 }
 
 #[derive(Deserialize, Debug, Serialize)]
 pub(super) struct ClientCredentialsResponse {
-    pub(super) access_token: String,
+    pub(super) access_token: SecretAccessToken,
 }
 
-#[derive(Clone, PartialEq, Eq, Deserialize)]
-#[expect(missing_debug_implementations, reason = "contains secret data")]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::pyclass)]
 /// A pair of Client ID and Client Secret, used to request an OAuth Client Credentials Grant
 pub struct ClientCredentials {
     /// The client ID
     pub client_id: String,
     /// The client secret.
-    pub client_secret: String,
+    pub client_secret: ClientSecret,
 }
 
 impl ClientCredentials {
     #[must_use]
     /// Construct a new [`ClientCredentials`]
-    pub const fn new(client_id: String, client_secret: String) -> Self {
+    pub fn new(client_id: impl Into<String>, client_secret: impl Into<ClientSecret>) -> Self {
         Self {
-            client_id,
-            client_secret,
+            client_id: client_id.into(),
+            client_secret: client_secret.into(),
         }
     }
 
@@ -95,7 +104,7 @@ impl ClientCredentials {
 
     /// Get the client secret.
     #[must_use]
-    pub fn client_secret(&self) -> &str {
+    pub const fn client_secret(&self) -> &ClientSecret {
         &self.client_secret
     }
 
@@ -107,24 +116,23 @@ impl ClientCredentials {
     pub async fn request_access_token(
         &self,
         auth_server: &AuthServer,
-    ) -> Result<String, TokenError> {
+    ) -> Result<SecretAccessToken, TokenError> {
         let request = ClientCredentialsRequest::new(None);
         let client = default_http_client()?;
 
-        let url = oidc::fetch_discovery(&client, auth_server.issuer())
+        let url = oidc::fetch_discovery(&client, &auth_server.issuer)
             .await?
             .token_endpoint;
         let ready_to_send = client
             .post(url)
-            .basic_auth(auth_server.client_id(), Some(&self.client_secret))
+            .basic_auth(&auth_server.client_id, Some(&self.client_secret.secret()))
             .form(&request);
         let response = ready_to_send.send().await?;
 
         response.error_for_status_ref()?;
 
-        let response_body: ClientCredentialsResponse = response.json().await?;
-
-        Ok(response_body.access_token)
+        let ClientCredentialsResponse { access_token } = response.json().await?;
+        Ok(access_token)
     }
 }
 
@@ -134,7 +142,7 @@ impl ClientCredentials {
 /// The Access (Bearer) and refresh (if available) tokens from a PKCE login.
 pub struct PkceFlow {
     /// The access token.
-    pub access_token: String,
+    pub access_token: SecretAccessToken,
     /// The refresh token, if available.
     pub refresh_token: Option<RefreshToken>,
 }
@@ -142,10 +150,13 @@ pub struct PkceFlow {
 /// Errors that can occur when attempting to perform a PKCE login flow.
 #[derive(Debug, thiserror::Error)]
 pub enum PkceFlowError {
+    /// Error that occurred while performing the PKCE login flow.
     #[error(transparent)]
     PkceLogin(#[from] PkceLoginError),
+    /// Error that occurred while fetching the discovery document from the `OAuth2` issuer.
     #[error(transparent)]
     Discovery(#[from] DiscoveryError),
+    /// Error that occurred while making http requests.
     #[error(transparent)]
     Request(#[from] reqwest::Error),
 }
@@ -160,7 +171,7 @@ impl PkceFlow {
         cancel_token: CancellationToken,
         auth_server: &AuthServer,
     ) -> Result<Self, PkceFlowError> {
-        let issuer = auth_server.issuer().to_string();
+        let issuer = auth_server.issuer.clone();
 
         let client = default_http_client()?;
         let discovery = oidc::fetch_discovery(&client, &issuer).await?;
@@ -168,18 +179,19 @@ impl PkceFlow {
         let response = pkce_login(
             cancel_token,
             PkceLoginRequest {
-                client_id: auth_server.client_id().to_string(),
+                client_id: auth_server.client_id.clone(),
                 redirect_port: None,
                 discovery,
+                scopes: auth_server.scopes.clone(),
             },
         )
         .await?;
 
         Ok(Self {
-            access_token: response.access_token().secret().to_string(),
+            access_token: SecretAccessToken::from(response.access_token().secret().clone()),
             refresh_token: response
                 .refresh_token()
-                .map(|rt| RefreshToken::new(rt.secret().to_string())),
+                .map(|rt| RefreshToken::new(SecretRefreshToken::from(rt.secret().clone()))),
         })
     }
 
@@ -191,9 +203,9 @@ impl PkceFlow {
     pub async fn request_access_token(
         &mut self,
         auth_server: &AuthServer,
-    ) -> Result<String, TokenError> {
-        if let Ok(access_token) = insecure_validate_token_exp(&self.access_token) {
-            return Ok(access_token);
+    ) -> Result<SecretAccessToken, TokenError> {
+        if insecure_validate_token_exp(&self.access_token).is_ok() {
+            return Ok(self.access_token.clone());
         }
 
         if let Some(refresh_token) = &mut self.refresh_token {
@@ -203,6 +215,18 @@ impl PkceFlow {
         }
 
         Err(TokenError::NoRefreshToken)
+    }
+}
+
+impl From<PkceFlow> for Credential {
+    fn from(value: PkceFlow) -> Self {
+        let mut token_payload = TokenPayload::default();
+        token_payload.access_token = Some(value.access_token);
+        token_payload.refresh_token = value.refresh_token.map(|rt| rt.refresh_token);
+
+        Self {
+            token_payload: Some(token_payload),
+        }
     }
 }
 
@@ -250,7 +274,7 @@ impl OAuthGrant {
     async fn request_access_token(
         &mut self,
         auth_server: &AuthServer,
-    ) -> Result<String, TokenError> {
+    ) -> Result<SecretAccessToken, TokenError> {
         match self {
             Self::RefreshToken(tokens) => tokens.request_access_token(auth_server).await,
             Self::ClientCredentials(tokens) => tokens.request_access_token(auth_server).await,
@@ -291,7 +315,7 @@ pub struct OAuthSession {
     /// The grant type to use to request an access token.
     payload: OAuthGrant,
     /// The access token that is currently in use. None if no token has been requested yet.
-    access_token: Option<String>,
+    access_token: Option<SecretAccessToken>,
     /// The [`AuthServer`] that issues the tokens.
     auth_server: AuthServer,
 }
@@ -305,7 +329,7 @@ impl OAuthSession {
     pub const fn new(
         payload: OAuthGrant,
         auth_server: AuthServer,
-        access_token: Option<String>,
+        access_token: Option<SecretAccessToken>,
     ) -> Self {
         Self {
             payload,
@@ -322,7 +346,7 @@ impl OAuthSession {
     pub const fn from_externally_managed(
         tokens: ExternallyManaged,
         auth_server: AuthServer,
-        access_token: Option<String>,
+        access_token: Option<SecretAccessToken>,
     ) -> Self {
         Self::new(
             OAuthGrant::ExternallyManaged(tokens),
@@ -339,7 +363,7 @@ impl OAuthSession {
     pub const fn from_refresh_token(
         tokens: RefreshToken,
         auth_server: AuthServer,
-        access_token: Option<String>,
+        access_token: Option<SecretAccessToken>,
     ) -> Self {
         Self::new(OAuthGrant::RefreshToken(tokens), auth_server, access_token)
     }
@@ -352,7 +376,7 @@ impl OAuthSession {
     pub const fn from_client_credentials(
         tokens: ClientCredentials,
         auth_server: AuthServer,
-        access_token: Option<String>,
+        access_token: Option<SecretAccessToken>,
     ) -> Self {
         Self::new(
             OAuthGrant::ClientCredentials(tokens),
@@ -369,7 +393,7 @@ impl OAuthSession {
     pub const fn from_pkce_flow(
         flow: PkceFlow,
         auth_server: AuthServer,
-        access_token: Option<String>,
+        access_token: Option<SecretAccessToken>,
     ) -> Self {
         Self::new(OAuthGrant::PkceFlow(flow), auth_server, access_token)
     }
@@ -382,11 +406,8 @@ impl OAuthSession {
     /// # Errors
     ///
     /// - [`TokenError::NoAccessToken`] if there is no access token
-    pub fn access_token(&self) -> Result<&str, TokenError> {
-        self.access_token.as_ref().map_or_else(
-            || Err(TokenError::NoAccessToken),
-            |token| Ok(token.as_str()),
-        )
+    pub fn access_token(&self) -> Result<&SecretAccessToken, TokenError> {
+        self.access_token.as_ref().ok_or(TokenError::NoAccessToken)
     }
 
     /// Get the payload used to request an access token.
@@ -401,13 +422,9 @@ impl OAuthSession {
     ///
     /// See [`TokenError`]
     #[allow(clippy::missing_panics_doc)]
-    pub async fn request_access_token(&mut self) -> Result<&str, TokenError> {
+    pub async fn request_access_token(&mut self) -> Result<&SecretAccessToken, TokenError> {
         let access_token = self.payload.request_access_token(&self.auth_server).await?;
-        self.access_token = Some(access_token);
-        Ok(self
-            .access_token
-            .as_ref()
-            .expect("This value is set in the previous line, so it cannot be None"))
+        Ok(self.access_token.insert(access_token))
     }
 
     /// The [`AuthServer`] that issues the tokens.
@@ -423,26 +440,28 @@ impl OAuthSession {
     ///
     /// - [`TokenError::NoAccessToken`] if an access token has not been requested.
     /// - [`TokenError::InvalidAccessToken`] if the access token is invalid.
-    pub fn validate(&self) -> Result<String, TokenError> {
-        self.access_token().map_or_else(
-            |_| Err(TokenError::NoAccessToken),
-            insecure_validate_token_exp,
-        )
+    pub fn validate(&self) -> Result<SecretAccessToken, TokenError> {
+        let access_token = self.access_token()?;
+        insecure_validate_token_exp(access_token)?;
+        Ok(access_token.clone())
     }
 }
 
 /// Validates the access token's format and `exp` claim, but no other claims or
 /// signature. We do this only to determine if the token is expired and needs refreshing,
 /// there is no way to securely validate the token's signature on the client side.
-pub(crate) fn insecure_validate_token_exp(access_token: &str) -> Result<String, TokenError> {
+pub(crate) fn insecure_validate_token_exp(
+    access_token: &SecretAccessToken,
+) -> Result<(), TokenError> {
     let placeholder_key = DecodingKey::from_secret(&[]);
     let mut validation = Validation::new(Algorithm::RS256);
     validation.validate_exp = true;
     validation.leeway = 60;
     validation.validate_aud = false;
     validation.insecure_disable_signature_validation();
-    jsonwebtoken::decode::<toml::Value>(access_token, &placeholder_key, &validation)
-        .map(|_| access_token.to_string())
+
+    jsonwebtoken::decode::<toml::Value>(access_token.secret(), &placeholder_key, &validation)
+        .map(|_| ())
         .map_err(TokenError::InvalidAccessToken)
 }
 
@@ -525,7 +544,7 @@ impl TokenDispatcher {
     ///
     /// - [`TokenError::NoAccessToken`] if there is no access token
     /// - [`TokenError::InvalidAccessToken`] if the access token is invalid
-    pub async fn validate(&self) -> Result<String, TokenError> {
+    pub async fn validate(&self) -> Result<SecretAccessToken, TokenError> {
         self.use_tokens(OAuthSession::validate).await
     }
 
@@ -563,10 +582,9 @@ impl TokenDispatcher {
             if !Secrets::is_read_only(secrets_path).await? {
                 // If the payload is a PkceFlow, write the fresh refresh token if available.
                 let refresh_token = match &oauth_session.payload {
-                    OAuthGrant::PkceFlow(payload) => payload
-                        .refresh_token
-                        .as_ref()
-                        .map(|rt| rt.refresh_token.as_str()),
+                    OAuthGrant::PkceFlow(payload) => {
+                        payload.refresh_token.as_ref().map(|rt| &rt.refresh_token)
+                    }
                     _ => None,
                 };
 
@@ -629,7 +647,7 @@ impl ExternallyManaged {
     /// # Example
     ///
     /// ```
-    /// use qcs_api_client_common::configuration::{AuthServer, ExternallyManaged, TokenError};
+    /// use qcs_api_client_common::configuration::{settings::AuthServer, tokens::ExternallyManaged, TokenError};
     /// use std::future::Future;
     /// use std::pin::Pin;
     /// use std::boxed::Box;
@@ -662,7 +680,7 @@ impl ExternallyManaged {
     /// # Example
     ///
     /// ```
-    /// use qcs_api_client_common::configuration::{AuthServer, ExternallyManaged, TokenError};
+    /// use qcs_api_client_common::configuration::{settings::AuthServer, tokens::ExternallyManaged, TokenError};
     /// use tokio::runtime::Runtime;
     /// use std::error::Error;
     ///
@@ -676,7 +694,7 @@ impl ExternallyManaged {
     /// let rt = Runtime::new().unwrap();
     /// rt.block_on(async {
     ///     match token_manager.request_access_token(&AuthServer::default()).await {
-    ///         Ok(token) => println!("Token: {}", token),
+    ///         Ok(token) => println!("Token: {token:?}"),
     ///         Err(e) => println!("Failed to refresh token: {:?}", e),
     ///     }
     /// });
@@ -706,7 +724,7 @@ impl ExternallyManaged {
     /// # Example
     ///
     /// ```
-    /// use qcs_api_client_common::configuration::{AuthServer, ExternallyManaged, TokenError};
+    /// use qcs_api_client_common::configuration::{settings::AuthServer, tokens::ExternallyManaged, TokenError};
     /// use tokio::runtime::Runtime;
     /// use std::error::Error;
     ///
@@ -720,7 +738,7 @@ impl ExternallyManaged {
     /// let rt = Runtime::new().unwrap();
     /// rt.block_on(async {
     ///     match token_manager.request_access_token(&AuthServer::default()).await {
-    ///         Ok(token) => println!("Token: {}", token),
+    ///         Ok(token) => println!("Token: {token:?}"),
     ///         Err(e) => println!("Failed to refresh token: {:?}", e),
     ///     }
     /// });
@@ -747,8 +765,10 @@ impl ExternallyManaged {
     pub async fn request_access_token(
         &self,
         auth_server: &AuthServer,
-    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        (self.refresh_function)(auth_server.clone()).await
+    ) -> Result<SecretAccessToken, Box<dyn std::error::Error + Send + Sync>> {
+        (self.refresh_function)(auth_server.clone())
+            .await
+            .map(SecretAccessToken::from)
     }
 }
 
@@ -797,8 +817,8 @@ impl ClientCredentialsRequest {
 
 #[derive(Deserialize, Debug, Serialize)]
 pub(super) struct RefreshTokenResponse {
-    pub(super) refresh_token: String,
-    pub(super) access_token: String,
+    pub(super) refresh_token: Option<SecretRefreshToken>,
+    pub(super) access_token: SecretAccessToken,
 }
 
 /// Get and refresh access tokens
@@ -809,13 +829,13 @@ pub trait TokenRefresher: Clone + std::fmt::Debug + Send {
     type Error;
 
     /// Get and validate the current access token, refreshing it if it doesn't exist or is invalid.
-    async fn validated_access_token(&self) -> Result<String, Self::Error>;
+    async fn validated_access_token(&self) -> Result<SecretAccessToken, Self::Error>;
 
     /// Get the current access token, if any
-    async fn get_access_token(&self) -> Result<Option<String>, Self::Error>;
+    async fn get_access_token(&self) -> Result<Option<SecretAccessToken>, Self::Error>;
 
     /// Get a fresh access token
-    async fn refresh_access_token(&self) -> Result<String, Self::Error>;
+    async fn refresh_access_token(&self) -> Result<SecretAccessToken, Self::Error>;
 
     /// Get the base URL for requests
     #[cfg(feature = "tracing")]
@@ -846,18 +866,16 @@ pub trait TokenRefresher: Clone + std::fmt::Debug + Send {
 impl TokenRefresher for ClientConfiguration {
     type Error = TokenError;
 
-    async fn validated_access_token(&self) -> Result<String, Self::Error> {
+    async fn validated_access_token(&self) -> Result<SecretAccessToken, Self::Error> {
         self.get_bearer_access_token().await
     }
 
-    async fn refresh_access_token(&self) -> Result<String, Self::Error> {
-        Ok(self.refresh().await?.access_token()?.to_string())
+    async fn refresh_access_token(&self) -> Result<SecretAccessToken, Self::Error> {
+        Ok(self.refresh().await?.access_token()?.clone())
     }
 
-    async fn get_access_token(&self) -> Result<Option<String>, Self::Error> {
-        Ok(Some(
-            self.oauth_session().await?.access_token()?.to_string(),
-        ))
+    async fn get_access_token(&self) -> Result<Option<SecretAccessToken>, Self::Error> {
+        Ok(Some(self.oauth_session().await?.access_token()?.clone()))
     }
 
     #[cfg(feature = "tracing")]
@@ -872,7 +890,7 @@ impl TokenRefresher for ClientConfiguration {
 }
 
 /// Get a default http client.
-fn default_http_client() -> Result<reqwest::Client, reqwest::Error> {
+pub(super) fn default_http_client() -> Result<reqwest::Client, reqwest::Error> {
     reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(10))
         .build()
@@ -910,15 +928,19 @@ mod test {
                 then.status(200)
                     .delay(Duration::from_secs(3))
                     .json_body_obj(&RefreshTokenResponse {
-                        access_token: "new_access".to_string(),
-                        refresh_token: "new_refresh".to_string(),
+                        access_token: SecretAccessToken::from("new_access"),
+                        refresh_token: Some(SecretRefreshToken::from("new_refresh")),
                     });
             })
             .await;
 
         let original_tokens = OAuthSession::from_refresh_token(
-            RefreshToken::new("refresh".to_string()),
-            AuthServer::new("client_id".to_string(), mock_server.base_url()),
+            RefreshToken::new(SecretRefreshToken::from("refresh")),
+            AuthServer {
+                client_id: "client_id".to_string(),
+                issuer: mock_server.base_url(),
+                scopes: None,
+            },
             None,
         );
         let dispatcher: TokenDispatcher = original_tokens.clone().into();
@@ -955,9 +977,15 @@ mod test {
             read_duration >= refresh_duration,
             "Read operation was not blocked by the write operation"
         );
-        assert_eq!(read_result.access_token.as_ref().unwrap(), "new_access");
+        assert_eq!(
+            read_result.access_token.unwrap(),
+            SecretAccessToken::from("new_access")
+        );
         if let OAuthGrant::RefreshToken(payload) = read_result.payload {
-            assert_eq!(&payload.refresh_token, "new_refresh");
+            assert_eq!(
+                payload.refresh_token,
+                SecretRefreshToken::from("new_refresh")
+            );
         } else {
             panic!(
                 "Expected RefreshToken payload, got {:?}",
@@ -1036,22 +1064,22 @@ updated_at = "2024-01-01T00:00:00Z"
                     .await;
 
                 // Set up the mock token endpoint
-                let new_access_token = "new_access_token";
+                let new_access_token = SecretAccessToken::from("new_access_token");
                 let issuer_mock = mock_server
                     .mock_async(|when, then| {
                         when.method(POST).path("/v1/token");
                         then.status(200).json_body_obj(&RefreshTokenResponse {
-                            access_token: new_access_token.to_string(),
-                            refresh_token: initial_refresh_token.to_string(),
+                            access_token: new_access_token.clone(),
+                            refresh_token: Some(SecretRefreshToken::from(initial_refresh_token)),
                         });
                     })
                     .await;
 
                 // Create tokens and dispatcher
                 let original_tokens = OAuthSession::from_refresh_token(
-                    RefreshToken::new(initial_refresh_token.to_string()),
-                    AuthServer::new("client_id".to_string(), mock_server.base_url()),
-                    Some(initial_refresh_token.to_string()),
+                    RefreshToken::new(SecretRefreshToken::from(initial_refresh_token)),
+                    AuthServer { client_id: "client_id".to_string(), issuer: mock_server.base_url(), scopes: None },
+                    Some(SecretAccessToken::from(initial_refresh_token)),
                 );
                 let dispatcher: TokenDispatcher = original_tokens.into();
 
@@ -1101,9 +1129,11 @@ updated_at = "2024-01-01T00:00:00Z"
                     })
                     .expect("Should be able to get token_payload table");
 
+                let access_token = token_payload.get("access_token").unwrap().as_str().map(str::to_string).map(SecretAccessToken::from);
+
                 assert_eq!(
-                    token_payload.get("access_token").unwrap().as_str().unwrap(),
-                    new_access_token
+                    access_token,
+                    Some(new_access_token)
                 );
 
                 assert!(
@@ -1128,14 +1158,18 @@ updated_at = "2024-01-01T00:00:00Z"
     #[test]
     fn test_auth_session_debug_fmt() {
         let session = OAuthSession {
-            payload: OAuthGrant::ClientCredentials(ClientCredentials {
-                client_id: "hidden_id".into(),
-                client_secret: "hidden_secret".into(),
-            }),
-            access_token: Some("token".into()),
-            auth_server: AuthServer::new("some_id".into(), "some_url".into()),
+            payload: OAuthGrant::ClientCredentials(ClientCredentials::new(
+                "hidden_id",
+                "hidden_secret",
+            )),
+            access_token: Some(SecretAccessToken::from("token")),
+            auth_server: AuthServer {
+                client_id: "some_id".into(),
+                issuer: "some_url".into(),
+                scopes: None,
+            },
         };
 
-        assert_eq!("OAuthSession { payload: ClientCredentials, access_token: Some(()), auth_server: AuthServer { client_id: \"some_id\", issuer: \"some_url\" } }", &format!("{session:?}"));
+        assert_eq!("OAuthSession { payload: ClientCredentials, access_token: Some(()), auth_server: AuthServer { client_id: \"some_id\", issuer: \"some_url\", scopes: None } }", &format!("{session:?}"));
     }
 }

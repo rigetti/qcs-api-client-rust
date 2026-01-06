@@ -57,7 +57,7 @@
 ///
 /// # Generics
 ///
-/// The functions for wrapping channels use generics `C: GrpcService<BoxBody>` to accept not only
+/// The functions for wrapping channels use generics `C: GrpcService<Body>` to accept not only
 /// bare [`Channel`]s but also channels wrapped in middleware like [`RefreshService`] or
 /// [`RetryService`]
 ///

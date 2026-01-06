@@ -15,7 +15,7 @@
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use tonic::body::BoxBody;
+use tonic::body::Body;
 use tonic::client::GrpcService;
 use tonic::codegen::http::{Request, Response};
 use tonic_web::{GrpcWebCall, GrpcWebClientService};
@@ -25,15 +25,15 @@ use tower::{Layer, ServiceBuilder};
 /// all gRPC requests to use the grpc-web protocol and HTTP/1.1
 pub fn wrap_channel_with_grpc_web<C>(channel: C) -> GrpcWebWrapperLayerService<C>
 where
-    C: GrpcService<BoxBody>,
+    C: GrpcService<Body>,
 {
     ServiceBuilder::new()
         .layer(GrpcWebWrapperLayer)
         .service(channel)
 }
 
-/// A [`Layer`] that provides [`Request<BoxBody>`] compatibility for
-/// [`GrpcWebClientService`] (which uses [`Request<GrpcWebCall<BoxBody>>`]).
+/// A [`Layer`] that provides [`Request<Body>`] compatibility for
+/// [`GrpcWebClientService`] (which uses [`Request<GrpcWebCall<Body>>`]).
 /// This allows it to be used with other layers in this module like
 /// [`RefreshLayer`] and [`RetryLayer`].
 #[derive(Copy, Clone)]
@@ -44,7 +44,7 @@ pub type GrpcWebWrapperLayerService<S> = GrpcWebClientService<GrpcWebWrapperServ
 
 impl<S> Layer<S> for GrpcWebWrapperLayer
 where
-    S: GrpcService<BoxBody>,
+    S: GrpcService<Body>,
 {
     type Service = GrpcWebWrapperLayerService<S>;
 
@@ -60,21 +60,21 @@ pub struct GrpcWebWrapperService<S> {
     service: S,
 }
 
-impl<S> tower::Service<Request<GrpcWebCall<BoxBody>>> for GrpcWebWrapperService<S>
+impl<S> tower::Service<Request<GrpcWebCall<Body>>> for GrpcWebWrapperService<S>
 where
-    S: GrpcService<BoxBody> + Clone + Send + 'static,
-    <S as GrpcService<BoxBody>>::Future: Send,
-    <S as GrpcService<BoxBody>>::ResponseBody: Send,
+    S: GrpcService<Body> + Clone + Send + 'static,
+    <S as GrpcService<Body>>::Future: Send,
+    <S as GrpcService<Body>>::ResponseBody: Send,
 {
-    type Response = Response<<S as GrpcService<BoxBody>>::ResponseBody>;
-    type Error = <S as GrpcService<BoxBody>>::Error;
+    type Response = Response<<S as GrpcService<Body>>::ResponseBody>;
+    type Error = <S as GrpcService<Body>>::Error;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.service.poll_ready(cx)
     }
 
-    fn call(&mut self, req: Request<GrpcWebCall<BoxBody>>) -> Self::Future {
+    fn call(&mut self, req: Request<GrpcWebCall<Body>>) -> Self::Future {
         // Unpack the GrpcWebCall part
         let mut service = self.service.clone();
         std::mem::swap(&mut self.service, &mut service);
@@ -83,7 +83,7 @@ where
             let method = req.method().clone();
             let uri = req.uri().clone();
             let version = req.version();
-            let body = BoxBody::new(req.into_body());
+            let body = Body::new(req.into_body());
 
             let mut builder = Request::builder();
 
