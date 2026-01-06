@@ -1,3 +1,9 @@
+## 0.13.1-dev.4 (2026-01-06)
+
+### Fixes
+
+- install libssl-dev when releasing python packages
+
 ## 0.13.1-dev.3 (2026-01-06)
 
 ### Fixes

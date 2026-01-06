@@ -50,7 +50,15 @@ runs:
       args: -i 3.9 3.10 3.11 3.12 --release --manifest-path qcs-api-client-common/Cargo.toml --out dist
       docker-options: -e CI
       before-script-linux: |
-        yum install -y openssl-devel
+        if command -v yum &> /dev/null; then
+          yum install -y openssl-devel
+        elif command -v dnf &> /dev/null; then
+          dnf install -y openssl-devel
+        elif command -v apk &> /dev/null; then
+          apk add openssl-dev
+        elif command -v apt-get &> /dev/null; then
+          apt-get update && apt-get install -y libssl-dev
+        fi
   - if: inputs.maturin-command == 'sdist'
     name: Maturin - Source Distribution
     uses: messense/maturin-action@v1
