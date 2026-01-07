@@ -111,20 +111,25 @@
 
     [workspace.dependencies.qcs-api-client-common]
       path = 'qcs-api-client-common'
-      version = '0.14.0-dev-ref-180.0'
+      version = '0.14.0-dev-180.0'
 
     [workspace.dependencies.qcs-api-client-grpc]
       path = 'qcs-api-client-grpc'
-      version = '0.14.0-dev-ref-180.0'
+      version = '0.14.0-dev-180.0'
 
     [workspace.dependencies.qcs-api-client-grpc-internal]
       path = 'qcs-api-client-grpc-internal'
+      registry = 'rigetti-cargo'
+      version = '0.14.0'
 
     [workspace.dependencies.qcs-api-client-openapi]
       path = 'qcs-api-client-openapi/public'
+      version = '0.14.0'
 
     [workspace.dependencies.qcs-api-client-openapi-internal]
       path = 'qcs-api-client-openapi/internal'
+      registry = 'rigetti-cargo'
+      version = '0.14.0'
 
     [workspace.dependencies.reqwest]
       default-features = false

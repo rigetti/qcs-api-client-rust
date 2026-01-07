@@ -1,4 +1,4 @@
-## 0.14.0-dev-ref-180.0 (2026-01-07)
+## 0.14.0-dev-180.0 (2026-01-07)
 
 ### Breaking Changes
 
@@ -14,7 +14,6 @@
 ### Fixes
 
 - oauth2 dependency should use rustls
-- test release label
 
 ## 0.13.0 (2026-01-06)
 
