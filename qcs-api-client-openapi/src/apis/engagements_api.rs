@@ -32,6 +32,42 @@ use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "clap")]
+#[allow(unused, reason = "not used in all templates, but required in some")]
+use ::{miette::IntoDiagnostic as _, qcs_api_client_common::clap_utils::JsonMaybeStdin};
+
+/// Serialize command-line arguments for [`create_engagement`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct CreateEngagementClapParams {
+    pub create_engagement_request: JsonMaybeStdin<crate::models::CreateEngagementRequest>,
+    /// Either the client's user ID or the name of a group on behalf of which the client wishes to engage. May be overriden by accountId set in body.
+    #[arg(long)]
+    pub x_qcs_account_id: Option<String>,
+    /// Indicates whether the engagement request should be made for the user or on behalf of a group. May be overriden by accountType set in body.
+    #[arg(long)]
+    pub x_qcs_account_type: Option<crate::models::AccountType>,
+}
+
+#[cfg(feature = "clap")]
+impl CreateEngagementClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::EngagementWithCredentials, miette::Error> {
+        let request = self.create_engagement_request.into_inner().into_inner();
+
+        create_engagement(
+            configuration,
+            request,
+            self.x_qcs_account_id.as_deref(),
+            self.x_qcs_account_type,
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
 /// struct for typed errors of method [`create_engagement`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]

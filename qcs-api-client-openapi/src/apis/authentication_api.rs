@@ -32,6 +32,95 @@ use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "clap")]
+#[allow(unused, reason = "not used in all templates, but required in some")]
+use ::{miette::IntoDiagnostic as _, qcs_api_client_common::clap_utils::JsonMaybeStdin};
+
+/// Serialize command-line arguments for [`auth_email_password_reset_token`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct AuthEmailPasswordResetTokenClapParams {
+    pub auth_email_password_reset_token_request:
+        Option<JsonMaybeStdin<crate::models::AuthEmailPasswordResetTokenRequest>>,
+}
+
+#[cfg(feature = "clap")]
+impl AuthEmailPasswordResetTokenClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), miette::Error> {
+        let request = self
+            .auth_email_password_reset_token_request
+            .map(|body| body.into_inner().into_inner());
+
+        auth_email_password_reset_token(configuration, request)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`auth_get_user`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct AuthGetUserClapParams {}
+
+#[cfg(feature = "clap")]
+impl AuthGetUserClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::User, miette::Error> {
+        auth_get_user(configuration).await.into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`auth_reset_password`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct AuthResetPasswordClapParams {
+    pub auth_reset_password_request: JsonMaybeStdin<crate::models::AuthResetPasswordRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl AuthResetPasswordClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), miette::Error> {
+        let request = self.auth_reset_password_request.into_inner().into_inner();
+
+        auth_reset_password(configuration, request)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`auth_reset_password_with_token`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct AuthResetPasswordWithTokenClapParams {
+    pub auth_reset_password_with_token_request:
+        JsonMaybeStdin<crate::models::AuthResetPasswordWithTokenRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl AuthResetPasswordWithTokenClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), miette::Error> {
+        let request = self
+            .auth_reset_password_with_token_request
+            .into_inner()
+            .into_inner();
+
+        auth_reset_password_with_token(configuration, request)
+            .await
+            .into_diagnostic()
+    }
+}
+
 /// struct for typed errors of method [`auth_email_password_reset_token`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]

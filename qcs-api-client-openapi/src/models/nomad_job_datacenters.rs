@@ -27,6 +27,7 @@ use serde::{Deserialize, Serialize};
 
 /// An enumeration.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum NomadJobDatacenters {
     #[serde(rename = "berkeley-775")]
     #[default]
@@ -36,6 +37,7 @@ pub enum NomadJobDatacenters {
     #[serde(rename = "rigetti-gb-1")]
     RigettiGb1,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }

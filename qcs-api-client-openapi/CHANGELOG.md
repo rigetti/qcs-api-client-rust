@@ -1,3 +1,21 @@
+## 0.15.0-dev-ref-180.0 (2026-01-07)
+
+### Breaking Changes
+
+- allow scopes to be specified explicitly
+
+### Features
+
+- template changes for openapi clap commands
+- generate template changes for openapi clap commands
+- add qcs-cli base crate, dependencies
+- implement initial qcs-cli, adding api commands + secrets + settings + tools
+
+### Fixes
+
+- oauth2 dependency should use rustls
+- test release label
+
 ## 0.14.0 (2026-01-06)
 
 ### Breaking Changes

@@ -25,6 +25,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum ValidationLocation {
     #[serde(rename = "header")]
     #[default]
@@ -36,6 +37,7 @@ pub enum ValidationLocation {
     #[serde(rename = "body")]
     Body,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }

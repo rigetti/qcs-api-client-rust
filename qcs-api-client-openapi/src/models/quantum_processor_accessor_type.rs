@@ -27,11 +27,13 @@ use serde::{Deserialize, Serialize};
 
 /// Types of access mechanisms for a QPU. Each accessor type has its own access characteristics, benefits, and drawbacks.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum QuantumProcessorAccessorType {
     #[serde(rename = "gateway.v1")]
     #[default]
     GatewayV1,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }

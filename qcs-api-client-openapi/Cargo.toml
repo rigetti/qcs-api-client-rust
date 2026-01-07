@@ -3,7 +3,19 @@
     optional = true
     workspace = true
 
+  [dependencies.clap]
+    optional = true
+    workspace = true
+
+  [dependencies.clap-stdin]
+    optional = true
+    workspace = true
+
   [dependencies.http]
+    workspace = true
+
+  [dependencies.miette]
+    optional = true
     workspace = true
 
   [dependencies.qcs-api-client-common]
@@ -26,6 +38,10 @@
     workspace = true
 
   [dependencies.serde_json]
+    workspace = true
+
+  [dependencies.serde_path_to_error]
+    optional = true
     workspace = true
 
   [dependencies.tokio]
@@ -56,6 +72,7 @@
     workspace = true
 
 [features]
+  clap = ['dep:miette', 'dep:clap', 'qcs-api-client-common/clap']
   otel-tracing = ['tracing-opentelemetry']
   tracing = ['dep:tracing', 'qcs-api-client-common/tracing', 'urlpattern']
   tracing-config = ['qcs-api-client-common/tracing-config', 'tracing']
@@ -71,4 +88,4 @@
   name = 'qcs-api-client-openapi'
   publish = true
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.14.0'
+  version = '0.15.0-dev-ref-180.0'

@@ -27,6 +27,7 @@ use serde::{Deserialize, Serialize};
 
 /// There are two types of accounts within QCS: user (representing a single user in Okta) and group (representing one or more users in Okta).
 #[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum AccountType {
     #[serde(rename = "group")]
     #[default]
@@ -34,6 +35,7 @@ pub enum AccountType {
     #[serde(rename = "user")]
     User,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }

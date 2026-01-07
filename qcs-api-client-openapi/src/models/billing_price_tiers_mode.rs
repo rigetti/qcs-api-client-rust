@@ -27,6 +27,7 @@ use serde::{Deserialize, Serialize};
 
 /// Use `graduated` to apply each tier calculation to the portion of relevant quantity, e.g. how US federal tax brackets work. Use `volume` to apply the highest relevant tier to the entire quantity.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum BillingPriceTiersMode {
     #[serde(rename = "graduated")]
     #[default]
@@ -34,6 +35,7 @@ pub enum BillingPriceTiersMode {
     #[serde(rename = "volume")]
     Volume,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }

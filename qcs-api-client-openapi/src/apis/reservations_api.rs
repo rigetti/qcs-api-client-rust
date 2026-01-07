@@ -32,6 +32,224 @@ use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "clap")]
+#[allow(unused, reason = "not used in all templates, but required in some")]
+use ::{miette::IntoDiagnostic as _, qcs_api_client_common::clap_utils::JsonMaybeStdin};
+
+/// Serialize command-line arguments for [`create_reservation`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct CreateReservationClapParams {
+    pub create_reservation_request: JsonMaybeStdin<crate::models::CreateReservationRequest>,
+    /// Used to specify a subject account ID for a request. Does not take precedence over a corresponding request body field when one is present.
+    #[arg(long)]
+    pub x_qcs_account_id: Option<String>,
+    /// Used to specify the subject account's type for a request in conjunction with the X-QCS-ACCOUNT-ID header. Does not take precedence over a corresponding request body field when one is present.
+    #[arg(long)]
+    pub x_qcs_account_type: Option<crate::models::AccountType>,
+}
+
+#[cfg(feature = "clap")]
+impl CreateReservationClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::Reservation, miette::Error> {
+        let request = self.create_reservation_request.into_inner().into_inner();
+
+        create_reservation(
+            configuration,
+            request,
+            self.x_qcs_account_id.as_deref(),
+            self.x_qcs_account_type,
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`delete_reservation`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct DeleteReservationClapParams {
+    #[arg(long)]
+    pub reservation_id: i64,
+}
+
+#[cfg(feature = "clap")]
+impl DeleteReservationClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::Reservation, miette::Error> {
+        delete_reservation(configuration, self.reservation_id)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`find_available_reservations`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct FindAvailableReservationsClapParams {
+    #[arg(long)]
+    pub quantum_processor_id: String,
+    #[arg(long)]
+    pub start_time_from: String,
+    #[arg(long)]
+    pub duration: String,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl FindAvailableReservationsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::FindAvailableReservationsResponse, miette::Error> {
+        find_available_reservations(
+            configuration,
+            self.quantum_processor_id.as_str(),
+            self.start_time_from,
+            self.duration.as_str(),
+            self.page_size,
+            self.page_token.as_deref(),
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_quantum_processor_calendar`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetQuantumProcessorCalendarClapParams {
+    #[arg(long)]
+    pub quantum_processor_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetQuantumProcessorCalendarClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::QuantumProcessorCalendar, miette::Error> {
+        get_quantum_processor_calendar(configuration, self.quantum_processor_id.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_reservation`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetReservationClapParams {
+    #[arg(long)]
+    pub reservation_id: i64,
+}
+
+#[cfg(feature = "clap")]
+impl GetReservationClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::Reservation, miette::Error> {
+        get_reservation(configuration, self.reservation_id)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_group_reservations`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListGroupReservationsClapParams {
+    /// URL encoded name of group for which to retrieve reservations.
+    #[arg(long)]
+    pub group_name: String,
+    #[arg(long)]
+    pub filter: Option<String>,
+    #[arg(long)]
+    pub order: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    /// If you wish to include deleted (or cancelled) resources in your response, include `showDeleted=true`.
+    #[arg(long)]
+    pub show_deleted: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListGroupReservationsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListReservationsResponse, miette::Error> {
+        list_group_reservations(
+            configuration,
+            self.group_name.as_str(),
+            self.filter.as_deref(),
+            self.order.as_deref(),
+            self.page_size,
+            self.page_token.as_deref(),
+            self.show_deleted.as_deref(),
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_reservations`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListReservationsClapParams {
+    #[arg(long)]
+    pub filter: Option<String>,
+    #[arg(long)]
+    pub order: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    /// If you wish to include deleted (or cancelled) resources in your response, include `showDeleted=true`.
+    #[arg(long)]
+    pub show_deleted: Option<String>,
+    /// Used to specify a subject account ID for a request. Does not take precedence over a corresponding request body field when one is present.
+    #[arg(long)]
+    pub x_qcs_account_id: Option<String>,
+    /// Used to specify the subject account's type for a request in conjunction with the X-QCS-ACCOUNT-ID header. Does not take precedence over a corresponding request body field when one is present.
+    #[arg(long)]
+    pub x_qcs_account_type: Option<crate::models::AccountType>,
+}
+
+#[cfg(feature = "clap")]
+impl ListReservationsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListReservationsResponse, miette::Error> {
+        list_reservations(
+            configuration,
+            self.filter.as_deref(),
+            self.order.as_deref(),
+            self.page_size,
+            self.page_token.as_deref(),
+            self.show_deleted.as_deref(),
+            self.x_qcs_account_id.as_deref(),
+            self.x_qcs_account_type,
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
 /// struct for typed errors of method [`create_reservation`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
