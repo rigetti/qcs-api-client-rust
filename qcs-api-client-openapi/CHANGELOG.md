@@ -13,7 +13,14 @@
 
 ### Fixes
 
+- test deploy
+
+## 0.14.1 (2026-01-07)
+
+### Fixes
+
 - oauth2 dependency should use rustls
+- upgrade Tower
 
 ## 0.14.0 (2026-01-06)
 
