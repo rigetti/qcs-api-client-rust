@@ -318,8 +318,6 @@ fn build_response(status: StatusCode, message: impl std::fmt::Display) -> Respon
 
 #[cfg(test)]
 pub(in crate::configuration) mod tests {
-    use std::mem;
-
     use oauth2::TokenResponse;
     use oauth2_test_server::{Client, IssuerConfig, OAuthTestServer};
 
@@ -346,19 +344,12 @@ pub(in crate::configuration) mod tests {
 
     impl PkceTestServerHarness {
         pub(in crate::configuration) async fn new() -> Self {
-            let mut server = OAuthTestServer::start_with_config(IssuerConfig {
+            let server = OAuthTestServer::start_with_config(IssuerConfig {
                 scheme: PKCE_REDIRECT_URL_SCHEME.to_string(),
                 host: PKCE_REDIRECT_URL_ORIGIN.to_string(),
                 ..Default::default()
             })
             .await;
-
-            // The library is very young and seems to swap these for some reason..!
-            // ... and yes, `regsiter` is misspelled.
-            mem::swap(
-                &mut server.endpoints.authorize,
-                &mut server.endpoints.regsiter,
-            );
 
             let discovery = fetch_discovery(&reqwest::Client::new(), server.issuer())
                 .await

@@ -1,3 +1,10 @@
+## 0.14.1-dev-181.0 (2026-01-07)
+
+### Fixes
+
+- oauth2 dependency should use rustls
+- upgrade Tower
+
 ## 0.14.0 (2026-01-06)
 
 ### Breaking Changes
