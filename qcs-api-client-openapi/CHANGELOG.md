@@ -13,6 +13,7 @@
 
 ### Fixes
 
+- don't reference unpublished version
 - test deploy
 
 ## 0.14.1 (2026-01-07)
