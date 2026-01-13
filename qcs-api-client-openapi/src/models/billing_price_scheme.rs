@@ -27,6 +27,7 @@ use serde::{Deserialize, Serialize};
 
 /// Use `per_unit` to charge a linear rate per quantity (recommended). Use `tiered` to charge a dynamic rate based on quantity as defined in the `tiers` of a `BillingPice`.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum BillingPriceScheme {
     #[serde(rename = "per_unit")]
     #[default]
@@ -34,6 +35,7 @@ pub enum BillingPriceScheme {
     #[serde(rename = "tiered")]
     Tiered,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }

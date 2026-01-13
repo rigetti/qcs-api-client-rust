@@ -32,6 +32,128 @@ use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "clap")]
+#[allow(unused, reason = "not used in all templates, but required in some")]
+use ::{miette::IntoDiagnostic as _, qcs_api_client_common::clap_utils::JsonMaybeStdin};
+
+/// Serialize command-line arguments for [`get_instruction_set_architecture`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetInstructionSetArchitectureClapParams {
+    #[arg(long)]
+    pub quantum_processor_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetInstructionSetArchitectureClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::InstructionSetArchitecture, miette::Error> {
+        get_instruction_set_architecture(configuration, self.quantum_processor_id.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_quantum_processor`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetQuantumProcessorClapParams {
+    #[arg(long)]
+    pub quantum_processor_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetQuantumProcessorClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::QuantumProcessor, miette::Error> {
+        get_quantum_processor(configuration, self.quantum_processor_id.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_instruction_set_architectures`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListInstructionSetArchitecturesClapParams {
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListInstructionSetArchitecturesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListInstructionSetArchitectureResponse, miette::Error> {
+        list_instruction_set_architectures(
+            configuration,
+            self.page_size,
+            self.page_token.as_deref(),
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_quantum_processor_accessors`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListQuantumProcessorAccessorsClapParams {
+    /// Public identifier for a quantum processor [example: Aspen-1]
+    #[arg(long)]
+    pub quantum_processor_id: String,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListQuantumProcessorAccessorsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListQuantumProcessorAccessorsResponse, miette::Error> {
+        list_quantum_processor_accessors(
+            configuration,
+            self.quantum_processor_id.as_str(),
+            self.page_size,
+            self.page_token.as_deref(),
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_quantum_processors`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListQuantumProcessorsClapParams {
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListQuantumProcessorsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListQuantumProcessorsResponse, miette::Error> {
+        list_quantum_processors(configuration, self.page_size, self.page_token.as_deref())
+            .await
+            .into_diagnostic()
+    }
+}
+
 /// struct for typed errors of method [`get_instruction_set_architecture`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]

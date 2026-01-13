@@ -27,6 +27,7 @@ use serde::{Deserialize, Serialize};
 
 /// Family identifier.  Value 'None' implies the architecture has no specific layout topology. Value 'Full' implies that each node is connected to every other (a fully-connected architecture)  For other values based on deployed architecture layouts (e.g. `Aspen` and `Ankaa`), refer to the architecture classes themselves for more details.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum Family {
     #[serde(rename = "None")]
     #[default]
@@ -38,6 +39,7 @@ pub enum Family {
     #[serde(rename = "Ankaa")]
     Ankaa,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }

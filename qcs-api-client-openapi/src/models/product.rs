@@ -27,6 +27,7 @@ use serde::{Deserialize, Serialize};
 
 /// The set of known QCS service products.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum Product {
     #[serde(rename = "reservationCreation")]
     #[default]
@@ -36,6 +37,7 @@ pub enum Product {
     #[serde(rename = "qpuJobTime")]
     QpuJobTime,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }

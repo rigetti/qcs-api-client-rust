@@ -25,6 +25,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum BillingInvoiceStatus {
     #[serde(rename = "draft")]
     #[default]
@@ -38,6 +39,7 @@ pub enum BillingInvoiceStatus {
     #[serde(rename = "void")]
     Void,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }

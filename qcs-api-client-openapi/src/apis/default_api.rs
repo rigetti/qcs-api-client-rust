@@ -32,6 +32,57 @@ use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "clap")]
+#[allow(unused, reason = "not used in all templates, but required in some")]
+use ::{miette::IntoDiagnostic as _, qcs_api_client_common::clap_utils::JsonMaybeStdin};
+
+/// Serialize command-line arguments for [`get_health`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetHealthClapParams {}
+
+#[cfg(feature = "clap")]
+impl GetHealthClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::Health, miette::Error> {
+        get_health(configuration).await.into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`health_check`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct HealthCheckClapParams {}
+
+#[cfg(feature = "clap")]
+impl HealthCheckClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), miette::Error> {
+        health_check(configuration).await.into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`health_check_deprecated`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct HealthCheckDeprecatedClapParams {}
+
+#[cfg(feature = "clap")]
+impl HealthCheckDeprecatedClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<serde_json::Value, miette::Error> {
+        health_check_deprecated(configuration)
+            .await
+            .into_diagnostic()
+    }
+}
+
 /// struct for typed errors of method [`get_health`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]

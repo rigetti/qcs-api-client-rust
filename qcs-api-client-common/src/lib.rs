@@ -26,6 +26,10 @@
 pub mod backoff;
 pub mod configuration;
 pub use configuration::ClientConfiguration;
+
+#[cfg(feature = "clap")]
+pub mod clap_utils;
+
 #[cfg(feature = "tracing-config")]
 pub mod tracing_configuration;
 

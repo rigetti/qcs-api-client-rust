@@ -27,6 +27,7 @@ use serde::{Deserialize, Serialize};
 
 /// API error codes to indicate what kind of error occurred beyond what an HTTP status can convey.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum Code {
     #[serde(rename = "conflicting_resource_access")]
     #[default]
@@ -48,6 +49,7 @@ pub enum Code {
     #[serde(rename = "unauthenticated")]
     Unauthenticated,
 
+    #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
     Unknown(String),
 }
