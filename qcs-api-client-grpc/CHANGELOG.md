@@ -1,3 +1,13 @@
+## 0.14.0 (2026-01-15)
+
+### Breaking Changes
+
+- add cli
+
+### Fixes
+
+- publish qcs-cli artifacts for public consumption
+
 ## 0.13.1 (2026-01-07)
 
 ### Fixes

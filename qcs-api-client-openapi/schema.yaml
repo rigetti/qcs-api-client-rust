@@ -97,6 +97,9 @@ tags:
   - description: The Quantum Processor is the heart of the Rigetti services.
     name: quantumProcessors
     x-displayName: Quantum Processors
+  - description: Deployments manage Controller Services and supporting services.
+    name: deployments
+    x-displayName: Quantum Processor Deployments
   - description: The Endpoint is the means of access to a Quantum Processor.
     name: endpoints
     x-displayName: Quantum Processor Endpoints

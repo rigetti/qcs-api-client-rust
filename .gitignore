@@ -20,3 +20,5 @@ bacon.toml
 **/uv.lock
 # sphinx build artifacts
 qcs_api_client_common/docs/build
+# cargo-about artifact, generated in CI for releases
+qcs-cli/bundle/NOTICE.html

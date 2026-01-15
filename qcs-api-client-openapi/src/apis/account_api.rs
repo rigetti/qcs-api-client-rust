@@ -32,6 +32,603 @@ use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "clap")]
+#[allow(unused, reason = "not used in all templates, but required in some")]
+use ::{miette::IntoDiagnostic as _, qcs_api_client_common::clap_utils::JsonMaybeStdin};
+
+/// Serialize command-line arguments for [`activate_user`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ActivateUserClapParams {
+    pub activate_user_request: Option<JsonMaybeStdin<crate::models::ActivateUserRequest>>,
+}
+
+#[cfg(feature = "clap")]
+impl ActivateUserClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::User, miette::Error> {
+        let request = self
+            .activate_user_request
+            .map(|body| body.into_inner().into_inner());
+
+        activate_user(configuration, request)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`add_group_user`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct AddGroupUserClapParams {
+    pub add_group_user_request: JsonMaybeStdin<crate::models::AddGroupUserRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl AddGroupUserClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), miette::Error> {
+        let request = self.add_group_user_request.into_inner().into_inner();
+
+        add_group_user(configuration, request)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`dismiss_viewer_announcement`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct DismissViewerAnnouncementClapParams {
+    /// The ID of an existing announcement.
+    #[arg(long)]
+    pub announcement_id: i64,
+}
+
+#[cfg(feature = "clap")]
+impl DismissViewerAnnouncementClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), miette::Error> {
+        dismiss_viewer_announcement(configuration, self.announcement_id)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_group_balance`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetGroupBalanceClapParams {
+    /// URL encoded name of group for which to retrieve account balance.
+    #[arg(long)]
+    pub group_name: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetGroupBalanceClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::AccountBalance, miette::Error> {
+        get_group_balance(configuration, self.group_name.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_group_billing_customer`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetGroupBillingCustomerClapParams {
+    /// URL-encoded name of group.
+    #[arg(long)]
+    pub group_name: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetGroupBillingCustomerClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::BillingCustomer, miette::Error> {
+        get_group_billing_customer(configuration, self.group_name.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_group_upcoming_billing_invoice`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetGroupUpcomingBillingInvoiceClapParams {
+    /// URL-encoded name of group.
+    #[arg(long)]
+    pub group_name: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetGroupUpcomingBillingInvoiceClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::BillingUpcomingInvoice, miette::Error> {
+        get_group_upcoming_billing_invoice(configuration, self.group_name.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_user_balance`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetUserBalanceClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetUserBalanceClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::AccountBalance, miette::Error> {
+        get_user_balance(configuration, self.user_id.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_user_billing_customer`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetUserBillingCustomerClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetUserBillingCustomerClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::BillingCustomer, miette::Error> {
+        get_user_billing_customer(configuration, self.user_id.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_user_event_billing_price`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetUserEventBillingPriceClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+    pub get_account_event_billing_price_request:
+        JsonMaybeStdin<crate::models::GetAccountEventBillingPriceRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl GetUserEventBillingPriceClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::EventBillingPriceRate, miette::Error> {
+        let request = self
+            .get_account_event_billing_price_request
+            .into_inner()
+            .into_inner();
+
+        get_user_event_billing_price(configuration, self.user_id.as_str(), request)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_user_upcoming_billing_invoice`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetUserUpcomingBillingInvoiceClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetUserUpcomingBillingInvoiceClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::BillingUpcomingInvoice, miette::Error> {
+        get_user_upcoming_billing_invoice(configuration, self.user_id.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_viewer_user_onboarding_completed`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetViewerUserOnboardingCompletedClapParams {}
+
+#[cfg(feature = "clap")]
+impl GetViewerUserOnboardingCompletedClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ViewerUserOnboardingCompleted, miette::Error> {
+        get_viewer_user_onboarding_completed(configuration)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_group_billing_invoice_lines`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListGroupBillingInvoiceLinesClapParams {
+    /// URL-encoded name of group.
+    #[arg(long)]
+    pub group_name: String,
+    /// URL-encoded billing invoice id.
+    #[arg(long)]
+    pub billing_invoice_id: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListGroupBillingInvoiceLinesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoiceLinesResponse, miette::Error> {
+        list_group_billing_invoice_lines(
+            configuration,
+            self.group_name.as_str(),
+            self.billing_invoice_id.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_group_billing_invoices`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListGroupBillingInvoicesClapParams {
+    /// URL-encoded name of group.
+    #[arg(long)]
+    pub group_name: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListGroupBillingInvoicesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoicesResponse, miette::Error> {
+        list_group_billing_invoices(
+            configuration,
+            self.group_name.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_group_upcoming_billing_invoice_lines`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListGroupUpcomingBillingInvoiceLinesClapParams {
+    /// URL-encoded name of group.
+    #[arg(long)]
+    pub group_name: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListGroupUpcomingBillingInvoiceLinesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoiceLinesResponse, miette::Error> {
+        list_group_upcoming_billing_invoice_lines(
+            configuration,
+            self.group_name.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_group_users`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListGroupUsersClapParams {
+    /// URL encoded name of group for which to retrieve users.
+    #[arg(long)]
+    pub group_name: String,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListGroupUsersClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListGroupUsersResponse, miette::Error> {
+        list_group_users(
+            configuration,
+            self.group_name.as_str(),
+            self.page_size,
+            self.page_token.as_deref(),
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_user_billing_invoice_lines`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListUserBillingInvoiceLinesClapParams {
+    /// URL-encoded QCS id of user. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+    /// URL-encoded billing invoice id.
+    #[arg(long)]
+    pub billing_invoice_id: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListUserBillingInvoiceLinesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoiceLinesResponse, miette::Error> {
+        list_user_billing_invoice_lines(
+            configuration,
+            self.user_id.as_str(),
+            self.billing_invoice_id.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_user_billing_invoices`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListUserBillingInvoicesClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListUserBillingInvoicesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoicesResponse, miette::Error> {
+        list_user_billing_invoices(
+            configuration,
+            self.user_id.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_user_groups`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListUserGroupsClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListUserGroupsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListGroupsResponse, miette::Error> {
+        list_user_groups(
+            configuration,
+            self.user_id.as_str(),
+            self.page_size,
+            self.page_token.as_deref(),
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_user_upcoming_billing_invoice_lines`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListUserUpcomingBillingInvoiceLinesClapParams {
+    /// The user's QCS id. May be found as `idpId` in the `AuthGetUser` API call.
+    #[arg(long)]
+    pub user_id: String,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+}
+
+#[cfg(feature = "clap")]
+impl ListUserUpcomingBillingInvoiceLinesClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListAccountBillingInvoiceLinesResponse, miette::Error> {
+        list_user_upcoming_billing_invoice_lines(
+            configuration,
+            self.user_id.as_str(),
+            self.page_token.as_deref(),
+            self.page_size,
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_viewer_announcements`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListViewerAnnouncementsClapParams {
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    /// An opaque token that can be appended to a request query to retrieve the next page of results. Empty if there are no more results to retrieve.
+    #[arg(long)]
+    pub page_token: Option<String>,
+    /// Include dismissed announcements in the response.
+    #[arg(long)]
+    pub include_dismissed: Option<bool>,
+}
+
+#[cfg(feature = "clap")]
+impl ListViewerAnnouncementsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::AnnouncementsResponse, miette::Error> {
+        list_viewer_announcements(
+            configuration,
+            self.page_size,
+            self.page_token.as_deref(),
+            self.include_dismissed,
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`put_viewer_user_onboarding_completed`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct PutViewerUserOnboardingCompletedClapParams {
+    pub viewer_user_onboarding_completed:
+        Option<JsonMaybeStdin<crate::models::ViewerUserOnboardingCompleted>>,
+}
+
+#[cfg(feature = "clap")]
+impl PutViewerUserOnboardingCompletedClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ViewerUserOnboardingCompleted, miette::Error> {
+        let request = self
+            .viewer_user_onboarding_completed
+            .map(|body| body.into_inner().into_inner());
+
+        put_viewer_user_onboarding_completed(configuration, request)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`remove_group_user`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct RemoveGroupUserClapParams {
+    pub remove_group_user_request: JsonMaybeStdin<crate::models::RemoveGroupUserRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl RemoveGroupUserClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), miette::Error> {
+        let request = self.remove_group_user_request.into_inner().into_inner();
+
+        remove_group_user(configuration, request)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`update_viewer_user_profile`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct UpdateViewerUserProfileClapParams {
+    pub update_viewer_user_profile_request:
+        JsonMaybeStdin<crate::models::UpdateViewerUserProfileRequest>,
+}
+
+#[cfg(feature = "clap")]
+impl UpdateViewerUserProfileClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::User, miette::Error> {
+        let request = self
+            .update_viewer_user_profile_request
+            .into_inner()
+            .into_inner();
+
+        update_viewer_user_profile(configuration, request)
+            .await
+            .into_diagnostic()
+    }
+}
+
 /// struct for typed errors of method [`activate_user`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]

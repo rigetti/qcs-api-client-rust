@@ -13,6 +13,10 @@
   [dependencies.backoff]
     workspace = true
 
+  [dependencies.clap-stdin]
+    optional = true
+    workspace = true
+
   [dependencies.derive_builder]
     workspace = true
 
@@ -39,6 +43,10 @@
     workspace = true
 
   [dependencies.jsonwebtoken]
+    workspace = true
+
+  [dependencies.miette]
+    optional = true
     workspace = true
 
   [dependencies.oauth2]
@@ -70,6 +78,10 @@
     workspace = true
 
   [dependencies.serde_json]
+    workspace = true
+
+  [dependencies.serde_path_to_error]
+    optional = true
     workspace = true
 
   [dependencies.shellexpand]
@@ -131,6 +143,7 @@
 
 [features]
   _insecure-issuer-validation = []
+  clap = ['dep:clap-stdin', 'dep:miette', 'dep:serde_path_to_error']
   python = ['dep:pyo3', 'dep:pyo3-asyncio', 'dep:paste', 'dep:rigetti-pyo3', 'tokio/macros', 'pyo3-build-config']
   test = ['_insecure-issuer-validation']
   tracing = ['dep:tracing', 'urlpattern']
@@ -200,7 +213,7 @@
   publish = true
   readme = 'README.md'
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.13.1'
+  version = '0.14.0'
 
   [package.metadata]
     [package.metadata.docs]

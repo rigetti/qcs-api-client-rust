@@ -32,6 +32,147 @@ use qcs_api_client_common::configuration::tokens::TokenRefresher;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "clap")]
+#[allow(unused, reason = "not used in all templates, but required in some")]
+use ::{miette::IntoDiagnostic as _, qcs_api_client_common::clap_utils::JsonMaybeStdin};
+
+/// Serialize command-line arguments for [`create_endpoint`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct CreateEndpointClapParams {
+    pub create_endpoint_parameters: JsonMaybeStdin<crate::models::CreateEndpointParameters>,
+}
+
+#[cfg(feature = "clap")]
+impl CreateEndpointClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::Endpoint, miette::Error> {
+        let request = self.create_endpoint_parameters.into_inner().into_inner();
+
+        create_endpoint(configuration, request)
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`delete_endpoint`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct DeleteEndpointClapParams {
+    #[arg(long)]
+    pub endpoint_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl DeleteEndpointClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), miette::Error> {
+        delete_endpoint(configuration, self.endpoint_id.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_default_endpoint`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetDefaultEndpointClapParams {
+    /// Public identifier for a quantum processor [example: Aspen-1]
+    #[arg(long)]
+    pub quantum_processor_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetDefaultEndpointClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::Endpoint, miette::Error> {
+        get_default_endpoint(configuration, self.quantum_processor_id.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`get_endpoint`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetEndpointClapParams {
+    #[arg(long)]
+    pub endpoint_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetEndpointClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::Endpoint, miette::Error> {
+        get_endpoint(configuration, self.endpoint_id.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`list_endpoints`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct ListEndpointsClapParams {
+    /// Filtering logic specified using [rule-engine](https://zerosteiner.github.io/rule-engine/syntax.html) grammar
+    #[arg(long)]
+    pub filter: Option<String>,
+    #[arg(long)]
+    pub page_size: Option<i64>,
+    #[arg(long)]
+    pub page_token: Option<String>,
+}
+
+#[cfg(feature = "clap")]
+impl ListEndpointsClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<crate::models::ListEndpointsResponse, miette::Error> {
+        list_endpoints(
+            configuration,
+            self.filter.as_deref(),
+            self.page_size,
+            self.page_token.as_deref(),
+        )
+        .await
+        .into_diagnostic()
+    }
+}
+
+/// Serialize command-line arguments for [`restart_endpoint`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct RestartEndpointClapParams {
+    #[arg(long)]
+    pub endpoint_id: String,
+    pub restart_endpoint_request: Option<JsonMaybeStdin<crate::models::RestartEndpointRequest>>,
+}
+
+#[cfg(feature = "clap")]
+impl RestartEndpointClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<(), miette::Error> {
+        let request = self
+            .restart_endpoint_request
+            .map(|body| body.into_inner().into_inner());
+
+        restart_endpoint(configuration, self.endpoint_id.as_str(), request)
+            .await
+            .into_diagnostic()
+    }
+}
+
 /// struct for typed errors of method [`create_endpoint`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
