@@ -21,7 +21,7 @@ args = ["install", "uv"]
 dependencies = ["install-uv"]
 description = "Install dependencies using uv"
 command = "uv"
-args = ["pip", "install", ".[dev]"]
+args = ["pip", "install", "--group", "dev", "."]
 
 [tasks.install-python-package]
 dependencies = ["install-deps"]
@@ -29,24 +29,22 @@ description = "Build the qcs-api-client-common python package and install it in 
 command = "maturin"
 args = ["develop"]
 
-[tasks.stubtest]
-dependencies = ["install-python-package"]
-description = "Validate type stubs using stubtest"
-command = "stubtest"
-args = ["--allowlist", ".stubtest-allowlist", "qcs_api_client_common"]
+[tasks.generate-stubs]
+description = "Generate Python stub files."
+command = "cargo"
+args = ["run", "-p", "qcs-api-client-common", "--features", "stubs", "--bin", "stub_gen"]
+install_crate = false
 
-[tasks.stubtest-watch]
-dependencies = ["install-python-package"]
-description = "Validate type stubs using stubtest in watch mode, re-validating when the stubs are updated."
-command = "watchmedo"
+[tasks.stubtest]
+dependencies = ["generate-stubs", "install-python-package"]
+description = "Validate type stubs using stubtest"
+cwd = "python"
+command = "stubtest"
 args = [
-  "shell-command",
-  "--command",
-  "sh ./scripts/watchmedo_helper.sh ${watch_src_path} 'stubtest qcs_api_client_common --allowlist .stubtest-allowlist'",
-  "--pattern",
-  "*.py;*.pyi;*.rs;.stubtest-allowlist", 
-  "--recursive",
-  ".",
+    "--allowlist", "stubtest-allowlist",
+    "--ignore-unused-allowlist",
+    "--ignore-disjoint-bases",
+    "qcs_api_client_common",
 ]
 
 [tasks.pytest]
@@ -55,28 +53,14 @@ description = "Run the Python unit test suite."
 command = "pytest"
 args = ["tests_py", "-vv"]
 
-[tasks.pytest-watch]
-dependencies = ["install-python-package"]
-command = "pytest"
-args = [
-  "watchmedo",
-  "shell-command",
-  "--command",
-  "sh ./scripts/watchmedo_helper.sh ${watch_src_path} 'cargo make pytest'",
-  "--pattern",
-  "*.py;*.pyi;*.rs", 
-  "--recursive",
-  "./",
-]
-
 [tasks.pytest-integration]
 dependencies = ["install-python-package"]
 description = "Run the integration tests in the Python test suite. Requires a valid QCS configuration."
-command = "poetry"
-args = ["run", "pytest", "tests_py", "--integration"]
+command = "pytest"
+args = ["tests_py", "--integration"]
 
 [tasks.build-python-docs]
-dependencies = ["install-python-package"]
+dependencies = ["install-python-package", "generate-stubs"]
 description = "Build the Sphinx documentation."
 cwd = "docs"
 script = [
@@ -90,8 +74,60 @@ dependencies = ["install-uv"]
 command = "ruff"
 args = ["check"]
 
+[tasks.check-python-api]
+description = "Check if Python API has breaking changes."
+dependencies = ["generate-stubs", "install-python-package"]
+script = { file = "./scripts/check-py-api.sh" }
+
+[tasks.check-python-bindings]
+description = "Find errors in the Python-related Rust code."
+command = "uv"
+args = [
+    "run",
+    "--group", "dev",
+    "python",
+    "./scripts/lint-bindings.py",
+    "--base", "src",
+    "--show-mistakes",
+]
+
+[tasks.show-python-layout]
+description = "Print the Python package layout as defined within the Rust code."
+command = "uv"
+args = [
+    "run",
+    "--group", "dev",
+    "python",
+    "./scripts/lint-bindings.py",
+    "--base", "src",
+    "--show-package",
+]
+
+[tasks.check-python]
+dependencies = [
+    "check-python-bindings",
+    "check-python-api",
+    "stubtest",
+    "ruff-check",
+]
+
 [tasks.dev-flow]
-dependencies = ["dev-test-flow", "pytest", "stubtest", "ruff-check"]
+dependencies = ["dev-test-flow", "check-python", "pytest"]
+
+[tasks.test]
+dependencies = ["test-in-ci"]
+
+[tasks.test-in-ci]
+description = "Tasks that only run when the CI environment variable is set."
+condition = { env_set = ["CI"] }
+run_task = [
+  { name = "test-credentials" },
+]
+
+[tasks.test-credentials]
+command = "cargo"
+args = ["test", "test_client_credentials", "--", "--ignored"]
 
 [tasks.default]
 alias = "dev-flow"
+

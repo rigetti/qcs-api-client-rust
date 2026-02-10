@@ -34,18 +34,23 @@ pub mod clap_utils;
 pub mod tracing_configuration;
 
 #[cfg(feature = "python")]
-pub(crate) mod py;
+pub mod errors;
 
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 
 #[cfg(feature = "python")]
 rigetti_pyo3::create_init_submodule! {
-    submodules: ["configuration": configuration::init_submodule],
+    errors: [ errors::QcsApiClientError ],
+    submodules: ["configuration": configuration::py::init_submodule],
 }
 
 #[cfg(feature = "python")]
 #[pymodule]
-fn qcs_api_client_common(py: Python<'_>, module: &PyModule) -> PyResult<()> {
-    init_submodule("qcs_api_client_common", py, module)
+#[pyo3(name = "_qcs_api_client_common")]
+fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    init_submodule("qcs_api_client_common", m.py(), m)
 }
+
+#[cfg(feature = "stubs")]
+pyo3_stub_gen::define_stub_info_gatherer!(stub_info);

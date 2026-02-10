@@ -8,9 +8,6 @@
   [build-dependencies.tonic-build]
     workspace = true
 
-  [build-dependencies.tonic-prost-build]
-    workspace = true
-
 [dependencies]
   [dependencies.backoff]
     features = ['tokio']
@@ -78,9 +75,6 @@
     workspace = true
 
   [dependencies.tonic]
-    workspace = true
-
-  [dependencies.tonic-prost]
     workspace = true
 
   [dependencies.tonic-web]
@@ -171,4 +165,4 @@
   publish = true
   readme = 'README.md'
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.14.0'
+  version = '0.15.0'

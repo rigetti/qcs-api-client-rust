@@ -34,7 +34,7 @@ pub struct TranslationOptions {
 }
 /// Nested message and enum types in `TranslationOptions`.
 pub mod translation_options {
-    #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct QCtrl {
         /// Indicates whether Q-CTRL pre-processing should consider the set of
         /// program qubits to be fixed. If true, Q-CTRL may only remap qubits to
@@ -74,7 +74,7 @@ pub mod translation_options {
     }
 }
 /// Options for translation backend V1
-#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct BackendV1Options {}
 /// Options for translation backend V2
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -117,7 +117,7 @@ pub struct TranslateQuilToEncryptedControllerJobRequest {
 }
 /// Nested message and enum types in `TranslateQuilToEncryptedControllerJobRequest`.
 pub mod translate_quil_to_encrypted_controller_job_request {
-    #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Oneof)]
+    #[derive(Clone, Copy, PartialEq, ::prost::Oneof)]
     pub enum NumShots {
         #[prost(uint32, tag = "3")]
         NumShotsValue(u32),
@@ -134,13 +134,13 @@ pub struct TranslateQuilToEncryptedControllerJobResponse {
         super::super::models::translation::QuilTranslationMetadata,
     >,
 }
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QuantumProcessorQuilCalibrationProgram {
     /// The Quil program containing the requested calibrations
     #[prost(string, tag = "1")]
     pub quil_calibration_program: ::prost::alloc::string::String,
 }
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetQuantumProcessorQuilCalibrationProgramRequest {
     /// The quantum processor for which to retrieve the calibration program.
     #[prost(string, tag = "1")]
@@ -254,7 +254,7 @@ pub mod translation_client {
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
-            let codec = tonic_prost::ProstCodec::default();
+            let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/services.translation.Translation/TranslateQuilToEncryptedControllerJob",
             );
@@ -286,7 +286,7 @@ pub mod translation_client {
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
-            let codec = tonic_prost::ProstCodec::default();
+            let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/services.translation.Translation/GetQuantumProcessorQuilCalibrationProgram",
             );
@@ -449,7 +449,7 @@ pub mod translation_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = TranslateQuilToEncryptedControllerJobSvc(inner);
-                        let codec = tonic_prost::ProstCodec::default();
+                        let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
                                 accept_compression_encodings,
@@ -503,7 +503,7 @@ pub mod translation_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = GetQuantumProcessorQuilCalibrationProgramSvc(inner);
-                        let codec = tonic_prost::ProstCodec::default();
+                        let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
                                 accept_compression_encodings,

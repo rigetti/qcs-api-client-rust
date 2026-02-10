@@ -41,7 +41,7 @@ pub mod readout_values {
 }
 /// IntegerReadoutValues are integer arrays emitted by a readout receiver or transformation pipeline.
 /// These may include (but are not limited to) qudit values or raw ADC capture data.
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct IntegerReadoutValues {
     #[prost(int32, repeated, tag = "1")]
     pub values: ::prost::alloc::vec::Vec<i32>,
@@ -54,7 +54,7 @@ pub struct Complex64ReadoutValues {
 }
 /// An EncryptedControllerJob includes the configuration necessary to execute an instance of
 /// the contained job data on control hardware in encrypted format.
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct EncryptedControllerJob {
     /// Encrypted form of ControllerJob.
     #[prost(bytes = "vec", tag = "1")]
@@ -64,7 +64,7 @@ pub struct EncryptedControllerJob {
     pub encryption: ::core::option::Option<JobEncryption>,
 }
 /// Information about the means by which a ControllerJob was encrypted.
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct JobEncryption {
     /// Opaque identifier for the key to use in decryption
     #[prost(string, tag = "1")]
@@ -106,13 +106,13 @@ pub mod data_value {
     }
 }
 /// Binary value, corresponding to both BIT and OCTET data types in Quil.
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct BinaryDataValue {
     #[prost(bytes = "vec", tag = "1")]
     pub data: ::prost::alloc::vec::Vec<u8>,
 }
 /// Signed integer value, corresponding to INTEGER in Quil.
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct IntegerDataValue {
     #[prost(int64, repeated, tag = "1")]
     pub data: ::prost::alloc::vec::Vec<i64>,

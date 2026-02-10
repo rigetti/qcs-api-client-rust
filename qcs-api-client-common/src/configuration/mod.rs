@@ -33,19 +33,17 @@ use derive_builder::Builder;
 use std::{env, path::PathBuf};
 use tokio_util::sync::CancellationToken;
 
-#[cfg(feature = "python")]
-use pyo3::prelude::*;
+#[cfg(feature = "stubs")]
+use pyo3_stub_gen::derive::gen_stub_pyclass;
 
 use self::{
     secrets::{Credential, Secrets, TokenPayload},
     settings::Settings,
 };
 
-mod error;
+pub(crate) mod error;
 mod oidc;
 mod pkce;
-#[cfg(feature = "python")]
-mod py;
 mod secret_string;
 pub mod secrets;
 pub mod settings;
@@ -53,7 +51,7 @@ pub mod tokens;
 
 pub use error::{LoadError, TokenError};
 #[cfg(feature = "python")]
-pub(crate) use py::*;
+pub(crate) mod py;
 
 use settings::AuthServer;
 use tokens::{OAuthGrant, OAuthSession, PkceFlow, RefreshToken, TokenDispatcher};
@@ -111,25 +109,53 @@ fn env_or_default_quilc_url() -> String {
 /// You can also build a configuration from scratch using [`ClientConfigurationBuilder`]. Using a
 /// builder bypasses configuration files and environment overrides.
 #[derive(Clone, Debug, Builder)]
-#[cfg_attr(feature = "python", pyclass)]
+#[cfg_attr(
+    not(feature = "stubs"),
+    builder_struct_attr(optipy::strip_pyo3(only_stubs)),
+    optipy::strip_pyo3(only_stubs)
+)]
+#[cfg_attr(
+    not(feature = "python"),
+    builder_struct_attr(optipy::strip_pyo3),
+    optipy::strip_pyo3
+)]
+#[cfg_attr(
+    feature = "stubs",
+    builder_struct_attr(gen_stub_pyclass),
+    gen_stub_pyclass
+)]
+#[cfg_attr(
+    feature = "python",
+    builder_struct_attr(pyo3::pyclass(module = "qcs_api_client_common.configuration")),
+    pyo3::pyclass(module = "qcs_api_client_common.configuration")
+)]
 pub struct ClientConfiguration {
     #[builder(private, default = "env_or_default_profile_name()")]
+    #[builder_field_attr(gen_stub(skip))]
     profile: String,
 
     #[doc = "The URL for the QCS REST API."]
     #[builder(default = "env_or_default_api_url()")]
+    #[builder_field_attr(pyo3(get, set))]
+    #[pyo3(get)]
     api_url: String,
 
     #[doc = "The URL for the QCS gRPC API."]
     #[builder(default = "env_or_default_grpc_url()")]
+    #[builder_field_attr(pyo3(get, set))]
+    #[pyo3(get)]
     grpc_api_url: String,
 
     #[doc = "The URL of the quilc server."]
     #[builder(default = "env_or_default_quilc_url()")]
+    #[builder_field_attr(pyo3(get, set))]
+    #[pyo3(get)]
     quilc_url: String,
 
     #[doc = "The URL of the QVM server."]
     #[builder(default = "env_or_default_qvm_url()")]
+    #[builder_field_attr(pyo3(get, set))]
+    #[pyo3(get)]
     qvm_url: String,
 
     /// Provides a single, semi-shared access to user credential tokens.
@@ -137,14 +163,17 @@ pub struct ClientConfiguration {
     /// Note that the tokens are *not* shared when the `ClientConfiguration` is created multiple
     /// times, e.g. through [`ClientConfiguration::load_default`].
     #[builder(default, setter(custom))]
+    #[builder_field_attr(pyo3(get))]
     pub(crate) oauth_session: Option<TokenDispatcher>,
 
     #[builder(private, default = "ConfigSource::Builder")]
+    #[builder_field_attr(gen_stub(skip))]
     source: ConfigSource,
 
     /// Configuration for tracing of network API calls. If `None`, tracing is disabled.
     #[cfg(feature = "tracing-config")]
     #[builder(default)]
+    #[builder_field_attr(gen_stub(skip))]
     tracing_configuration: Option<TracingConfiguration>,
 }
 

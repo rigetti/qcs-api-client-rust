@@ -1,5 +1,3 @@
-from syrupy.assertion import SnapshotAssertion
-
 from qcs_api_client_common.configuration import (
     AuthServer,
     ClientConfiguration,
@@ -9,6 +7,7 @@ from qcs_api_client_common.configuration import (
     SecretAccessToken,
     SecretRefreshToken,
 )
+from syrupy.assertion import SnapshotAssertion
 
 
 class TestClientConfiguration:

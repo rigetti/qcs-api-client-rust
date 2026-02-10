@@ -1,13 +1,14 @@
 """Middleware for gRPC clients."""
 
 from abc import ABCMeta
-from typing import Any, Callable, List, Optional, Tuple
+from collections.abc import Callable
+from typing import Any
 
 import grpc  # type: ignore
 from grpc import ClientCallDetails  # type: ignore
 from grpc.aio import Call, UnaryUnaryClientInterceptor  # type: ignore
 
-from qcs_api_client_common.configuration import ClientConfiguration, SecretAccessToken
+from .configuration import ClientConfiguration, SecretAccessToken  # type: ignore
 
 
 class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
@@ -16,7 +17,7 @@ class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
     The interceptor will automatically refresh your token as needed.
     """
 
-    def __init__(self, client_configuration: Optional[ClientConfiguration] = None):
+    def __init__(self, client_configuration: ClientConfiguration | None = None):
         """Initialize the interceptor using a `ClientConfiguration`.
 
         If `client_configuration` is unset, `ClientConfiguratio.load_default()` will be used.
@@ -36,7 +37,7 @@ class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
     ) -> Any:
         """Adds the QCS authorization token to the request metadata, refreshing the token if needed."""
         # Modify the headers to add the access token
-        authorized_metadata: List[Tuple[str, str]] = []
+        authorized_metadata: list[tuple[str, str]] = []
         if client_call_details.metadata is not None:
             authorized_metadata = list(client_call_details.metadata)
 

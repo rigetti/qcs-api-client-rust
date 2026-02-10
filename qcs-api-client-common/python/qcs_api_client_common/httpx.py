@@ -1,6 +1,5 @@
 """QCS Middleware for requests made with `httpx`."""
 
-from typing import Optional
 
 import httpx
 from httpx import Request
@@ -39,7 +38,7 @@ class QCSAuthorization(httpx.Auth):
     ```
     """
 
-    def __init__(self, client_configuration: Optional[ClientConfiguration] = None):
+    def __init__(self, client_configuration: ClientConfiguration | None = None):
         """Initialize the authorization with an optional client configuration.
 
         If `client_configuration` is set to None, `ClientConfiguration.load_default()` will be used.

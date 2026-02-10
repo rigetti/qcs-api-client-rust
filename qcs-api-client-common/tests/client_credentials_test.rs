@@ -11,6 +11,7 @@ fn require_var(key: &str) -> String {
 }
 
 #[tokio::test]
+#[ignore = "requires credentials"]
 async fn test_client_credentials() {
     let credentials = ClientCredentials::new(
         require_var(VAR_NAME_CLIENT_ID),

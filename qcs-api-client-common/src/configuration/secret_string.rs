@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use std::{borrow::Cow, fmt};
 
 #[cfg(feature = "python")]
-use crate::{impl_eq, impl_repr};
+use rigetti_pyo3::impl_repr;
 
 /// Builds a type that wraps [`Cow<'static, str>`] which helps prevent values
 /// from being accidentally viewed in e.g. in debug or log output.
@@ -22,10 +22,13 @@ macro_rules! make_secret_string {
        $(#[$attr:meta])*
        $name:ident
     ) => {
-        $(#[$attr])*
-        #[cfg_attr(feature = "python", ::pyo3::pyclass)]
         #[derive(Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
         #[serde(transparent)]
+        #[cfg_attr(not(feature = "python"), ::optipy::strip_pyo3)]
+        #[cfg_attr(feature = "stubs", ::pyo3_stub_gen::derive::gen_stub_pyclass)]
+        #[cfg_attr(feature = "python",
+            ::pyo3::pyclass(module = "qcs_api_client_common.configuration", eq, frozen, skip_from_py_object))]
+        $(#[$attr])*
         pub struct $name(Cow<'static, str>);
 
         impl fmt::Debug for $name {
@@ -42,49 +45,35 @@ macro_rules! make_secret_string {
             }
         }
 
+        #[cfg_attr(not(feature = "python"), ::optipy::strip_pyo3)]
+        #[cfg_attr(feature = "stubs", ::pyo3_stub_gen::derive::gen_stub_pymethods)]
+        #[cfg_attr(feature = "python", ::pyo3::pymethods)]
         impl $name {
             #[must_use]
+            #[getter(is_empty)]
             /// Check if the secret is an empty value
             pub fn is_empty(&self) -> bool {
                 self.0.is_empty()
             }
 
             #[must_use]
+            #[getter(secret)]
             /// Get the inner secret contents, which removes the protection against accidentally exposing the value.
             pub fn secret(&self) -> &str {
                 self.0.as_ref()
             }
-
         }
 
         #[cfg(feature = "python")]
         impl_repr!($name);
 
         #[cfg(feature = "python")]
-        impl_eq!($name);
-
-        #[cfg(feature = "python")]
+        #[cfg_attr(feature = "stubs", ::pyo3_stub_gen::derive::gen_stub_pymethods)]
         #[::pyo3::pymethods]
         impl $name {
             #[new]
-            fn py_new(value: String) -> Self {
+            pub(crate) fn __new__(value: String) -> Self {
                 Self::from(value)
-            }
-
-            #[must_use]
-            #[getter]
-            #[pyo3(name = "is_empty")]
-            /// Check if the secret is an empty value
-            pub fn py_is_empty(&self) -> bool {
-                self.is_empty()
-            }
-
-            #[must_use]
-            #[getter]
-            #[pyo3(name = "secret")]
-            /// Get the inner secret contents, which removes the protection against accidentally exposing the value.
-            pub fn py_secret(&self) -> &str {
-                self.secret()
             }
         }
     }

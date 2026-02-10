@@ -52,15 +52,24 @@
   [dependencies.oauth2]
     workspace = true
 
+  [dependencies.optipy]
+    workspace = true
+
   [dependencies.paste]
     optional = true
     workspace = true
 
   [dependencies.pyo3]
+    features = ['multiple-pymethods']
     optional = true
     workspace = true
 
-  [dependencies.pyo3-asyncio]
+  [dependencies.pyo3-async-runtimes]
+    features = ['tokio-runtime']
+    optional = true
+    workspace = true
+
+  [dependencies.pyo3-stub-gen]
     optional = true
     workspace = true
 
@@ -70,6 +79,7 @@
     workspace = true
 
   [dependencies.rigetti-pyo3]
+    features = ['async-tokio']
     optional = true
     workspace = true
 
@@ -144,7 +154,8 @@
 [features]
   _insecure-issuer-validation = []
   clap = ['dep:clap-stdin', 'dep:miette', 'dep:serde_path_to_error']
-  python = ['dep:pyo3', 'dep:pyo3-asyncio', 'dep:paste', 'dep:rigetti-pyo3', 'tokio/macros', 'pyo3-build-config']
+  python = ['dep:paste', 'dep:pyo3', 'dep:pyo3-async-runtimes', 'dep:pyo3-build-config', 'dep:rigetti-pyo3', 'tokio/macros']
+  stubs = ['python', 'dep:pyo3-stub-gen', 'rigetti-pyo3/stubs']
   test = ['_insecure-issuer-validation']
   tracing = ['dep:tracing', 'urlpattern']
   tracing-config = ['tracing']
@@ -213,7 +224,7 @@
   publish = true
   readme = 'README.md'
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.14.0'
+  version = '0.15.0'
 
   [package.metadata]
     [package.metadata.docs]

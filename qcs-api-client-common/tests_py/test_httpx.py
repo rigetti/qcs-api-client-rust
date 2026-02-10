@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock, Mock
 
 import httpx
 import pytest
-
 from qcs_api_client_common.configuration import ClientConfiguration
 from qcs_api_client_common.httpx import QCSAuthorization
 

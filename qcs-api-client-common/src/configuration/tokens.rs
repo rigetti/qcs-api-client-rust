@@ -9,6 +9,9 @@ use time::OffsetDateTime;
 use tokio::sync::{Mutex, Notify, RwLock};
 use tokio_util::sync::CancellationToken;
 
+#[cfg(feature = "stubs")]
+use pyo3_stub_gen::derive::gen_stub_pyclass;
+
 use super::{
     oidc, secrets::Secrets, settings::AuthServer, ClientConfiguration, ConfigSource, TokenError,
 };
@@ -26,7 +29,11 @@ pub use super::secret_string::ClientSecret;
 
 /// A single type containing an access token and an associated refresh token.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(eq, get_all, set_all, module = "qcs_api_client_common.configuration")
+)]
 pub struct RefreshToken {
     /// The token used to refresh the access token.
     pub refresh_token: SecretRefreshToken,
@@ -76,9 +83,13 @@ pub(super) struct ClientCredentialsResponse {
     pub(super) access_token: SecretAccessToken,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
 /// A pair of Client ID and Client Secret, used to request an OAuth Client Credentials Grant
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(eq, get_all, frozen, module = "qcs_api_client_common.configuration")
+)]
 pub struct ClientCredentials {
     /// The client ID
     pub client_id: String,
@@ -136,9 +147,12 @@ impl ClientCredentials {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Deserialize)]
-#[expect(missing_debug_implementations, reason = "contains secret data")]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(eq, get_all, frozen, module = "qcs_api_client_common.configuration")
+)]
 /// The Access (Bearer) and refresh (if available) tokens from a PKCE login.
 pub struct PkceFlow {
     /// The access token.
@@ -231,7 +245,7 @@ impl From<PkceFlow> for Credential {
 }
 
 #[derive(Clone)]
-#[cfg_attr(feature = "python", derive(pyo3::FromPyObject))]
+#[cfg_attr(feature = "python", derive(pyo3::FromPyObject, pyo3::IntoPyObject))]
 /// Specifies the [OAuth2 grant type](https://oauth.net/2/grant-types/) to use, along with the data
 /// needed to request said grant type.
 pub enum OAuthGrant {
@@ -310,7 +324,11 @@ impl std::fmt::Debug for OAuthGrant {
 /// * `access_token` - The access token currently in use, if any. If no token has been provided or requested yet, this will be `None`.
 /// * `auth_server` - The authorization server responsible for issuing tokens.
 #[derive(Clone)]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(module = "qcs_api_client_common.configuration", frozen, get_all)
+)]
 pub struct OAuthSession {
     /// The grant type to use to request an access token.
     payload: OAuthGrant,
@@ -482,7 +500,11 @@ impl std::fmt::Debug for OAuthSession {
 
 /// A wrapper for [`OAuthSession`] that provides thread-safe access to the inner tokens.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(module = "qcs_api_client_common.configuration")
+)]
 pub struct TokenDispatcher {
     lock: Arc<RwLock<OAuthSession>>,
     refreshing: Arc<Mutex<bool>>,
@@ -629,7 +651,11 @@ pub type RefreshFunction = Box<dyn (Fn(AuthServer) -> RefreshResult) + Send + Sy
 /// The [`ExternallyManaged`] struct allows users to define custom logic for
 /// fetching or refreshing access tokens.
 #[derive(Clone)]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(module = "qcs_api_client_common.configuration")
+)]
 pub struct ExternallyManaged {
     refresh_function: Arc<RefreshFunction>,
 }

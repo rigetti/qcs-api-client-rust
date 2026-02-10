@@ -25,14 +25,14 @@ runs:
   - uses: actions/setup-python@v4
     with:
       python-version: "3.12"
-      architecture: ${{ inputs.python-architecture }} 
-  - name: Install Rust toolchain 
-    uses: actions-rs/toolchain@v1 
-    with: 
-      toolchain: stable 
+      architecture: ${{ inputs.python-architecture }}
+  - name: Install Rust toolchain
+    uses: actions-rs/toolchain@v1
+    with:
+      toolchain: stable
       target: ${{ inputs.rust-target }}
-      profile: minimal 
-      default: true 
+      profile: minimal
+      default: true
   - name: Install protoc
     uses: arduino/setup-protoc@v1
     with:
@@ -47,7 +47,7 @@ runs:
       manylinux: '2_28'
       command: ${{ inputs.maturin-command }}
       target: ${{ inputs.maturin-target }}
-      args: -i 3.9 3.10 3.11 3.12 --release --manifest-path qcs-api-client-common/Cargo.toml --out dist
+      args: -i 3.10 3.11 3.12 3.13 --release --manifest-path qcs-api-client-common/Cargo.toml --out dist
       docker-options: -e CI
   - if: inputs.maturin-command == 'sdist'
     name: Maturin - Source Distribution
@@ -64,7 +64,7 @@ runs:
     shell: bash
     run: |
       pip install qcs-api-client-common --find-links dist --force-reinstall
-  - name: Upload wheels 
+  - name: Upload wheels
     uses: actions/upload-artifact@v4
     with:
       name: wheels-${{ inputs.artifact-key }}

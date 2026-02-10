@@ -6,6 +6,9 @@ use figment::providers::Format;
 use figment::{providers::Toml, Figment};
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "stubs")]
+use pyo3_stub_gen::derive::gen_stub_pyclass;
+
 use crate::configuration::error::DiscoveryError;
 use crate::configuration::oidc::{fetch_discovery, DISCOVERY_REQUIRED_SCOPE};
 use crate::configuration::tokens::default_http_client;
@@ -138,7 +141,11 @@ pub(crate) const QCS_DEFAULT_AUTH_ISSUER_PRODUCTION: &str =
 
 /// OAuth 2.0 authorization server.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(module = "qcs_api_client_common.configuration", eq, get_all, set_all)
+)]
 pub struct AuthServer {
     /// OAuth 2.0 client id.
     pub client_id: String,

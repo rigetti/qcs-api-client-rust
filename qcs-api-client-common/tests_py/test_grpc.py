@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 import grpc
 import pytest
 from google.protobuf.any_pb2 import Any
-
 from qcs_api_client_common.configuration import ClientConfiguration
 from qcs_api_client_common.grpc import RefreshInterceptor
 
