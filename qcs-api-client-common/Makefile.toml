@@ -21,7 +21,7 @@ args = ["install", "uv"]
 dependencies = ["install-uv"]
 description = "Install dependencies using uv"
 command = "uv"
-args = ["pip", "install", "--group", "dev", "."]
+args = ["pip", "install", ".[dev]"]
 
 [tasks.install-python-package]
 dependencies = ["install-deps"]

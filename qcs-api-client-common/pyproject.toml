@@ -1,7 +1,7 @@
 [project]
 name = "qcs-api-client-common"
 requires-python = ">=3.10,<4"
-version = "0.15.0"
+version = "0.15.1"
 description = "Contains core QCS client functionality and middleware implementations."
 readme = "README-py.md"
 license = { text = "Apache-2.0" }
@@ -23,7 +23,7 @@ dependencies = [
     "httpx>=0.27.0",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "grpcio-testing >= 1.63.0",
     "pytest >= 8.1.1",

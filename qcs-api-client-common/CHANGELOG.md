@@ -1,3 +1,9 @@
+## 0.15.1 (2026-03-03)
+
+### Features
+
+- release internal controller-deployments changes
+
 ## 0.15.0 (2026-02-10)
 
 ### Breaking Changes
