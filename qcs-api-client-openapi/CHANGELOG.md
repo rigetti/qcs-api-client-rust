@@ -1,3 +1,9 @@
+## 0.16.1-dev-189.0 (2026-03-03)
+
+### Features
+
+- release internal controller-deployments changes
+
 ## 0.16.0 (2026-02-10)
 
 ### Breaking Changes
