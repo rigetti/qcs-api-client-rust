@@ -1,3 +1,9 @@
+## 0.15.2 (2026-03-04)
+
+### Fixes
+
+- v1 and v2 schema compat
+
 ## 0.15.1 (2026-03-03)
 
 ### Features
