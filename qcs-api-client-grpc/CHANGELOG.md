@@ -1,3 +1,13 @@
+## 0.15.3-dev-192.0 (2026-03-06)
+
+### Features
+
+- regenerate schema after controller_deployment_config changes
+
+### Fixes
+
+- oneofs should generate as enums
+
 ## 0.15.2 (2026-03-04)
 
 ### Fixes
