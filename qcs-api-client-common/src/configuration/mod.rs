@@ -231,10 +231,16 @@ impl ConfigurationContext {
         let secrets_path = secrets.file_path;
         let credential = secrets.credentials.remove(&profile.credentials_name);
 
-        let api_url = env::var(API_URL_VAR).unwrap_or(profile.api_url);
+        let api_url = env::var(API_URL_VAR)
+            .unwrap_or(profile.api_url)
+            .trim_end_matches('/')
+            .to_string();
         let quilc_url = env::var(QUILC_URL_VAR).unwrap_or(profile.applications.pyquil.quilc_url);
         let qvm_url = env::var(QVM_URL_VAR).unwrap_or(profile.applications.pyquil.qvm_url);
-        let grpc_api_url = env::var(GRPC_API_URL_VAR).unwrap_or(profile.grpc_api_url);
+        let grpc_api_url = env::var(GRPC_API_URL_VAR)
+            .unwrap_or(profile.grpc_api_url)
+            .trim_end_matches('/')
+            .to_string();
 
         #[cfg(feature = "tracing-config")]
         let tracing_configuration =
@@ -574,6 +580,8 @@ fn expand_path_from_env_or_default(
 
 #[cfg(test)]
 mod test {
+    #![allow(clippy::result_large_err, reason = "happens in figment tests")]
+
     use jsonwebtoken::{encode, EncodingKey, Header};
     use serde::Serialize;
     use time::{Duration, OffsetDateTime};

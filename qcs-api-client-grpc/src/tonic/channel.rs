@@ -351,6 +351,7 @@ pub fn get_endpoint(uri: Uri) -> Endpoint {
             env!("CARGO_PKG_VERSION")
         ))
         .expect("user agent string should be valid")
+        .http2_adaptive_window(true)
         .tls_config(ClientTlsConfig::new().with_enabled_roots())
         .expect("tls setup should succeed")
 }

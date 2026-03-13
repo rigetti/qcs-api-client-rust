@@ -1,11 +1,12 @@
+//! QCS Middleware for [`tonic`] clients.
+
 use std::convert::Infallible;
 
-/// QCS Middleware for [`tonic`] clients.
-///
 use futures_util::pin_mut;
 use http::Request;
-use http_body::Body as HttpBody;
-use http_body_util::BodyExt;
+use http_body::{Body as HttpBody, Frame};
+use http_body_util::StreamBody;
+use prost::bytes::Bytes;
 
 mod channel;
 mod common;
@@ -52,6 +53,20 @@ impl From<RequestBodyDuplicationError> for tonic::Status {
 
 type RequestBodyDuplicationResult<T> = Result<T, RequestBodyDuplicationError>;
 
+/// The AWS ALB can misinterpret requests which contain a `content-length` header,
+/// causing requests which are routed through a gateway to fail with an h2 protocol error.
+/// Using a [`StreamBody`], even for Unary requests, will prevent `tonic` from sending that header.
+fn make_stream_body(bytes: Bytes) -> tonic::body::Body {
+    let body = Frame::data(bytes);
+
+    // Create a stream that yields a single frame
+    let stream = futures_util::stream::once(std::future::ready(Ok::<_, Infallible>(body)));
+
+    let stream_body = StreamBody::new(stream);
+
+    tonic::body::Body::new(stream_body)
+}
+
 /// This function should only be used with Unary requests; Stream requests are
 /// untested. It eagerly collects all request data into a buffer, consuming the
 /// original stream. Additionally, it assumes that all frames are data frames
@@ -73,12 +88,9 @@ async fn build_duplicate_frame_bytes(
         bytes.extend(frame_bytes);
     }
 
-    let bytes = http_body_util::Full::from(bytes)
-        .map_err(|_: Infallible| -> tonic::Status { unreachable!() });
-    Ok((
-        tonic::body::Body::new(bytes.clone()),
-        tonic::body::Body::new(bytes),
-    ))
+    let bytes = Bytes::from(bytes);
+
+    Ok((make_stream_body(bytes.clone()), make_stream_body(bytes)))
 }
 
 /// This function should only be used with Unary requests; Stream requests are

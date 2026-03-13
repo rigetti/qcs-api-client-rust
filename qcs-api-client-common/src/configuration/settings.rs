@@ -240,6 +240,8 @@ impl Default for Pyquil {
 
 #[cfg(test)]
 mod test {
+    #![allow(clippy::result_large_err, reason = "happens in figment tests")]
+
     use std::path::PathBuf;
 
     use super::{Settings, SETTINGS_PATH_VAR};

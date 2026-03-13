@@ -1,3 +1,11 @@
+## 0.16.3 (2026-03-13)
+
+### Fixes
+
+- oneofs should generate as enums
+- secrets and settings QOL fixes, debug logging in cli
+- compatibility with conserv-v2 gateway
+
 ## 0.16.2 (2026-03-04)
 
 ### Fixes

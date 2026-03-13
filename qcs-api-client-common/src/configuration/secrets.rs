@@ -96,17 +96,24 @@ impl Secrets {
             return Ok(true);
         }
 
-        // Check file permissions
-        let is_read_only = tokio::fs::metadata(&secrets_path)
-            .await
-            .map_err(|error| IoErrorWithPath {
-                error,
-                path: secrets_path.as_ref().to_path_buf(),
-                operation: IoOperation::GetMetadata,
-            })?
-            .permissions()
-            .readonly();
-        Ok(is_read_only)
+        // Check file permissions - a non-existent file is treated as writable if its
+        // parent directory is writable
+        for (i, ancestor) in secrets_path.as_ref().ancestors().enumerate() {
+            match tokio::fs::metadata(ancestor).await {
+                Ok(metadata) => return Ok(metadata.permissions().readonly()),
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => continue,
+                Err(error) if i == 0 => {
+                    return Err(IoErrorWithPath {
+                        error,
+                        path: secrets_path.as_ref().to_path_buf(),
+                        operation: IoOperation::GetMetadata,
+                    }
+                    .into());
+                }
+                Err(_) => return Ok(true), // Can't access ancestor = read-only
+            }
+        }
+        Ok(true) // No existing ancestor found = read-only
     }
 
     /// Attempts to write a refresh and access token to the QCS [`Secrets`] file at
@@ -276,13 +283,15 @@ pub struct TokenPayload {
 
 #[cfg(test)]
 mod describe_load {
+    #![allow(clippy::result_large_err, reason = "happens in figment tests")]
+
     #[cfg(unix)]
     use std::os::unix::fs::PermissionsExt;
     use std::path::PathBuf;
 
     use time::{macros::datetime, OffsetDateTime};
 
-    use crate::configuration::secrets::SecretAccessToken;
+    use crate::configuration::secrets::{SecretAccessToken, SECRETS_READ_ONLY_VAR};
 
     use super::{Credential, Secrets, SECRETS_PATH_VAR};
 
@@ -397,6 +406,97 @@ token_type = "Bearer"
                 assert_eq!(
                     original_permissions, new_permissions,
                     "Final file permissions should not be changed"
+                );
+            });
+
+            Ok(())
+        });
+    }
+
+    /// Set file permissions on Unix systems for jail-created files and directories
+    fn set_mode(path: &PathBuf, mode: u32) {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let perms = std::fs::Permissions::from_mode(mode);
+            std::fs::set_permissions(path, perms).expect("Should be able to set permissions");
+        }
+    }
+
+    #[test]
+    fn test_is_read_only_missing_file_checks_parent_dir() {
+        figment::Jail::expect_with(|jail| {
+            jail.set_env(SECRETS_READ_ONLY_VAR, "false");
+
+            let writable_dir = jail.create_dir("writable_dir")?;
+            let readonly_dir = jail.create_dir("readonly_dir")?;
+
+            set_mode(&writable_dir, 0o777);
+            set_mode(&readonly_dir, 0o555);
+
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                // Missing file in writable directory should be writable (not read-only)
+                let writable_path = writable_dir.join("missing_secrets.toml");
+                let is_ro = Secrets::is_read_only(&writable_path)
+                    .await
+                    .expect("Should not error");
+                assert!(
+                    !is_ro,
+                    "Missing file in writable directory should not be read-only: {}",
+                    writable_path.display()
+                );
+
+                // Missing file in read-only directory should be read-only
+                let readonly_path = readonly_dir.join("missing_secrets.toml");
+                let is_ro = Secrets::is_read_only(&readonly_path)
+                    .await
+                    .expect("Should not error");
+                assert!(
+                    is_ro,
+                    "Missing file in read-only directory should be read-only: {}",
+                    readonly_path.display()
+                );
+            });
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_is_read_only_existing_file() {
+        figment::Jail::expect_with(|jail| {
+            jail.set_env(SECRETS_READ_ONLY_VAR, "false");
+
+            jail.create_file("writable_secrets.toml", "")?;
+            jail.create_file("readonly_secrets.toml", "")?;
+
+            let writable_path = jail.directory().join("writable_secrets.toml");
+            let readonly_path = jail.directory().join("readonly_secrets.toml");
+
+            set_mode(&writable_path, 0o666);
+            set_mode(&readonly_path, 0o444);
+
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                // Existing writable file should not be read-only
+                let is_ro = Secrets::is_read_only(&writable_path)
+                    .await
+                    .expect("Should not error");
+                assert!(
+                    !is_ro,
+                    "Writable file should not be read-only: {}",
+                    writable_path.display()
+                );
+
+                // Existing read-only file should be read-only
+                let is_ro = Secrets::is_read_only(&readonly_path)
+                    .await
+                    .expect("Should not error");
+                assert!(
+                    is_ro,
+                    "Read-only file should be read-only: {}",
+                    readonly_path.display()
                 );
             });
 

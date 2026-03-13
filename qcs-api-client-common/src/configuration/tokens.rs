@@ -924,6 +924,8 @@ pub(super) fn default_http_client() -> Result<reqwest::Client, reqwest::Error> {
 
 #[cfg(test)]
 mod test {
+    #![allow(clippy::result_large_err, reason = "happens in figment tests")]
+
     use std::time::Duration;
 
     use super::*;

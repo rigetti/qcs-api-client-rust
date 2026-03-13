@@ -111,25 +111,25 @@
 
     [workspace.dependencies.qcs-api-client-common]
       path = 'qcs-api-client-common'
-      version = '0.15.2'
+      version = '0.15.3'
 
     [workspace.dependencies.qcs-api-client-grpc]
       path = 'qcs-api-client-grpc'
-      version = '0.15.2'
+      version = '0.15.3'
 
     [workspace.dependencies.qcs-api-client-grpc-internal]
       path = 'qcs-api-client-grpc-internal'
       registry = 'rigetti-cargo'
-      version = '0.16.2'
+      version = '0.16.3'
 
     [workspace.dependencies.qcs-api-client-openapi]
       path = 'qcs-api-client-openapi/public'
-      version = '0.16.2'
+      version = '0.16.3'
 
     [workspace.dependencies.qcs-api-client-openapi-internal]
       path = 'qcs-api-client-openapi/internal'
       registry = 'rigetti-cargo'
-      version = '0.16.2'
+      version = '0.16.3'
 
     [workspace.dependencies.reqwest]
       default-features = false
@@ -170,7 +170,7 @@
       version = '0.9.8'
 
     [workspace.dependencies.tonic]
-      features = ['tls-native-roots']
+      features = ['tls-native-roots', 'gzip']
       version = '0.13.1'
 
     [workspace.dependencies.tower]
