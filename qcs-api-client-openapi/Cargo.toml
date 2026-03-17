@@ -41,7 +41,12 @@
     workspace = true
 
   [dependencies.serde_path_to_error]
-    optional = true
+    workspace = true
+
+  [dependencies.serde_repr]
+    workspace = true
+
+  [dependencies.serde_with]
     workspace = true
 
   [dependencies.tokio]
@@ -88,4 +93,4 @@
   name = 'qcs-api-client-openapi'
   publish = true
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.16.3'
+  version = '0.17.0'

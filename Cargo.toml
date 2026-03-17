@@ -51,6 +51,7 @@
     serde = '1.0.228'
     serde_json = '1.0.91'
     serde_path_to_error = '0.1.20'
+    serde_repr = '0.1'
     serde_yaml = '0.9'
     serial_test = '3.1.1'
     syn = '2.0'
@@ -111,25 +112,25 @@
 
     [workspace.dependencies.qcs-api-client-common]
       path = 'qcs-api-client-common'
-      version = '0.15.3'
+      version = '0.16.0'
 
     [workspace.dependencies.qcs-api-client-grpc]
       path = 'qcs-api-client-grpc'
-      version = '0.15.3'
+      version = '0.16.0'
 
     [workspace.dependencies.qcs-api-client-grpc-internal]
       path = 'qcs-api-client-grpc-internal'
       registry = 'rigetti-cargo'
-      version = '0.16.3'
+      version = '0.17.0'
 
     [workspace.dependencies.qcs-api-client-openapi]
       path = 'qcs-api-client-openapi/public'
-      version = '0.16.3'
+      version = '0.17.0'
 
     [workspace.dependencies.qcs-api-client-openapi-internal]
       path = 'qcs-api-client-openapi/internal'
       registry = 'rigetti-cargo'
-      version = '0.16.3'
+      version = '0.17.0'
 
     [workspace.dependencies.reqwest]
       default-features = false
@@ -143,6 +144,11 @@
     [workspace.dependencies.reqwest-tracing]
       features = ['opentelemetry_0_30']
       version = '0.5.8'
+
+    [workspace.dependencies.serde_with]
+      default-features = false
+      features = ['base64', 'std', 'macros']
+      version = '3.8'
 
     [workspace.dependencies.shellexpand]
       default-features = false

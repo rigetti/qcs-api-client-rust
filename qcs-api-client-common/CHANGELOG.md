@@ -1,3 +1,9 @@
+## 0.16.0 (2026-03-17)
+
+### Breaking Changes
+
+- update openapi generator to 7.20.0, regenerate clients
+
 ## 0.15.3 (2026-03-13)
 
 ### Fixes

@@ -23,7 +23,6 @@ src/models/auth_reset_password_with_token_request.rs
 src/models/available_reservation.rs
 src/models/billing_customer.rs
 src/models/billing_invoice.rs
-src/models/billing_invoice_all_of.rs
 src/models/billing_invoice_line.rs
 src/models/billing_invoice_status.rs
 src/models/billing_price.rs

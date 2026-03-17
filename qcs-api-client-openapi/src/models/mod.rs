@@ -52,9 +52,6 @@ pub use self::billing_customer::BillingCustomer;
 pub mod billing_invoice;
 pub use self::billing_invoice::BillingInvoice;
 #[allow(non_snake_case)]
-pub mod billing_invoice_all_of;
-pub use self::billing_invoice_all_of::BillingInvoiceAllOf;
-#[allow(non_snake_case)]
 pub mod billing_invoice_line;
 pub use self::billing_invoice_line::BillingInvoiceLine;
 #[allow(non_snake_case)]
