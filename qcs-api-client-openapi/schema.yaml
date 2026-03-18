@@ -2792,6 +2792,15 @@ components:
         url:
           type: string
           description: The gRPC endpoint for this accessor.
+        rank:
+          type: integer
+          format: int64
+          description: >-
+            (Deprecated) Rank of this accessor against others for the same QPU.
+            If two accessors both serve a client's
+
+            purposes, that with the lower rank value should be used for access.
+          deprecated: true
     QuantumProcessorAccessorType:
       type: string
       description: Type of the accessor. Each accessor type is a different mechanism

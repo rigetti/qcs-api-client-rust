@@ -34,7 +34,7 @@ pub enum Error<T> {
         content_type: String,
         return_type: &'static str,
     },
-    #[cfg(feature = "otel-tracing")]
+    #[cfg(feature = "tracing-opentelemetry")]
     ReqwestMiddleware(anyhow::Error),
 }
 
@@ -62,7 +62,7 @@ impl<T> fmt::Display for Error<T> {
                 "api",
                 format!("received {content_type} content type response that cannot be converted to `{return_type}`"),
             ),
-            #[cfg(feature = "otel-tracing")]
+            #[cfg(feature = "tracing-opentelemetry")]
             Error::ReqwestMiddleware(e) => ("reqwest-middleware", e.to_string()),
         };
         write!(f, "error in {}: {}", module, e)
@@ -76,7 +76,7 @@ impl<T: fmt::Debug> error::Error for Error<T> {
             Error::Serde(e) => e,
             Error::Io(e) => e,
             Error::QcsToken(e) => e,
-            #[cfg(feature = "otel-tracing")]
+            #[cfg(feature = "tracing-opentelemetry")]
             Error::ReqwestMiddleware(e) => e.source()?,
             Error::InvalidContentType { .. } => return None,
             Error::ResponseError(_) => return None,
@@ -90,7 +90,7 @@ impl<T> From<reqwest::Error> for Error<T> {
     }
 }
 
-#[cfg(feature = "otel-tracing")]
+#[cfg(feature = "tracing-opentelemetry")]
 impl<T> From<reqwest_middleware::Error> for Error<T> {
     fn from(e: reqwest_middleware::Error) -> Self {
         match e {

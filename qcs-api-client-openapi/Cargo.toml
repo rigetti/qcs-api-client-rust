@@ -78,7 +78,6 @@
 
 [features]
   clap = ['dep:miette', 'dep:clap', 'qcs-api-client-common/clap']
-  otel-tracing = ['tracing-opentelemetry']
   tracing = ['dep:tracing', 'qcs-api-client-common/tracing', 'urlpattern']
   tracing-config = ['qcs-api-client-common/tracing-config', 'tracing']
   tracing-opentelemetry = ['dep:anyhow', 'dep:reqwest-middleware', 'dep:reqwest-tracing', 'dep:tracing-opentelemetry', 'tracing-config']
@@ -93,4 +92,4 @@
   name = 'qcs-api-client-openapi'
   publish = true
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.17.0'
+  version = '0.18.0'

@@ -35,6 +35,9 @@ pub struct QuantumProcessorAccessor {
     /// Whether this connection is attached to live hardware.
     #[serde(rename = "live")]
     pub live: bool,
+    /// (Deprecated) Rank of this accessor against others for the same QPU. If two accessors both serve a client's purposes, that with the lower rank value should be used for access.
+    #[serde(rename = "rank", skip_serializing_if = "Option::is_none")]
+    pub rank: Option<i64>,
     /// The gRPC endpoint for this accessor.
     #[serde(rename = "url")]
     pub url: String,
@@ -50,6 +53,7 @@ impl QuantumProcessorAccessor {
         QuantumProcessorAccessor {
             access_type,
             live,
+            rank: None,
             url,
         }
     }

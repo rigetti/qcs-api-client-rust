@@ -1,3 +1,9 @@
+## 0.18.0 (2026-03-18)
+
+### Breaking Changes
+
+- simplify test matrix and ensure common python bindings publishing
+
 ## 0.17.0 (2026-03-17)
 
 ### Breaking Changes
