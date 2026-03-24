@@ -1,3 +1,9 @@
+## 0.17.2-dev-199.0 (2026-03-24)
+
+### Fixes
+
+- qcs-cli 'internal' feature for installation from registry
+
 ## 0.17.1 (2026-03-24)
 
 ### Features
