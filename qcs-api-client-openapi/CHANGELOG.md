@@ -1,3 +1,9 @@
+## 0.18.1 (2026-03-24)
+
+### Features
+
+- generate client with custom endpoint id config
+
 ## 0.18.0 (2026-03-18)
 
 ### Breaking Changes
