@@ -2888,7 +2888,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-common"
-version = "0.17.1"
+version = "0.17.2"
 dependencies = [
  "async-tempfile",
  "async-trait",
@@ -2935,7 +2935,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc"
-version = "0.17.1"
+version = "0.17.2"
 dependencies = [
  "async-std",
  "backoff",
@@ -2981,7 +2981,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-openapi"
-version = "0.18.1"
+version = "0.18.2"
 dependencies = [
  "anyhow",
  "clap",
@@ -3296,9 +3296,9 @@ dependencies = [
 
 [[package]]
 name = "rigetti-pyo3"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a440c858291b41a07ad12f55f5e067fe804f899a9e5d08ab2ef379228305740"
+checksum = "a6b7db4e0185b3a42ecf29f5fe5b776f528a8c34c2ca5377a6c7d523a15c4295"
 dependencies = [
  "indexmap 2.13.0",
  "itertools 0.14.0",
