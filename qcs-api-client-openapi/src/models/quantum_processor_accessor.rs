@@ -32,6 +32,9 @@ pub struct QuantumProcessorAccessor {
     /// The type of access to the controller.
     #[serde(rename = "accessType")]
     pub access_type: models::QuantumProcessorAccessorType,
+    /// The unique ID of this accessor.  This is set only for client-created (v1) accessors. Automatically-available accessors, including direct accessors and discovered kubernetes Controller Gateway instances, have no ID.
+    #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
     /// Whether this connection is attached to live hardware.
     #[serde(rename = "live")]
     pub live: bool,
@@ -52,6 +55,7 @@ impl QuantumProcessorAccessor {
     ) -> QuantumProcessorAccessor {
         QuantumProcessorAccessor {
             access_type,
+            id: None,
             live,
             rank: None,
             url,

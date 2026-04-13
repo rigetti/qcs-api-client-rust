@@ -2789,6 +2789,15 @@ components:
         live:
           type: boolean
           description: Whether this connection is attached to live hardware.
+        id:
+          type: string
+          description: |-
+            The unique ID of this accessor.
+
+            This is set only for client-created (v1) accessors.
+            Automatically-available accessors, including direct accessors and
+            discovered kubernetes Controller Gateway instances, have no ID.
+          deprecated: true
         url:
           type: string
           description: The gRPC endpoint for this accessor.
@@ -2810,6 +2819,7 @@ components:
         - direct.v1
     ValidationLocation:
       type: string
+      description: What part of the request contains the invalid data.
       enum:
         - header
         - query

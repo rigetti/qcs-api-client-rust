@@ -1,3 +1,9 @@
+## 0.18.3 (2026-04-13)
+
+### Fixes
+
+- update QCS schema with fix for the `backplane.identity` fields
+
 ## 0.18.2 (2026-03-25)
 
 ### Fixes

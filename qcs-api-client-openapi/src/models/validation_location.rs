@@ -25,6 +25,8 @@
 use crate::models;
 use serde::{Deserialize, Serialize};
 
+/// ValidationLocation: What part of the request contains the invalid data.
+/// What part of the request contains the invalid data.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum ValidationLocation {

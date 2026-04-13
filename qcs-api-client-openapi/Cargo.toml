@@ -92,4 +92,4 @@
   name = 'qcs-api-client-openapi'
   publish = true
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.18.2'
+  version = '0.18.3'
