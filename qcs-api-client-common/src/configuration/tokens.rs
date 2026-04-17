@@ -503,7 +503,7 @@ impl std::fmt::Debug for OAuthSession {
 #[cfg_attr(feature = "stubs", gen_stub_pyclass)]
 #[cfg_attr(
     feature = "python",
-    pyo3::pyclass(module = "qcs_api_client_common.configuration")
+    pyo3::pyclass(module = "qcs_api_client_common.configuration", frozen)
 )]
 pub struct TokenDispatcher {
     lock: Arc<RwLock<OAuthSession>>,
@@ -654,7 +654,7 @@ pub type RefreshFunction = Box<dyn (Fn(AuthServer) -> RefreshResult) + Send + Sy
 #[cfg_attr(feature = "stubs", gen_stub_pyclass)]
 #[cfg_attr(
     feature = "python",
-    pyo3::pyclass(module = "qcs_api_client_common.configuration")
+    pyo3::pyclass(module = "qcs_api_client_common.configuration", frozen)
 )]
 pub struct ExternallyManaged {
     refresh_function: Arc<RefreshFunction>,

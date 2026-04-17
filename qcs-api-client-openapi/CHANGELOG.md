@@ -1,3 +1,13 @@
+## 0.18.4 (2026-04-17)
+
+### Features
+
+- allow any callable for ExternallyManaged
+
+### Fixes
+
+- ensure synchronous variants of PyO3 functions are safe to call even if a Python event loop already exists
+
 ## 0.18.3 (2026-04-13)
 
 ### Fixes

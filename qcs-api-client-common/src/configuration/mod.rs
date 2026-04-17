@@ -127,7 +127,7 @@ fn env_or_default_quilc_url() -> String {
 #[cfg_attr(
     feature = "python",
     builder_struct_attr(pyo3::pyclass(module = "qcs_api_client_common.configuration")),
-    pyo3::pyclass(module = "qcs_api_client_common.configuration")
+    pyo3::pyclass(module = "qcs_api_client_common.configuration", frozen)
 )]
 pub struct ClientConfiguration {
     #[builder(private, default = "env_or_default_profile_name()")]

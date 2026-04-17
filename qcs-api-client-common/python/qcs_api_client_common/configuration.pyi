@@ -131,15 +131,22 @@ class ClientConfiguration:
         """
     @staticmethod
     def builder() -> ClientConfigurationBuilder: ...
-    def get_bearer_access_token(self) -> SecretAccessToken: ...
-    def get_bearer_access_token_async(self) -> collections.abc.Awaitable[SecretAccessToken]: ...
-    def get_oauth_session(self) -> OAuthSession:
+    def get_bearer_access_token(self) -> SecretAccessToken:
         r"""
-        Get the configured tokens.
+        Gets the `Bearer` access token, refreshing it if it is expired.
         
         # Errors
         
-        - Raises a `TokenError` if there is a problem fetching the tokens
+        - Raises a `TokenError` if there's a problem providing the token.
+        """
+    def get_bearer_access_token_async(self) -> collections.abc.Awaitable[SecretAccessToken]: ...
+    def get_oauth_session(self) -> OAuthSession:
+        r"""
+        Get the configured [`OAuthSession`].
+        
+        # Errors
+        
+        - Raises a `TokenError` if there is a problem fetching the tokens.
         """
     def get_oauth_session_async(self) -> collections.abc.Awaitable[OAuthSession]: ...
     @staticmethod
@@ -437,15 +444,43 @@ class TokenError(ConfigurationError):
     """
     ...
 
-def get_bearer_access_token(configuration: ClientConfiguration) -> SecretAccessToken: ...
+def get_bearer_access_token(configuration: ClientConfiguration) -> SecretAccessToken:
+    r"""
+    Gets the `Bearer` access token, refreshing it if it is expired.
+    
+    # Errors
+    
+    Raises a `TokenError` if there's a problem providing the token.
+    """
 
-def get_bearer_access_token_async(configuration: ClientConfiguration) -> collections.abc.Awaitable[SecretAccessToken]: ...
+def get_bearer_access_token_async(configuration: ClientConfiguration) -> collections.abc.Awaitable[SecretAccessToken]:
+    r"""
+    Gets the `Bearer` access token, refreshing it if it is expired.
+    
+    # Errors
+    
+    Raises a `TokenError` if there's a problem providing the token.
+    """
 
 def get_oauth_session(tokens: typing.Optional[TokenDispatcher]) -> OAuthSession: ...
 
 def get_oauth_session_async(tokens: typing.Optional[TokenDispatcher]) -> collections.abc.Awaitable[OAuthSession]: ...
 
-def request_access_token(session: OAuthSession) -> SecretAccessToken: ...
+def request_access_token(session: OAuthSession) -> SecretAccessToken:
+    r"""
+    Request and return an updated access token using these credentials.
+    
+    # Errors
+    
+    Raises a `TokenError` if there's a problem providing the token.
+    """
 
-def request_access_token_async(session: OAuthSession) -> collections.abc.Awaitable[SecretAccessToken]: ...
+def request_access_token_async(session: OAuthSession) -> collections.abc.Awaitable[SecretAccessToken]:
+    r"""
+    Request and return an updated access token using these credentials.
+    
+    # Errors
+    
+    Raises a `TokenError` if there's a problem providing the token.
+    """
 

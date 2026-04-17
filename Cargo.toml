@@ -45,7 +45,7 @@
     prost-types = '0.13.3'
     pyo3-build-config = '0.27.2'
     pyo3-stub-gen = '0.17.2'
-    rigetti-pyo3 = '0.5.0'
+    rigetti-pyo3 = '0.5.2'
     rstest = '0.26.0'
     rustls = '0.23'
     serde = '1.0.228'
@@ -112,25 +112,25 @@
 
     [workspace.dependencies.qcs-api-client-common]
       path = 'qcs-api-client-common'
-      version = '0.17.3'
+      version = '0.17.4'
 
     [workspace.dependencies.qcs-api-client-grpc]
       path = 'qcs-api-client-grpc'
-      version = '0.17.3'
+      version = '0.17.4'
 
     [workspace.dependencies.qcs-api-client-grpc-internal]
       path = 'qcs-api-client-grpc-internal'
       registry = 'rigetti-cargo'
-      version = '0.18.3'
+      version = '0.18.4'
 
     [workspace.dependencies.qcs-api-client-openapi]
       path = 'qcs-api-client-openapi/public'
-      version = '0.18.3'
+      version = '0.18.4'
 
     [workspace.dependencies.qcs-api-client-openapi-internal]
       path = 'qcs-api-client-openapi/internal'
       registry = 'rigetti-cargo'
-      version = '0.18.3'
+      version = '0.18.4'
 
     [workspace.dependencies.reqwest]
       default-features = false

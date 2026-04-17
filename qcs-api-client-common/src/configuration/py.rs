@@ -4,7 +4,7 @@
 use pyo3::{
     exceptions::PyValueError,
     prelude::*,
-    types::{PyFunction, PyString},
+    types::{PyAnyMethods, PyString},
 };
 use rigetti_pyo3::{create_init_submodule, impl_repr, py_function_sync_async, sync::Awaitable};
 use tokio_util::sync::CancellationToken;
@@ -210,8 +210,16 @@ impl ExternallyManaged {
                 imports=("collections.abc")
             )
         )]
-        refresh_function: Py<PyFunction>,
-    ) -> Self {
+        refresh_function: Bound<'_, PyAny>,
+    ) -> PyResult<Self> {
+        if !refresh_function.is_callable() {
+            return Err(pyo3::exceptions::PyTypeError::new_err(
+                "refresh_function must be callable",
+            ));
+        }
+
+        let refresh_function = refresh_function.unbind();
+
         #[allow(trivial_casts)] // Compilation fails without the cast.
         // The provided refresh function will panic if there is an issue with the refresh function.
         // This raises a `PanicException` within Python.
@@ -230,7 +238,7 @@ impl ExternallyManaged {
             }) as super::tokens::RefreshResult
         };
 
-        Self::new(refresh_closure)
+        Ok(Self::new(refresh_closure))
     }
 }
 
@@ -298,6 +306,11 @@ py_function_sync_async! {
 }
 
 py_function_sync_async! {
+    /// Gets the `Bearer` access token, refreshing it if it is expired.
+    ///
+    /// # Errors
+    ///
+    /// Raises a `TokenError` if there's a problem providing the token.
     #[cfg_attr(feature = "stubs", gen_stub_pyfunction(module = "qcs_api_client_common.configuration"))]
     #[pyfunction]
     async fn get_bearer_access_token(configuration: ClientConfiguration) -> PyResult<SecretAccessToken> {
@@ -306,6 +319,11 @@ py_function_sync_async! {
 }
 
 py_function_sync_async! {
+    /// Request and return an updated access token using these credentials.
+    ///
+    /// # Errors
+    ///
+    /// Raises a `TokenError` if there's a problem providing the token.
     #[cfg_attr(feature = "stubs", gen_stub_pyfunction(module = "qcs_api_client_common.configuration"))]
     #[pyfunction]
     async fn request_access_token(session: OAuthSession) -> PyResult<SecretAccessToken> {
@@ -384,6 +402,11 @@ impl ClientConfiguration {
         Self::load_profile(profile_name)
     }
 
+    /// Gets the `Bearer` access token, refreshing it if it is expired.
+    ///
+    /// # Errors
+    ///
+    /// Raises a `TokenError` if there's a problem providing the token.
     #[pyo3(name = "get_bearer_access_token")]
     fn py_get_bearer_access_token(&self, py: Python<'_>) -> PyResult<SecretAccessToken> {
         py_get_bearer_access_token(py, self.clone())
@@ -397,21 +420,20 @@ impl ClientConfiguration {
         py_get_bearer_access_token_async(py, self.clone())
     }
 
-    /// Get the configured tokens.
+    /// Get the configured [`OAuthSession`].
     ///
     /// # Errors
     ///
-    /// - Raises a `TokenError` if there is a problem fetching the tokens
+    /// Raises a `TokenError` if there is a problem fetching the tokens.
     pub fn get_oauth_session(&self, py: Python<'_>) -> PyResult<OAuthSession> {
         py_get_oauth_session(py, self.oauth_session.clone())
     }
 
-    #[allow(clippy::needless_pass_by_value)] // self_ must be passed by value
     fn get_oauth_session_async<'py>(
-        self_: PyRefMut<'py, Self>,
+        &self,
         py: Python<'py>,
     ) -> PyResult<Awaitable<'py, OAuthSession>> {
-        py_get_oauth_session_async(py, self_.oauth_session.clone())
+        py_get_oauth_session_async(py, self.oauth_session.clone())
     }
 }
 
