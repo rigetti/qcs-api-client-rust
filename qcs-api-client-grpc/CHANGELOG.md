@@ -1,3 +1,9 @@
+## 0.17.5 (2026-04-20)
+
+### Fixes
+
+- don't include dev dependencies in published builds
+
 ## 0.17.4 (2026-04-17)
 
 ### Features

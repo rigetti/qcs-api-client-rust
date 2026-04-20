@@ -11,8 +11,14 @@ script = [
     '''
 ]
 
-[tasks.install-uv]
+[tasks.upgrade-pip]
 dependencies = ["check-venv"]
+description = "Upgrade pip to ensure it supports depency groups"
+command = "pip"
+args = ["install", "--upgrade", "pip"]
+
+[tasks.install-uv]
+dependencies = ["check-venv", "upgrade-pip"]
 description = "Install dependencies using uv"
 command = "pip"
 args = ["install", "uv"]
@@ -21,7 +27,7 @@ args = ["install", "uv"]
 dependencies = ["install-uv"]
 description = "Install dependencies using uv"
 command = "uv"
-args = ["pip", "install", ".[dev]"]
+args = ["pip", "install", "--group", "dev", "."]
 
 [tasks.install-python-package]
 dependencies = ["install-deps"]
