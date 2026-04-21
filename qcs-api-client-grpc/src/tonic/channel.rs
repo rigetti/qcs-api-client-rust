@@ -5,7 +5,6 @@ use std::time::Duration;
 
 use backoff::ExponentialBackoff;
 use http::{uri::InvalidUri, Uri};
-use hyper_proxy2::{Intercept, Proxy, ProxyConnector};
 use hyper_socks2::{Auth, SocksConnector};
 use hyper_util::client::legacy::connect::HttpConnector;
 use tonic::{
@@ -23,6 +22,8 @@ use qcs_api_client_common::{
 
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::tracing_configuration::TracingConfiguration;
+
+use rigetti_hyper_proxy::{Intercept, Proxy, ProxyConnector};
 
 #[cfg(feature = "tracing")]
 use super::trace::{build_trace_layer, CustomTraceLayer, CustomTraceService};

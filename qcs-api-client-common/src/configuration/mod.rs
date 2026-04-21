@@ -34,7 +34,7 @@ use std::{env, path::PathBuf};
 use tokio_util::sync::CancellationToken;
 
 #[cfg(feature = "stubs")]
-use pyo3_stub_gen::derive::gen_stub_pyclass;
+use rigetti_pyo3::pyo3_stub_gen::derive::gen_stub_pyclass;
 
 use self::{
     secrets::{Credential, Secrets, TokenPayload},

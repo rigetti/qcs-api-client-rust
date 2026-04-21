@@ -1,3 +1,9 @@
+## 0.17.6 (2026-04-21)
+
+### Fixes
+
+- adopt Rust fork of hyper-proxy; adopt pastey (fork of paste)
+
 ## 0.17.5 (2026-04-20)
 
 ### Fixes

@@ -28,11 +28,6 @@
   [dependencies.hyper]
     workspace = true
 
-  [dependencies.hyper-proxy2]
-    default-features = false
-    features = ['rustls']
-    workspace = true
-
   [dependencies.hyper-socks2]
     default-features = false
     workspace = true
@@ -62,6 +57,11 @@
     workspace = true
 
   [dependencies.qcs-api-client-common]
+    workspace = true
+
+  [dependencies.rigetti-hyper-proxy]
+    default-features = false
+    features = ['rustls']
     workspace = true
 
   [dependencies.serde]
@@ -164,4 +164,4 @@
   publish = true
   readme = 'README.md'
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.17.5'
+  version = '0.17.6'

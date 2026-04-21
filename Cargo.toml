@@ -35,7 +35,6 @@
     opentelemetry-http = '0.30.0'
     opentelemetry_sdk = '0.30.0'
     optipy = '0.1.0'
-    paste = '1.0.15'
     pbjson = '0.7.0'
     pbjson-build = '0.7.0'
     pbjson-types = '0.7.0'
@@ -45,7 +44,7 @@
     prost-types = '0.13.3'
     pyo3-build-config = '0.27.2'
     pyo3-stub-gen = '0.17.2'
-    rigetti-pyo3 = '0.5.2'
+    rigetti-pyo3 = '0.5.4'
     rstest = '0.26.0'
     rustls = '0.23'
     serde = '1.0.228'
@@ -89,11 +88,6 @@
       features = ['env', 'toml']
       version = '0.10.18'
 
-    [workspace.dependencies.hyper-proxy2]
-      default-features = false
-      features = ['rustls']
-      version = '0.1.0'
-
     [workspace.dependencies.hyper-socks2]
       default-features = false
       version = '0.9.1'
@@ -112,25 +106,25 @@
 
     [workspace.dependencies.qcs-api-client-common]
       path = 'qcs-api-client-common'
-      version = '0.17.5'
+      version = '0.17.6'
 
     [workspace.dependencies.qcs-api-client-grpc]
       path = 'qcs-api-client-grpc'
-      version = '0.17.5'
+      version = '0.17.6'
 
     [workspace.dependencies.qcs-api-client-grpc-internal]
       path = 'qcs-api-client-grpc-internal'
       registry = 'rigetti-cargo'
-      version = '0.18.5'
+      version = '0.18.6'
 
     [workspace.dependencies.qcs-api-client-openapi]
       path = 'qcs-api-client-openapi/public'
-      version = '0.18.5'
+      version = '0.18.6'
 
     [workspace.dependencies.qcs-api-client-openapi-internal]
       path = 'qcs-api-client-openapi/internal'
       registry = 'rigetti-cargo'
-      version = '0.18.5'
+      version = '0.18.6'
 
     [workspace.dependencies.reqwest]
       default-features = false
@@ -144,6 +138,11 @@
     [workspace.dependencies.reqwest-tracing]
       features = ['opentelemetry_0_30']
       version = '0.5.8'
+
+    [workspace.dependencies.rigetti-hyper-proxy]
+      default-features = false
+      features = ['rustls']
+      version = '1.1.1'
 
     [workspace.dependencies.serde_with]
       default-features = false
