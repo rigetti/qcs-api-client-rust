@@ -35,13 +35,13 @@
     opentelemetry-http = '0.30.0'
     opentelemetry_sdk = '0.30.0'
     optipy = '0.1.0'
-    pbjson = '0.7.0'
-    pbjson-build = '0.7.0'
-    pbjson-types = '0.7.0'
+    pbjson = '0.9.0'
+    pbjson-build = '0.9.0'
+    pbjson-types = '0.9.0'
     prettyplease = '0.2'
-    prost = '0.13.3'
-    prost-build = '0.13.3'
-    prost-types = '0.13.3'
+    prost = '0.14.1'
+    prost-build = '0.14.1'
+    prost-types = '0.14.1'
     pyo3-build-config = '0.27.2'
     pyo3-stub-gen = '0.17.2'
     rigetti-pyo3 = '0.5.4'
@@ -58,9 +58,11 @@
     tempfile = '3.3.0'
     thiserror = '2.0'
     toml_edit = '0.23.7'
-    tonic-build = '0.13.1'
-    tonic-health = '0.13.1'
-    tonic-web = '0.13.1'
+    tonic-build = '0.14.2'
+    tonic-health = '0.14.2'
+    tonic-prost = '0.14.2'
+    tonic-prost-build = '0.14.2'
+    tonic-web = '0.14.2'
     tracing = '0.1.41'
     tracing-opentelemetry = '0.31.0'
     tracing-subscriber = '0.3.18'
@@ -106,25 +108,25 @@
 
     [workspace.dependencies.qcs-api-client-common]
       path = 'qcs-api-client-common'
-      version = '0.17.6'
+      version = '0.18.0-dev-207.0'
 
     [workspace.dependencies.qcs-api-client-grpc]
       path = 'qcs-api-client-grpc'
-      version = '0.17.6'
+      version = '0.18.0-dev-207.0'
 
     [workspace.dependencies.qcs-api-client-grpc-internal]
       path = 'qcs-api-client-grpc-internal'
       registry = 'rigetti-cargo'
-      version = '0.18.6'
+      version = '0.19.0-dev-207.0'
 
     [workspace.dependencies.qcs-api-client-openapi]
       path = 'qcs-api-client-openapi/public'
-      version = '0.18.6'
+      version = '0.19.0-dev-207.0'
 
     [workspace.dependencies.qcs-api-client-openapi-internal]
       path = 'qcs-api-client-openapi/internal'
       registry = 'rigetti-cargo'
-      version = '0.18.6'
+      version = '0.19.0-dev-207.0'
 
     [workspace.dependencies.reqwest]
       default-features = false
@@ -176,7 +178,7 @@
 
     [workspace.dependencies.tonic]
       features = ['tls-native-roots', 'gzip']
-      version = '0.13.1'
+      version = '0.14.2'
 
     [workspace.dependencies.tower]
       features = ['retry', 'util']
