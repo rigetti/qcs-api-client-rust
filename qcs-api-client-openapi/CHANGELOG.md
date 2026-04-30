@@ -1,3 +1,10 @@
+## 0.19.0-dev-207.1 (2026-04-30)
+
+### Breaking Changes
+
+- upgrade tonic
+- upgrade OTEL and reqwest dependencies
+
 ## 0.19.0-dev-207.0 (2026-04-29)
 
 ### Breaking Changes

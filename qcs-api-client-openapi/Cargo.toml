@@ -22,7 +22,7 @@
     workspace = true
 
   [dependencies.reqwest]
-    features = ['json', 'multipart', 'rustls-tls-native-roots']
+    features = ['json', 'multipart']
     workspace = true
 
   [dependencies.reqwest-middleware]
@@ -92,4 +92,4 @@
   name = 'qcs-api-client-openapi'
   publish = true
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.19.0-dev-207.0'
+  version = '0.19.0-dev-207.1'

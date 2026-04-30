@@ -47,7 +47,7 @@ pub enum PkceLoginError {
     #[error(transparent)]
     RedirectListenerError(#[from] RedirectListenerError),
     #[error(transparent)]
-    ReqwestClient(#[from] reqwest::Error),
+    ReqwestClient(#[from] oauth2::reqwest::Error),
     #[error("Error joining redirect listener task: {0}")]
     JoinError(#[from] tokio::task::JoinError),
     #[error("The redirect response's verifier state doesn't match the expected values")]
@@ -56,7 +56,7 @@ pub enum PkceLoginError {
     RequestToken(
         #[from]
         RequestTokenError<
-            HttpClientError<reqwest::Error>,
+            HttpClientError<oauth2::reqwest::Error>,
             StandardErrorResponse<BasicErrorResponseType>,
         >,
     ),
@@ -120,7 +120,7 @@ pub(crate) async fn pkce_login(
 
     if cfg!(test) {
         // Tests are headless, and should use an oauth2 request that does not require entering credentials.
-        let client = reqwest::Client::new();
+        let client = oauth2::reqwest::Client::new();
         println!("Requesting auth URL: {auth_url}");
         client.get(auth_url).send().await?.error_for_status()?;
     } else {
@@ -140,9 +140,9 @@ pub(crate) async fn pkce_login(
         return Err(PkceLoginError::CodeChallengeMismatch);
     }
 
-    let http_client = reqwest::ClientBuilder::new()
+    let http_client = oauth2::reqwest::ClientBuilder::new()
         // Following redirects opens the client up to SSRF vulnerabilities.
-        .redirect(reqwest::redirect::Policy::none())
+        .redirect(oauth2::reqwest::redirect::Policy::none())
         .build()?;
 
     let token_result = client

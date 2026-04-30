@@ -71,7 +71,7 @@
 
   [dependencies.reqwest]
     default-features = false
-    features = ['socks', 'rustls-tls-native-roots']
+    features = ['socks']
     workspace = true
 
   [dependencies.rigetti-pyo3]
@@ -220,7 +220,7 @@
   publish = true
   readme = 'README.md'
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.18.0-dev-207.0'
+  version = '0.18.0-dev-207.1'
 
   [package.metadata]
     [package.metadata.docs]
