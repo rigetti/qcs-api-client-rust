@@ -90,8 +90,15 @@ pub enum TokenError {
     #[error("Failed to request an externally managed access token: {0}")]
     ExternallyManaged(String),
     /// Failure writing the new access token to the secrets file.
-    #[error("Failed to write the new access token to the secrets file. Setting `{SECRETS_READ_ONLY_VAR}=true` in the environment will skip persistence of newly acquired tokens. Error details: {0}")]
-    Write(#[from] WriteError),
+    #[error("Failed to write the new access token to the secrets file. Setting `{SECRETS_READ_ONLY_VAR}=true` in the environment will skip persistence of newly acquired tokens. Error details: {error}")]
+    Write {
+        /// The underlying write error.
+        error: WriteError,
+        /// The successfully refreshed OAuth session that failed to persist. The token is valid and can be used despite the write failure.
+        ///
+        /// Boxed to reduce the size of the `TokenError` enum and avoid `clippy::result_large_err` warnings.
+        oauth_session: Box<super::OAuthSession>,
+    },
     /// Failure fetching the OIDC discovery document.
     #[error("Failed to fetch the OIDC discovery document: {0}")]
     Discovery(#[from] DiscoveryError),

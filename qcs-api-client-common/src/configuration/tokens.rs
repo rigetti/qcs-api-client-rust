@@ -596,34 +596,50 @@ impl TokenDispatcher {
         let oauth_session = refresh_fn(self.lock.clone()).await?;
 
         // If the config source is a file, write the new access token to the file
-        if let ConfigSource::File {
+        let write_result = if let ConfigSource::File {
             settings_path: _,
             secrets_path,
         } = source
         {
-            if !Secrets::is_read_only(secrets_path).await? {
-                // If the payload is a PkceFlow, write the fresh refresh token if available.
-                let refresh_token = match &oauth_session.payload {
-                    OAuthGrant::PkceFlow(payload) => {
-                        payload.refresh_token.as_ref().map(|rt| &rt.refresh_token)
-                    }
-                    _ => None,
-                };
+            match Secrets::is_read_only(secrets_path).await {
+                Ok(true) => Ok(()),
+                Ok(false) => {
+                    // If the payload is a PkceFlow, write the fresh refresh token if available.
+                    let refresh_token = match &oauth_session.payload {
+                        OAuthGrant::PkceFlow(payload) => {
+                            payload.refresh_token.as_ref().map(|rt| &rt.refresh_token)
+                        }
+                        _ => None,
+                    };
 
-                let now = OffsetDateTime::now_utc();
-                Secrets::write_tokens(
-                    secrets_path,
-                    profile,
-                    refresh_token,
-                    oauth_session.access_token()?,
-                    now,
-                )
-                .await?;
+                    let now = OffsetDateTime::now_utc();
+                    Secrets::write_tokens(
+                        secrets_path,
+                        profile,
+                        refresh_token,
+                        oauth_session.access_token()?,
+                        now,
+                    )
+                    .await
+                }
+                Err(e) => Err(e),
             }
-        }
+        } else {
+            Ok(())
+        };
 
+        // Always clean up the refreshing lock, even if write failed
         *self.refreshing.lock().await = false;
         self.notify_refreshed.notify_waiters();
+
+        // If write failed, return error with the valid oauth_session
+        if let Err(error) = write_result {
+            return Err(TokenError::Write {
+                error,
+                oauth_session: Box::new(oauth_session),
+            });
+        }
+
         Ok(oauth_session)
     }
 
@@ -897,7 +913,22 @@ impl TokenRefresher for ClientConfiguration {
     }
 
     async fn refresh_access_token(&self) -> Result<SecretAccessToken, Self::Error> {
-        Ok(self.refresh().await?.access_token()?.clone())
+        match self.refresh().await {
+            Ok(session) => Ok(session.access_token()?.clone()),
+            Err(TokenError::Write {
+                error,
+                oauth_session,
+            }) => {
+                // Token refresh succeeded but persistence failed. Extract and return the access token from the error.
+                #[cfg(feature = "tracing")]
+                tracing::warn!(
+                    "Token refresh succeeded but failed to persist: {}. Returning access token from error.",
+                    error
+                );
+                Ok(oauth_session.access_token()?.clone())
+            }
+            Err(e) => Err(e),
+        }
     }
 
     async fn get_access_token(&self) -> Result<Option<SecretAccessToken>, Self::Error> {

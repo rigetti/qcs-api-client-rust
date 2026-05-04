@@ -326,9 +326,28 @@ pub async fn get_instruction_set_architecture(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -491,9 +510,28 @@ pub async fn get_quantum_processor(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -661,9 +699,28 @@ pub async fn get_quantum_processor_accessors(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -846,9 +903,28 @@ pub async fn list_instruction_set_architectures(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -1026,9 +1102,28 @@ pub async fn list_quantum_processors(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;

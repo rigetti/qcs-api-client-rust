@@ -1,3 +1,13 @@
+## 0.19.0 (2026-05-04)
+
+### Breaking Changes
+
+- upgrade tonic
+
+### Fixes
+
+- Return valid OAuthSession even if there is a WriteError
+
 ## 0.18.6 (2026-04-21)
 
 ### Fixes

@@ -971,9 +971,28 @@ pub async fn activate_user(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -1115,9 +1134,28 @@ pub async fn add_group_user(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -1259,9 +1297,28 @@ pub async fn dismiss_viewer_announcement(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -1422,9 +1479,28 @@ pub async fn get_group_balance(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -1586,9 +1662,28 @@ pub async fn get_group_billing_customer(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -1754,9 +1849,28 @@ pub async fn get_group_upcoming_billing_invoice(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -1917,9 +2031,28 @@ pub async fn get_user_balance(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -2081,9 +2214,28 @@ pub async fn get_user_billing_customer(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -2256,9 +2408,28 @@ pub async fn get_user_event_billing_price(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -2421,9 +2592,28 @@ pub async fn get_user_upcoming_billing_invoice(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -2579,9 +2769,28 @@ pub async fn get_viewer_user_onboarding_completed(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -2771,9 +2980,28 @@ pub async fn list_group_billing_invoice_lines(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -2956,9 +3184,28 @@ pub async fn list_group_billing_invoices(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -3147,9 +3394,28 @@ pub async fn list_group_upcoming_billing_invoice_lines(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -3332,9 +3598,28 @@ pub async fn list_group_users(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -3524,9 +3809,28 @@ pub async fn list_user_billing_invoice_lines(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -3709,9 +4013,28 @@ pub async fn list_user_billing_invoices(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -3894,9 +4217,28 @@ pub async fn list_user_groups(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -4085,9 +4427,28 @@ pub async fn list_user_upcoming_billing_invoice_lines(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -4273,9 +4634,28 @@ pub async fn list_viewer_announcements(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -4442,9 +4822,28 @@ pub async fn put_viewer_user_onboarding_completed(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -4590,9 +4989,28 @@ pub async fn remove_group_user(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
@@ -4759,9 +5177,28 @@ pub async fn update_viewer_user_profile(
                         StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
                     )
                 {
-                    configuration.qcs_config.refresh().await?;
-                    refreshed_credentials = true;
-                    continue;
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
                 } else if let Some(duration) = response.retry_delay {
                     tokio::time::sleep(duration).await;
                     continue;
