@@ -5,7 +5,7 @@
 
 use std::time::Duration;
 
-use http::StatusCode;
+use qcs_dependencies_client::http::StatusCode;
 
 use ::backoff::backoff::Backoff;
 pub use ::backoff::*;
@@ -37,13 +37,13 @@ pub const fn status_code_is_retry(code: StatusCode) -> bool {
 #[must_use]
 pub fn duration_from_response(
     status: StatusCode,
-    headers: &http::HeaderMap,
+    headers: &qcs_dependencies_client::http::HeaderMap,
     backoff: &mut ExponentialBackoff,
 ) -> Option<Duration> {
     use time::{format_description::well_known::Rfc2822, OffsetDateTime};
 
     if status_code_is_retry(status) {
-        if let Some(value) = headers.get(http::header::RETRY_AFTER) {
+        if let Some(value) = headers.get(qcs_dependencies_client::http::header::RETRY_AFTER) {
             if let Ok(value) = value.to_str() {
                 if let Ok(value) = value.parse::<u64>() {
                     return Some(Duration::from_secs(value));
@@ -63,7 +63,7 @@ pub fn duration_from_response(
     }
 }
 
-fn can_retry_method(method: &http::Method) -> bool {
+fn can_retry_method(method: &qcs_dependencies_client::http::Method) -> bool {
     // Safe means the method is essentially read-only (see https://datatracker.ietf.org/doc/html/rfc7231#section-4.2.1)
     // Idempotent means multiple identical requests have the same side-effects as a single one (see https://datatracker.ietf.org/doc/html/rfc7231#section-4.2.2)
 
@@ -78,8 +78,8 @@ fn can_retry_method(method: &http::Method) -> bool {
 /// it is safe to retry.
 #[must_use]
 pub fn duration_from_reqwest_error(
-    method: &http::Method,
-    error: &reqwest::Error,
+    method: &qcs_dependencies_client::http::Method,
+    error: &qcs_dependencies_client::reqwest::Error,
     backoff: &mut ExponentialBackoff,
 ) -> Option<Duration> {
     if can_retry_method(method) {
@@ -104,7 +104,7 @@ pub fn duration_from_reqwest_error(
 /// it is safe to retry.
 #[must_use]
 pub fn duration_from_io_error(
-    method: &http::Method,
+    method: &qcs_dependencies_client::http::Method,
     error: &std::io::Error,
     backoff: &mut ExponentialBackoff,
 ) -> Option<Duration> {

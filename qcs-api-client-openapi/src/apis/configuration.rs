@@ -23,20 +23,21 @@
  */
 
 use qcs_api_client_common::backoff;
-use reqwest;
+use qcs_dependencies_client::reqwest;
 #[cfg(feature = "tracing-opentelemetry")]
 use {
     qcs_api_client_common::tracing_configuration::HeaderAttributesFilter,
-    reqwest_middleware::ClientBuilder, reqwest_tracing::reqwest_otel_span,
-    reqwest_tracing::TracingMiddleware, tracing, tracing::Span,
+    qcs_dependencies_client::reqwest_middleware::ClientBuilder,
+    qcs_dependencies_client::reqwest_tracing::{reqwest_otel_span, TracingMiddleware},
+    qcs_dependencies_client::tracing::Span,
 };
 
 #[derive(Debug, Clone)]
 pub struct Configuration {
     #[cfg(not(feature = "tracing-opentelemetry"))]
-    pub client: reqwest::Client,
+    pub client: qcs_dependencies_client::reqwest::Client,
     #[cfg(feature = "tracing-opentelemetry")]
-    pub client: reqwest_middleware::ClientWithMiddleware,
+    pub client: qcs_dependencies_client::reqwest_middleware::ClientWithMiddleware,
     pub qcs_config: crate::common::ClientConfiguration,
     pub backoff: backoff::ExponentialBackoff,
 }
@@ -57,7 +58,7 @@ impl Configuration {
     }
 
     pub fn with_qcs_config(qcs_config: crate::common::ClientConfiguration) -> Configuration {
-        let client = reqwest::Client::builder()
+        let client = qcs_dependencies_client::reqwest::Client::builder()
             .user_agent(USER_AGENT)
             .build()
             .expect("failed to add User-Agent to HTTP client");
@@ -66,12 +67,12 @@ impl Configuration {
     }
 
     pub fn with_client_and_qcs_config(
-        client: reqwest::Client,
+        client: qcs_dependencies_client::reqwest::Client,
         qcs_config: crate::common::ClientConfiguration,
     ) -> Self {
         #[cfg(feature = "tracing-opentelemetry")]
         let client = {
-            use reqwest_middleware::Extension;
+            use qcs_dependencies_client::reqwest_middleware::Extension;
 
             let mut client_builder = ClientBuilder::new(client);
             if let Some(tracing_configuration) = qcs_config.tracing_configuration() {
@@ -112,7 +113,10 @@ impl std::fmt::Display for MetadataAttributeType {
 
 #[cfg(feature = "tracing-opentelemetry")]
 impl FilteredSpanBackend {
-    fn is_enabled(req: &reqwest::Request, extensions: &mut http::Extensions) -> bool {
+    fn is_enabled(
+        req: &qcs_dependencies_client::reqwest::Request,
+        extensions: &mut qcs_dependencies_client::http::Extensions,
+    ) -> bool {
         if let Some(filter) = extensions
             .get::<qcs_api_client_common::tracing_configuration::TracingConfiguration>()
             .and_then(|tracing_configuration| tracing_configuration.filter())
@@ -125,8 +129,8 @@ impl FilteredSpanBackend {
 
     fn add_header_metadata(
         span: &Span,
-        header_map: &http::HeaderMap,
-        extensions: &http::Extensions,
+        header_map: &qcs_dependencies_client::http::HeaderMap,
+        extensions: &qcs_dependencies_client::http::Extensions,
         metadata_attribute_type: MetadataAttributeType,
     ) {
         if let Some(tracing_configuration) =
@@ -136,7 +140,7 @@ impl FilteredSpanBackend {
                 .request_headers()
                 .get_header_attributes(header_map);
             for (key, value) in request_headers_to_trace {
-                tracing_opentelemetry::OpenTelemetrySpanExt::set_attribute(
+                qcs_dependencies_client::tracing_opentelemetry::OpenTelemetrySpanExt::set_attribute(
                     span,
                     format!("http.{metadata_attribute_type}.header.{key}"),
                     value,
@@ -147,17 +151,17 @@ impl FilteredSpanBackend {
 }
 
 #[cfg(feature = "tracing-opentelemetry")]
-impl reqwest_tracing::ReqwestOtelSpanBackend for FilteredSpanBackend {
+impl qcs_dependencies_client::reqwest_tracing::ReqwestOtelSpanBackend for FilteredSpanBackend {
     /// Checks the filter to verify whether an HTTP request should be traced and produces a span for the given
     /// request that conforms to OpenTelemetry semantic conventions if so. See
     /// <https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/http.md#http-client>
     /// for details about the related semantic conventions.
     fn on_request_start(
-        req: &reqwest::Request,
-        extensions: &mut http::Extensions,
-    ) -> tracing::Span {
+        req: &qcs_dependencies_client::reqwest::Request,
+        extensions: &mut qcs_dependencies_client::http::Extensions,
+    ) -> qcs_dependencies_client::tracing::Span {
         if !Self::is_enabled(req, extensions) {
-            return tracing::Span::none();
+            return qcs_dependencies_client::tracing::Span::none();
         }
         let uri = req.url().to_string();
         let http_target = req.url().path();
@@ -184,9 +188,11 @@ impl reqwest_tracing::ReqwestOtelSpanBackend for FilteredSpanBackend {
     }
 
     fn on_request_end(
-        span: &tracing::Span,
-        outcome: &reqwest_middleware::Result<reqwest::Response>,
-        extension: &mut http::Extensions,
+        span: &qcs_dependencies_client::tracing::Span,
+        outcome: &qcs_dependencies_client::reqwest_middleware::Result<
+            qcs_dependencies_client::reqwest::Response,
+        >,
+        extension: &mut qcs_dependencies_client::http::Extensions,
     ) {
         if let Ok(response) = outcome {
             Self::add_header_metadata(
@@ -197,7 +203,7 @@ impl reqwest_tracing::ReqwestOtelSpanBackend for FilteredSpanBackend {
             );
         }
 
-        reqwest_tracing::default_on_request_end(span, outcome)
+        qcs_dependencies_client::reqwest_tracing::default_on_request_end(span, outcome)
     }
 }
 
@@ -218,13 +224,13 @@ mod tests {
     fn test_tracing_enabled_no_filter() {
         use crate::apis::configuration::FilteredSpanBackend;
 
-        let request = reqwest::Request::new(
-            reqwest::Method::GET,
+        let request = qcs_dependencies_client::reqwest::Request::new(
+            qcs_dependencies_client::reqwest::Method::GET,
             "https://api.qcs.rigetti.com"
                 .parse()
                 .expect("test url should be valid"),
         );
-        let mut extensions = http::Extensions::new();
+        let mut extensions = qcs_dependencies_client::http::Extensions::new();
         assert!(FilteredSpanBackend::is_enabled(&request, &mut extensions));
     }
 
@@ -250,8 +256,11 @@ mod tests {
                 .build();
 
         let url = url.parse().expect("test url should be valid");
-        let request = reqwest::Request::new(reqwest::Method::GET, url);
-        let mut extensions = http::Extensions::new();
+        let request = qcs_dependencies_client::reqwest::Request::new(
+            qcs_dependencies_client::reqwest::Method::GET,
+            url,
+        );
+        let mut extensions = qcs_dependencies_client::http::Extensions::new();
         extensions.insert(tracing_filter.clone());
         assert_eq!(
             expected,

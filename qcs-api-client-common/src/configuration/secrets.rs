@@ -63,7 +63,7 @@ impl Secrets {
     pub fn load() -> Result<Self, LoadError> {
         let path = expand_path_from_env_or_default(SECRETS_PATH_VAR, DEFAULT_SECRETS_PATH)?;
         #[cfg(feature = "tracing")]
-        tracing::debug!("loading QCS secrets from {path:?}");
+        qcs_dependencies_client::tracing::debug!("loading QCS secrets from {path:?}");
         Self::load_from_path(&path)
     }
 
@@ -179,7 +179,7 @@ impl Secrets {
             // with other processes that may also be attempting to update the secrets file.
             let mut temp_file = TempFile::new().await?;
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "Created temporary QCS secrets file at {:?}",
                 temp_file.file_path()
             );
@@ -219,7 +219,7 @@ impl Secrets {
             // Atomically replace the original file with the temporary file.
             // Note that this will fail if the secrets file is on a different mount-point from `std::env::temp_dir()`.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "Overwriting QCS secrets file at {secrets_path:?} with temporary file at {:?}",
                 temp_file.file_path()
             );

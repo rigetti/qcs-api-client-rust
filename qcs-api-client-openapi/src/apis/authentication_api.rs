@@ -29,7 +29,7 @@ use ::qcs_api_client_common::backoff::{
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
-use reqwest::StatusCode;
+use qcs_dependencies_client::reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "clap")]
@@ -173,8 +173,10 @@ async fn auth_email_password_reset_token_inner(
         "{}/v1/auth:emailPasswordResetToken",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::POST,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -190,7 +192,7 @@ async fn auth_email_password_reset_token_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="POST",
                 "making auth_email_password_reset_token request",
@@ -218,7 +220,7 @@ async fn auth_email_password_reset_token_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -261,7 +263,7 @@ pub async fn auth_email_password_reset_token(
 ) -> Result<(), Error<AuthEmailPasswordResetTokenError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::POST;
+    let method = qcs_dependencies_client::reqwest::Method::POST;
     loop {
         let result = auth_email_password_reset_token_inner(
             configuration,
@@ -292,7 +294,7 @@ pub async fn auth_email_password_reset_token(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -340,8 +342,10 @@ async fn auth_get_user_inner(
         "{}/v1/auth:getUser",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -357,7 +361,7 @@ async fn auth_get_user_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making auth_get_user request",
@@ -385,7 +389,7 @@ async fn auth_get_user_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -443,7 +447,7 @@ pub async fn auth_get_user(
 ) -> Result<models::User, Error<AuthGetUserError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = auth_get_user_inner(configuration, &mut backoff).await;
 
@@ -469,7 +473,7 @@ pub async fn auth_get_user(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -520,8 +524,10 @@ async fn auth_reset_password_inner(
         "{}/v1/auth:resetPassword",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::POST,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -537,7 +543,7 @@ async fn auth_reset_password_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="POST",
                 "making auth_reset_password request",
@@ -565,7 +571,7 @@ async fn auth_reset_password_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -605,7 +611,7 @@ pub async fn auth_reset_password(
 ) -> Result<(), Error<AuthResetPasswordError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::POST;
+    let method = qcs_dependencies_client::reqwest::Method::POST;
     loop {
         let result = auth_reset_password_inner(
             configuration,
@@ -636,7 +642,7 @@ pub async fn auth_reset_password(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -687,8 +693,10 @@ async fn auth_reset_password_with_token_inner(
         "{}/v1/auth:resetPasswordWithToken",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::POST,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -704,7 +712,7 @@ async fn auth_reset_password_with_token_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="POST",
                 "making auth_reset_password_with_token request",
@@ -732,7 +740,7 @@ async fn auth_reset_password_with_token_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -773,7 +781,7 @@ pub async fn auth_reset_password_with_token(
 ) -> Result<(), Error<AuthResetPasswordWithTokenError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::POST;
+    let method = qcs_dependencies_client::reqwest::Method::POST;
     loop {
         let result = auth_reset_password_with_token_inner(
             configuration,
@@ -804,7 +812,7 @@ pub async fn auth_reset_password_with_token(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );

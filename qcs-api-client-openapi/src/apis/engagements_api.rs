@@ -29,7 +29,7 @@ use ::qcs_api_client_common::backoff::{
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
-use reqwest::StatusCode;
+use qcs_dependencies_client::reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "clap")]
@@ -98,8 +98,10 @@ async fn create_engagement_inner(
         "{}/v1/engagements",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::POST,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -115,7 +117,7 @@ async fn create_engagement_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="POST",
                 "making create_engagement request",
@@ -152,7 +154,7 @@ async fn create_engagement_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -215,7 +217,7 @@ pub async fn create_engagement(
 ) -> Result<models::EngagementWithCredentials, Error<CreateEngagementError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::POST;
+    let method = qcs_dependencies_client::reqwest::Method::POST;
     loop {
         let result = create_engagement_inner(
             configuration,
@@ -248,7 +250,7 @@ pub async fn create_engagement(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );

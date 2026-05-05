@@ -13,7 +13,7 @@
 // limitations under the License.
 
 //! This modules supports tracing of gRPC requests using the
-//! [`tower_http::trace::TraceLayer`]. This module customizes that functionality
+//! [`qcs_dependencies_client::tower_http::trace::TraceLayer`]. This module customizes that functionality
 //! by adhering to OpenTelemetry conventions for gRPC tracing (see
 //! <https://opentelemetry.io/docs/specs/semconv/rpc/grpc/>). Note this is the
 //! case whether the "tracing-opentelemetry" feature is enabled or not.
@@ -22,7 +22,7 @@
 //! two ways:
 //!
 //! 1. It adds additional, dynamically defined span attributes to the gRPC span
-//!    using [`tracing_opentelemetry::OpenTelemetrySpanExt::set_attribute`]. This
+//!    using [`qcs_dependencies_client::tracing_opentelemetry::OpenTelemetrySpanExt::set_attribute`]. This
 //!    is leveraged to add "rpc.grpc.{request, response}.metadata" attributes as
 //!    configured by the user.
 //! 2. It supports propagation of the OpenTelemetry context via

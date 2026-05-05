@@ -12,38 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Provides implementations of [`tower_http::trace`] traits for gRPC requests with
+//! Provides implementations of [`qcs_dependencies_client::tower_http::trace`] traits for gRPC requests with
 //! OpenTelemetry attributes. See <https://opentelemetry.io/docs/specs/semconv/rpc/grpc/>
 //! for details on the OpenTelemetry semantic conventions for gRPC.
 //!
 //! It extends the set of features provided by the base "tracing" feature in
 //! three ways:
 //!
-//! 1. The [`tower_http::trace::MakeSpan`] implementation creates a span with
-//!    the current [`opentelemetry::Context`] as the parent.
+//! 1. The [`qcs_dependencies_client::tower_http::trace::MakeSpan`] implementation creates a span with
+//!    the current [`qcs_dependencies_client::opentelemetry::Context`] as the parent.
 //! 2. It supports propagation of the OpenTelemetry context to the server via
 //!    [`opentelemetry_sdk::propagation::TraceContextPropagator`].
 //! 3. It leverages the interior mutability supported by
-//!    [`tracing_opentelemetry::OpenTelemetrySpanExt::set_attribute`] to add
+//!    [`qcs_dependencies_client::tracing_opentelemetry::OpenTelemetrySpanExt::set_attribute`] to add
 //!    "rpc.grpc.{request, response}.metadata" attributes.
 //!
 //! All of this behavior is configurable via
 //! [`qcs_api_client_common::tracing_configuration::TracingConfiguration`].
-use crate::tonic::common::get_status_code_from_headers;
-use crate::tonic::Body;
-use http::{HeaderMap, HeaderValue};
-use opentelemetry::propagation::TextMapPropagator;
-use opentelemetry::trace::FutureExt;
-use opentelemetry::trace::WithContext;
-use opentelemetry_http::HeaderInjector;
+use crate::qcs_dependencies_client::tonic::common::get_status_code_from_headers;
+use crate::qcs_dependencies_client::tonic::Body;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use qcs_api_client_common::tracing_configuration::HeaderAttributesFilter;
 use qcs_api_client_common::tracing_configuration::{
     IncludeExclude, TracingConfiguration, TracingFilter,
 };
-use tonic::client::GrpcService;
-use tracing::Span;
-use tracing_opentelemetry::OpenTelemetrySpanExt;
+use qcs_dependencies_client::http::{HeaderMap, HeaderValue};
+use qcs_dependencies_client::opentelemetry::propagation::TextMapPropagator;
+use qcs_dependencies_client::opentelemetry::trace::FutureExt;
+use qcs_dependencies_client::opentelemetry::trace::WithContext;
+use qcs_dependencies_client::opentelemetry_http::HeaderInjector;
+use qcs_dependencies_client::tonic::client::GrpcService;
+use qcs_dependencies_client::tracing::Span;
+use qcs_dependencies_client::tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use super::shared::make_grpc_request_span;
 use super::shared::should_trace_request;
@@ -63,12 +63,12 @@ impl std::fmt::Display for MetadataAttributeType {
     }
 }
 
-/// Call [`tracing_opentelemetry::OpenTelemetrySpanExt::set_attribute`] on the specified
-/// [`tracing::Span`] for each span attribute produced by
+/// Call [`qcs_dependencies_client::tracing_opentelemetry::OpenTelemetrySpanExt::set_attribute`] on the specified
+/// [`qcs_dependencies_client::tracing::Span`] for each span attribute produced by
 /// [`IncludeExclude::get_header_attributes`]. The attributes are formatted according to
 /// the OpenTelemetry semantic conventions for gRPC.
 fn set_metadata_attribute(
-    span: &tracing::Span,
+    span: &qcs_dependencies_client::tracing::Span,
     include_exclude: &IncludeExclude<String>,
     headers: &HeaderMap<HeaderValue>,
     metadata_attribute_type: MetadataAttributeType,
@@ -82,11 +82,11 @@ fn set_metadata_attribute(
     }
 }
 
-/// A [`tower_http::trace::MakeSpan`] implementation for gRPC requests.
+/// A [`qcs_dependencies_client::tower_http::trace::MakeSpan`] implementation for gRPC requests.
 ///
 /// This will set any "rpc.grpc.request.metadata" attributes configured by the user.
-/// It will also call [`tracing_opentelemetry::span_ext::OpenTelemetrySpanExt::set_parent`]
-/// with the current [`opentelemetry::Context`].
+/// It will also call [`qcs_dependencies_client::tracing_opentelemetry::span_ext::OpenTelemetrySpanExt::set_parent`]
+/// with the current [`qcs_dependencies_client::opentelemetry::Context`].
 #[derive(Clone, Debug)]
 pub struct MakeSpan {
     enabled: bool,
@@ -95,13 +95,16 @@ pub struct MakeSpan {
     base_url: String,
 }
 
-impl<B> tower_http::trace::MakeSpan<B> for MakeSpan {
-    fn make_span(&mut self, request: &http::Request<B>) -> tracing::Span {
+impl<B> qcs_dependencies_client::tower_http::trace::MakeSpan<B> for MakeSpan {
+    fn make_span(
+        &mut self,
+        request: &qcs_dependencies_client::http::Request<B>,
+    ) -> qcs_dependencies_client::tracing::Span {
         if self.enabled
             && should_trace_request(self.base_url.as_str(), request, self.filter.as_ref())
         {
             let span = make_grpc_request_span(request);
-            let _ = span.set_parent(opentelemetry::Context::current());
+            let _ = span.set_parent(qcs_dependencies_client::opentelemetry::Context::current());
 
             set_metadata_attribute(
                 &span,
@@ -111,29 +114,29 @@ impl<B> tower_http::trace::MakeSpan<B> for MakeSpan {
             );
             span
         } else {
-            tracing::Span::none()
+            qcs_dependencies_client::tracing::Span::none()
         }
     }
 }
 
-/// A [`tower_http::trace::OnEos`] implementation for gRPC requests.
+/// A [`qcs_dependencies_client::tower_http::trace::OnEos`] implementation for gRPC requests.
 ///
 /// This will set the "rpc.grpc.status_code" and "rpc.grpc.response.metadata" attributes
 /// configured by the user if trailers are present.
 #[derive(Clone, Debug)]
 pub struct OnEos {
     response_headers: IncludeExclude<String>,
-    inner: tower_http::trace::DefaultOnEos,
+    inner: qcs_dependencies_client::tower_http::trace::DefaultOnEos,
 }
 
-impl tower_http::trace::OnEos for OnEos {
+impl qcs_dependencies_client::tower_http::trace::OnEos for OnEos {
     fn on_eos(
         self,
         trailers: Option<&HeaderMap>,
         stream_duration: std::time::Duration,
         span: &Span,
     ) {
-        use tracing_opentelemetry::OpenTelemetrySpanExt;
+        use qcs_dependencies_client::tracing_opentelemetry::OpenTelemetrySpanExt;
 
         if let Some(trailers) = trailers {
             if let Ok(status_code) = get_status_code_from_headers(trailers) {
@@ -150,26 +153,31 @@ impl tower_http::trace::OnEos for OnEos {
     }
 }
 
-/// A [`tower_http::trace::OnResponse`] implementation for gRPC requests.
+/// A [`qcs_dependencies_client::tower_http::trace::OnResponse`] implementation for gRPC requests.
 ///
 /// This will set any "rpc.grpc.response.metadata" attributes configured by the user.
 #[derive(Clone, Debug)]
 pub struct OnResponse {
     response_headers: IncludeExclude<String>,
-    inner: tower_http::trace::DefaultOnResponse,
+    inner: qcs_dependencies_client::tower_http::trace::DefaultOnResponse,
 }
 
 impl Default for OnResponse {
     fn default() -> Self {
         Self {
             response_headers: IncludeExclude::include_none(),
-            inner: tower_http::trace::DefaultOnResponse::default(),
+            inner: qcs_dependencies_client::tower_http::trace::DefaultOnResponse::default(),
         }
     }
 }
 
-impl<B> tower_http::trace::OnResponse<B> for OnResponse {
-    fn on_response(self, response: &http::Response<B>, latency: std::time::Duration, span: &Span) {
+impl<B> qcs_dependencies_client::tower_http::trace::OnResponse<B> for OnResponse {
+    fn on_response(
+        self,
+        response: &qcs_dependencies_client::http::Response<B>,
+        latency: std::time::Duration,
+        span: &Span,
+    ) {
         set_metadata_attribute(
             span,
             &self.response_headers,
@@ -180,30 +188,34 @@ impl<B> tower_http::trace::OnResponse<B> for OnResponse {
     }
 }
 
-type BaseTraceLayer = tower_http::trace::TraceLayer<
-    tower_http::classify::SharedClassifier<tower_http::classify::GrpcErrorsAsFailures>,
+type BaseTraceLayer = qcs_dependencies_client::tower_http::trace::TraceLayer<
+    qcs_dependencies_client::tower_http::classify::SharedClassifier<
+        qcs_dependencies_client::tower_http::classify::GrpcErrorsAsFailures,
+    >,
     MakeSpan,
-    tower_http::trace::DefaultOnRequest,
+    qcs_dependencies_client::tower_http::trace::DefaultOnRequest,
     OnResponse,
-    tower_http::trace::DefaultOnBodyChunk,
+    qcs_dependencies_client::tower_http::trace::DefaultOnBodyChunk,
     OnEos,
     super::shared::OnFailure,
 >;
 
-type BaseTraceService = tower_http::trace::Trace<
-    tonic::transport::Channel,
-    tower_http::classify::SharedClassifier<tower_http::classify::GrpcErrorsAsFailures>,
+type BaseTraceService = qcs_dependencies_client::tower_http::trace::Trace<
+    qcs_dependencies_client::tonic::transport::Channel,
+    qcs_dependencies_client::tower_http::classify::SharedClassifier<
+        qcs_dependencies_client::tower_http::classify::GrpcErrorsAsFailures,
+    >,
     MakeSpan,
-    tower_http::trace::DefaultOnRequest,
+    qcs_dependencies_client::tower_http::trace::DefaultOnRequest,
     OnResponse,
-    tower_http::trace::DefaultOnBodyChunk,
+    qcs_dependencies_client::tower_http::trace::DefaultOnBodyChunk,
     OnEos,
     super::shared::OnFailure,
 >;
 
 /// An implementation of [`GrpcService`] that propagates the OpenTelemetry context
 /// via the [`TraceContextPropagator`]. It additionally extends the base
-/// [`tower_http::trace::Trace`] implementation to include gRPC span attributes.
+/// [`qcs_dependencies_client::tower_http::trace::Trace`] implementation to include gRPC span attributes.
 #[derive(Clone)]
 pub struct CustomTraceService {
     propagate_trace_id: bool,
@@ -250,20 +262,23 @@ impl GrpcService<Body> for CustomTraceService {
         GrpcService::poll_ready(&mut self.inner, cx)
     }
 
-    fn call(&mut self, mut request: http::Request<Body>) -> Self::Future {
+    fn call(&mut self, mut request: qcs_dependencies_client::http::Request<Body>) -> Self::Future {
         if self.propagate_trace_id
             && should_trace_request(self.base_url.as_str(), &request, self.filter.as_ref())
         {
             let propagator = TraceContextPropagator::new();
             let mut injector = HeaderInjector(request.headers_mut());
-            propagator.inject_context(&opentelemetry::Context::current(), &mut injector);
+            propagator.inject_context(
+                &qcs_dependencies_client::opentelemetry::Context::current(),
+                &mut injector,
+            );
         }
 
         self.inner.call(request).with_current_context()
     }
 }
 
-/// A [`tower::Layer`] implementation for gRPC requests with OpenTelemetry attributes
+/// A [`qcs_dependencies_client::tower::Layer`] implementation for gRPC requests with OpenTelemetry attributes
 /// and propagate the OpenTelemetry context if configured by the user.
 #[derive(Debug, Clone)]
 pub struct CustomTraceLayer {
@@ -299,10 +314,12 @@ impl CustomTraceLayer {
     }
 }
 
-impl tower::Layer<tonic::transport::Channel> for CustomTraceLayer {
+impl qcs_dependencies_client::tower::Layer<qcs_dependencies_client::tonic::transport::Channel>
+    for CustomTraceLayer
+{
     type Service = CustomTraceService;
 
-    fn layer(&self, inner: tonic::transport::Channel) -> Self::Service {
+    fn layer(&self, inner: qcs_dependencies_client::tonic::transport::Channel) -> Self::Service {
         let traced_channel = self.base_trace_layer.layer(inner);
         CustomTraceService::new(
             self.propagate_trace_id,
@@ -318,9 +335,9 @@ fn build_base_trace_layer(
     base_url: String,
     configuration: Option<&TracingConfiguration>,
 ) -> BaseTraceLayer {
-    tower_http::trace::TraceLayer::new_for_grpc()
+    qcs_dependencies_client::tower_http::trace::TraceLayer::new_for_grpc()
         .on_eos(OnEos {
-            inner: tower_http::trace::DefaultOnEos::default(),
+            inner: qcs_dependencies_client::tower_http::trace::DefaultOnEos::default(),
             response_headers: configuration
                 .as_ref()
                 .map(|configuration| configuration.response_headers().clone())
@@ -339,10 +356,10 @@ fn build_base_trace_layer(
             base_url: base_url.clone(),
         })
         .on_failure(super::shared::OnFailure {
-            inner: tower_http::trace::DefaultOnFailure::default(),
+            inner: qcs_dependencies_client::tower_http::trace::DefaultOnFailure::default(),
         })
         .on_response(OnResponse {
-            inner: tower_http::trace::DefaultOnResponse::default(),
+            inner: qcs_dependencies_client::tower_http::trace::DefaultOnResponse::default(),
             response_headers: configuration
                 .as_ref()
                 .map(|configuration| configuration.response_headers().clone())

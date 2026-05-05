@@ -28,7 +28,7 @@ impl serde::Serialize for BinaryDataValue {
         if !self.data.is_empty() {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field("data", pbjson::private::base64::encode(&self.data).as_str())?;
+            struct_ser.serialize_field("data", qcs_dependencies_client::pbjson::private::base64::encode(&self.data).as_str())?;
         }
         struct_ser.end()
     }
@@ -95,7 +95,7 @@ impl<'de> serde::Deserialize<'de> for BinaryDataValue {
                                 return Err(serde::de::Error::duplicate_field("data"));
                             }
                             data__ = 
-                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::qcs_dependencies_client::pbjson::private::BytesDeserialize<_>>()?.0)
                             ;
                         }
                     }
@@ -198,7 +198,7 @@ impl<'de> serde::Deserialize<'de> for Complex64 {
                                 return Err(serde::de::Error::duplicate_field("real"));
                             }
                             real__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::qcs_dependencies_client::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
                         GeneratedField::Imaginary => {
@@ -206,7 +206,7 @@ impl<'de> serde::Deserialize<'de> for Complex64 {
                                 return Err(serde::de::Error::duplicate_field("imaginary"));
                             }
                             imaginary__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::qcs_dependencies_client::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
                     }
@@ -467,7 +467,7 @@ impl<'de> serde::Deserialize<'de> for ControllerJobExecutionResult {
                                 return Err(serde::de::Error::duplicate_field("executionDurationMicroseconds"));
                             }
                             execution_duration_microseconds__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::qcs_dependencies_client::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
                     }
@@ -704,7 +704,7 @@ impl serde::Serialize for EncryptedControllerJob {
         if !self.job.is_empty() {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field("job", pbjson::private::base64::encode(&self.job).as_str())?;
+            struct_ser.serialize_field("job", qcs_dependencies_client::pbjson::private::base64::encode(&self.job).as_str())?;
         }
         if let Some(v) = self.encryption.as_ref() {
             struct_ser.serialize_field("encryption", v)?;
@@ -778,7 +778,7 @@ impl<'de> serde::Deserialize<'de> for EncryptedControllerJob {
                                 return Err(serde::de::Error::duplicate_field("job"));
                             }
                             job__ = 
-                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::qcs_dependencies_client::pbjson::private::BytesDeserialize<_>>()?.0)
                             ;
                         }
                         GeneratedField::Encryption => {
@@ -878,7 +878,7 @@ impl<'de> serde::Deserialize<'de> for IntegerDataValue {
                                 return Err(serde::de::Error::duplicate_field("data"));
                             }
                             data__ = 
-                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                Some(map_.next_value::<Vec<::qcs_dependencies_client::pbjson::private::NumberDeserialize<_>>>()?
                                     .into_iter().map(|x| x.0).collect())
                             ;
                         }
@@ -972,7 +972,7 @@ impl<'de> serde::Deserialize<'de> for IntegerReadoutValues {
                                 return Err(serde::de::Error::duplicate_field("values"));
                             }
                             values__ = 
-                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                Some(map_.next_value::<Vec<::qcs_dependencies_client::pbjson::private::NumberDeserialize<_>>>()?
                                     .into_iter().map(|x| x.0).collect())
                             ;
                         }
@@ -1007,7 +1007,7 @@ impl serde::Serialize for JobEncryption {
         if !self.nonce.is_empty() {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field("nonce", pbjson::private::base64::encode(&self.nonce).as_str())?;
+            struct_ser.serialize_field("nonce", qcs_dependencies_client::pbjson::private::base64::encode(&self.nonce).as_str())?;
         }
         struct_ser.end()
     }
@@ -1085,7 +1085,7 @@ impl<'de> serde::Deserialize<'de> for JobEncryption {
                                 return Err(serde::de::Error::duplicate_field("nonce"));
                             }
                             nonce__ = 
-                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::qcs_dependencies_client::pbjson::private::BytesDeserialize<_>>()?.0)
                             ;
                         }
                     }
@@ -1384,7 +1384,7 @@ impl<'de> serde::Deserialize<'de> for RealDataValue {
                                 return Err(serde::de::Error::duplicate_field("data"));
                             }
                             data__ = 
-                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                Some(map_.next_value::<Vec<::qcs_dependencies_client::pbjson::private::NumberDeserialize<_>>>()?
                                     .into_iter().map(|x| x.0).collect())
                             ;
                         }

@@ -17,15 +17,21 @@
 /// A request to execute multiple ControllerJobs as if they were sent as separate requests.
 /// Note that the job execution IDs will be returned in the same order as the requests,
 /// but execution itself may occur out of that order depending on executor configuration.
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct BatchExecuteControllerJobsRequest {
     #[prost(message, repeated, tag = "1")]
-    pub requests: ::prost::alloc::vec::Vec<ExecuteControllerJobRequest>,
+    pub requests: ::qcs_dependencies_client::prost::alloc::vec::Vec<
+        ExecuteControllerJobRequest,
+    >,
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct BatchExecuteControllerJobsResponse {
     #[prost(message, repeated, tag = "1")]
-    pub responses: ::prost::alloc::vec::Vec<ExecuteControllerJobResponse>,
+    pub responses: ::qcs_dependencies_client::prost::alloc::vec::Vec<
+        ExecuteControllerJobResponse,
+    >,
 }
 /// A request to execute a given ControllerJob on a specific target with one or more configurations.
 ///
@@ -35,14 +41,15 @@ pub struct BatchExecuteControllerJobsResponse {
 /// order of the given configurations is not guaranteed. If there is a failure to queue any of the jobs,
 /// then none will be queued. A request must have at least one configuration, otherwise an error will be
 /// returned.
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct ExecuteControllerJobRequest {
     /// One or more configurations against which to execute the provided job.
     ///
     /// The response will include one `job_execution_id` for each entry in this list,
     /// each corresponding to its configuration in the same order.
     #[prost(message, repeated, tag = "3")]
-    pub execution_configurations: ::prost::alloc::vec::Vec<
+    pub execution_configurations: ::qcs_dependencies_client::prost::alloc::vec::Vec<
         super::super::models::controller::JobExecutionConfiguration,
     >,
     #[prost(message, optional, tag = "4")]
@@ -56,22 +63,25 @@ pub struct ExecuteControllerJobRequest {
 /// Nested message and enum types in `ExecuteControllerJobRequest`.
 pub mod execute_controller_job_request {
     #[derive(serde::Deserialize)]
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Oneof)]
+    #[derive(Clone, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Oneof)]
+    #[prost(prost_path = "::qcs_dependencies_client::prost")]
     pub enum Job {
         #[prost(message, tag = "201")]
         Encrypted(super::super::super::models::controller::EncryptedControllerJob),
     }
     /// Required by the gateway to forward requests to the correct execution host.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Oneof)]
+    #[derive(Clone, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Oneof)]
+    #[prost(prost_path = "::qcs_dependencies_client::prost")]
     pub enum Target {
         #[prost(string, tag = "101")]
-        QuantumProcessorId(::prost::alloc::string::String),
+        QuantumProcessorId(::qcs_dependencies_client::prost::alloc::string::String),
         #[prost(string, tag = "102")]
-        EndpointId(::prost::alloc::string::String),
+        EndpointId(::qcs_dependencies_client::prost::alloc::string::String),
     }
 }
 /// Options specified on execution requests describing any features or processes requested before or after job execution.
-#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct ExecutionOptions {
     /// If jobs contain settings that would cause managed settings to change values,
     /// that job will be rejected unless this field is set to true and the submitter has the appropriate authorization.
@@ -86,19 +96,23 @@ pub struct ExecutionOptions {
     ///
     /// The service may also enforce a maximum value for this field.
     #[prost(message, optional, tag = "4")]
-    pub timeout: ::core::option::Option<::pbjson_types::Duration>,
+    pub timeout: ::core::option::Option<qcs_dependencies_client::pbjson_types::Duration>,
 }
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct ExecuteControllerJobResponse {
     /// One execution ID per input JobExecutionConfiguration, in the same order as the input.
     #[prost(string, repeated, tag = "1")]
-    pub job_execution_ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    pub job_execution_ids: ::qcs_dependencies_client::prost::alloc::vec::Vec<
+        ::qcs_dependencies_client::prost::alloc::string::String,
+    >,
 }
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct GetControllerJobResultsRequest {
     /// Which Controller Job execution to query for results
     #[prost(string, tag = "1")]
-    pub job_execution_id: ::prost::alloc::string::String,
+    pub job_execution_id: ::qcs_dependencies_client::prost::alloc::string::String,
     /// Required by the gateway to forward requests to the correct execution host.
     #[prost(oneof = "get_controller_job_results_request::Target", tags = "101, 102")]
     pub target: ::core::option::Option<get_controller_job_results_request::Target>,
@@ -106,15 +120,17 @@ pub struct GetControllerJobResultsRequest {
 /// Nested message and enum types in `GetControllerJobResultsRequest`.
 pub mod get_controller_job_results_request {
     /// Required by the gateway to forward requests to the correct execution host.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Oneof)]
+    #[derive(Clone, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Oneof)]
+    #[prost(prost_path = "::qcs_dependencies_client::prost")]
     pub enum Target {
         #[prost(string, tag = "101")]
-        QuantumProcessorId(::prost::alloc::string::String),
+        QuantumProcessorId(::qcs_dependencies_client::prost::alloc::string::String),
         #[prost(string, tag = "102")]
-        EndpointId(::prost::alloc::string::String),
+        EndpointId(::qcs_dependencies_client::prost::alloc::string::String),
     }
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct GetControllerJobResultsResponse {
     #[prost(message, optional, tag = "1")]
     pub result: ::core::option::Option<
@@ -129,10 +145,13 @@ pub struct GetControllerJobResultsResponse {
 /// Success response indicates only that the request was received. Cancellation
 /// is not guaranteed, as it is based on job state at time of cancellation, and is
 /// completed on a best-effort basis.
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct CancelControllerJobsRequest {
     #[prost(string, repeated, tag = "1")]
-    pub job_ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    pub job_ids: ::qcs_dependencies_client::prost::alloc::vec::Vec<
+        ::qcs_dependencies_client::prost::alloc::string::String,
+    >,
     /// Required by ConServ gateway to forward requests to the correct rackhost.
     #[prost(oneof = "cancel_controller_jobs_request::Target", tags = "101, 102")]
     pub target: ::core::option::Option<cancel_controller_jobs_request::Target>,
@@ -140,20 +159,23 @@ pub struct CancelControllerJobsRequest {
 /// Nested message and enum types in `CancelControllerJobsRequest`.
 pub mod cancel_controller_jobs_request {
     /// Required by ConServ gateway to forward requests to the correct rackhost.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Oneof)]
+    #[derive(Clone, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Oneof)]
+    #[prost(prost_path = "::qcs_dependencies_client::prost")]
     pub enum Target {
         #[prost(string, tag = "101")]
-        QuantumProcessorId(::prost::alloc::string::String),
+        QuantumProcessorId(::qcs_dependencies_client::prost::alloc::string::String),
         #[prost(string, tag = "102")]
-        EndpointId(::prost::alloc::string::String),
+        EndpointId(::qcs_dependencies_client::prost::alloc::string::String),
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct CancelControllerJobsResponse {}
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct GetControllerJobStatusRequest {
     #[prost(string, tag = "1")]
-    pub job_id: ::prost::alloc::string::String,
+    pub job_id: ::qcs_dependencies_client::prost::alloc::string::String,
     /// Required by ConServ gateway to forward requests to the correct rackhost.
     #[prost(oneof = "get_controller_job_status_request::Target", tags = "101, 102")]
     pub target: ::core::option::Option<get_controller_job_status_request::Target>,
@@ -161,15 +183,17 @@ pub struct GetControllerJobStatusRequest {
 /// Nested message and enum types in `GetControllerJobStatusRequest`.
 pub mod get_controller_job_status_request {
     /// Required by ConServ gateway to forward requests to the correct rackhost.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Oneof)]
+    #[derive(Clone, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Oneof)]
+    #[prost(prost_path = "::qcs_dependencies_client::prost")]
     pub enum Target {
         #[prost(string, tag = "101")]
-        QuantumProcessorId(::prost::alloc::string::String),
+        QuantumProcessorId(::qcs_dependencies_client::prost::alloc::string::String),
         #[prost(string, tag = "102")]
-        EndpointId(::prost::alloc::string::String),
+        EndpointId(::qcs_dependencies_client::prost::alloc::string::String),
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct GetControllerJobStatusResponse {
     #[prost(enumeration = "get_controller_job_status_response::Status", tag = "1")]
     pub status: i32,
@@ -195,8 +219,9 @@ pub mod get_controller_job_status_response {
         Hash,
         PartialOrd,
         Ord,
-        ::prost::Enumeration
+        ::qcs_dependencies_client::prost::Enumeration
     )]
+    #[prost(prost_path = "::qcs_dependencies_client::prost")]
     #[repr(i32)]
     pub enum Status {
         Unknown = 0,
@@ -240,19 +265,20 @@ pub mod get_controller_job_status_response {
 }
 /// An estimation of the delay before a specific event, such as when a queued job
 /// is expected to be dequeued and run.
-#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::qcs_dependencies_client::prost::Message)]
+#[prost(prost_path = "::qcs_dependencies_client::prost")]
 pub struct EstimatedDelay {
     /// Our most optimistic estimate of the delay before the event (will always be the lowest duration in
     /// this message)
     #[prost(message, optional, tag = "1")]
-    pub minimum: ::core::option::Option<::pbjson_types::Duration>,
+    pub minimum: ::core::option::Option<qcs_dependencies_client::pbjson_types::Duration>,
     /// Our most pessimistic estimate of the delay (will always be the highest duration in this
     /// message)
     #[prost(message, optional, tag = "2")]
-    pub maximum: ::core::option::Option<::pbjson_types::Duration>,
+    pub maximum: ::core::option::Option<qcs_dependencies_client::pbjson_types::Duration>,
     /// When these estimates were calculated
     #[prost(message, optional, tag = "3")]
-    pub now: ::core::option::Option<::pbjson_types::Timestamp>,
+    pub now: ::core::option::Option<qcs_dependencies_client::pbjson_types::Timestamp>,
 }
 /// Generated client implementations.
 pub mod controller_client {
@@ -263,36 +289,36 @@ pub mod controller_client {
         clippy::wildcard_imports,
         clippy::let_unit_value,
     )]
-    use tonic::codegen::*;
-    use tonic::codegen::http::Uri;
+    use qcs_dependencies_client::tonic::codegen::*;
+    use qcs_dependencies_client::tonic::codegen::http::Uri;
     #[derive(Debug, Clone)]
     pub struct ControllerClient<T> {
-        inner: tonic::client::Grpc<T>,
+        inner: qcs_dependencies_client::tonic::client::Grpc<T>,
     }
-    impl ControllerClient<tonic::transport::Channel> {
+    impl ControllerClient<qcs_dependencies_client::tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
-        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
+        pub async fn connect<D>(dst: D) -> Result<Self, qcs_dependencies_client::tonic::transport::Error>
         where
-            D: TryInto<tonic::transport::Endpoint>,
+            D: TryInto<qcs_dependencies_client::tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
-            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
+            let conn = qcs_dependencies_client::tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
     impl<T> ControllerClient<T>
     where
-        T: tonic::client::GrpcService<tonic::body::Body>,
+        T: qcs_dependencies_client::tonic::client::GrpcService<qcs_dependencies_client::tonic::body::Body>,
         T::Error: Into<StdError>,
         T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
         <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
     {
         pub fn new(inner: T) -> Self {
-            let inner = tonic::client::Grpc::new(inner);
+            let inner = qcs_dependencies_client::tonic::client::Grpc::new(inner);
             Self { inner }
         }
         pub fn with_origin(inner: T, origin: Uri) -> Self {
-            let inner = tonic::client::Grpc::with_origin(inner, origin);
+            let inner = qcs_dependencies_client::tonic::client::Grpc::with_origin(inner, origin);
             Self { inner }
         }
         pub fn with_interceptor<F>(
@@ -300,16 +326,16 @@ pub mod controller_client {
             interceptor: F,
         ) -> ControllerClient<InterceptedService<T, F>>
         where
-            F: tonic::service::Interceptor,
+            F: qcs_dependencies_client::tonic::service::Interceptor,
             T::ResponseBody: Default,
-            T: tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
+            T: qcs_dependencies_client::tonic::codegen::Service<
+                http::Request<qcs_dependencies_client::tonic::body::Body>,
                 Response = http::Response<
-                    <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    <T as qcs_dependencies_client::tonic::client::GrpcService<qcs_dependencies_client::tonic::body::Body>>::ResponseBody,
                 >,
             >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
+            <T as qcs_dependencies_client::tonic::codegen::Service<
+                http::Request<qcs_dependencies_client::tonic::body::Body>,
             >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             ControllerClient::new(InterceptedService::new(inner, interceptor))
@@ -347,20 +373,20 @@ pub mod controller_client {
         }
         pub async fn execute_controller_job(
             &mut self,
-            request: impl tonic::IntoRequest<super::ExecuteControllerJobRequest>,
+            request: impl qcs_dependencies_client::tonic::IntoRequest<super::ExecuteControllerJobRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::ExecuteControllerJobResponse>,
-            tonic::Status,
+            qcs_dependencies_client::tonic::Response<super::ExecuteControllerJobResponse>,
+            qcs_dependencies_client::tonic::Status,
         > {
             self.inner
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    qcs_dependencies_client::tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
-            let codec = tonic_prost::ProstCodec::default();
+            let codec = qcs_dependencies_client::tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/services.controller.Controller/ExecuteControllerJob",
             );
@@ -376,20 +402,20 @@ pub mod controller_client {
         }
         pub async fn batch_execute_controller_jobs(
             &mut self,
-            request: impl tonic::IntoRequest<super::BatchExecuteControllerJobsRequest>,
+            request: impl qcs_dependencies_client::tonic::IntoRequest<super::BatchExecuteControllerJobsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::BatchExecuteControllerJobsResponse>,
-            tonic::Status,
+            qcs_dependencies_client::tonic::Response<super::BatchExecuteControllerJobsResponse>,
+            qcs_dependencies_client::tonic::Status,
         > {
             self.inner
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    qcs_dependencies_client::tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
-            let codec = tonic_prost::ProstCodec::default();
+            let codec = qcs_dependencies_client::tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/services.controller.Controller/BatchExecuteControllerJobs",
             );
@@ -405,20 +431,20 @@ pub mod controller_client {
         }
         pub async fn get_controller_job_results(
             &mut self,
-            request: impl tonic::IntoRequest<super::GetControllerJobResultsRequest>,
+            request: impl qcs_dependencies_client::tonic::IntoRequest<super::GetControllerJobResultsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::GetControllerJobResultsResponse>,
-            tonic::Status,
+            qcs_dependencies_client::tonic::Response<super::GetControllerJobResultsResponse>,
+            qcs_dependencies_client::tonic::Status,
         > {
             self.inner
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    qcs_dependencies_client::tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
-            let codec = tonic_prost::ProstCodec::default();
+            let codec = qcs_dependencies_client::tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/services.controller.Controller/GetControllerJobResults",
             );
@@ -434,20 +460,20 @@ pub mod controller_client {
         }
         pub async fn cancel_controller_jobs(
             &mut self,
-            request: impl tonic::IntoRequest<super::CancelControllerJobsRequest>,
+            request: impl qcs_dependencies_client::tonic::IntoRequest<super::CancelControllerJobsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::CancelControllerJobsResponse>,
-            tonic::Status,
+            qcs_dependencies_client::tonic::Response<super::CancelControllerJobsResponse>,
+            qcs_dependencies_client::tonic::Status,
         > {
             self.inner
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    qcs_dependencies_client::tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
-            let codec = tonic_prost::ProstCodec::default();
+            let codec = qcs_dependencies_client::tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/services.controller.Controller/CancelControllerJobs",
             );
@@ -463,20 +489,20 @@ pub mod controller_client {
         }
         pub async fn get_controller_job_status(
             &mut self,
-            request: impl tonic::IntoRequest<super::GetControllerJobStatusRequest>,
+            request: impl qcs_dependencies_client::tonic::IntoRequest<super::GetControllerJobStatusRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::GetControllerJobStatusResponse>,
-            tonic::Status,
+            qcs_dependencies_client::tonic::Response<super::GetControllerJobStatusResponse>,
+            qcs_dependencies_client::tonic::Status,
         > {
             self.inner
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    qcs_dependencies_client::tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
-            let codec = tonic_prost::ProstCodec::default();
+            let codec = qcs_dependencies_client::tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/services.controller.Controller/GetControllerJobStatus",
             );
@@ -502,44 +528,44 @@ pub mod controller_server {
         clippy::wildcard_imports,
         clippy::let_unit_value,
     )]
-    use tonic::codegen::*;
+    use qcs_dependencies_client::tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with ControllerServer.
     #[async_trait]
     pub trait Controller: std::marker::Send + std::marker::Sync + 'static {
         async fn execute_controller_job(
             &self,
-            request: tonic::Request<super::ExecuteControllerJobRequest>,
+            request: qcs_dependencies_client::tonic::Request<super::ExecuteControllerJobRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::ExecuteControllerJobResponse>,
-            tonic::Status,
+            qcs_dependencies_client::tonic::Response<super::ExecuteControllerJobResponse>,
+            qcs_dependencies_client::tonic::Status,
         >;
         async fn batch_execute_controller_jobs(
             &self,
-            request: tonic::Request<super::BatchExecuteControllerJobsRequest>,
+            request: qcs_dependencies_client::tonic::Request<super::BatchExecuteControllerJobsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::BatchExecuteControllerJobsResponse>,
-            tonic::Status,
+            qcs_dependencies_client::tonic::Response<super::BatchExecuteControllerJobsResponse>,
+            qcs_dependencies_client::tonic::Status,
         >;
         async fn get_controller_job_results(
             &self,
-            request: tonic::Request<super::GetControllerJobResultsRequest>,
+            request: qcs_dependencies_client::tonic::Request<super::GetControllerJobResultsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::GetControllerJobResultsResponse>,
-            tonic::Status,
+            qcs_dependencies_client::tonic::Response<super::GetControllerJobResultsResponse>,
+            qcs_dependencies_client::tonic::Status,
         >;
         async fn cancel_controller_jobs(
             &self,
-            request: tonic::Request<super::CancelControllerJobsRequest>,
+            request: qcs_dependencies_client::tonic::Request<super::CancelControllerJobsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::CancelControllerJobsResponse>,
-            tonic::Status,
+            qcs_dependencies_client::tonic::Response<super::CancelControllerJobsResponse>,
+            qcs_dependencies_client::tonic::Status,
         >;
         async fn get_controller_job_status(
             &self,
-            request: tonic::Request<super::GetControllerJobStatusRequest>,
+            request: qcs_dependencies_client::tonic::Request<super::GetControllerJobStatusRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::GetControllerJobStatusResponse>,
-            tonic::Status,
+            qcs_dependencies_client::tonic::Response<super::GetControllerJobStatusResponse>,
+            qcs_dependencies_client::tonic::Status,
         >;
     }
     #[derive(Debug)]
@@ -568,7 +594,7 @@ pub mod controller_server {
             interceptor: F,
         ) -> InterceptedService<Self, F>
         where
-            F: tonic::service::Interceptor,
+            F: qcs_dependencies_client::tonic::service::Interceptor,
         {
             InterceptedService::new(Self::new(inner), interceptor)
         }
@@ -601,13 +627,13 @@ pub mod controller_server {
             self
         }
     }
-    impl<T, B> tonic::codegen::Service<http::Request<B>> for ControllerServer<T>
+    impl<T, B> qcs_dependencies_client::tonic::codegen::Service<http::Request<B>> for ControllerServer<T>
     where
         T: Controller,
         B: Body + std::marker::Send + 'static,
         B::Error: Into<StdError> + std::marker::Send + 'static,
     {
-        type Response = http::Response<tonic::body::Body>;
+        type Response = http::Response<qcs_dependencies_client::tonic::body::Body>;
         type Error = std::convert::Infallible;
         type Future = BoxFuture<Self::Response, Self::Error>;
         fn poll_ready(
@@ -623,16 +649,16 @@ pub mod controller_server {
                     struct ExecuteControllerJobSvc<T: Controller>(pub Arc<T>);
                     impl<
                         T: Controller,
-                    > tonic::server::UnaryService<super::ExecuteControllerJobRequest>
+                    > qcs_dependencies_client::tonic::server::UnaryService<super::ExecuteControllerJobRequest>
                     for ExecuteControllerJobSvc<T> {
                         type Response = super::ExecuteControllerJobResponse;
                         type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
+                            qcs_dependencies_client::tonic::Response<Self::Response>,
+                            qcs_dependencies_client::tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::ExecuteControllerJobRequest>,
+                            request: qcs_dependencies_client::tonic::Request<super::ExecuteControllerJobRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
@@ -649,8 +675,8 @@ pub mod controller_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = ExecuteControllerJobSvc(inner);
-                        let codec = tonic_prost::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
+                        let codec = qcs_dependencies_client::tonic_prost::ProstCodec::default();
+                        let mut grpc = qcs_dependencies_client::tonic::server::Grpc::new(codec)
                             .apply_compression_config(
                                 accept_compression_encodings,
                                 send_compression_encodings,
@@ -669,17 +695,17 @@ pub mod controller_server {
                     struct BatchExecuteControllerJobsSvc<T: Controller>(pub Arc<T>);
                     impl<
                         T: Controller,
-                    > tonic::server::UnaryService<
+                    > qcs_dependencies_client::tonic::server::UnaryService<
                         super::BatchExecuteControllerJobsRequest,
                     > for BatchExecuteControllerJobsSvc<T> {
                         type Response = super::BatchExecuteControllerJobsResponse;
                         type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
+                            qcs_dependencies_client::tonic::Response<Self::Response>,
+                            qcs_dependencies_client::tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
+                            request: qcs_dependencies_client::tonic::Request<
                                 super::BatchExecuteControllerJobsRequest,
                             >,
                         ) -> Self::Future {
@@ -701,8 +727,8 @@ pub mod controller_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = BatchExecuteControllerJobsSvc(inner);
-                        let codec = tonic_prost::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
+                        let codec = qcs_dependencies_client::tonic_prost::ProstCodec::default();
+                        let mut grpc = qcs_dependencies_client::tonic::server::Grpc::new(codec)
                             .apply_compression_config(
                                 accept_compression_encodings,
                                 send_compression_encodings,
@@ -721,16 +747,16 @@ pub mod controller_server {
                     struct GetControllerJobResultsSvc<T: Controller>(pub Arc<T>);
                     impl<
                         T: Controller,
-                    > tonic::server::UnaryService<super::GetControllerJobResultsRequest>
+                    > qcs_dependencies_client::tonic::server::UnaryService<super::GetControllerJobResultsRequest>
                     for GetControllerJobResultsSvc<T> {
                         type Response = super::GetControllerJobResultsResponse;
                         type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
+                            qcs_dependencies_client::tonic::Response<Self::Response>,
+                            qcs_dependencies_client::tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
+                            request: qcs_dependencies_client::tonic::Request<
                                 super::GetControllerJobResultsRequest,
                             >,
                         ) -> Self::Future {
@@ -752,8 +778,8 @@ pub mod controller_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = GetControllerJobResultsSvc(inner);
-                        let codec = tonic_prost::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
+                        let codec = qcs_dependencies_client::tonic_prost::ProstCodec::default();
+                        let mut grpc = qcs_dependencies_client::tonic::server::Grpc::new(codec)
                             .apply_compression_config(
                                 accept_compression_encodings,
                                 send_compression_encodings,
@@ -772,16 +798,16 @@ pub mod controller_server {
                     struct CancelControllerJobsSvc<T: Controller>(pub Arc<T>);
                     impl<
                         T: Controller,
-                    > tonic::server::UnaryService<super::CancelControllerJobsRequest>
+                    > qcs_dependencies_client::tonic::server::UnaryService<super::CancelControllerJobsRequest>
                     for CancelControllerJobsSvc<T> {
                         type Response = super::CancelControllerJobsResponse;
                         type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
+                            qcs_dependencies_client::tonic::Response<Self::Response>,
+                            qcs_dependencies_client::tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::CancelControllerJobsRequest>,
+                            request: qcs_dependencies_client::tonic::Request<super::CancelControllerJobsRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
@@ -798,8 +824,8 @@ pub mod controller_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = CancelControllerJobsSvc(inner);
-                        let codec = tonic_prost::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
+                        let codec = qcs_dependencies_client::tonic_prost::ProstCodec::default();
+                        let mut grpc = qcs_dependencies_client::tonic::server::Grpc::new(codec)
                             .apply_compression_config(
                                 accept_compression_encodings,
                                 send_compression_encodings,
@@ -818,16 +844,16 @@ pub mod controller_server {
                     struct GetControllerJobStatusSvc<T: Controller>(pub Arc<T>);
                     impl<
                         T: Controller,
-                    > tonic::server::UnaryService<super::GetControllerJobStatusRequest>
+                    > qcs_dependencies_client::tonic::server::UnaryService<super::GetControllerJobStatusRequest>
                     for GetControllerJobStatusSvc<T> {
                         type Response = super::GetControllerJobStatusResponse;
                         type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
+                            qcs_dependencies_client::tonic::Response<Self::Response>,
+                            qcs_dependencies_client::tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::GetControllerJobStatusRequest>,
+                            request: qcs_dependencies_client::tonic::Request<super::GetControllerJobStatusRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
@@ -847,8 +873,8 @@ pub mod controller_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = GetControllerJobStatusSvc(inner);
-                        let codec = tonic_prost::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
+                        let codec = qcs_dependencies_client::tonic_prost::ProstCodec::default();
+                        let mut grpc = qcs_dependencies_client::tonic::server::Grpc::new(codec)
                             .apply_compression_config(
                                 accept_compression_encodings,
                                 send_compression_encodings,
@@ -865,18 +891,18 @@ pub mod controller_server {
                 _ => {
                     Box::pin(async move {
                         let mut response = http::Response::new(
-                            tonic::body::Body::default(),
+                            qcs_dependencies_client::tonic::body::Body::default(),
                         );
                         let headers = response.headers_mut();
                         headers
                             .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
+                                qcs_dependencies_client::tonic::Status::GRPC_STATUS,
+                                (qcs_dependencies_client::tonic::Code::Unimplemented as i32).into(),
                             );
                         headers
                             .insert(
                                 http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
+                                qcs_dependencies_client::tonic::metadata::GRPC_CONTENT_TYPE,
                             );
                         Ok(response)
                     })
@@ -898,7 +924,7 @@ pub mod controller_server {
     }
     /// Generated gRPC service name
     pub const SERVICE_NAME: &str = "services.controller.Controller";
-    impl<T> tonic::server::NamedService for ControllerServer<T> {
+    impl<T> qcs_dependencies_client::tonic::server::NamedService for ControllerServer<T> {
         const NAME: &'static str = SERVICE_NAME;
     }
 }

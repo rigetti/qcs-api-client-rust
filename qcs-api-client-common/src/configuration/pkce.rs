@@ -1,6 +1,5 @@
 use std::{collections::HashSet, convert::Infallible};
 
-use http::{Response, StatusCode};
 use http_body_util::Full;
 use hyper::body::Bytes;
 use hyper::server::conn::http1;
@@ -12,6 +11,7 @@ use oauth2::{
     PkceCodeChallenge, RedirectUrl, RequestTokenError, Scope, StandardErrorResponse,
     StandardTokenResponse, TokenUrl,
 };
+use qcs_dependencies_client::http::{Response, StatusCode};
 
 use tokio::net::TcpListener;
 use tokio_util::sync::CancellationToken;
@@ -351,9 +351,12 @@ pub(in crate::configuration) mod tests {
             })
             .await;
 
-            let discovery = fetch_discovery(&reqwest::Client::new(), server.issuer())
-                .await
-                .unwrap();
+            let discovery = fetch_discovery(
+                &qcs_dependencies_client::reqwest::Client::new(),
+                server.issuer(),
+            )
+            .await
+            .unwrap();
 
             let redirect_url = format_redirect_url(PKCE_REDIRECT_URL_DEFAULT_PORT);
             let client = server.register_client(serde_json::json!({

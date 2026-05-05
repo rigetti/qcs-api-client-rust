@@ -29,7 +29,7 @@ use ::qcs_api_client_common::backoff::{
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
-use reqwest::StatusCode;
+use qcs_dependencies_client::reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "clap")]
@@ -337,8 +337,10 @@ async fn create_reservation_inner(
         "{}/v1/reservations",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::POST,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -354,7 +356,7 @@ async fn create_reservation_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="POST",
                 "making create_reservation request",
@@ -391,7 +393,7 @@ async fn create_reservation_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -454,7 +456,7 @@ pub async fn create_reservation(
 ) -> Result<models::Reservation, Error<CreateReservationError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::POST;
+    let method = qcs_dependencies_client::reqwest::Method::POST;
     loop {
         let result = create_reservation_inner(
             configuration,
@@ -487,7 +489,7 @@ pub async fn create_reservation(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -539,8 +541,10 @@ async fn delete_reservation_inner(
         local_var_configuration.qcs_config.api_url(),
         reservationId = p_path_reservation_id
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::DELETE,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -556,7 +560,7 @@ async fn delete_reservation_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="DELETE",
                 "making delete_reservation request",
@@ -584,7 +588,7 @@ async fn delete_reservation_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -643,7 +647,7 @@ pub async fn delete_reservation(
 ) -> Result<models::Reservation, Error<DeleteReservationError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::DELETE;
+    let method = qcs_dependencies_client::reqwest::Method::DELETE;
     loop {
         let result =
             delete_reservation_inner(configuration, &mut backoff, reservation_id.clone()).await;
@@ -670,7 +674,7 @@ pub async fn delete_reservation(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -729,8 +733,10 @@ async fn find_available_reservations_inner(
         "{}/v1/reservations:findAvailable",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -746,7 +752,7 @@ async fn find_available_reservations_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making find_available_reservations request",
@@ -791,7 +797,7 @@ async fn find_available_reservations_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -854,7 +860,7 @@ pub async fn find_available_reservations(
 ) -> Result<models::FindAvailableReservationsResponse, Error<FindAvailableReservationsError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = find_available_reservations_inner(
             configuration,
@@ -889,7 +895,7 @@ pub async fn find_available_reservations(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -941,8 +947,10 @@ async fn get_quantum_processor_calendar_inner(
         local_var_configuration.qcs_config.api_url(),
         quantumProcessorId = crate::apis::urlencode(p_path_quantum_processor_id)
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -958,7 +966,7 @@ async fn get_quantum_processor_calendar_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making get_quantum_processor_calendar request",
@@ -986,7 +994,7 @@ async fn get_quantum_processor_calendar_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -1045,7 +1053,7 @@ pub async fn get_quantum_processor_calendar(
 ) -> Result<models::QuantumProcessorCalendar, Error<GetQuantumProcessorCalendarError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = get_quantum_processor_calendar_inner(
             configuration,
@@ -1076,7 +1084,7 @@ pub async fn get_quantum_processor_calendar(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -1128,8 +1136,10 @@ async fn get_reservation_inner(
         local_var_configuration.qcs_config.api_url(),
         reservationId = p_path_reservation_id
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -1145,7 +1155,7 @@ async fn get_reservation_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making get_reservation request",
@@ -1173,7 +1183,7 @@ async fn get_reservation_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -1232,7 +1242,7 @@ pub async fn get_reservation(
 ) -> Result<models::Reservation, Error<GetReservationError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result =
             get_reservation_inner(configuration, &mut backoff, reservation_id.clone()).await;
@@ -1259,7 +1269,7 @@ pub async fn get_reservation(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -1321,8 +1331,10 @@ async fn list_group_reservations_inner(
         local_var_configuration.qcs_config.api_url(),
         groupName = crate::apis::urlencode(p_path_group_name)
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -1338,7 +1350,7 @@ async fn list_group_reservations_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making list_group_reservations request",
@@ -1387,7 +1399,7 @@ async fn list_group_reservations_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -1451,7 +1463,7 @@ pub async fn list_group_reservations(
 ) -> Result<models::ListReservationsResponse, Error<ListGroupReservationsError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = list_group_reservations_inner(
             configuration,
@@ -1487,7 +1499,7 @@ pub async fn list_group_reservations(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -1550,8 +1562,10 @@ async fn list_reservations_inner(
         "{}/v1/reservations",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -1567,7 +1581,7 @@ async fn list_reservations_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making list_reservations request",
@@ -1624,7 +1638,7 @@ async fn list_reservations_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -1689,7 +1703,7 @@ pub async fn list_reservations(
 ) -> Result<models::ListReservationsResponse, Error<ListReservationsError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = list_reservations_inner(
             configuration,
@@ -1726,7 +1740,7 @@ pub async fn list_reservations(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );

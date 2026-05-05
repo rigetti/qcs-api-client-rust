@@ -54,14 +54,17 @@ fn main() {
 
     let descriptor_path = PathBuf::from(&out_dir).join("proto_descriptor.bin");
 
-    let mut config = prost_build::Config::new();
+    let mut config = qcs_dependencies_client::prost_build::Config::new();
 
     config
         // Save descriptors to file
         .file_descriptor_set_path(&descriptor_path)
         // Override prost-types with pbjson-types
         .compile_well_known_types()
-        .extern_path(".google.protobuf", "::pbjson_types");
+        .extern_path(".google.protobuf", "qcs_dependencies_client::pbjson_types")
+        // Route prost runtime paths through qcs_dependencies_client so grpc
+        // crates don't need a direct prost dependency.
+        .prost_path("::qcs_dependencies_client::prost");
 
     config.type_attribute(
         "services.controller.ExecuteControllerJobRequest.job",
@@ -69,7 +72,7 @@ fn main() {
     );
 
     config.protoc_arg("--experimental_allow_proto3_optional");
-    tonic_prost_build::configure()
+    qcs_dependencies_client::tonic_prost_build::configure()
         .server_mod_attribute("services.controller", r#"#[cfg(feature = "server")]"#)
         .server_mod_attribute("services.translation", r#"#[cfg(feature = "server")]"#)
         .compile_with_config(config, &proto_files, &[root])
@@ -78,7 +81,7 @@ fn main() {
     let descriptor_set =
         std::fs::read(descriptor_path).expect("failed to read proto descriptor file");
 
-    pbjson_build::Builder::new()
+    qcs_dependencies_client::pbjson_build::Builder::new()
         .register_descriptors(&descriptor_set)
         .expect("failed to register descriptors")
         .build(&[
@@ -132,7 +135,9 @@ fn main() {
             writeln!(
                 file,
                 "{}",
-                std::fs::read_to_string(src_path).expect("Should read file contents")
+                qcs_dependencies_client::codegen_grpc::fix_generated_paths(
+                    std::fs::read_to_string(src_path).expect("Should read file contents")
+                )
             )
             .expect("Should write file contents");
         }

@@ -172,7 +172,7 @@ pub enum PkceFlowError {
     Discovery(#[from] DiscoveryError),
     /// Error that occurred while making http requests.
     #[error(transparent)]
-    Request(#[from] reqwest::Error),
+    Request(#[from] qcs_dependencies_client::reqwest::Error),
 }
 
 impl PkceFlow {
@@ -921,7 +921,7 @@ impl TokenRefresher for ClientConfiguration {
             }) => {
                 // Token refresh succeeded but persistence failed. Extract and return the access token from the error.
                 #[cfg(feature = "tracing")]
-                tracing::warn!(
+                qcs_dependencies_client::tracing::warn!(
                     "Token refresh succeeded but failed to persist: {}. Returning access token from error.",
                     error
                 );
@@ -947,8 +947,9 @@ impl TokenRefresher for ClientConfiguration {
 }
 
 /// Get a default http client.
-pub(super) fn default_http_client() -> Result<reqwest::Client, reqwest::Error> {
-    reqwest::Client::builder()
+pub(super) fn default_http_client(
+) -> Result<qcs_dependencies_client::reqwest::Client, qcs_dependencies_client::reqwest::Error> {
+    qcs_dependencies_client::reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(10))
         .build()
 }

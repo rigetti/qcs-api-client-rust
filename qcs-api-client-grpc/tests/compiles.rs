@@ -14,13 +14,13 @@
 
 use qcs_api_client_common::ClientConfiguration;
 use qcs_api_client_grpc::client_configuration::TokenError;
-use qcs_api_client_grpc::services::translation::translation_client::TranslationClient;
-use qcs_api_client_grpc::tonic::{
+use qcs_api_client_grpc::qcs_dependencies_client::tonic::{
     get_channel, parse_uri, wrap_channel_with, wrap_channel_with_retry, Error,
 };
+use qcs_api_client_grpc::services::translation::translation_client::TranslationClient;
 
 #[cfg(feature = "grpc-web")]
-use qcs_api_client_grpc::tonic::wrap_channel_with_grpc_web;
+use qcs_api_client_grpc::qcs_dependencies_client::tonic::wrap_channel_with_grpc_web;
 
 #[allow(dead_code)]
 async fn build_client() -> Result<(), Error<TokenError>> {

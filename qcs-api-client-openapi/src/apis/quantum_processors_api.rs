@@ -29,7 +29,7 @@ use ::qcs_api_client_common::backoff::{
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
-use reqwest::StatusCode;
+use qcs_dependencies_client::reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "clap")]
@@ -205,8 +205,10 @@ async fn get_instruction_set_architecture_inner(
         local_var_configuration.qcs_config.api_url(),
         quantum_processor_id = crate::apis::urlencode(p_path_quantum_processor_id)
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -222,7 +224,7 @@ async fn get_instruction_set_architecture_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making get_instruction_set_architecture request",
@@ -250,7 +252,7 @@ async fn get_instruction_set_architecture_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -308,7 +310,7 @@ pub async fn get_instruction_set_architecture(
 ) -> Result<models::InstructionSetArchitecture, Error<GetInstructionSetArchitectureError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = get_instruction_set_architecture_inner(
             configuration,
@@ -339,7 +341,7 @@ pub async fn get_instruction_set_architecture(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -391,8 +393,10 @@ async fn get_quantum_processor_inner(
         local_var_configuration.qcs_config.api_url(),
         quantum_processor_id = crate::apis::urlencode(p_path_quantum_processor_id)
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -408,7 +412,7 @@ async fn get_quantum_processor_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making get_quantum_processor request",
@@ -436,7 +440,7 @@ async fn get_quantum_processor_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -495,7 +499,7 @@ pub async fn get_quantum_processor(
 ) -> Result<models::QuantumProcessor, Error<GetQuantumProcessorError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result =
             get_quantum_processor_inner(configuration, &mut backoff, quantum_processor_id.clone())
@@ -523,7 +527,7 @@ pub async fn get_quantum_processor(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -576,8 +580,10 @@ async fn get_quantum_processor_accessors_inner(
         local_var_configuration.qcs_config.api_url(),
         quantum_processor_id = crate::apis::urlencode(p_path_quantum_processor_id)
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -593,7 +599,7 @@ async fn get_quantum_processor_accessors_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making get_quantum_processor_accessors request",
@@ -621,7 +627,7 @@ async fn get_quantum_processor_accessors_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -681,7 +687,7 @@ pub async fn get_quantum_processor_accessors(
 {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = get_quantum_processor_accessors_inner(
             configuration,
@@ -712,7 +718,7 @@ pub async fn get_quantum_processor_accessors(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -768,8 +774,10 @@ async fn list_instruction_set_architectures_inner(
         "{}/v1/instructionSetArchitectures",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -785,7 +793,7 @@ async fn list_instruction_set_architectures_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making list_instruction_set_architectures request",
@@ -822,7 +830,7 @@ async fn list_instruction_set_architectures_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -884,7 +892,7 @@ pub async fn list_instruction_set_architectures(
 > {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = list_instruction_set_architectures_inner(
             configuration,
@@ -916,7 +924,7 @@ pub async fn list_instruction_set_architectures(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -969,8 +977,10 @@ async fn list_quantum_processors_inner(
         "{}/v1/quantumProcessors",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -986,7 +996,7 @@ async fn list_quantum_processors_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making list_quantum_processors request",
@@ -1023,7 +1033,7 @@ async fn list_quantum_processors_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -1083,7 +1093,7 @@ pub async fn list_quantum_processors(
 ) -> Result<models::ListQuantumProcessorsResponse, Error<ListQuantumProcessorsError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = list_quantum_processors_inner(
             configuration,
@@ -1115,7 +1125,7 @@ pub async fn list_quantum_processors(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );

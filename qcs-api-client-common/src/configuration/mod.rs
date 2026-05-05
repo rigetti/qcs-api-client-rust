@@ -199,8 +199,10 @@ impl ConfigurationContext {
     fn from_profile(profile_name: Option<String>) -> Result<Self, LoadError> {
         #[cfg(feature = "tracing-config")]
         match profile_name.as_ref() {
-            None => tracing::debug!("loading default QCS profile"),
-            Some(profile) => tracing::debug!("loading QCS profile {profile}"),
+            None => qcs_dependencies_client::tracing::debug!("loading default QCS profile"),
+            Some(profile) => {
+                qcs_dependencies_client::tracing::debug!("loading QCS profile {profile}")
+            }
         }
         let settings = Settings::load()?;
         let secrets = Secrets::load()?;
@@ -501,7 +503,9 @@ impl ClientConfiguration {
             #[allow(unused_variables)]
             Err(e) => {
                 #[cfg(feature = "tracing-config")]
-                tracing::debug!("Refreshing access token because current one is invalid: {e}");
+                qcs_dependencies_client::tracing::debug!(
+                    "Refreshing access token because current one is invalid: {e}"
+                );
                 dispatcher
                     .refresh(self.source(), self.profile())
                     .await

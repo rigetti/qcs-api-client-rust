@@ -29,7 +29,7 @@ use ::qcs_api_client_common::backoff::{
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
-use reqwest::StatusCode;
+use qcs_dependencies_client::reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "clap")]
@@ -137,8 +137,10 @@ async fn check_client_application_inner(
         "{}/v1/clientApplications:check",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::POST,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -154,7 +156,7 @@ async fn check_client_application_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="POST",
                 "making check_client_application request",
@@ -182,7 +184,7 @@ async fn check_client_application_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -243,7 +245,7 @@ pub async fn check_client_application(
 ) -> Result<models::CheckClientApplicationResponse, Error<CheckClientApplicationError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::POST;
+    let method = qcs_dependencies_client::reqwest::Method::POST;
     loop {
         let result = check_client_application_inner(
             configuration,
@@ -274,7 +276,7 @@ pub async fn check_client_application(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -326,8 +328,10 @@ async fn get_client_application_inner(
         local_var_configuration.qcs_config.api_url(),
         clientApplicationName = crate::apis::urlencode(p_path_client_application_name)
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -343,7 +347,7 @@ async fn get_client_application_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making get_client_application request",
@@ -371,7 +375,7 @@ async fn get_client_application_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -430,7 +434,7 @@ pub async fn get_client_application(
 ) -> Result<models::ClientApplication, Error<GetClientApplicationError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = get_client_application_inner(
             configuration,
@@ -461,7 +465,7 @@ pub async fn get_client_application(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -509,8 +513,10 @@ async fn list_client_applications_inner(
         "{}/v1/clientApplications",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -526,7 +532,7 @@ async fn list_client_applications_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making list_client_applications request",
@@ -554,7 +560,7 @@ async fn list_client_applications_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -612,7 +618,7 @@ pub async fn list_client_applications(
 ) -> Result<models::ListClientApplicationsResponse, Error<ListClientApplicationsError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = list_client_applications_inner(configuration, &mut backoff).await;
 
@@ -638,7 +644,7 @@ pub async fn list_client_applications(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );

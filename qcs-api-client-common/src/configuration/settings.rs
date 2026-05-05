@@ -55,7 +55,7 @@ impl Settings {
     pub fn load() -> Result<Self, LoadError> {
         let path = expand_path_from_env_or_default(SETTINGS_PATH_VAR, DEFAULT_SETTINGS_PATH)?;
         #[cfg(feature = "tracing")]
-        tracing::debug!("loading QCS settings from {path:?}");
+        qcs_dependencies_client::tracing::debug!("loading QCS settings from {path:?}");
         Self::load_from_path(&path)
     }
 

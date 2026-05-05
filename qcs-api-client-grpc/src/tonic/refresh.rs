@@ -5,12 +5,12 @@ use std::{
 };
 
 use super::Body;
-use http::StatusCode;
-use tonic::{
+use qcs_dependencies_client::http::StatusCode;
+use qcs_dependencies_client::tonic::{
     client::GrpcService,
     codegen::http::{Request, Response},
 };
-use tower::Layer;
+use qcs_dependencies_client::tower::Layer;
 
 use qcs_api_client_common::configuration::{
     secrets::SecretAccessToken, tokens::TokenRefresher, ClientConfiguration, TokenError,
@@ -143,7 +143,8 @@ where
 
     let grpc_authnz_failure = matches!(
         super::common::get_status_code_from_headers(resp.headers()).ok(),
-        Some(tonic::Code::Unauthenticated) | Some(tonic::Code::PermissionDenied)
+        Some(qcs_dependencies_client::tonic::Code::Unauthenticated)
+            | Some(qcs_dependencies_client::tonic::Code::PermissionDenied)
     );
     let http_authnz_failure =
         resp.status() == StatusCode::UNAUTHORIZED || resp.status() == StatusCode::FORBIDDEN;
@@ -151,7 +152,9 @@ where
     if grpc_authnz_failure || http_authnz_failure {
         #[cfg(feature = "tracing")]
         {
-            tracing::info!("refreshing token after receiving unauthorized or forbidden status",);
+            qcs_dependencies_client::tracing::info!(
+                "refreshing token after receiving unauthorized or forbidden status",
+            );
         }
 
         // Refresh token and try again
@@ -162,7 +165,7 @@ where
 
         #[cfg(feature = "tracing")]
         {
-            tracing::info!("token refreshed");
+            qcs_dependencies_client::tracing::info!("token refreshed");
         }
         // Ensure that the service is ready before trying to use it.
         // Failure to do this *will* cause a panic.

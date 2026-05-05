@@ -75,7 +75,7 @@ impl Discovery {
 /// [openid-impersonation]: https://openid.net/specs/openid-connect-discovery-1_0.html#impersonation
 /// [openid-discovery-section-4]: https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig
 pub(crate) async fn fetch_discovery(
-    http: &reqwest::Client,
+    http: &qcs_dependencies_client::reqwest::Client,
     issuer: impl AsRef<str>,
 ) -> Result<Discovery> {
     let issuer: Url = issuer.as_ref().parse()?;
@@ -92,7 +92,7 @@ pub(crate) async fn fetch_discovery(
 }
 
 async fn fetch_discovery_impl(
-    http: &reqwest::Client,
+    http: &qcs_dependencies_client::reqwest::Client,
     issuer: Url,
     validator: impl ValidateIssuer,
 ) -> Result<Discovery> {
@@ -120,14 +120,17 @@ async fn fetch_discovery_impl(
     };
 
     #[cfg(feature = "tracing")]
-    tracing::info!(
+    qcs_dependencies_client::tracing::info!(
         discovery_url = discovery_url.as_str(),
         "Fetching OIDC discovery document."
     );
 
     let discovery: Discovery = http
         .get(discovery_url.clone())
-        .header(reqwest::header::ACCEPT, "application/json")
+        .header(
+            qcs_dependencies_client::reqwest::header::ACCEPT,
+            "application/json",
+        )
         .send()
         .await?
         .error_for_status()?
@@ -252,8 +255,10 @@ mod test {
     use httpmock::prelude::*;
     use rstest::rstest;
 
-    fn http_client() -> reqwest::Client {
-        reqwest::Client::builder().build().unwrap()
+    fn http_client() -> qcs_dependencies_client::reqwest::Client {
+        qcs_dependencies_client::reqwest::Client::builder()
+            .build()
+            .unwrap()
     }
 
     #[tokio::test]

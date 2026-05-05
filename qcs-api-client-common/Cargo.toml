@@ -29,9 +29,6 @@
   [dependencies.home]
     workspace = true
 
-  [dependencies.http]
-    workspace = true
-
   [dependencies.http-body-util]
     workspace = true
 
@@ -69,9 +66,8 @@
     optional = true
     workspace = true
 
-  [dependencies.reqwest]
-    default-features = false
-    features = ['socks']
+  [dependencies.qcs-dependencies-client]
+    features = ['http']
     workspace = true
 
   [dependencies.rigetti-pyo3]
@@ -112,10 +108,6 @@
   [dependencies.toml_edit]
     workspace = true
 
-  [dependencies.tracing]
-    optional = true
-    workspace = true
-
   [dependencies.url]
     workspace = true
 
@@ -153,7 +145,7 @@
   python = ['dep:pyo3', 'dep:pyo3-async-runtimes', 'dep:pyo3-build-config', 'dep:rigetti-pyo3', 'tokio/macros']
   stubs = ['python', 'dep:pyo3-stub-gen', 'rigetti-pyo3/stubs']
   test = ['_insecure-issuer-validation']
-  tracing = ['dep:tracing', 'urlpattern']
+  tracing = ['urlpattern']
   tracing-config = ['tracing']
 
 [lib]
@@ -220,7 +212,7 @@
   publish = true
   readme = 'README.md'
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.18.0'
+  version = '0.19.0-dev.0'
 
   [package.metadata]
     [package.metadata.docs]

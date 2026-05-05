@@ -215,7 +215,7 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
                                 return Err(serde::de::Error::duplicate_field("passiveResetDelaySeconds"));
                             }
                             passive_reset_delay_seconds__ = 
-                                map_.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                                map_.next_value::<::std::option::Option<::qcs_dependencies_client::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
                         GeneratedField::AllowUncheckedPointerArithmetic => {
@@ -568,7 +568,7 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobReque
                             if num_shots__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("numShotsValue"));
                             }
-                            num_shots__ = map_.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| translate_quil_to_encrypted_controller_job_request::NumShots::NumShotsValue(x.0));
+                            num_shots__ = map_.next_value::<::std::option::Option<::qcs_dependencies_client::pbjson::private::NumberDeserialize<_>>>()?.map(|x| translate_quil_to_encrypted_controller_job_request::NumShots::NumShotsValue(x.0));
                         }
                     }
                 }
@@ -944,7 +944,7 @@ impl serde::Serialize for translation_options::Riverlane {
         let mut struct_ser = serializer.serialize_struct("services.translation.TranslationOptions.Riverlane", len)?;
         if !self.qeci_configuration_data.is_empty() {
             let v: std::collections::HashMap<_, _> = self.qeci_configuration_data.iter()
-                .map(|(k, v)| (k, pbjson::private::base64::encode(v))).collect();
+                .map(|(k, v)| (k, qcs_dependencies_client::pbjson::private::base64::encode(v))).collect();
             struct_ser.serialize_field("qeciConfigurationData", &v)?;
         }
         if self.qeci_max_nanoseconds_until_read_available != 0 {
@@ -1023,7 +1023,7 @@ impl<'de> serde::Deserialize<'de> for translation_options::Riverlane {
                                 return Err(serde::de::Error::duplicate_field("qeciConfigurationData"));
                             }
                             qeci_configuration_data__ = Some(
-                                map_.next_value::<std::collections::HashMap<_, ::pbjson::private::BytesDeserialize<_>>>()?
+                                map_.next_value::<std::collections::HashMap<_, ::qcs_dependencies_client::pbjson::private::BytesDeserialize<_>>>()?
                                     .into_iter().map(|(k,v)| (k, v.0)).collect()
                             );
                         }
@@ -1032,7 +1032,7 @@ impl<'de> serde::Deserialize<'de> for translation_options::Riverlane {
                                 return Err(serde::de::Error::duplicate_field("qeciMaxNanosecondsUntilReadAvailable"));
                             }
                             qeci_max_nanoseconds_until_read_available__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                                Some(map_.next_value::<::qcs_dependencies_client::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
                     }

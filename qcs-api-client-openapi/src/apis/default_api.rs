@@ -29,7 +29,7 @@ use ::qcs_api_client_common::backoff::{
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
-use reqwest::StatusCode;
+use qcs_dependencies_client::reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "clap")]
@@ -114,8 +114,10 @@ async fn get_health_inner(
     let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!("{}/", local_var_configuration.qcs_config.api_url());
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -131,7 +133,7 @@ async fn get_health_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making get_health request",
@@ -159,7 +161,7 @@ async fn get_health_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -217,7 +219,7 @@ pub async fn get_health(
 ) -> Result<models::Health, Error<GetHealthError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = get_health_inner(configuration, &mut backoff).await;
 
@@ -243,7 +245,7 @@ pub async fn get_health(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -291,8 +293,10 @@ async fn health_check_inner(
         "{}/v1/healthcheck",
         local_var_configuration.qcs_config.api_url()
     );
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -308,7 +312,7 @@ async fn health_check_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making health_check request",
@@ -336,7 +340,7 @@ async fn health_check_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -373,7 +377,7 @@ pub async fn health_check(
 ) -> Result<(), Error<HealthCheckError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = health_check_inner(configuration, &mut backoff).await;
 
@@ -399,7 +403,7 @@ pub async fn health_check(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );
@@ -444,8 +448,10 @@ async fn health_check_deprecated_inner(
     let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!("{}/v1/", local_var_configuration.qcs_config.api_url());
-    let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+    let mut local_var_req_builder = local_var_client.request(
+        qcs_dependencies_client::reqwest::Method::GET,
+        local_var_uri_str.as_str(),
+    );
 
     #[cfg(feature = "tracing")]
     {
@@ -461,7 +467,7 @@ async fn health_check_deprecated_inner(
             });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making health_check_deprecated request",
@@ -489,7 +495,7 @@ async fn health_check_deprecated_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -548,7 +554,7 @@ pub async fn health_check_deprecated(
 ) -> Result<serde_json::Value, Error<HealthCheckDeprecatedError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result = health_check_deprecated_inner(configuration, &mut backoff).await;
 
@@ -574,7 +580,7 @@ pub async fn health_check_deprecated(
                             // Token refresh succeeded but persistence failed
                             // The token is already in memory and will be used for this request
                             #[cfg(feature = "tracing")]
-                            tracing::warn!(
+                            qcs_dependencies_client::tracing::warn!(
                                 "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
                                 error
                             );

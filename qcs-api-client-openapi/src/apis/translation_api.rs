@@ -29,7 +29,7 @@ use ::qcs_api_client_common::backoff::{
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::TokenRefresher;
-use reqwest::StatusCode;
+use qcs_dependencies_client::reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 /// struct for typed errors of method [`get_quilt_calibrations`]
@@ -66,7 +66,7 @@ async fn get_quilt_calibrations_inner(
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+        local_var_client.request(qcs_dependencies_client::reqwest::Method::GET, local_var_uri_str.as_str());
 
     #[cfg(feature = "tracing")]
     {
@@ -83,7 +83,7 @@ async fn get_quilt_calibrations_inner(
                 });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="GET",
                 "making get_quilt_calibrations request",
@@ -111,7 +111,7 @@ async fn get_quilt_calibrations_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -150,7 +150,7 @@ pub async fn get_quilt_calibrations(
 ) -> Result<crate::models::GetQuiltCalibrationsResponse, Error<GetQuiltCalibrationsError>> {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::GET;
+    let method = qcs_dependencies_client::reqwest::Method::GET;
     loop {
         let result =
             get_quilt_calibrations_inner(configuration, &mut backoff, quantum_processor_id.clone())
@@ -214,7 +214,7 @@ async fn translate_native_quil_to_encrypted_binary_inner(
         quantumProcessorId = crate::apis::urlencode(quantum_processor_id)
     );
     let mut local_var_req_builder =
-        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+        local_var_client.request(qcs_dependencies_client::reqwest::Method::POST, local_var_uri_str.as_str());
 
     #[cfg(feature = "tracing")]
     {
@@ -231,7 +231,7 @@ async fn translate_native_quil_to_encrypted_binary_inner(
                 });
 
         if local_var_do_tracing {
-            ::tracing::debug!(
+            ::qcs_dependencies_client::tracing::debug!(
                 url=%local_var_uri_str,
                 method="POST",
                 "making translate_native_quil_to_encrypted_binary request",
@@ -259,7 +259,7 @@ async fn translate_native_quil_to_encrypted_binary_inner(
         if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
             // the client is configured without any OAuthSession, but this call does not require one.
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            qcs_dependencies_client::tracing::debug!(
                 "No client credentials found, but this call does not require authentication."
             );
         } else {
@@ -305,7 +305,7 @@ pub async fn translate_native_quil_to_encrypted_binary(
 > {
     let mut backoff = configuration.backoff.clone();
     let mut refreshed_credentials = false;
-    let method = reqwest::Method::POST;
+    let method = qcs_dependencies_client::reqwest::Method::POST;
     loop {
         let result = translate_native_quil_to_encrypted_binary_inner(
             configuration,

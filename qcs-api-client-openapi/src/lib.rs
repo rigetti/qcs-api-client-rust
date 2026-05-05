@@ -35,7 +35,20 @@
 #![allow(noop_method_call)]
 #![allow(unused_imports)]
 
-pub use reqwest;
+pub use qcs_dependencies_client::reqwest;
+
+// The `reqwest_otel_span!` macro from `reqwest-tracing` expands to code that
+// references `::http::HeaderValue` and `::tracing::span!` using absolute crate-root
+// paths.  Absolute paths resolve through the *extern prelude*, which only contains
+// a crate's direct Cargo dependencies — a `pub use` re-export from
+// `qcs_dependencies_client` is not sufficient.  Both `http` and `tracing` are
+// already in the crate graph as transitive dependencies, and they are listed as
+// optional direct deps in Cargo.toml (under `tracing-opentelemetry`).  Using
+// `extern crate` here injects them into this crate's extern prelude.
+#[cfg(feature = "tracing-opentelemetry")]
+extern crate http;
+#[cfg(feature = "tracing-opentelemetry")]
+extern crate tracing;
 
 pub use serde;
 pub use serde_json;

@@ -1,10 +1,10 @@
 use super::Body;
-use http::{HeaderValue, Request, Response};
 use qcs_api_client_common::{
     backoff::{self, backoff::Backoff, ExponentialBackoff},
     configuration::TokenError,
 };
-use tonic::{client::GrpcService, Status};
+use qcs_dependencies_client::http::{HeaderValue, Request, Response};
+use qcs_dependencies_client::tonic::{client::GrpcService, Status};
 
 use qcs_api_client_common::backoff::duration_from_response as duration_from_http_response;
 use std::{
@@ -15,7 +15,7 @@ use std::{
 };
 
 use super::{build_duplicate_request, RequestBodyDuplicationError};
-use tower::Layer;
+use qcs_dependencies_client::tower::Layer;
 
 /// The [`Layer`] used to apply exponential backoff retry logic to requests.
 #[derive(Debug, Clone)]
@@ -67,7 +67,7 @@ fn duration_from_response<T>(
     if let Some(grpc_status) = Status::from_header_map(response.headers()) {
         match grpc_status.code() {
             // gRPC has no equivalent to RETRY-AFTER, so just use the backoff
-            tonic::Code::Unavailable => backoff.next_backoff(),
+            qcs_dependencies_client::tonic::Code::Unavailable => backoff.next_backoff(),
             // No other gRPC statuses are retried.
             _ => None,
         }
@@ -123,7 +123,9 @@ where
                     .map_err(super::error::Error::from)?;
 
                 if let Ok(retry_index_header_value) =
-                    http::HeaderValue::from_str(attempt.to_string().as_str())
+                    qcs_dependencies_client::http::HeaderValue::from_str(
+                        attempt.to_string().as_str(),
+                    )
                 {
                     request
                         .headers_mut()
@@ -147,7 +149,8 @@ where
     }
 }
 
-fn new_request_id() -> Result<HeaderValue, http::header::InvalidHeaderValue> {
+fn new_request_id() -> Result<HeaderValue, qcs_dependencies_client::http::header::InvalidHeaderValue>
+{
     let request_id = uuid::Uuid::new_v4().to_string();
     HeaderValue::from_str(request_id.as_str())
 }
@@ -159,16 +162,18 @@ const KEY_X_REQUEST_RETRY_INDEX: &str = "x-request-retry-index";
 mod tests {
     use std::sync::atomic::{AtomicUsize, Ordering};
 
-    use crate::tonic::uds_grpc_stream;
-    use crate::tonic::wrap_channel_with_retry;
+    use crate::qcs_dependencies_client::tonic::uds_grpc_stream;
+    use crate::qcs_dependencies_client::tonic::wrap_channel_with_retry;
 
     use super::*;
     use ::backoff::ExponentialBackoffBuilder;
-    use tonic::server::NamedService;
-    use tonic::Request;
-    use tonic_health::pb::health_check_response::ServingStatus;
-    use tonic_health::pb::health_server::{Health, HealthServer};
-    use tonic_health::{pb::health_client::HealthClient, server::HealthService};
+    use qcs_dependencies_client::tonic::server::NamedService;
+    use qcs_dependencies_client::tonic::Request;
+    use qcs_dependencies_client::tonic_health::pb::health_check_response::ServingStatus;
+    use qcs_dependencies_client::tonic_health::pb::health_server::{Health, HealthServer};
+    use qcs_dependencies_client::tonic_health::{
+        pb::health_client::HealthClient, server::HealthService,
+    };
 
     struct FlakyHealthService {
         required_tries_count: AtomicUsize,
@@ -182,10 +187,13 @@ mod tests {
         }
 
         #[allow(clippy::result_large_err)]
-        fn make_response(&self) -> Result<tonic_health::pb::HealthCheckResponse, Status> {
+        fn make_response(
+            &self,
+        ) -> Result<qcs_dependencies_client::tonic_health::pb::HealthCheckResponse, Status>
+        {
             let remaining = self.required_tries_count.fetch_sub(1, Ordering::SeqCst);
             if remaining == 0 {
-                let response = tonic_health::pb::HealthCheckResponse {
+                let response = qcs_dependencies_client::tonic_health::pb::HealthCheckResponse {
                     status: ServingStatus::Serving as i32,
                 };
                 Ok(response)
@@ -203,26 +211,32 @@ mod tests {
         }
     }
 
-    #[tonic::async_trait]
+    #[qcs_dependencies_client::tonic::async_trait]
     impl Health for FlakyHealthService {
         type WatchStream = tokio_stream::wrappers::ReceiverStream<
-            Result<tonic_health::pb::HealthCheckResponse, Status>,
+            Result<qcs_dependencies_client::tonic_health::pb::HealthCheckResponse, Status>,
         >;
 
         async fn check(
             &self,
-            _request: Request<tonic_health::pb::HealthCheckRequest>,
-        ) -> Result<tonic::Response<tonic_health::pb::HealthCheckResponse>, Status> {
-            self.make_response().map(tonic::Response::new)
+            _request: Request<qcs_dependencies_client::tonic_health::pb::HealthCheckRequest>,
+        ) -> Result<
+            qcs_dependencies_client::tonic::Response<
+                qcs_dependencies_client::tonic_health::pb::HealthCheckResponse,
+            >,
+            Status,
+        > {
+            self.make_response()
+                .map(qcs_dependencies_client::tonic::Response::new)
         }
 
         async fn watch(
             &self,
-            _request: Request<tonic_health::pb::HealthCheckRequest>,
-        ) -> Result<tonic::Response<Self::WatchStream>, Status> {
+            _request: Request<qcs_dependencies_client::tonic_health::pb::HealthCheckRequest>,
+        ) -> Result<qcs_dependencies_client::tonic::Response<Self::WatchStream>, Status> {
             let (tx, rx) = tokio::sync::mpsc::channel(1);
             tx.send(self.make_response()).await.unwrap();
-            Ok(tonic::Response::new(
+            Ok(qcs_dependencies_client::tonic::Response::new(
                 tokio_stream::wrappers::ReceiverStream::new(rx),
             ))
         }
@@ -235,9 +249,11 @@ mod tests {
         uds_grpc_stream::serve(health_server, |channel| async {
             let wrapped_channel = wrap_channel_with_retry(channel);
             let response = HealthClient::new(wrapped_channel)
-                .check(Request::new(tonic_health::pb::HealthCheckRequest {
-                    service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),
-                }))
+                .check(Request::new(
+                    qcs_dependencies_client::tonic_health::pb::HealthCheckRequest {
+                        service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),
+                    },
+                ))
                 .await
                 .unwrap();
             assert_eq!(response.into_inner().status(), ServingStatus::Serving);
@@ -260,12 +276,17 @@ mod tests {
                 }
                 .layer(channel),
             )
-            .check(Request::new(tonic_health::pb::HealthCheckRequest {
-                service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),
-            }))
+            .check(Request::new(
+                qcs_dependencies_client::tonic_health::pb::HealthCheckRequest {
+                    service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),
+                },
+            ))
             .await
             .unwrap_err();
-            assert_eq!(status.code(), tonic::Code::Unavailable);
+            assert_eq!(
+                status.code(),
+                qcs_dependencies_client::tonic::Code::Unavailable
+            );
         })
         .await
         .unwrap();

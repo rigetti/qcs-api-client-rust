@@ -12,6 +12,7 @@
     workspace = true
 
   [dependencies.http]
+    optional = true
     workspace = true
 
   [dependencies.miette]
@@ -21,16 +22,8 @@
   [dependencies.qcs-api-client-common]
     workspace = true
 
-  [dependencies.reqwest]
-    features = ['json', 'multipart']
-    workspace = true
-
-  [dependencies.reqwest-middleware]
-    optional = true
-    workspace = true
-
-  [dependencies.reqwest-tracing]
-    optional = true
+  [dependencies.qcs-dependencies-client]
+    features = ['http']
     workspace = true
 
   [dependencies.serde]
@@ -57,10 +50,6 @@
     optional = true
     workspace = true
 
-  [dependencies.tracing-opentelemetry]
-    optional = true
-    workspace = true
-
   [dependencies.url]
     workspace = true
 
@@ -78,9 +67,9 @@
 
 [features]
   clap = ['dep:miette', 'dep:clap', 'qcs-api-client-common/clap']
-  tracing = ['dep:tracing', 'qcs-api-client-common/tracing', 'urlpattern']
+  tracing = ['qcs-api-client-common/tracing', 'urlpattern']
   tracing-config = ['qcs-api-client-common/tracing-config', 'tracing']
-  tracing-opentelemetry = ['dep:anyhow', 'dep:reqwest-middleware', 'dep:reqwest-tracing', 'dep:tracing-opentelemetry', 'tracing-config']
+  tracing-opentelemetry = ['dep:anyhow', 'dep:http', 'dep:tracing', 'tracing-config']
 
 [package]
   categories = ['api-bindings']
@@ -92,4 +81,4 @@
   name = 'qcs-api-client-openapi'
   publish = true
   repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.19.0'
+  version = '0.20.0-dev.0'

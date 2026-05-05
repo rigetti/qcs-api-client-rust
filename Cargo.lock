@@ -1159,9 +1159,9 @@ dependencies = [
 
 [[package]]
 name = "h2"
-version = "0.4.13"
+version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f44da3a8150a6703ed5d34e164b875fd14c2cdab9af1252a9a1020bde2bdc54"
+checksum = "171fefbc92fe4a4de27e0698d6a5b392d6a0e333506bc49133760b3bcf948733"
 dependencies = [
  "atomic-waker",
  "bytes",
@@ -1635,16 +1635,6 @@ name = "ipnet"
 version = "2.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d98f6fed1fde3f8c21bc40a1abb88dd75e67924f9cffc3ef95607bad8017f8e2"
-
-[[package]]
-name = "iri-string"
-version = "0.7.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25e659a4bb38e810ebc252e53b5814ff908a8c58c2a9ce2fae1bbec24cbf4e20"
-dependencies = [
- "memchr",
- "serde",
-]
 
 [[package]]
 name = "is-macro"
@@ -2275,6 +2265,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "opentelemetry-otlp"
+version = "0.31.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1f69cd6acbb9af919df949cd1ec9e5e7fdc2ef15d234b6b795aaa525cc02f71f"
+dependencies = [
+ "http",
+ "opentelemetry",
+ "opentelemetry-proto",
+ "opentelemetry_sdk",
+ "prost",
+ "thiserror 2.0.18",
+ "tokio",
+ "tonic",
+]
+
+[[package]]
+name = "opentelemetry-proto"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7175df06de5eaee9909d4805a3d07e28bb752c34cab57fa9cff549da596b30f"
+dependencies = [
+ "opentelemetry",
+ "opentelemetry_sdk",
+ "prost",
+ "tonic",
+ "tonic-prost",
+]
+
+[[package]]
 name = "opentelemetry_sdk"
 version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2489,18 +2508,18 @@ dependencies = [
 
 [[package]]
 name = "pin-project"
-version = "1.1.11"
+version = "1.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1749c7ed4bcaf4c3d0a3efc28538844fb29bcdd7d2b67b2be7e20ba861ff517"
+checksum = "cbf0d9e68100b3a7989b4901972f265cd542e560a3a8a724e1e20322f4d06ce9"
 dependencies = [
  "pin-project-internal",
 ]
 
 [[package]]
 name = "pin-project-internal"
-version = "1.1.11"
+version = "1.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9b20ed30f105399776b9c883e68e536ef602a16ae6f596d2c473591d6ad64c6"
+checksum = "a990e22f43e84855daf260dded30524ef4a9021cc7541c26540500a50b624389"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2854,7 +2873,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-common"
-version = "0.18.0"
+version = "0.19.0-dev.0"
 dependencies = [
  "async-tempfile",
  "async-trait",
@@ -2864,7 +2883,6 @@ dependencies = [
  "figment",
  "futures",
  "home",
- "http",
  "http-body-util",
  "httpmock",
  "hyper",
@@ -2878,7 +2896,7 @@ dependencies = [
  "pyo3-async-runtimes",
  "pyo3-build-config",
  "pyo3-stub-gen",
- "reqwest 0.13.3",
+ "qcs-dependencies-client",
  "rigetti-pyo3",
  "rstest",
  "serde",
@@ -2892,7 +2910,6 @@ dependencies = [
  "tokio-util",
  "toml 0.9.12+spec-1.1.0",
  "toml_edit 0.23.10+spec-1.0.0",
- "tracing",
  "url",
  "urlpattern",
  "webbrowser",
@@ -2900,12 +2917,11 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-grpc"
-version = "0.18.0"
+version = "0.19.0-dev.0"
 dependencies = [
  "async-std",
  "backoff",
  "futures-util",
- "http",
  "http-body",
  "http-body-util",
  "hyper",
@@ -2913,15 +2929,8 @@ dependencies = [
  "hyper-util",
  "jsonwebtoken 9.3.1",
  "once_cell",
- "opentelemetry",
- "opentelemetry-http",
- "opentelemetry_sdk",
- "pbjson",
- "pbjson-build",
- "pbjson-types",
- "prost",
- "prost-build",
  "qcs-api-client-common",
+ "qcs-dependencies-client",
  "rigetti-hyper-proxy",
  "rstest",
  "serde",
@@ -2930,17 +2939,6 @@ dependencies = [
  "thiserror 2.0.18",
  "tokio",
  "tokio-stream",
- "tonic",
- "tonic-build",
- "tonic-health",
- "tonic-prost",
- "tonic-prost-build",
- "tonic-web",
- "tower",
- "tower-http 0.5.2",
- "tracing",
- "tracing-opentelemetry",
- "tracing-subscriber",
  "url",
  "urlpattern",
  "uuid",
@@ -2948,7 +2946,7 @@ dependencies = [
 
 [[package]]
 name = "qcs-api-client-openapi"
-version = "0.19.0"
+version = "0.20.0-dev.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -2956,9 +2954,7 @@ dependencies = [
  "http",
  "miette",
  "qcs-api-client-common",
- "reqwest 0.13.3",
- "reqwest-middleware",
- "reqwest-tracing",
+ "qcs-dependencies-client",
  "rstest",
  "serde",
  "serde_json",
@@ -2967,9 +2963,41 @@ dependencies = [
  "serde_with",
  "tokio",
  "tracing",
- "tracing-opentelemetry",
  "url",
  "urlpattern",
+]
+
+[[package]]
+name = "qcs-dependencies-client"
+version = "0.1.2-init.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f39a6298b90eb9f6ac0a4c0e37b3c85d3dfdae90265768b6160e56597c901d05"
+dependencies = [
+ "http",
+ "opentelemetry",
+ "opentelemetry-http",
+ "opentelemetry-otlp",
+ "opentelemetry_sdk",
+ "pbjson",
+ "pbjson-build",
+ "pbjson-types",
+ "prost",
+ "prost-build",
+ "prost-types",
+ "reqwest 0.13.3",
+ "reqwest-middleware",
+ "reqwest-tracing",
+ "tonic",
+ "tonic-build",
+ "tonic-health",
+ "tonic-prost",
+ "tonic-prost-build",
+ "tonic-web",
+ "tower",
+ "tower-http 0.6.9",
+ "tracing",
+ "tracing-opentelemetry",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -3218,7 +3246,7 @@ dependencies = [
  "tokio-rustls",
  "tokio-util",
  "tower",
- "tower-http 0.6.8",
+ "tower-http 0.6.9",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -3260,7 +3288,7 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tower",
- "tower-http 0.6.8",
+ "tower-http 0.6.9",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -4217,9 +4245,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.52.1"
+version = "1.52.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b67dee974fe86fd92cc45b7a95fdd2f99a36a6d7b0d431a231178d3d670bbcc6"
+checksum = "110a78583f19d5cdb2c5ccf321d1290344e71313c6c37d43520d386027d18386"
 dependencies = [
  "bytes",
  "libc",
@@ -4542,20 +4570,21 @@ dependencies = [
 
 [[package]]
 name = "tower-http"
-version = "0.6.8"
+version = "0.6.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4e6559d53cc268e5031cd8429d05415bc4cb4aefc4aa5d6cc35fbf5b924a1f8"
+checksum = "a28f0d049ccfaa566e14e9663d304d8577427b368cb4710a20528690287a738b"
 dependencies = [
  "bitflags",
  "bytes",
  "futures-util",
  "http",
  "http-body",
- "iri-string",
  "pin-project-lite",
  "tower",
  "tower-layer",
  "tower-service",
+ "tracing",
+ "url",
 ]
 
 [[package]]

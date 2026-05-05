@@ -95,16 +95,22 @@ where
 
 /// A trait for filtering header values into a [`Vec<(String, String)>`] of tracing attributes.
 pub trait HeaderAttributesFilter {
-    /// Given a [`http::HeaderMap`], return a corresponding list of tracing attributes.
-    fn get_header_attributes(&self, headers: &http::HeaderMap) -> Vec<(String, String)>;
+    /// Given a [`qcs_dependencies_client::http::HeaderMap`], return a corresponding list of tracing attributes.
+    fn get_header_attributes(
+        &self,
+        headers: &qcs_dependencies_client::http::HeaderMap,
+    ) -> Vec<(String, String)>;
 }
 
 impl HeaderAttributesFilter for IncludeExclude<String> {
-    /// Any header values that return an error on [`http::HeaderValue::to_str`] will be excluded.
+    /// Any header values that return an error on [`qcs_dependencies_client::http::HeaderValue::to_str`] will be excluded.
     /// Note, this implementation intentionally scales linearly with the number of included headers
-    /// when [`Self::Include`] is used and scales linearly with [`http::HeaderMap::len`]
+    /// when [`Self::Include`] is used and scales linearly with [`qcs_dependencies_client::http::HeaderMap::len`]
     /// when [`Self::Exclude`] is used.
-    fn get_header_attributes(&self, headers: &http::HeaderMap) -> Vec<(String, String)> {
+    fn get_header_attributes(
+        &self,
+        headers: &qcs_dependencies_client::http::HeaderMap,
+    ) -> Vec<(String, String)> {
         match self {
             Self::Include(set) => {
                 let mut header_attributes = Vec::new();
@@ -466,7 +472,7 @@ impl TracingFilter {
                 .and_then(|pattern| pattern.exec(input.clone()))
                 .map_err(|e| {
                     #[cfg(feature = "tracing")]
-                    tracing::error!("error matching url pattern: {}", e);
+                    qcs_dependencies_client::tracing::error!("error matching url pattern: {}", e);
                 })
                 .ok()
                 .flatten()

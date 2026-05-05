@@ -17,7 +17,7 @@ use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct ResponseContent<T> {
-    pub status: reqwest::StatusCode,
+    pub status: qcs_dependencies_client::reqwest::StatusCode,
     pub content: String,
     pub entity: Option<T>,
     pub retry_delay: Option<std::time::Duration>,
@@ -25,7 +25,7 @@ pub struct ResponseContent<T> {
 
 #[derive(Debug)]
 pub enum Error<T> {
-    Reqwest(reqwest::Error),
+    Reqwest(qcs_dependencies_client::reqwest::Error),
     Serde(serde_path_to_error::Error<serde_json::Error>),
     Io(std::io::Error),
     QcsToken(crate::common::configuration::TokenError),
@@ -39,7 +39,7 @@ pub enum Error<T> {
 }
 
 impl<T> Error<T> {
-    pub fn status_code(&self) -> Option<reqwest::StatusCode> {
+    pub fn status_code(&self) -> Option<qcs_dependencies_client::reqwest::StatusCode> {
         match self {
             Self::ResponseError(err) => Some(err.status),
             _ => None,
@@ -84,18 +84,20 @@ impl<T: fmt::Debug> error::Error for Error<T> {
     }
 }
 
-impl<T> From<reqwest::Error> for Error<T> {
-    fn from(e: reqwest::Error) -> Self {
+impl<T> From<qcs_dependencies_client::reqwest::Error> for Error<T> {
+    fn from(e: qcs_dependencies_client::reqwest::Error) -> Self {
         Error::Reqwest(e)
     }
 }
 
 #[cfg(feature = "tracing-opentelemetry")]
-impl<T> From<reqwest_middleware::Error> for Error<T> {
-    fn from(e: reqwest_middleware::Error) -> Self {
+impl<T> From<qcs_dependencies_client::reqwest_middleware::Error> for Error<T> {
+    fn from(e: qcs_dependencies_client::reqwest_middleware::Error) -> Self {
         match e {
-            reqwest_middleware::Error::Reqwest(e) => Error::Reqwest(e),
-            reqwest_middleware::Error::Middleware(e) => Error::ReqwestMiddleware(e),
+            qcs_dependencies_client::reqwest_middleware::Error::Reqwest(e) => Error::Reqwest(e),
+            qcs_dependencies_client::reqwest_middleware::Error::Middleware(e) => {
+                Error::ReqwestMiddleware(e)
+            }
         }
     }
 }

@@ -85,7 +85,7 @@ pub enum TokenError {
     NoAuthServer,
     /// Failure fetching a refreshed access token from the QCS API.
     #[error("Error fetching new token from the QCS API: {0}")]
-    Fetch(#[from] reqwest::Error),
+    Fetch(#[from] qcs_dependencies_client::reqwest::Error),
     /// Catch all for errors returned from an [`super::ExternallyManaged`] refresh function.
     #[error("Failed to request an externally managed access token: {0}")]
     ExternallyManaged(String),
@@ -110,7 +110,7 @@ pub enum DiscoveryError {
     #[error("invalid issuer URL: {0}")]
     Url(#[from] url::ParseError),
     #[error("error fetching discovery document: {0}")]
-    Fetch(#[from] reqwest::Error),
+    Fetch(#[from] qcs_dependencies_client::reqwest::Error),
     #[error("failed to parse discovery document: {0}")]
     Json(#[from] serde_json::Error),
     #[error("issuer URL ({issuer}) is invalid: {reason}")]
