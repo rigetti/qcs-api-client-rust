@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2026 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,12 +23,17 @@
  */
 
 use qcs_api_client_common::backoff;
-use reqwest;
+use qcs_dependencies_client::http;
+use qcs_dependencies_client::reqwest;
+use qcs_dependencies_client::reqwest_middleware;
+use qcs_dependencies_client::reqwest_tracing;
+use qcs_dependencies_client::tracing_opentelemetry;
 #[cfg(feature = "tracing-opentelemetry")]
 use {
     qcs_api_client_common::tracing_configuration::HeaderAttributesFilter,
-    reqwest_middleware::ClientBuilder, reqwest_tracing::reqwest_otel_span,
-    reqwest_tracing::TracingMiddleware, tracing, tracing::Span,
+    reqwest_middleware::ClientBuilder,
+    reqwest_tracing::{TracingMiddleware, reqwest_otel_span},
+    tracing::Span,
 };
 
 #[derive(Debug, Clone)]
@@ -203,6 +208,7 @@ impl reqwest_tracing::ReqwestOtelSpanBackend for FilteredSpanBackend {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     #[cfg(feature = "tracing-opentelemetry")]
     use rstest::rstest;
 

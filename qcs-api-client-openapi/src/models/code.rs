@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2026 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,6 +49,8 @@ pub enum Code {
     UnderLoad,
     #[serde(rename = "unauthenticated")]
     Unauthenticated,
+    #[serde(rename = "unimplemented")]
+    Unimplemented,
 
     #[cfg_attr(feature = "clap", clap(skip))]
     #[serde(untagged)]
@@ -67,6 +69,7 @@ impl std::fmt::Display for Code {
             Self::ResourceNotFound => write!(f, "resource_not_found"),
             Self::UnderLoad => write!(f, "under_load"),
             Self::Unauthenticated => write!(f, "unauthenticated"),
+            Self::Unimplemented => write!(f, "unimplemented"),
             Self::UnrecognizedValue(s) => s.fmt(f),
         }
     }

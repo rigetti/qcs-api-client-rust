@@ -1,228 +1,232 @@
-[build-dependencies]
-  [build-dependencies.pyo3-build-config]
-    optional = true
-    workspace = true
+[package]
+categories = ['api-bindings', 'authentication']
+description = 'Common code for QCS API clients'
+homepage = 'https://github.com/rigetti/qcs-api-client-rust'
+keywords = ['qcs', 'quantum', 'rigetti', 'api']
+license = 'Apache-2.0'
+name = 'qcs-api-client-common'
+publish = true
+readme = 'README.md'
+repository = 'https://github.com/rigetti/qcs-api-client-rust'
+version = '0.18.1-dev.0'
 
-[dependencies]
-  [dependencies.async-tempfile]
-    workspace = true
+[package.authors]
+workspace = true
 
-  [dependencies.async-trait]
-    workspace = true
+[package.edition]
+workspace = true
 
-  [dependencies.backoff]
-    workspace = true
+[package.metadata]
+[package.metadata.docs]
+[package.metadata.docs.rs]
+features = ['python', 'tracing']
 
-  [dependencies.clap-stdin]
-    optional = true
-    workspace = true
-
-  [dependencies.derive_builder]
-    workspace = true
-
-  [dependencies.figment]
-    workspace = true
-
-  [dependencies.futures]
-    workspace = true
-
-  [dependencies.home]
-    workspace = true
-
-  [dependencies.http]
-    workspace = true
-
-  [dependencies.http-body-util]
-    workspace = true
-
-  [dependencies.hyper]
-    features = ['server']
-    workspace = true
-
-  [dependencies.hyper-util]
-    workspace = true
-
-  [dependencies.jsonwebtoken]
-    workspace = true
-
-  [dependencies.miette]
-    optional = true
-    workspace = true
-
-  [dependencies.oauth2]
-    workspace = true
-
-  [dependencies.optipy]
-    workspace = true
-
-  [dependencies.pyo3]
-    features = ['multiple-pymethods']
-    optional = true
-    workspace = true
-
-  [dependencies.pyo3-async-runtimes]
-    features = ['tokio-runtime']
-    optional = true
-    workspace = true
-
-  [dependencies.pyo3-stub-gen]
-    optional = true
-    workspace = true
-
-  [dependencies.reqwest]
-    default-features = false
-    features = ['socks']
-    workspace = true
-
-  [dependencies.rigetti-pyo3]
-    features = ['async-tokio']
-    optional = true
-    workspace = true
-
-  [dependencies.serde]
-    features = ['derive']
-    workspace = true
-
-  [dependencies.serde_json]
-    workspace = true
-
-  [dependencies.serde_path_to_error]
-    optional = true
-    workspace = true
-
-  [dependencies.shellexpand]
-    workspace = true
-
-  [dependencies.thiserror]
-    workspace = true
-
-  [dependencies.time]
-    workspace = true
-
-  [dependencies.tokio]
-    features = ['rt-multi-thread', 'sync', 'fs', 'signal']
-    workspace = true
-
-  [dependencies.tokio-util]
-    workspace = true
-
-  [dependencies.toml]
-    workspace = true
-
-  [dependencies.toml_edit]
-    workspace = true
-
-  [dependencies.tracing]
-    optional = true
-    workspace = true
-
-  [dependencies.url]
-    workspace = true
-
-  [dependencies.urlpattern]
-    optional = true
-    workspace = true
-
-  [dependencies.webbrowser]
-    workspace = true
-
-[dev-dependencies]
-  [dev-dependencies.figment]
-    features = ['test']
-    workspace = true
-
-  [dev-dependencies.httpmock]
-    workspace = true
-
-  [dev-dependencies.oauth2-test-server]
-    workspace = true
-
-  [dev-dependencies.rstest]
-    workspace = true
-
-  [dev-dependencies.serial_test]
-    workspace = true
-
-  [dev-dependencies.tokio]
-    features = ['fs', 'macros']
-    workspace = true
-
-[features]
-  _insecure-issuer-validation = []
-  clap = ['dep:clap-stdin', 'dep:miette', 'dep:serde_path_to_error']
-  python = ['dep:pyo3', 'dep:pyo3-async-runtimes', 'dep:pyo3-build-config', 'dep:rigetti-pyo3', 'tokio/macros']
-  stubs = ['python', 'dep:pyo3-stub-gen', 'rigetti-pyo3/stubs']
-  test = ['_insecure-issuer-validation']
-  tracing = ['dep:tracing', 'urlpattern']
-  tracing-config = ['tracing']
+[package.rust-version]
+workspace = true
 
 [lib]
-  crate-type = ['cdylib', 'rlib']
-  name = 'qcs_api_client_common'
+crate-type = ['cdylib', 'rlib']
+name = 'qcs_api_client_common'
+
+[features]
+_insecure-issuer-validation = []
+clap = ['dep:clap-stdin', 'dep:miette', 'dep:serde_path_to_error']
+python = ['dep:pyo3', 'dep:pyo3-async-runtimes', 'dep:pyo3-build-config', 'dep:rigetti-pyo3', 'tokio/macros']
+stubs = ['python', 'dep:pyo3-stub-gen', 'rigetti-pyo3/stubs']
+test = ['_insecure-issuer-validation']
+tracing = ['dep:tracing', 'dep:urlpattern']
+tracing-config = ['tracing']
+
+[dependencies]
+[dependencies.async-tempfile]
+workspace = true
+
+[dependencies.async-trait]
+workspace = true
+
+[dependencies.backoff]
+workspace = true
+
+[dependencies.clap-stdin]
+optional = true
+workspace = true
+
+[dependencies.derive_builder]
+workspace = true
+
+[dependencies.figment]
+workspace = true
+
+[dependencies.futures]
+workspace = true
+
+[dependencies.home]
+workspace = true
+
+[dependencies.http-body-util]
+workspace = true
+
+[dependencies.hyper]
+features = ['server']
+workspace = true
+
+[dependencies.hyper-util]
+workspace = true
+
+[dependencies.jsonwebtoken]
+workspace = true
+
+[dependencies.miette]
+optional = true
+workspace = true
+
+[dependencies.oauth2]
+workspace = true
+
+[dependencies.optipy]
+workspace = true
+
+[dependencies.pyo3]
+features = ['multiple-pymethods']
+optional = true
+workspace = true
+
+[dependencies.pyo3-async-runtimes]
+features = ['tokio-runtime']
+optional = true
+workspace = true
+
+[dependencies.pyo3-stub-gen]
+optional = true
+workspace = true
+
+[dependencies.qcs-dependencies-client]
+features = ['http']
+workspace = true
+
+[dependencies.rigetti-pyo3]
+features = ['async-tokio']
+optional = true
+workspace = true
+
+[dependencies.serde]
+features = ['derive']
+workspace = true
+
+[dependencies.serde_json]
+workspace = true
+
+[dependencies.serde_path_to_error]
+optional = true
+workspace = true
+
+[dependencies.shellexpand]
+workspace = true
+
+[dependencies.thiserror]
+workspace = true
+
+[dependencies.time]
+workspace = true
+
+[dependencies.tokio]
+features = ['rt-multi-thread', 'sync', 'fs', 'signal']
+workspace = true
+
+[dependencies.tokio-util]
+workspace = true
+
+[dependencies.toml]
+workspace = true
+
+[dependencies.toml_edit]
+workspace = true
+
+[dependencies.tracing]
+optional = true
+workspace = true
+
+[dependencies.url]
+workspace = true
+
+[dependencies.urlpattern]
+optional = true
+workspace = true
+
+[dependencies.webbrowser]
+workspace = true
+
+[build-dependencies]
+[build-dependencies.pyo3-build-config]
+optional = true
+workspace = true
+
+[dev-dependencies]
+[dev-dependencies.figment]
+features = ['test']
+workspace = true
+
+[dev-dependencies.httpmock]
+workspace = true
+
+[dev-dependencies.oauth2-test-server]
+workspace = true
+
+[dev-dependencies.rstest]
+workspace = true
+
+[dev-dependencies.serial_test]
+workspace = true
+
+[dev-dependencies.tokio]
+features = ['fs', 'macros']
+workspace = true
 
 [lints]
-  [lints.clippy]
-    all = 'deny'
-    module_name_repetitions = 'allow'
-    redundant_pub_crate = 'allow'
-    unsafe_derive_deserialize = 'allow'
+[lints.clippy]
+all = 'deny'
+module_name_repetitions = 'allow'
+redundant_pub_crate = 'allow'
+unsafe_derive_deserialize = 'allow'
 
-    [lints.clippy.nursery]
-      level = 'warn'
-      priority = -2
+[lints.clippy.nursery]
+level = 'warn'
+priority = -2
 
-    [lints.clippy.pedantic]
-      level = 'warn'
-      priority = -1
+[lints.clippy.pedantic]
+level = 'warn'
+priority = -1
 
-  [lints.rust]
-    absolute_paths_not_starting_with_crate = 'warn'
-    anonymous_parameters = 'warn'
-    bad_style = 'warn'
-    dead_code = 'warn'
-    improper_ctypes = 'warn'
-    keyword_idents = 'warn'
-    macro_use_extern_crate = 'warn'
-    meta_variable_misuse = 'warn'
-    missing_abi = 'warn'
-    missing_debug_implementations = 'warn'
-    missing_docs = 'warn'
-    no_mangle_generic_items = 'warn'
-    non_shorthand_field_patterns = 'warn'
-    noop_method_call = 'warn'
-    overflowing_literals = 'warn'
-    path_statements = 'warn'
-    patterns_in_fns_without_body = 'warn'
-    semicolon_in_expressions_from_macros = 'warn'
-    trivial_casts = 'warn'
-    trivial_numeric_casts = 'warn'
-    unconditional_recursion = 'warn'
-    unreachable_pub = 'warn'
-    unsafe_code = 'warn'
-    unused = 'warn'
-    unused_allocation = 'warn'
-    unused_comparisons = 'warn'
-    unused_extern_crates = 'warn'
-    unused_import_braces = 'warn'
-    unused_lifetimes = 'warn'
-    unused_parens = 'warn'
-    unused_qualifications = 'warn'
-    while_true = 'warn'
-
-[package]
-  categories = ['api-bindings', 'authentication']
-  description = 'Common code for QCS API clients'
-  edition = '2021'
-  homepage = 'https://github.com/rigetti/qcs-api-client-rust'
-  keywords = ['qcs', 'quantum', 'rigetti', 'api']
-  license = 'Apache-2.0'
-  name = 'qcs-api-client-common'
-  publish = true
-  readme = 'README.md'
-  repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.18.0'
-
-  [package.metadata]
-    [package.metadata.docs]
-      [package.metadata.docs.rs]
-        features = ['python', 'tracing']
+[lints.rust]
+absolute_paths_not_starting_with_crate = 'warn'
+anonymous_parameters = 'warn'
+bad_style = 'warn'
+dead_code = 'warn'
+improper_ctypes = 'warn'
+keyword_idents = 'warn'
+macro_use_extern_crate = 'warn'
+meta_variable_misuse = 'warn'
+missing_abi = 'warn'
+missing_debug_implementations = 'warn'
+missing_docs = 'warn'
+no_mangle_generic_items = 'warn'
+non_shorthand_field_patterns = 'warn'
+noop_method_call = 'warn'
+overflowing_literals = 'warn'
+path_statements = 'warn'
+patterns_in_fns_without_body = 'warn'
+semicolon_in_expressions_from_macros = 'warn'
+trivial_casts = 'warn'
+trivial_numeric_casts = 'warn'
+unconditional_recursion = 'warn'
+unreachable_pub = 'warn'
+unsafe_code = 'warn'
+unused = 'warn'
+unused_allocation = 'warn'
+unused_comparisons = 'warn'
+unused_extern_crates = 'warn'
+unused_import_braces = 'warn'
+unused_lifetimes = 'warn'
+unused_parens = 'warn'
+unused_qualifications = 'warn'
+while_true = 'warn'

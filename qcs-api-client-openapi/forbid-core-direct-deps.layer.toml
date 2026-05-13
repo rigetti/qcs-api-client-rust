@@ -1,0 +1,2 @@
+# `::http` is used by the `reqwest_otel_span!` macro.
+allowlist = ["http"]

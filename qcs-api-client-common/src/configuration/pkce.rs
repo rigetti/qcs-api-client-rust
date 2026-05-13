@@ -1,23 +1,23 @@
 use std::{collections::HashSet, convert::Infallible};
 
-use http::{Response, StatusCode};
 use http_body_util::Full;
 use hyper::body::Bytes;
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
 use hyper_util::rt::TokioIo;
 use oauth2::{
-    basic::{BasicClient, BasicErrorResponseType, BasicTokenType},
     AuthUrl, AuthorizationCode, ClientId, CsrfToken, EmptyExtraTokenFields, HttpClientError,
     PkceCodeChallenge, RedirectUrl, RequestTokenError, Scope, StandardErrorResponse,
     StandardTokenResponse, TokenUrl,
+    basic::{BasicClient, BasicErrorResponseType, BasicTokenType},
 };
+use qcs_dependencies_client::http::{Response, StatusCode};
 
 use tokio::net::TcpListener;
 use tokio_util::sync::CancellationToken;
 use url::form_urlencoded;
 
-use crate::configuration::oidc::{Discovery, DISCOVERY_REQUIRED_SCOPE};
+use crate::configuration::oidc::{DISCOVERY_REQUIRED_SCOPE, Discovery};
 
 /// The scheme for the redirect URL.
 const PKCE_REDIRECT_URL_SCHEME: &str = "http";
@@ -322,7 +322,7 @@ pub(in crate::configuration) mod tests {
     use oauth2_test_server::{Client, IssuerConfig, OAuthTestServer};
 
     use crate::configuration::{
-        oidc::{fetch_discovery, DISCOVERY_REQUIRED_SCOPE},
+        oidc::{DISCOVERY_REQUIRED_SCOPE, fetch_discovery},
         secrets::SecretAccessToken,
         tokens::insecure_validate_token_exp,
     };
@@ -351,9 +351,12 @@ pub(in crate::configuration) mod tests {
             })
             .await;
 
-            let discovery = fetch_discovery(&reqwest::Client::new(), server.issuer())
-                .await
-                .unwrap();
+            let discovery = fetch_discovery(
+                &qcs_dependencies_client::reqwest::Client::new(),
+                server.issuer(),
+            )
+            .await
+            .unwrap();
 
             let redirect_url = format_redirect_url(PKCE_REDIRECT_URL_DEFAULT_PORT);
             let client = server.register_client(serde_json::json!({

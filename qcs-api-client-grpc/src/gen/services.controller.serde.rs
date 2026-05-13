@@ -1,4 +1,4 @@
-// Copyright 2023 Rigetti Computing
+// Copyright 2026 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 impl serde::Serialize for BatchExecuteControllerJobsRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -24,9 +23,15 @@ impl serde::Serialize for BatchExecuteControllerJobsRequest {
         if !self.requests.is_empty() {
             len += 1;
         }
+        if self.idempotency_key.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("services.controller.BatchExecuteControllerJobsRequest", len)?;
         if !self.requests.is_empty() {
             struct_ser.serialize_field("requests", &self.requests)?;
+        }
+        if let Some(v) = self.idempotency_key.as_ref() {
+            struct_ser.serialize_field("idempotencyKey", v)?;
         }
         struct_ser.end()
     }
@@ -39,11 +44,14 @@ impl<'de> serde::Deserialize<'de> for BatchExecuteControllerJobsRequest {
     {
         const FIELDS: &[&str] = &[
             "requests",
+            "idempotency_key",
+            "idempotencyKey",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Requests,
+            IdempotencyKey,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -66,6 +74,7 @@ impl<'de> serde::Deserialize<'de> for BatchExecuteControllerJobsRequest {
                     {
                         match value {
                             "requests" => Ok(GeneratedField::Requests),
+                            "idempotencyKey" | "idempotency_key" => Ok(GeneratedField::IdempotencyKey),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -86,6 +95,7 @@ impl<'de> serde::Deserialize<'de> for BatchExecuteControllerJobsRequest {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
+                let mut idempotency_key__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Requests => {
@@ -94,10 +104,17 @@ impl<'de> serde::Deserialize<'de> for BatchExecuteControllerJobsRequest {
                             }
                             requests__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::IdempotencyKey => {
+                            if idempotency_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("idempotencyKey"));
+                            }
+                            idempotency_key__ = map_.next_value()?;
+                        }
                     }
                 }
                 Ok(BatchExecuteControllerJobsRequest {
                     requests: requests__.unwrap_or_default(),
+                    idempotency_key: idempotency_key__,
                 })
             }
         }
@@ -393,6 +410,148 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsResponse {
         deserializer.deserialize_struct("services.controller.CancelControllerJobsResponse", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for CancelExecutionSessionResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let len = 0;
+        let struct_ser = serializer.serialize_struct("services.controller.CancelExecutionSessionResponse", len)?;
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for CancelExecutionSessionResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = CancelExecutionSessionResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct services.controller.CancelExecutionSessionResponse")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CancelExecutionSessionResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                while map_.next_key::<GeneratedField>()?.is_some() {
+                    let _ = map_.next_value::<serde::de::IgnoredAny>()?;
+                }
+                Ok(CancelExecutionSessionResponse {
+                })
+            }
+        }
+        deserializer.deserialize_struct("services.controller.CancelExecutionSessionResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for CloseExecutionSessionResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let len = 0;
+        let struct_ser = serializer.serialize_struct("services.controller.CloseExecutionSessionResponse", len)?;
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for CloseExecutionSessionResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = CloseExecutionSessionResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct services.controller.CloseExecutionSessionResponse")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CloseExecutionSessionResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                while map_.next_key::<GeneratedField>()?.is_some() {
+                    let _ = map_.next_value::<serde::de::IgnoredAny>()?;
+                }
+                Ok(CloseExecutionSessionResponse {
+                })
+            }
+        }
+        deserializer.deserialize_struct("services.controller.CloseExecutionSessionResponse", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for EstimatedDelay {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -532,6 +691,9 @@ impl serde::Serialize for ExecuteControllerJobRequest {
         if self.options.is_some() {
             len += 1;
         }
+        if self.idempotency_key.is_some() {
+            len += 1;
+        }
         if self.job.is_some() {
             len += 1;
         }
@@ -544,6 +706,9 @@ impl serde::Serialize for ExecuteControllerJobRequest {
         }
         if let Some(v) = self.options.as_ref() {
             struct_ser.serialize_field("options", v)?;
+        }
+        if let Some(v) = self.idempotency_key.as_ref() {
+            struct_ser.serialize_field("idempotencyKey", v)?;
         }
         if let Some(v) = self.job.as_ref() {
             match v {
@@ -575,6 +740,8 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
             "execution_configurations",
             "executionConfigurations",
             "options",
+            "idempotency_key",
+            "idempotencyKey",
             "encrypted",
             "quantum_processor_id",
             "quantumProcessorId",
@@ -586,6 +753,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
         enum GeneratedField {
             ExecutionConfigurations,
             Options,
+            IdempotencyKey,
             Encrypted,
             QuantumProcessorId,
             EndpointId,
@@ -612,6 +780,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                         match value {
                             "executionConfigurations" | "execution_configurations" => Ok(GeneratedField::ExecutionConfigurations),
                             "options" => Ok(GeneratedField::Options),
+                            "idempotencyKey" | "idempotency_key" => Ok(GeneratedField::IdempotencyKey),
                             "encrypted" => Ok(GeneratedField::Encrypted),
                             "quantumProcessorId" | "quantum_processor_id" => Ok(GeneratedField::QuantumProcessorId),
                             "endpointId" | "endpoint_id" => Ok(GeneratedField::EndpointId),
@@ -636,6 +805,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
             {
                 let mut execution_configurations__ = None;
                 let mut options__ = None;
+                let mut idempotency_key__ = None;
                 let mut job__ = None;
                 let mut target__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -651,6 +821,12 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                                 return Err(serde::de::Error::duplicate_field("options"));
                             }
                             options__ = map_.next_value()?;
+                        }
+                        GeneratedField::IdempotencyKey => {
+                            if idempotency_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("idempotencyKey"));
+                            }
+                            idempotency_key__ = map_.next_value()?;
                         }
                         GeneratedField::Encrypted => {
                             if job__.is_some() {
@@ -676,6 +852,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                 Ok(ExecuteControllerJobRequest {
                     execution_configurations: execution_configurations__.unwrap_or_default(),
                     options: options__,
+                    idempotency_key: idempotency_key__,
                     job: job__,
                     target: target__,
                 })
@@ -1425,6 +1602,77 @@ impl<'de> serde::Deserialize<'de> for get_controller_job_status_response::Status
             }
         }
         deserializer.deserialize_any(GeneratedVisitor)
+    }
+}
+impl serde::Serialize for Uuid {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let len = 0;
+        let struct_ser = serializer.serialize_struct("services.controller.Uuid", len)?;
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for Uuid {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = Uuid;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct services.controller.Uuid")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<Uuid, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                while map_.next_key::<GeneratedField>()?.is_some() {
+                    let _ = map_.next_value::<serde::de::IgnoredAny>()?;
+                }
+                Ok(Uuid {
+                })
+            }
+        }
+        deserializer.deserialize_struct("services.controller.Uuid", FIELDS, GeneratedVisitor)
     }
 }
 

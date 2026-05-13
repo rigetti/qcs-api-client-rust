@@ -15,15 +15,17 @@
 //! Shared utilities for tracing gRPC requests across the "tracing-opentelemetry" and
 //! base "tracing" feature sets.
 use qcs_api_client_common::tracing_configuration::TracingFilter;
-use tower_http::classify::GrpcFailureClass;
+use qcs_dependencies_client::tower_http::classify::GrpcFailureClass;
+use qcs_dependencies_client::tracing_opentelemetry::OpenTelemetrySpanExt;
 use tracing::Span;
-use tracing_opentelemetry::OpenTelemetrySpanExt;
 use urlpattern::UrlPatternMatchInput;
 
 /// Creates a gRPC request span that conforms to the gRPC semantic conventions.
 /// See <https://opentelemetry.io/docs/specs/semconv/rpc/grpc/>
 /// for details.
-pub(super) fn make_grpc_request_span<B>(request: &http::Request<B>) -> tracing::Span {
+pub(super) fn make_grpc_request_span<B>(
+    request: &qcs_dependencies_client::http::Request<B>,
+) -> tracing::Span {
     let url = request.uri();
     let path = url.path();
     let mut path_split = path.split('/');
@@ -54,7 +56,7 @@ pub(super) fn make_grpc_request_span<B>(request: &http::Request<B>) -> tracing::
 /// If `filter` is `None`, the request should be traced.
 pub(super) fn should_trace_request<B>(
     base_url: &str,
-    request: &http::Request<B>,
+    request: &qcs_dependencies_client::http::Request<B>,
     filter: Option<&TracingFilter>,
 ) -> bool {
     // The request URI here doesn't include the base url, so we have  to manually add it here to evaluate request filter patterns.
@@ -67,17 +69,17 @@ pub(super) fn should_trace_request<B>(
         .is_none_or(|(filter, url)| filter.is_enabled(&UrlPatternMatchInput::Url(url)))
 }
 
-/// A [`tower_http::trace::OnFailure`] implementation for gRPC requests.
+/// A [`qcs_dependencies_client::tower_http::trace::OnFailure`] implementation for gRPC requests.
 ///
 /// Sets the "rpc.grpc.status_code" attribute on the span if the failure classification
 /// is [`GrpcFailureClass::Code`]; otherwise, it sets the status code to
-/// [`tonic::Code::Unknown`].
+/// [`qcs_dependencies_client::tonic::Code::Unknown`].
 #[derive(Clone, Debug, Default)]
 pub struct OnFailure {
-    pub(super) inner: tower_http::trace::DefaultOnFailure,
+    pub(super) inner: qcs_dependencies_client::tower_http::trace::DefaultOnFailure,
 }
 
-impl tower_http::trace::OnFailure<GrpcFailureClass> for OnFailure {
+impl qcs_dependencies_client::tower_http::trace::OnFailure<GrpcFailureClass> for OnFailure {
     fn on_failure(
         &mut self,
         failure_classification: GrpcFailureClass,
@@ -91,7 +93,7 @@ impl tower_http::trace::OnFailure<GrpcFailureClass> for OnFailure {
             GrpcFailureClass::Error(_) => {
                 span.set_attribute(
                     "rpc.grpc.status_code",
-                    format!("{}", tonic::Code::Unknown as u8),
+                    format!("{}", qcs_dependencies_client::tonic::Code::Unknown as u8),
                 );
             }
         }

@@ -5,11 +5,23 @@ import "controller/job.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
+// A UUID (Universally Unique ID)
+//
+// The format is a UUID4 stored as 128 bits. The 0 UUID and any bit pattern that
+// is invalid for UUID v4 are invalid and will cause the request to fail.
+message Uuid {
+}
+message CloseExecutionSessionResponse {
+}
+
 // A request to execute multiple ControllerJobs as if they were sent as separate requests.
 // Note that the job execution IDs will be returned in the same order as the requests,
 // but execution itself may occur out of that order depending on executor configuration.
 message BatchExecuteControllerJobsRequest {
     repeated .services.controller.ExecuteControllerJobRequest requests = 1;
+
+    // See comment on `ExecuteControllerJobRequest.idempotency_key`.
+    optional .services.controller.Uuid idempotency_key = 2;
 }
 message BatchExecuteControllerJobsResponse {
     repeated .services.controller.ExecuteControllerJobResponse responses = 1;
@@ -31,6 +43,33 @@ message ExecuteControllerJobRequest {
     // each corresponding to its configuration in the same order.
     repeated .models.controller.JobExecutionConfiguration execution_configurations = 3;
     .services.controller.ExecutionOptions options = 4;
+
+    // Setting the idempotency key permits retrying failed execute-controller-job
+    // requests (or batch requests) without creating duplicate jobs.
+    //
+    // If the server sees an idempotency key corresponding to an already-enqueued
+    // job (or batch of jobs), it will return a copy of the original job-submission
+    // response, i.e., the IDs of the already-enqueued jobs.
+    //
+    // When submitting jobs, a failure response from the server always means that no
+    // jobs were enqueued, so retrying job submission will not create duplicate
+    // jobs. However, if submission fails due to a gRPC timeout, the client has no
+    // way of knowing whether the service handled the original request or not, so
+    // without the idempotency key, retrying may or may not create duplicate jobs.
+    //
+    // Clients should not use the same idempotency key for separate requests. The
+    // API makes no guarantees about the server behavior in that case.
+    //
+    // A given idempotency key is valid for at least as long as any job IDs
+    // generated from the corresponding request are known to the server.
+    // For a job submitted as part of a session, the idempotency key will be valid
+    // for at least as long as the session ID itself is valid. For all jobs, the
+    // idempotency key will be valid for at least as long as the job is enqueued,
+    // executing, or waiting for results retrieval.
+    //
+    // This field is *ignored* for requests that are part of a `BatchExecuteControllerJobRequest`;
+    // use `BatchExecuteControllerJobRequest.idempotency_key` instead.
+    optional .services.controller.Uuid idempotency_key = 5;
     oneof job {
         .models.controller.EncryptedControllerJob encrypted = 201;
     }
@@ -101,6 +140,8 @@ message CancelControllerJobsRequest {
     }
 }
 message CancelControllerJobsResponse {
+}
+message CancelExecutionSessionResponse {
 }
 message GetControllerJobStatusRequest {
     string job_id = 1;

@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use qcs_dependencies_client::tonic::body::Body;
+use qcs_dependencies_client::tonic::client::GrpcService;
+use qcs_dependencies_client::tonic::codegen::http::{Request, Response};
+use qcs_dependencies_client::tonic_web::{GrpcWebCall, GrpcWebClientService};
+use qcs_dependencies_client::tower::{Layer, ServiceBuilder};
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use tonic::body::Body;
-use tonic::client::GrpcService;
-use tonic::codegen::http::{Request, Response};
-use tonic_web::{GrpcWebCall, GrpcWebClientService};
-use tower::{Layer, ServiceBuilder};
 
 /// Add grpc-web support to the `channel`, converting
 /// all gRPC requests to use the grpc-web protocol and HTTP/1.1
@@ -60,7 +60,8 @@ pub struct GrpcWebWrapperService<S> {
     service: S,
 }
 
-impl<S> tower::Service<Request<GrpcWebCall<Body>>> for GrpcWebWrapperService<S>
+impl<S> qcs_dependencies_client::tower::Service<Request<GrpcWebCall<Body>>>
+    for GrpcWebWrapperService<S>
 where
     S: GrpcService<Body> + Clone + Send + 'static,
     <S as GrpcService<Body>>::Future: Send,

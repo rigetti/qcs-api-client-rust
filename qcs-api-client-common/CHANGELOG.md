@@ -1,3 +1,14 @@
+## 0.18.1-dev.0 (2026-05-13)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+
 ## 0.18.0 (2026-05-04)
 
 ### Breaking Changes
