@@ -50,6 +50,6 @@ fn main() {
                 .server_mod_attribute("services.controller", r#"#[cfg(feature = "server")]"#)
                 .server_mod_attribute("services.translation", r#"#[cfg(feature = "server")]"#),
         )
-        .license_header(include_str!("../license_header"))
+        .license_header(include_str!("./license_header"))
         .build();
 }
