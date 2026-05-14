@@ -1,3 +1,14 @@
+## 0.19.1-dev.1 (2026-05-14)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+
 ## 0.19.1-dev.0 (2026-05-13)
 
 ### Features
