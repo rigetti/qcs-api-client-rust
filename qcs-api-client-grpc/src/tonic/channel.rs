@@ -4,20 +4,20 @@
 use std::time::Duration;
 
 use backoff::ExponentialBackoff;
-use http::{uri::InvalidUri, Uri};
 use hyper_socks2::{Auth, SocksConnector};
 use hyper_util::client::legacy::connect::HttpConnector;
-use tonic::{
+use qcs_dependencies_client::http::{Uri, uri::InvalidUri};
+use qcs_dependencies_client::tonic::{
     body::Body,
     client::GrpcService,
     transport::{Channel, ClientTlsConfig, Endpoint},
 };
-use tower::{Layer, ServiceBuilder};
+use qcs_dependencies_client::tower::{Layer, ServiceBuilder};
 use url::Url;
 
 use qcs_api_client_common::{
     backoff::{self, default_backoff},
-    configuration::{tokens::TokenRefresher, ClientConfiguration, LoadError, TokenError},
+    configuration::{ClientConfiguration, LoadError, TokenError, tokens::TokenRefresher},
 };
 
 #[cfg(feature = "tracing")]
@@ -26,7 +26,7 @@ use qcs_api_client_common::tracing_configuration::TracingConfiguration;
 use rigetti_hyper_proxy::{Intercept, Proxy, ProxyConnector};
 
 #[cfg(feature = "tracing")]
-use super::trace::{build_trace_layer, CustomTraceLayer, CustomTraceService};
+use super::trace::{CustomTraceLayer, CustomTraceService, build_trace_layer};
 use super::{Error, RefreshLayer, RefreshService, RetryLayer, RetryService};
 
 /// Errors that may occur when configuring a channel connection
@@ -465,7 +465,7 @@ pub fn get_channel_with_endpoint(endpoint: &Endpoint) -> Result<Channel, Channel
     let mut connector = HttpConnector::new();
     connector.enforce_http(false);
 
-    let connect_to = |uri: http::Uri, intercept: Intercept| {
+    let connect_to = |uri: qcs_dependencies_client::http::Uri, intercept: Intercept| {
         let connector = connector.clone();
         match uri.scheme_str() {
             Some("socks5") => {
@@ -477,7 +477,8 @@ pub fn get_channel_with_endpoint(endpoint: &Endpoint) -> Result<Channel, Channel
                 Ok(endpoint.connect_with_connector_lazy(socks_connector))
             }
             Some("https" | "http") => {
-                let is_http = uri.scheme() == Some(&http::uri::Scheme::HTTP);
+                let is_http =
+                    uri.scheme() == Some(&qcs_dependencies_client::http::uri::Scheme::HTTP);
                 let proxy = Proxy::new(intercept, uri);
                 let mut proxy_connector = ProxyConnector::from_proxy(connector, proxy)?;
                 if is_http {

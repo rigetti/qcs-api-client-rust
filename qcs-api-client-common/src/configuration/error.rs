@@ -2,8 +2,8 @@ use std::{error::Error, path::PathBuf};
 
 use crate::configuration::{oidc::DISCOVERY_REQUIRED_SCOPE, tokens::PkceFlowError};
 
-use super::secrets::SECRETS_READ_ONLY_VAR;
 use super::ClientConfigurationBuilderError;
+use super::secrets::SECRETS_READ_ONLY_VAR;
 
 /// Errors that can occur when loading a configuration.
 #[derive(Debug, thiserror::Error)]
@@ -85,12 +85,14 @@ pub enum TokenError {
     NoAuthServer,
     /// Failure fetching a refreshed access token from the QCS API.
     #[error("Error fetching new token from the QCS API: {0}")]
-    Fetch(#[from] reqwest::Error),
+    Fetch(#[from] qcs_dependencies_client::reqwest::Error),
     /// Catch all for errors returned from an [`super::ExternallyManaged`] refresh function.
     #[error("Failed to request an externally managed access token: {0}")]
     ExternallyManaged(String),
     /// Failure writing the new access token to the secrets file.
-    #[error("Failed to write the new access token to the secrets file. Setting `{SECRETS_READ_ONLY_VAR}=true` in the environment will skip persistence of newly acquired tokens. Error details: {error}")]
+    #[error(
+        "Failed to write the new access token to the secrets file. Setting `{SECRETS_READ_ONLY_VAR}=true` in the environment will skip persistence of newly acquired tokens. Error details: {error}"
+    )]
     Write {
         /// The underlying write error.
         error: WriteError,
@@ -110,7 +112,7 @@ pub enum DiscoveryError {
     #[error("invalid issuer URL: {0}")]
     Url(#[from] url::ParseError),
     #[error("error fetching discovery document: {0}")]
-    Fetch(#[from] reqwest::Error),
+    Fetch(#[from] qcs_dependencies_client::reqwest::Error),
     #[error("failed to parse discovery document: {0}")]
     Json(#[from] serde_json::Error),
     #[error("issuer URL ({issuer}) is invalid: {reason}")]

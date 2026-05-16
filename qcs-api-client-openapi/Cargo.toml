@@ -1,95 +1,92 @@
-[dependencies]
-  [dependencies.anyhow]
-    optional = true
-    workspace = true
+[package]
+categories = ['api-bindings']
+description = 'Auto-generated bindings to the QCS OpenAPI'
+homepage = 'https://github.com/rigetti/qcs-api-client-rust'
+keywords = ['API', 'QCS', 'Rigetti', 'quantum']
+license = 'Apache-2.0'
+name = 'qcs-api-client-openapi'
+publish = true
+repository = 'https://github.com/rigetti/qcs-api-client-rust'
+version = '0.19.1'
 
-  [dependencies.clap]
-    optional = true
-    workspace = true
+[package.authors]
+workspace = true
 
-  [dependencies.clap-stdin]
-    optional = true
-    workspace = true
+[package.edition]
+workspace = true
 
-  [dependencies.http]
-    workspace = true
-
-  [dependencies.miette]
-    optional = true
-    workspace = true
-
-  [dependencies.qcs-api-client-common]
-    workspace = true
-
-  [dependencies.reqwest]
-    features = ['json', 'multipart']
-    workspace = true
-
-  [dependencies.reqwest-middleware]
-    optional = true
-    workspace = true
-
-  [dependencies.reqwest-tracing]
-    optional = true
-    workspace = true
-
-  [dependencies.serde]
-    features = ['derive']
-    workspace = true
-
-  [dependencies.serde_json]
-    workspace = true
-
-  [dependencies.serde_path_to_error]
-    workspace = true
-
-  [dependencies.serde_repr]
-    workspace = true
-
-  [dependencies.serde_with]
-    workspace = true
-
-  [dependencies.tokio]
-    features = ['time']
-    workspace = true
-
-  [dependencies.tracing]
-    optional = true
-    workspace = true
-
-  [dependencies.tracing-opentelemetry]
-    optional = true
-    workspace = true
-
-  [dependencies.url]
-    workspace = true
-
-  [dependencies.urlpattern]
-    optional = true
-    workspace = true
-
-[dev-dependencies]
-  [dev-dependencies.rstest]
-    workspace = true
-
-  [dev-dependencies.tokio]
-    features = ['rt-multi-thread', 'rt', 'macros']
-    workspace = true
+[package.rust-version]
+workspace = true
 
 [features]
-  clap = ['dep:miette', 'dep:clap', 'qcs-api-client-common/clap']
-  tracing = ['dep:tracing', 'qcs-api-client-common/tracing', 'urlpattern']
-  tracing-config = ['qcs-api-client-common/tracing-config', 'tracing']
-  tracing-opentelemetry = ['dep:anyhow', 'dep:reqwest-middleware', 'dep:reqwest-tracing', 'dep:tracing-opentelemetry', 'tracing-config']
+clap = ['dep:miette', 'dep:clap', 'qcs-api-client-common/clap']
+tracing = ['qcs-api-client-common/tracing', 'dep:http', 'dep:tracing', 'dep:urlpattern']
+tracing-config = ['qcs-api-client-common/tracing-config', 'tracing']
+tracing-opentelemetry = ['dep:anyhow', 'dep:tracing', 'tracing-config']
 
-[package]
-  categories = ['api-bindings']
-  description = 'Auto-generated bindings to the QCS OpenAPI'
-  edition = '2021'
-  homepage = 'https://github.com/rigetti/qcs-api-client-rust'
-  keywords = ['API', 'QCS', 'Rigetti', 'quantum']
-  license = 'Apache-2.0'
-  name = 'qcs-api-client-openapi'
-  publish = true
-  repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.19.0'
+[dependencies]
+[dependencies.anyhow]
+optional = true
+workspace = true
+
+[dependencies.clap]
+optional = true
+workspace = true
+
+[dependencies.clap-stdin]
+optional = true
+workspace = true
+
+[dependencies.http]
+optional = true
+workspace = true
+
+[dependencies.miette]
+optional = true
+workspace = true
+
+[dependencies.qcs-api-client-common]
+workspace = true
+
+[dependencies.qcs-dependencies-client]
+features = ['http']
+workspace = true
+
+[dependencies.serde]
+features = ['derive']
+workspace = true
+
+[dependencies.serde_json]
+workspace = true
+
+[dependencies.serde_path_to_error]
+workspace = true
+
+[dependencies.serde_repr]
+workspace = true
+
+[dependencies.serde_with]
+workspace = true
+
+[dependencies.tokio]
+features = ['time']
+workspace = true
+
+[dependencies.tracing]
+optional = true
+workspace = true
+
+[dependencies.url]
+workspace = true
+
+[dependencies.urlpattern]
+optional = true
+workspace = true
+
+[dev-dependencies]
+[dev-dependencies.rstest]
+workspace = true
+
+[dev-dependencies.tokio]
+features = ['rt-multi-thread', 'rt', 'macros']
+workspace = true

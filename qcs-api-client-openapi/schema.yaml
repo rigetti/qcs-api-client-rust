@@ -177,6 +177,7 @@ x-tagGroups:
   - name: QPU Access
     tags:
       - endpoints
+      - deployments
       - engagements
       - quantumProcessors
       - reservations
@@ -2533,6 +2534,7 @@ components:
         - resource_not_found
         - under_load
         - unauthenticated
+        - unimplemented
     Edge:
       type: object
       title: Edge

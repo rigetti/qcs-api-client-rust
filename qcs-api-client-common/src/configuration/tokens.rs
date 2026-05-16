@@ -13,11 +13,11 @@ use tokio_util::sync::CancellationToken;
 use pyo3_stub_gen::derive::gen_stub_pyclass;
 
 use super::{
-    oidc, secrets::Secrets, settings::AuthServer, ClientConfiguration, ConfigSource, TokenError,
+    ClientConfiguration, ConfigSource, TokenError, oidc, secrets::Secrets, settings::AuthServer,
 };
 use crate::configuration::{
     error::DiscoveryError,
-    pkce::{pkce_login, PkceLoginError, PkceLoginRequest},
+    pkce::{PkceLoginError, PkceLoginRequest, pkce_login},
     secrets::{Credential, SecretAccessToken, SecretRefreshToken, TokenPayload},
 };
 #[cfg(feature = "tracing-config")]
@@ -172,7 +172,7 @@ pub enum PkceFlowError {
     Discovery(#[from] DiscoveryError),
     /// Error that occurred while making http requests.
     #[error(transparent)]
-    Request(#[from] reqwest::Error),
+    Request(#[from] qcs_dependencies_client::reqwest::Error),
 }
 
 impl PkceFlow {
@@ -786,10 +786,12 @@ impl ExternallyManaged {
     /// });
     /// ```
     pub fn from_sync(
-        refresh_function: impl Fn(AuthServer) -> Result<String, Box<dyn std::error::Error + Send + Sync>>
-            + Send
-            + Sync
-            + 'static,
+        refresh_function: impl Fn(
+            AuthServer,
+        ) -> Result<String, Box<dyn std::error::Error + Send + Sync>>
+        + Send
+        + Sync
+        + 'static,
     ) -> Self {
         Self {
             refresh_function: Arc::new(Box::new(move |auth_server| {
@@ -947,8 +949,9 @@ impl TokenRefresher for ClientConfiguration {
 }
 
 /// Get a default http client.
-pub(super) fn default_http_client() -> Result<reqwest::Client, reqwest::Error> {
-    reqwest::Client::builder()
+pub(super) fn default_http_client()
+-> Result<qcs_dependencies_client::reqwest::Client, qcs_dependencies_client::reqwest::Error> {
+    qcs_dependencies_client::reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(10))
         .build()
 }
@@ -1229,6 +1232,9 @@ updated_at = "2024-01-01T00:00:00Z"
             },
         };
 
-        assert_eq!("OAuthSession { payload: ClientCredentials, access_token: Some(()), auth_server: AuthServer { client_id: \"some_id\", issuer: \"some_url\", scopes: None } }", &format!("{session:?}"));
+        assert_eq!(
+            "OAuthSession { payload: ClientCredentials, access_token: Some(()), auth_server: AuthServer { client_id: \"some_id\", issuer: \"some_url\", scopes: None } }",
+            &format!("{session:?}")
+        );
     }
 }

@@ -3,20 +3,20 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use figment::providers::Format;
-use figment::{providers::Toml, Figment};
+use figment::{Figment, providers::Toml};
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "stubs")]
 use pyo3_stub_gen::derive::gen_stub_pyclass;
 
 use crate::configuration::error::DiscoveryError;
-use crate::configuration::oidc::{fetch_discovery, DISCOVERY_REQUIRED_SCOPE};
+use crate::configuration::oidc::{DISCOVERY_REQUIRED_SCOPE, fetch_discovery};
 use crate::configuration::tokens::default_http_client;
 
 use super::{
-    env_or_default_quilc_url, env_or_default_qvm_url, expand_path_from_env_or_default, LoadError,
     DEFAULT_API_URL, DEFAULT_GRPC_API_URL, DEFAULT_PROFILE_NAME, DEFAULT_QUILC_URL,
-    DEFAULT_QVM_URL,
+    DEFAULT_QVM_URL, LoadError, env_or_default_quilc_url, env_or_default_qvm_url,
+    expand_path_from_env_or_default,
 };
 
 /// Setting the `QCS_SETTINGS_FILE_PATH` environment variable will change which file is used for loading [`Settings`].
@@ -244,7 +244,7 @@ mod test {
 
     use std::path::PathBuf;
 
-    use super::{Settings, SETTINGS_PATH_VAR};
+    use super::{SETTINGS_PATH_VAR, Settings};
 
     #[test]
     fn returns_err_if_invalid_path_env() {

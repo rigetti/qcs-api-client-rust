@@ -1,19 +1,19 @@
 use std::{
-    future::{poll_fn, Future},
+    future::{Future, poll_fn},
     pin::Pin,
     task::{Context, Poll},
 };
 
 use super::Body;
-use http::StatusCode;
-use tonic::{
+use qcs_dependencies_client::http::StatusCode;
+use qcs_dependencies_client::tonic::{
     client::GrpcService,
     codegen::http::{Request, Response},
 };
-use tower::Layer;
+use qcs_dependencies_client::tower::Layer;
 
 use qcs_api_client_common::configuration::{
-    secrets::SecretAccessToken, tokens::TokenRefresher, ClientConfiguration, TokenError,
+    ClientConfiguration, TokenError, secrets::SecretAccessToken, tokens::TokenRefresher,
 };
 
 use super::error::Error;
@@ -143,7 +143,8 @@ where
 
     let grpc_authnz_failure = matches!(
         super::common::get_status_code_from_headers(resp.headers()).ok(),
-        Some(tonic::Code::Unauthenticated) | Some(tonic::Code::PermissionDenied)
+        Some(qcs_dependencies_client::tonic::Code::Unauthenticated)
+            | Some(qcs_dependencies_client::tonic::Code::PermissionDenied)
     );
     let http_authnz_failure =
         resp.status() == StatusCode::UNAUTHORIZED || resp.status() == StatusCode::FORBIDDEN;

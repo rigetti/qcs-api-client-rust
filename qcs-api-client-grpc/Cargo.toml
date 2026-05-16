@@ -1,173 +1,130 @@
-[build-dependencies]
-  [build-dependencies.pbjson-build]
-    workspace = true
+[package]
+categories = ['api-bindings', 'authentication']
+description = 'gRPC client for the QCS API'
+homepage = 'https://github.com/rigetti/qcs-api-client-rust'
+keywords = ['qcs', 'quantum', 'rigetti', 'api']
+license = 'Apache-2.0'
+name = 'qcs-api-client-grpc'
+publish = true
+readme = 'README.md'
+repository = 'https://github.com/rigetti/qcs-api-client-rust'
+version = '0.18.1'
 
-  [build-dependencies.prost-build]
-    workspace = true
+[package.authors]
+workspace = true
 
-  [build-dependencies.tonic-build]
-    workspace = true
+[package.edition]
+workspace = true
 
-  [build-dependencies.tonic-prost-build]
-    workspace = true
-
-[dependencies]
-  [dependencies.backoff]
-    features = ['tokio']
-    workspace = true
-
-  [dependencies.futures-util]
-    workspace = true
-
-  [dependencies.http]
-    workspace = true
-
-  [dependencies.http-body]
-    workspace = true
-
-  [dependencies.http-body-util]
-    workspace = true
-
-  [dependencies.hyper]
-    workspace = true
-
-  [dependencies.hyper-socks2]
-    default-features = false
-    workspace = true
-
-  [dependencies.hyper-util]
-    features = ['client-legacy']
-    workspace = true
-
-  [dependencies.opentelemetry]
-    optional = true
-    workspace = true
-
-  [dependencies.opentelemetry-http]
-    optional = true
-    workspace = true
-
-  [dependencies.opentelemetry_sdk]
-    workspace = true
-
-  [dependencies.pbjson]
-    workspace = true
-
-  [dependencies.pbjson-types]
-    workspace = true
-
-  [dependencies.prost]
-    workspace = true
-
-  [dependencies.qcs-api-client-common]
-    workspace = true
-
-  [dependencies.rigetti-hyper-proxy]
-    default-features = false
-    features = ['rustls']
-    workspace = true
-
-  [dependencies.serde]
-    workspace = true
-
-  [dependencies.thiserror]
-    workspace = true
-
-  [dependencies.tokio]
-    features = ['time']
-    workspace = true
-
-  [dependencies.tonic]
-    workspace = true
-
-  [dependencies.tonic-prost]
-    workspace = true
-
-  [dependencies.tonic-web]
-    optional = true
-    workspace = true
-
-  [dependencies.tower]
-    features = ['retry']
-    workspace = true
-
-  [dependencies.tower-http]
-    features = ['trace']
-    workspace = true
-
-  [dependencies.tracing]
-    optional = true
-    workspace = true
-
-  [dependencies.tracing-opentelemetry]
-    workspace = true
-
-  [dependencies.url]
-    workspace = true
-
-  [dependencies.urlpattern]
-    optional = true
-    workspace = true
-
-  [dependencies.uuid]
-    features = ['v4']
-    workspace = true
-
-[dev-dependencies]
-  [dev-dependencies.async-std]
-    features = ['attributes']
-    workspace = true
-
-  [dev-dependencies.jsonwebtoken]
-    workspace = true
-
-  [dev-dependencies.once_cell]
-    workspace = true
-
-  [dev-dependencies.opentelemetry]
-    features = ['trace']
-    workspace = true
-
-  [dev-dependencies.rstest]
-    workspace = true
-
-  [dev-dependencies.serde_json]
-    workspace = true
-
-  [dev-dependencies.tempfile]
-    workspace = true
-
-  [dev-dependencies.tokio]
-    features = ['parking_lot', 'rt-multi-thread']
-    workspace = true
-
-  [dev-dependencies.tokio-stream]
-    features = ['net']
-    workspace = true
-
-  [dev-dependencies.tonic-health]
-    workspace = true
-
-  [dev-dependencies.tracing-subscriber]
-    workspace = true
+[package.rust-version]
+workspace = true
 
 [features]
-  grpc-web = ['dep:tonic-web']
-  regen = []
-  server = []
-  tracing = ['dep:tracing', 'qcs-api-client-common/tracing-config', 'urlpattern']
-  tracing-config = ['qcs-api-client-common/tracing-config', 'tracing']
-  tracing-opentelemetry = ['dep:opentelemetry', 'dep:opentelemetry-http', 'qcs-api-client-common/tracing-config', 'tracing-config', 'tracing']
+grpc-web = ['qcs-dependencies-client/tonic-web']
+regen = []
+server = []
+tracing = ['qcs-api-client-common/tracing-config', 'dep:tracing', 'dep:urlpattern']
+tracing-config = ['qcs-api-client-common/tracing-config', 'tracing']
+tracing-opentelemetry = ['qcs-api-client-common/tracing-config', 'tracing-config', 'tracing']
 
-[package]
-  categories = ['api-bindings', 'authentication']
-  description = 'gRPC client for the QCS API'
-  edition = '2021'
-  homepage = 'https://github.com/rigetti/qcs-api-client-rust'
-  keywords = ['qcs', 'quantum', 'rigetti', 'api']
-  license = 'Apache-2.0'
-  name = 'qcs-api-client-grpc'
-  publish = true
-  readme = 'README.md'
-  repository = 'https://github.com/rigetti/qcs-api-client-rust'
-  version = '0.18.0'
+[dependencies]
+[dependencies.backoff]
+features = ['tokio']
+workspace = true
+
+[dependencies.futures-util]
+workspace = true
+
+[dependencies.http-body]
+workspace = true
+
+[dependencies.http-body-util]
+workspace = true
+
+[dependencies.hyper]
+workspace = true
+
+[dependencies.hyper-socks2]
+default-features = false
+workspace = true
+
+[dependencies.hyper-util]
+features = ['client-legacy']
+workspace = true
+
+[dependencies.qcs-api-client-common]
+workspace = true
+
+[dependencies.qcs-dependencies-client]
+features = ['grpc', 'http', 'tonic-health', 'tower-http']
+workspace = true
+
+[dependencies.rigetti-hyper-proxy]
+default-features = false
+features = ['rustls']
+workspace = true
+
+[dependencies.serde]
+workspace = true
+
+[dependencies.thiserror]
+workspace = true
+
+[dependencies.tokio]
+features = ['time']
+workspace = true
+
+[dependencies.tracing]
+optional = true
+workspace = true
+
+[dependencies.url]
+workspace = true
+
+[dependencies.urlpattern]
+optional = true
+workspace = true
+
+[dependencies.uuid]
+features = ['v4']
+workspace = true
+
+[build-dependencies]
+[build-dependencies.qcs-dependencies-client]
+features = ['codegen-proto', 'grpc']
+workspace = true
+
+[dev-dependencies]
+[dev-dependencies.async-std]
+features = ['attributes']
+workspace = true
+
+[dev-dependencies.jsonwebtoken]
+workspace = true
+
+[dev-dependencies.once_cell]
+workspace = true
+
+[dev-dependencies.qcs-dependencies-client]
+features = ['grpc', 'tonic-health']
+workspace = true
+
+[dev-dependencies.rstest]
+workspace = true
+
+[dev-dependencies.serde_json]
+workspace = true
+
+[dev-dependencies.tempfile]
+workspace = true
+
+[dev-dependencies.tokio]
+features = ['parking_lot', 'rt-multi-thread']
+workspace = true
+
+[dev-dependencies.tokio-stream]
+features = ['net']
+workspace = true
+
+[dev-dependencies.tracing-subscriber]
+workspace = true

@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2026 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,10 @@
 
 use std::error;
 use std::fmt;
+
+use qcs_dependencies_client::reqwest;
+#[cfg(feature = "tracing-opentelemetry")]
+use qcs_dependencies_client::reqwest_middleware;
 
 #[derive(Debug, Clone)]
 pub struct ResponseContent<T> {
@@ -58,9 +62,14 @@ impl<T> fmt::Display for Error<T> {
                 "response",
                 format!("status code {}: {}", e.status, e.content),
             ),
-            Error::InvalidContentType { content_type, return_type } => (
+            Error::InvalidContentType {
+                content_type,
+                return_type,
+            } => (
                 "api",
-                format!("received {content_type} content type response that cannot be converted to `{return_type}`"),
+                format!(
+                    "received {content_type} content type response that cannot be converted to `{return_type}`"
+                ),
             ),
             #[cfg(feature = "tracing-opentelemetry")]
             Error::ReqwestMiddleware(e) => ("reqwest-middleware", e.to_string()),

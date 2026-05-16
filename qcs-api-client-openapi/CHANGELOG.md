@@ -1,3 +1,65 @@
+## 0.19.1 (2026-05-16)
+
+### Features
+
+- use 'core-deps' client crate
+
+## 0.19.1-dev.4 (2026-05-14)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+- test release again
+
+## 0.19.1-dev.3 (2026-05-14)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+
+## 0.19.1-dev.2 (2026-05-14)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+
+## 0.19.1-dev.1 (2026-05-14)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+
+## 0.19.1-dev.0 (2026-05-13)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+
 ## 0.19.0 (2026-05-04)
 
 ### Breaking Changes

@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use async_tempfile::TempFile;
-use figment::providers::{Format, Toml};
 use figment::Figment;
+use figment::providers::{Format, Toml};
 use serde::{Deserialize, Serialize};
 use time::format_description::well_known::Rfc3339;
 use time::{OffsetDateTime, PrimitiveDateTime};
@@ -15,7 +15,7 @@ use toml_edit::{DocumentMut, Item};
 use crate::configuration::LoadError;
 
 use super::error::{IoErrorWithPath, IoOperation, WriteError};
-use super::{expand_path_from_env_or_default, DEFAULT_PROFILE_NAME};
+use super::{DEFAULT_PROFILE_NAME, expand_path_from_env_or_default};
 
 pub use super::secret_string::{SecretAccessToken, SecretRefreshToken};
 
@@ -289,11 +289,11 @@ mod describe_load {
     use std::os::unix::fs::PermissionsExt;
     use std::path::PathBuf;
 
-    use time::{macros::datetime, OffsetDateTime};
+    use time::{OffsetDateTime, macros::datetime};
 
-    use crate::configuration::secrets::{SecretAccessToken, SECRETS_READ_ONLY_VAR};
+    use crate::configuration::secrets::{SECRETS_READ_ONLY_VAR, SecretAccessToken};
 
-    use super::{Credential, Secrets, SECRETS_PATH_VAR};
+    use super::{Credential, SECRETS_PATH_VAR, Secrets};
 
     #[test]
     fn returns_err_if_invalid_path_env() {

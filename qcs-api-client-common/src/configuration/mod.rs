@@ -200,7 +200,9 @@ impl ConfigurationContext {
         #[cfg(feature = "tracing-config")]
         match profile_name.as_ref() {
             None => tracing::debug!("loading default QCS profile"),
-            Some(profile) => tracing::debug!("loading QCS profile {profile}"),
+            Some(profile) => {
+                tracing::debug!("loading QCS profile {profile}")
+            }
         }
         let settings = Settings::load()?;
         let secrets = Secrets::load()?;
@@ -582,21 +584,20 @@ fn expand_path_from_env_or_default(
 mod test {
     #![allow(clippy::result_large_err, reason = "happens in figment tests")]
 
-    use jsonwebtoken::{encode, EncodingKey, Header};
+    use jsonwebtoken::{EncodingKey, Header, encode};
     use serde::Serialize;
     use time::{Duration, OffsetDateTime};
     use tokio_util::sync::CancellationToken;
 
     use crate::configuration::{
-        expand_path_from_env_or_default,
+        API_URL_VAR, AuthServer, ClientConfiguration, DEFAULT_QUILC_URL, GRPC_API_URL_VAR,
+        OAuthSession, QUILC_URL_VAR, QVM_URL_VAR, RefreshToken, expand_path_from_env_or_default,
         pkce::tests::PkceTestServerHarness,
         secrets::{
-            SecretAccessToken, SecretRefreshToken, Secrets, SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR,
+            SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR, SecretAccessToken, SecretRefreshToken, Secrets,
         },
-        settings::{Settings, SETTINGS_PATH_VAR},
+        settings::{SETTINGS_PATH_VAR, Settings},
         tokens::TokenRefresher,
-        AuthServer, ClientConfiguration, OAuthSession, RefreshToken, API_URL_VAR,
-        DEFAULT_QUILC_URL, GRPC_API_URL_VAR, QUILC_URL_VAR, QVM_URL_VAR,
     };
 
     use super::{settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, tokens::ClientCredentials};

@@ -1,9 +1,9 @@
-use http::{header::InvalidHeaderValue, uri::InvalidUri};
-use tonic::transport::Error as TransportError;
+use qcs_dependencies_client::http::{header::InvalidHeaderValue, uri::InvalidUri};
+use qcs_dependencies_client::tonic::transport::Error as TransportError;
 
 use qcs_api_client_common::configuration::LoadError;
 
-use super::{channel::ChannelError, RequestBodyDuplicationError};
+use super::{RequestBodyDuplicationError, channel::ChannelError};
 
 /// Errors that may occur when using gRPC.
 #[derive(Debug, thiserror::Error)]

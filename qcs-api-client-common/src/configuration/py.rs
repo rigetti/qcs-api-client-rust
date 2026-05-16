@@ -13,21 +13,21 @@ use tokio_util::sync::CancellationToken;
 use pyo3_stub_gen::derive::{gen_stub_pyfunction, gen_stub_pymethods};
 
 use crate::configuration::{
-    secrets::{DEFAULT_SECRETS_PATH, SECRETS_PATH_VAR},
-    settings::{DEFAULT_SETTINGS_PATH, SETTINGS_PATH_VAR},
-    ClientConfigurationBuilderError, API_URL_VAR, DEFAULT_API_URL, DEFAULT_GRPC_API_URL,
+    API_URL_VAR, ClientConfigurationBuilderError, DEFAULT_API_URL, DEFAULT_GRPC_API_URL,
     DEFAULT_PROFILE_NAME, DEFAULT_QUILC_URL, DEFAULT_QVM_URL, GRPC_API_URL_VAR, PROFILE_NAME_VAR,
     QUILC_URL_VAR, QVM_URL_VAR,
+    secrets::{DEFAULT_SECRETS_PATH, SECRETS_PATH_VAR},
+    settings::{DEFAULT_SETTINGS_PATH, SETTINGS_PATH_VAR},
 };
 use crate::errors;
 
 use super::{
+    ClientConfiguration, ClientConfigurationBuilder, LoadError, OAuthGrant, OAuthSession,
+    RefreshToken, TokenDispatcher,
     error::TokenError,
     secrets::{SecretAccessToken, SecretRefreshToken},
     settings::AuthServer,
     tokens::{ClientCredentials, ClientSecret, ExternallyManaged, PkceFlow},
-    ClientConfiguration, ClientConfigurationBuilder, LoadError, OAuthGrant, OAuthSession,
-    RefreshToken, TokenDispatcher,
 };
 
 create_init_submodule! {
