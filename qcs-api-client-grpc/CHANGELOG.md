@@ -1,3 +1,9 @@
+## 0.18.2-dev.0 (2026-06-01)
+
+### Fixes
+
+- use package registry for CLI assets, permitting 'glab release download' to retrieve them
+
 ## 0.18.1 (2026-05-16)
 
 ### Features
