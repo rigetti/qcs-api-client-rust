@@ -1,7 +1,7 @@
 [project]
 name = "qcs-api-client-common"
 requires-python = ">=3.10,<4"
-version = "0.18.2"
+version = "0.18.3"
 description = "Contains core QCS client functionality and middleware implementations."
 readme = "README-py.md"
 license = { text = "Apache-2.0" }
@@ -144,6 +144,7 @@ disable_error_code = [
 ]
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
 markers = [
     "integration: mark a test as an integration test.",
 ]

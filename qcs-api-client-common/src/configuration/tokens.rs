@@ -604,12 +604,15 @@ impl TokenDispatcher {
             match Secrets::is_read_only(secrets_path).await {
                 Ok(true) => Ok(()),
                 Ok(false) => {
-                    // If the payload is a PkceFlow, write the fresh refresh token if available.
+                    // Persist the fresh refresh token if the grant carries one, so that a rotated
+                    // refresh token isn't lost on the next load. Both the PKCE and refresh-token
+                    // grants can hold a refresh token that the auth server may have rotated.
                     let refresh_token = match &oauth_session.payload {
                         OAuthGrant::PkceFlow(payload) => {
                             payload.refresh_token.as_ref().map(|rt| &rt.refresh_token)
                         }
-                        _ => None,
+                        OAuthGrant::RefreshToken(payload) => Some(&payload.refresh_token),
+                        OAuthGrant::ExternallyManaged(_) | OAuthGrant::ClientCredentials(_) => None,
                     };
 
                     let now = OffsetDateTime::now_utc();
@@ -1213,6 +1216,102 @@ updated_at = "2024-01-01T00:00:00Z"
                 "File should be updated with new access token when QCS_SECRETS_READ_ONLY is not set or is set but disabled, and file permissions allow writing"
                 );
             });
+            Ok(())
+        });
+    }
+
+    /// When the auth server rotates the refresh token, a [`OAuthGrant::RefreshToken`] grant should
+    /// persist the new refresh token to the secrets file (not just the access token).
+    #[test]
+    fn test_refresh_token_grant_persists_rotated_refresh_token() {
+        let initial_refresh_token = "initial_refresh_token";
+        let rotated_refresh_token = "rotated_refresh_token";
+        let new_access_token = "new_access_token";
+
+        figment::Jail::expect_with(|jail| {
+            jail.clear_env();
+
+            let secrets_path = "secrets.toml";
+            let initial_secrets_file_contents = format!(
+                r#"
+[credentials]
+[credentials.test]
+[credentials.test.token_payload]
+access_token = "initial_access_token"
+refresh_token = "{initial_refresh_token}"
+updated_at = "2024-01-01T00:00:00Z"
+"#
+            );
+            jail.create_file(secrets_path, &initial_secrets_file_contents)
+                .expect("should create test secrets.toml");
+
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                let mock_server = MockServer::start_async().await;
+                let oidc_mock = mock_server
+                    .mock_async(|when, then| {
+                        when.method(GET).path("/.well-known/openid-configuration");
+                        then.status(200)
+                            .json_body_obj(&oidc::Discovery::new_for_test(
+                                mock_server.base_url().parse().unwrap(),
+                            ));
+                    })
+                    .await;
+                let issuer_mock = mock_server
+                    .mock_async(|when, then| {
+                        when.method(POST).path("/v1/token");
+                        then.status(200).json_body_obj(&RefreshTokenResponse {
+                            access_token: SecretAccessToken::from(new_access_token),
+                            refresh_token: Some(SecretRefreshToken::from(rotated_refresh_token)),
+                        });
+                    })
+                    .await;
+
+                let dispatcher: TokenDispatcher = OAuthSession::from_refresh_token(
+                    RefreshToken::new(SecretRefreshToken::from(initial_refresh_token)),
+                    AuthServer {
+                        client_id: "client_id".to_string(),
+                        issuer: mock_server.base_url(),
+                        scopes: None,
+                    },
+                    Some(SecretAccessToken::from("initial_access_token")),
+                )
+                .into();
+
+                dispatcher
+                    .refresh(
+                        &ConfigSource::File {
+                            settings_path: "".into(),
+                            secrets_path: secrets_path.into(),
+                        },
+                        "test",
+                    )
+                    .await
+                    .expect("refresh should succeed");
+
+                oidc_mock.assert_async().await;
+                issuer_mock.assert_async().await;
+            });
+
+            // The rotated refresh token (and the new access token) should be persisted.
+            let payload = Secrets::load_from_path(&secrets_path.into())
+                .expect("should load secrets")
+                .credentials
+                .remove("test")
+                .expect("should have test credentials")
+                .token_payload
+                .expect("should have token payload");
+            assert_eq!(
+                payload.refresh_token.unwrap(),
+                SecretRefreshToken::from(rotated_refresh_token),
+                "rotated refresh token should be persisted to the secrets file"
+            );
+            assert_eq!(
+                payload.access_token.unwrap(),
+                SecretAccessToken::from(new_access_token),
+                "new access token should be persisted to the secrets file"
+            );
+
             Ok(())
         });
     }

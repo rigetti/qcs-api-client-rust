@@ -1,3 +1,9 @@
+## 0.18.3 (2026-06-30)
+
+### Fixes
+
+- persist refresh token changes
+
 ## 0.18.2 (2026-06-01)
 
 ### Fixes

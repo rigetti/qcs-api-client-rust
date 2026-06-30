@@ -2566,8 +2566,8 @@ components:
             type: integer
             format: uint64
             title: A node integer identifier; must be greater than or equal to zero.
-          maxLength: 2
-          minLength: 2
+          maxItems: 2
+          minItems: 2
     Family:
       type: string
       description: >-

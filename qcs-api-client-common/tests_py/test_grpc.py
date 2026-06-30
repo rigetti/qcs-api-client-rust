@@ -1,5 +1,4 @@
-import asyncio
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock
 
 import grpc
 import pytest
@@ -30,11 +29,8 @@ def make_request() -> Any:
 
 @pytest.fixture
 def mock_config(mocker):
-    mock = mocker.patch.object(ClientConfiguration, "get_bearer_access_token_async", new_callable=MagicMock)
-    future = asyncio.Future()
-    future.set_result("mock_config_fixture_token")
-    mock.return_value = future
-
+    mock = mocker.patch.object(ClientConfiguration, "get_bearer_access_token_async", new_callable=AsyncMock)
+    mock.return_value = "mock_config_fixture_token"
     return mock
 
 
