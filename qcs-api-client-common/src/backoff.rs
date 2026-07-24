@@ -3,7 +3,7 @@
 //! This re-exports types from [`backoff`](::backoff) and provides a [`default_backoff`] function
 //! to create a more useful default [`ExpontentialBackoff`].
 
-use std::{error::Error, time::Duration};
+use std::{error::Error as _, time::Duration};
 
 use qcs_dependencies_client::http::StatusCode;
 

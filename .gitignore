@@ -11,7 +11,7 @@
 # MR to define an approprate default configuration.
 # https://github.com/Canop/bacon.
 bacon.toml
-.rust-ci
+.qcs-infrastructure
 # Python related artifacts
 **/.venv
 **/__pycache__

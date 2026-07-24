@@ -8,7 +8,7 @@ name = 'qcs-api-client-grpc'
 publish = true
 readme = 'README.md'
 repository = 'https://github.com/rigetti/qcs-api-client-rust'
-version = '0.18.3'
+version = '0.18.4'
 
 [package.authors]
 workspace = true
@@ -56,7 +56,7 @@ workspace = true
 workspace = true
 
 [dependencies.qcs-dependencies-client]
-features = ['grpc', 'http', 'tonic-health', 'tower-http']
+features = ['grpc', 'tonic-health', 'tower-http']
 workspace = true
 
 [dependencies.rigetti-hyper-proxy]

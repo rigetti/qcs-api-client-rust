@@ -57,7 +57,7 @@
 
 use std::{collections::HashSet, str::FromStr};
 
-use urlpattern::UrlPatternOptions;
+use urlpattern::{RegexSyntax, UrlPatternOptions};
 pub use urlpattern::{UrlPatternInit, UrlPatternMatchInput, UrlPatternResult};
 
 use {std::env, thiserror::Error, urlpattern::UrlPattern};
@@ -468,14 +468,20 @@ impl TracingFilter {
     /// logged, but otherwise ignored (i.e. prevents poison pill effects).
     fn first_match(&self, input: &UrlPatternMatchInput) -> Option<UrlPatternResult> {
         self.paths.iter().find_map(|init| {
-            <UrlPattern>::parse(init.clone(), UrlPatternOptions { ignore_case: false })
-                .and_then(|pattern| pattern.exec(input.clone()))
-                .map_err(|e| {
-                    #[cfg(feature = "tracing")]
-                    tracing::error!("error matching url pattern: {}", e);
-                })
-                .ok()
-                .flatten()
+            <UrlPattern>::parse(
+                init.clone(),
+                UrlPatternOptions {
+                    ignore_case: false,
+                    regex_syntax: RegexSyntax::Rust,
+                },
+            )
+            .and_then(|pattern| pattern.exec(input.clone()))
+            .map_err(|e| {
+                #[cfg(feature = "tracing")]
+                tracing::error!("error matching url pattern: {}", e);
+            })
+            .ok()
+            .flatten()
         })
     }
 

@@ -23,7 +23,7 @@ http-body-util = '0.1.2'
 httparse = '1.10'
 httpmock = '0.8.0-alpha.1'
 hyper = '1.4.1'
-itertools = '0.12'
+itertools = '0.15'
 jiff = '0.2'
 jsonwebtoken = '9.3.0'
 miette = '7'
@@ -32,7 +32,7 @@ oauth2-test-server = '=0.1.3'
 once_cell = '1.17.0'
 openapiv3 = '2.0'
 optipy = '0.1.0'
-prettyplease = '0.2'
+prettyplease = '0.3'
 pyo3-build-config = '0.27.2'
 pyo3-stub-gen = '0.17.2'
 rigetti-pyo3 = '0.5.4'
@@ -44,14 +44,14 @@ serde_path_to_error = '0.1.20'
 serde_repr = '0.1'
 serde_yaml = '0.9'
 serial_test = '3.1.1'
-syn = '2.0'
-tabled = '0.20'
+syn = '3.0'
+tabled = '0.21'
 tempfile = '3.3.0'
 thiserror = '2.0'
 toml_edit = '0.23.7'
 tracing = '0.1'
 tracing-subscriber = '0.3'
-urlpattern = '0.4.0'
+urlpattern = '0.6.0'
 walkdir = '2.5'
 webbrowser = '1.0.6'
 
@@ -61,7 +61,7 @@ version = '1.12.0'
 
 [workspace.dependencies.async-tempfile]
 features = ['uuid']
-version = '0.7.0'
+version = '0.8.0'
 
 [workspace.dependencies.backoff]
 features = ['tokio']
@@ -93,28 +93,28 @@ version = '0.27.0'
 
 [workspace.dependencies.qcs-api-client-common]
 path = 'qcs-api-client-common'
-version = '0.18.3'
+version = '0.18.4'
 
 [workspace.dependencies.qcs-api-client-grpc]
 path = 'qcs-api-client-grpc'
-version = '0.18.3'
+version = '0.18.4'
 
 [workspace.dependencies.qcs-api-client-grpc-internal]
 path = 'qcs-api-client-grpc-internal'
 registry = 'rigetti-cargo'
-version = '0.19.3'
+version = '0.19.4'
 
 [workspace.dependencies.qcs-api-client-openapi]
 path = 'qcs-api-client-openapi/public'
-version = '0.19.3'
+version = '0.19.4'
 
 [workspace.dependencies.qcs-api-client-openapi-internal]
 path = 'qcs-api-client-openapi/internal'
 registry = 'rigetti-cargo'
-version = '0.19.3'
+version = '0.19.4'
 
 [workspace.dependencies.qcs-dependencies-client]
-version = '0.3.1'
+version = '0.4.1'
 
 [workspace.dependencies.rigetti-hyper-proxy]
 default-features = false
