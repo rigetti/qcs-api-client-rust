@@ -1,3 +1,9 @@
+## 0.19.5 (2026-07-28)
+
+### Fixes
+
+- cross-device link errors with the QCS CLI
+
 ## 0.19.4 (2026-07-24)
 
 ### Fixes

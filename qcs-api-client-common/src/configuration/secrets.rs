@@ -3,13 +3,11 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use async_tempfile::TempFile;
 use figment::Figment;
 use figment::providers::{Format, Toml};
 use serde::{Deserialize, Serialize};
 use time::format_description::well_known::Rfc3339;
 use time::{OffsetDateTime, PrimitiveDateTime};
-use tokio::io::AsyncWriteExt;
 use toml_edit::{DocumentMut, Item};
 
 use crate::configuration::LoadError;
@@ -173,65 +171,11 @@ impl Secrets {
         });
 
         if did_update_access_token || did_update_refresh_token {
-            // Create a temporary file
-            // Write the updated TOML content to a temporary file.
-            // The file is named using a newly generated UUIDv4 to avoid collisions
-            // with other processes that may also be attempting to update the secrets file.
-            let mut temp_file = TempFile::new().await?;
-            #[cfg(feature = "tracing")]
-            tracing::debug!(
-                "Created temporary QCS secrets file at {:?}",
-                temp_file.file_path()
-            );
-            // Set the same permissions as the original file
-            let secrets_file_permissions = tokio::fs::metadata(&secrets_path)
-                .await
-                .map_err(|error| IoErrorWithPath {
-                    error,
-                    path: secrets_path.as_ref().to_path_buf(),
-                    operation: IoOperation::GetMetadata,
-                })?
-                .permissions();
-            temp_file
-                .set_permissions(secrets_file_permissions)
-                .await
-                .map_err(|error| IoErrorWithPath {
-                    error,
-                    path: temp_file.file_path().clone(),
-                    operation: IoOperation::SetPermissions,
-                })?;
-
-            // Write the updated TOML content to the temporary file
-            temp_file
-                .write_all(secrets_toml.to_string().as_bytes())
-                .await
-                .map_err(|error| IoErrorWithPath {
-                    error,
-                    path: temp_file.file_path().clone(),
-                    operation: IoOperation::Write,
-                })?;
-            temp_file.flush().await.map_err(|error| IoErrorWithPath {
-                error,
-                path: temp_file.file_path().clone(),
-                operation: IoOperation::Flush,
-            })?;
-
-            // Atomically replace the original file with the temporary file.
-            // Note that this will fail if the secrets file is on a different mount-point from `std::env::temp_dir()`.
-            #[cfg(feature = "tracing")]
-            tracing::debug!(
-                "Overwriting QCS secrets file at {secrets_path:?} with temporary file at {:?}",
-                temp_file.file_path()
-            );
-            tokio::fs::rename(temp_file.file_path(), &secrets_path)
-                .await
-                .map_err(|error| IoErrorWithPath {
-                    error,
-                    path: temp_file.file_path().clone(),
-                    operation: IoOperation::Rename {
-                        dest: secrets_path.as_ref().to_path_buf(),
-                    },
-                })?;
+            // Atomically overwrite the secrets file. The temporary buffer is
+            // staged next to the destination so the rename stays atomic even when
+            // the secrets file lives on a different mount point from the system
+            // temporary directory (which previously caused `cross-device link` errors).
+            super::fs::atomic_write(&secrets_path, secrets_toml.to_string().as_bytes()).await?;
         }
 
         Ok(())

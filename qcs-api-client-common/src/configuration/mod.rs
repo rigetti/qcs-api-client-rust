@@ -42,6 +42,7 @@ use self::{
 };
 
 pub(crate) mod error;
+pub mod fs;
 mod oidc;
 mod pkce;
 mod secret_string;
