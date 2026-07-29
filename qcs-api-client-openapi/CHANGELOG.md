@@ -1,3 +1,10 @@
+## 0.19.6-dev.2 (2026-07-29)
+
+### Fixes
+
+- macos CLI build
+- need to update PATH on Windows
+
 ## 0.19.6-dev.1 (2026-07-29)
 
 ### Fixes
