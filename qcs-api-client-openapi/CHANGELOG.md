@@ -1,10 +1,11 @@
-## 0.19.6-mr219.0 (2026-07-29)
+## 0.19.6-rc.0 (2026-07-29)
 
 ### Fixes
 
 - macos CLI build
 - need to update PATH on Windows
 - Windows path manipulation
+- prerelease label must be Python-compatible
 
 ## 0.19.5 (2026-07-28)
 
