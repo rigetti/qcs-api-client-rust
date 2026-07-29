@@ -1,21 +1,10 @@
-## 0.18.6-dev.2 (2026-07-29)
+## 0.18.6-mr219.0 (2026-07-29)
 
 ### Fixes
 
 - macos CLI build
 - need to update PATH on Windows
-
-## 0.18.6-dev.1 (2026-07-29)
-
-### Fixes
-
-- macos CLI build
-
-## 0.18.6-dev.0 (2026-07-29)
-
-### Fixes
-
-- macos CLI build
+- Windows path manipulation
 
 ## 0.18.5 (2026-07-28)
 
