@@ -1,4 +1,4 @@
-## 0.18.6-rc.0 (2026-07-29)
+## 0.18.6-rc.1 (2026-07-30)
 
 ### Fixes
 
@@ -6,6 +6,7 @@
 - need to update PATH on Windows
 - Windows path manipulation
 - prerelease label must be Python-compatible
+- use default macos version
 
 ## 0.18.5 (2026-07-28)
 
