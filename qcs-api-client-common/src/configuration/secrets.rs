@@ -125,7 +125,7 @@ impl Secrets {
     /// - [`TokenError`] for possible errors.
     pub(crate) async fn write_tokens(
         secrets_path: impl AsRef<Path> + Send + Sync + std::fmt::Debug,
-        profile_name: &str,
+        credentials_name: &str,
         refresh_token: Option<&SecretRefreshToken>,
         access_token: &SecretAccessToken,
         updated_at: OffsetDateTime,
@@ -142,8 +142,8 @@ impl Secrets {
         // Parse the TOML content into a mutable document
         let mut secrets_toml = secrets_string.parse::<DocumentMut>()?;
 
-        // Navigate to the `[credentials.<profile_name>.token_payload]` table
-        let token_payload = Self::get_token_payload_table(&mut secrets_toml, profile_name)?;
+        // Navigate to the `[credentials.<credentials_name>.token_payload]` table
+        let token_payload = Self::get_token_payload_table(&mut secrets_toml, credentials_name)?;
 
         let current_updated_at = token_payload
             .get("updated_at")
@@ -181,16 +181,20 @@ impl Secrets {
         Ok(())
     }
 
-    /// Get the `[credentials.<profile_name>.token_payload]` table from the TOML document
+    /// Get the `[credentials.<credentials_name>.token_payload]` table from the TOML document
     fn get_token_payload_table<'a>(
         secrets_toml: &'a mut DocumentMut,
-        profile_name: &str,
+        credentials_name: &str,
     ) -> Result<&'a mut Item, WriteError> {
         secrets_toml
             .get_mut("credentials")
-            .and_then(|credentials| credentials.get_mut(profile_name)?.get_mut("token_payload"))
+            .and_then(|credentials| {
+                credentials
+                    .get_mut(credentials_name)?
+                    .get_mut("token_payload")
+            })
             .ok_or_else(|| {
-                WriteError::MissingTable(format!("credentials.{profile_name}.token_payload",))
+                WriteError::MissingTable(format!("credentials.{credentials_name}.token_payload",))
             })
     }
 }

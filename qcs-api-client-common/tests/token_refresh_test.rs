@@ -52,10 +52,12 @@ async fn test_token_refresh() {
             .parse::<DocumentMut>()
             .unwrap();
 
+        // Tokens live under the profile's `credentials_name`, which is not necessarily the
+        // profile's own name.
         if let Some(token_payload) = toml
             .get("credentials")
-            .and_then(|credentials| credentials.get(configuration.profile()))
-            .and_then(|profile| profile.get("token_payload"))
+            .and_then(|credentials| credentials.get(configuration.credentials_name()))
+            .and_then(|credential| credential.get("token_payload"))
         {
             assert_eq!(
                 token_payload

@@ -1,3 +1,9 @@
+## 0.18.7 (2026-07-30)
+
+### Fixes
+
+- persist tokens immediately after a 'qcs login' and save then under 'credential_name' key instead of 'profile_name'
+
 ## 0.18.6 (2026-07-30)
 
 ### Fixes

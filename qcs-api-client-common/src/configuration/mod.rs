@@ -55,7 +55,9 @@ pub use error::{LoadError, TokenError};
 pub(crate) mod py;
 
 use settings::AuthServer;
-use tokens::{OAuthGrant, OAuthSession, PkceFlow, RefreshToken, TokenDispatcher};
+use tokens::{
+    OAuthGrant, OAuthSession, PkceFlow, RefreshToken, TokenDispatcher, persist_oauth_session,
+};
 
 /// Default profile name.
 pub const DEFAULT_PROFILE_NAME: &str = "default";
@@ -135,6 +137,15 @@ pub struct ClientConfiguration {
     #[builder_field_attr(gen_stub(skip))]
     profile: String,
 
+    /// The key under `[credentials]` in `secrets.toml` that this profile's tokens are stored
+    /// under. This is *not* necessarily the profile name: a profile declares its own
+    /// `credentials_name`, and several profiles may share one credential entry. Tokens must be
+    /// persisted under this name, otherwise a refresh writes to an entry nobody reads and the
+    /// stale credential is retried forever.
+    #[builder(private, default = "env_or_default_profile_name()")]
+    #[builder_field_attr(gen_stub(skip))]
+    credentials_name: String,
+
     #[doc = "The URL for the QCS REST API."]
     #[builder(default = "env_or_default_api_url()")]
     #[builder_field_attr(pyo3(get, set))]
@@ -194,6 +205,15 @@ struct ConfigurationContext {
     builder: ClientConfigurationBuilder,
     auth_server: AuthServer,
     credential: Option<Credential>,
+    /// The [`ConfigSource`] the [`ClientConfigurationBuilder`] was configured with.
+    ///
+    /// Kept alongside the builder (rather than read back off of it) so that callers can persist
+    /// freshly acquired tokens via [`tokens::persist_oauth_session`] before the final
+    /// [`ClientConfiguration`] is built.
+    source: ConfigSource,
+    /// The credentials name the [`ClientConfigurationBuilder`] was configured with, i.e. the key
+    /// the profile's tokens live under in `secrets.toml`. See [`Self::source`].
+    credentials_name: String,
 }
 
 impl ConfigurationContext {
@@ -232,7 +252,8 @@ impl ConfigurationContext {
             .ok_or_else(|| LoadError::AuthServerNotFound(profile.auth_server_name.clone()))?;
 
         let secrets_path = secrets.file_path;
-        let credential = secrets.credentials.remove(&profile.credentials_name);
+        let credentials_name = profile.credentials_name;
+        let credential = secrets.credentials.remove(&credentials_name);
 
         let api_url = env::var(API_URL_VAR)
             .unwrap_or(profile.api_url)
@@ -260,7 +281,8 @@ impl ConfigurationContext {
         let mut builder = ClientConfiguration::builder();
         builder
             .profile(profile_name)
-            .source(source)
+            .credentials_name(credentials_name.clone())
+            .source(source.clone())
             .api_url(api_url)
             .quilc_url(quilc_url)
             .qvm_url(qvm_url)
@@ -275,7 +297,26 @@ impl ConfigurationContext {
             builder,
             auth_server,
             credential,
+            source,
+            credentials_name,
         })
+    }
+}
+
+/// Persists `oauth_session` via [`persist_oauth_session`], logging a warning on failure instead of
+/// returning an error. A session that was just successfully refreshed or logged in is still valid
+/// and usable even if it can't be persisted, so a persistence failure shouldn't prevent returning
+/// it to the caller (mirroring how [`TokenError::Write`] is handled elsewhere).
+async fn persist_or_warn(
+    oauth_session: &OAuthSession,
+    source: &ConfigSource,
+    credentials_name: &str,
+) {
+    if let Err(_error) = persist_oauth_session(oauth_session, source, credentials_name).await {
+        #[cfg(feature = "tracing")]
+        tracing::warn!(
+            "Refreshed QCS credentials but failed to persist them to the secrets file: {_error}"
+        );
     }
 }
 
@@ -311,6 +352,7 @@ impl ClientConfiguration {
             mut builder,
             auth_server,
             credential,
+            ..
         } = ConfigurationContext::from_sources(settings, secrets, profile_name)?;
         let oauth_session = credential_to_oauth_session(credential, auth_server);
         Ok(builder.oauth_session(oauth_session).build()?)
@@ -352,6 +394,8 @@ impl ClientConfiguration {
             mut builder,
             auth_server,
             credential,
+            source,
+            credentials_name,
         } = ConfigurationContext::from_profile(profile_name)?;
 
         // If the stored access or refresh tokens are valid, skip the login flow
@@ -379,21 +423,23 @@ impl ClientConfiguration {
             }
 
             // The access token is invalid, try to refresh it
-            if let Some(refresh_token) = refresh_token {
-                if !refresh_token.is_empty() {
-                    let mut refresh_token = RefreshToken::new(refresh_token);
+            if let Some(refresh_token) = refresh_token
+                && !refresh_token.is_empty()
+            {
+                let mut refresh_token = RefreshToken::new(refresh_token);
 
-                    // If the refresh token is valid, use it
-                    if let Ok(access_token) = refresh_token.request_access_token(&auth_server).await
-                    {
-                        let oauth_session = OAuthSession::new(
-                            OAuthGrant::RefreshToken(refresh_token),
-                            auth_server,
-                            Some(access_token),
-                        );
+                // If the refresh token is valid, use it
+                if let Ok(access_token) = refresh_token.request_access_token(&auth_server).await {
+                    let oauth_session = OAuthSession::new(
+                        OAuthGrant::RefreshToken(refresh_token),
+                        auth_server,
+                        Some(access_token),
+                    );
 
-                        return Ok(builder.oauth_session(Some(oauth_session)).build()?);
-                    }
+                    // Requesting a new access token may have rotated the refresh token.
+                    persist_or_warn(&oauth_session, &source, &credentials_name).await;
+
+                    return Ok(builder.oauth_session(Some(oauth_session)).build()?);
                 }
             }
         }
@@ -403,6 +449,12 @@ impl ClientConfiguration {
         let access_token = pkce_flow.access_token.clone();
         let oauth_session =
             OAuthSession::from_pkce_flow(pkce_flow, auth_server, Some(access_token));
+
+        // Persist eagerly: without this, the freshly logged-in tokens are only saved once
+        // something later triggers a dispatcher-managed refresh (e.g. the access token expiring
+        // during a later call). If this process exits before that happens, the login is lost and
+        // the next process is forced through the login flow again.
+        persist_or_warn(&oauth_session, &source, &credentials_name).await;
 
         Ok(builder.oauth_session(Some(oauth_session)).build()?)
     }
@@ -419,6 +471,8 @@ impl ClientConfiguration {
             mut builder,
             auth_server,
             credential,
+            source: _,
+            credentials_name: _,
         } = ConfigurationContext::from_profile(profile_name)?;
         let oauth_session = credential_to_oauth_session(credential, auth_server);
         Ok(builder.oauth_session(oauth_session).build()?)
@@ -434,6 +488,13 @@ impl ClientConfiguration {
     #[must_use]
     pub fn profile(&self) -> &str {
         &self.profile
+    }
+
+    /// Get the name of the credential the loaded profile uses, i.e. the key its tokens are stored
+    /// under in `secrets.toml`. This may differ from [`Self::profile`].
+    #[must_use]
+    pub fn credentials_name(&self) -> &str {
+        &self.credentials_name
     }
 
     /// Get the URL of the QCS REST API.
@@ -506,7 +567,7 @@ impl ClientConfiguration {
                 #[cfg(feature = "tracing-config")]
                 tracing::debug!("Refreshing access token because current one is invalid: {e}");
                 dispatcher
-                    .refresh(self.source(), self.profile())
+                    .refresh(self.source(), self.credentials_name())
                     .await
                     .map(|e| e.access_token().cloned())?
             }
@@ -522,7 +583,7 @@ impl ClientConfiguration {
         self.oauth_session
             .as_ref()
             .ok_or(TokenError::NoRefreshToken)?
-            .refresh(self.source(), self.profile())
+            .refresh(self.source(), self.credentials_name())
             .await
     }
 }
@@ -585,6 +646,7 @@ fn expand_path_from_env_or_default(
 mod test {
     #![allow(clippy::result_large_err, reason = "happens in figment tests")]
 
+    use httpmock::prelude::*;
     use jsonwebtoken::{EncodingKey, Header, encode};
     use serde::Serialize;
     use time::{Duration, OffsetDateTime};
@@ -592,13 +654,14 @@ mod test {
 
     use crate::configuration::{
         API_URL_VAR, AuthServer, ClientConfiguration, DEFAULT_QUILC_URL, GRPC_API_URL_VAR,
-        OAuthSession, QUILC_URL_VAR, QVM_URL_VAR, RefreshToken, expand_path_from_env_or_default,
+        OAuthGrant, OAuthSession, QUILC_URL_VAR, QVM_URL_VAR, RefreshToken,
+        expand_path_from_env_or_default, oidc,
         pkce::tests::PkceTestServerHarness,
         secrets::{
             SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR, SecretAccessToken, SecretRefreshToken, Secrets,
         },
         settings::{SETTINGS_PATH_VAR, Settings},
-        tokens::TokenRefresher,
+        tokens::{RefreshTokenResponse, TokenRefresher},
     };
 
     use super::{settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, tokens::ClientCredentials};
@@ -1102,5 +1165,449 @@ access_token = ""
         });
 
         drop(server);
+    }
+
+    /// Exercises the "no valid credential, perform an interactive login" branch of
+    /// [`ClientConfiguration::load_with_login`], ensuring the resulting tokens are persisted to the
+    /// secrets file immediately — unlike [`test_pkce_flow_persists_token`], this does NOT call
+    /// `.refresh()` afterward. If `load_with_login` doesn't persist the login on its own, a process
+    /// that exits before anything else triggers a dispatcher-managed refresh would lose the login
+    /// entirely, forcing the next process back through an interactive login too.
+    #[test]
+    #[serial_test::serial(oauth2_test_server)]
+    fn test_load_with_login_persists_login_flow_token_without_explicit_refresh() {
+        // Because we need to block on the runtime inside the jail function,
+        // we have to create one manually here instead of relying on #[tokio::test].
+        let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+
+        let PkceTestServerHarness {
+            server,
+            client,
+            discovery: _,
+            redirect_port: _,
+        } = runtime.block_on(PkceTestServerHarness::new());
+
+        let client_id = client.client_id;
+        let issuer = server.issuer().to_string();
+
+        figment::Jail::expect_with(|jail| {
+            // In CI, the secrets file is mounted as read-only,
+            // but these tmp testing files should be writable.
+            jail.set_env(SECRETS_READ_ONLY_VAR, "false");
+
+            let directory = jail.directory();
+            let settings_file_name = "settings.toml";
+            let settings_file_path = directory.join(settings_file_name);
+
+            let secrets_file_name = "secrets.toml";
+            let secrets_file_path = directory.join(secrets_file_name);
+
+            let settings_file_contents = format!(
+                r#"
+default_profile_name = "default"
+
+[profiles]
+[profiles.default]
+api_url = ""
+auth_server_name = "default"
+credentials_name = "default"
+
+[auth_servers]
+[auth_servers.default]
+client_id = "{client_id}"
+issuer = "{issuer}"
+"#
+            );
+
+            let secrets_file_contents = r#"
+[credentials]
+[credentials.default]
+[credentials.default.token_payload]
+access_token = ""
+"#;
+
+            jail.create_file(settings_file_name, &settings_file_contents)
+                .expect("should create test settings.toml");
+
+            jail.set_env(
+                SETTINGS_PATH_VAR,
+                settings_file_path
+                    .to_str()
+                    .expect("settings file path should be a string"),
+            );
+
+            jail.create_file(secrets_file_name, secrets_file_contents)
+                .expect("should create test secrets.toml");
+
+            jail.set_env(
+                SECRETS_PATH_VAR,
+                secrets_file_path
+                    .to_str()
+                    .expect("secrets file path should be a string"),
+            );
+
+            runtime.block_on(async {
+                let cancel_token = CancellationToken::new();
+
+                // Deliberately do NOT call `.refresh()` afterward: `load_with_login` itself
+                // should persist the freshly logged-in tokens.
+                let configuration = ClientConfiguration::load_with_login(cancel_token, None)
+                    .await
+                    .expect("should perform a login flow");
+
+                let oauth_session = configuration
+                    .oauth_session()
+                    .await
+                    .expect("should get oauth session");
+                let token = oauth_session.validate().expect("token should be valid");
+
+                let token_payload = Secrets::load_from_path(&secrets_file_path)
+                    .expect("should load secrets")
+                    .credentials
+                    .remove("default")
+                    .expect("should get default credentials")
+                    .token_payload
+                    .expect("should get token payload");
+
+                assert_eq!(
+                    token_payload.access_token,
+                    Some(token),
+                    "the access token from the login flow should be persisted without an \
+                     explicit follow-up refresh"
+                );
+                assert!(
+                    token_payload.refresh_token.is_some(),
+                    "the refresh token from the login flow should be persisted without an \
+                     explicit follow-up refresh"
+                );
+            });
+
+            Ok(())
+        });
+
+        drop(server);
+    }
+
+    /// Exercises the "refresh the stored refresh token" branch of [`ClientConfiguration::load_with_login`],
+    /// which is taken when the stored access token has expired but a refresh token is still on file.
+    ///
+    /// This ensures that a rotated refresh token returned by the auth server is (a) reflected in the
+    /// in-memory [`OAuthSession`] and (b) persisted back to the secrets file. If the rotated refresh
+    /// token is not persisted, the next process to load this profile will retry the stale, already-consumed
+    /// refresh token, fail, and be forced into an interactive login flow every time.
+    #[test]
+    #[serial_test::serial(oauth2_test_server)]
+    fn test_load_with_login_persists_rotated_refresh_token_on_refresh() {
+        let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+
+        let mock_server = runtime.block_on(MockServer::start_async());
+
+        let new_access_token = Claims::new_valid().to_encoded();
+        let rotated_refresh_token = "rotated_refresh_token".to_string();
+
+        let oidc_mock = runtime.block_on(mock_server.mock_async(|when, then| {
+            when.method(GET).path("/.well-known/openid-configuration");
+            then.status(200)
+                .json_body_obj(&oidc::Discovery::new_for_test(
+                    mock_server.base_url().parse().unwrap(),
+                ));
+        }));
+
+        let issuer_mock = runtime.block_on(mock_server.mock_async(|when, then| {
+            when.method(POST).path("/v1/token");
+            then.status(200).json_body_obj(&RefreshTokenResponse {
+                access_token: SecretAccessToken::from(new_access_token.clone()),
+                refresh_token: Some(SecretRefreshToken::from(rotated_refresh_token.clone())),
+            });
+        }));
+
+        let client_id = "client_id";
+        let issuer = mock_server.base_url();
+        let initial_refresh_token = "initial_refresh_token";
+        let expired_access_token = Claims::new_expired().to_encoded();
+
+        figment::Jail::expect_with(|jail| {
+            jail.set_env(SECRETS_READ_ONLY_VAR, "false");
+
+            let directory = jail.directory();
+            let settings_file_name = "settings.toml";
+            let settings_file_path = directory.join(settings_file_name);
+
+            let secrets_file_name = "secrets.toml";
+            let secrets_file_path = directory.join(secrets_file_name);
+
+            let settings_file_contents = format!(
+                r#"
+default_profile_name = "default"
+
+[profiles]
+[profiles.default]
+api_url = ""
+auth_server_name = "default"
+credentials_name = "default"
+
+[auth_servers]
+[auth_servers.default]
+client_id = "{client_id}"
+issuer = "{issuer}"
+"#
+            );
+
+            let secrets_file_contents = format!(
+                r#"
+[credentials]
+[credentials.default]
+[credentials.default.token_payload]
+access_token = "{expired_access_token}"
+refresh_token = "{initial_refresh_token}"
+"#
+            );
+
+            jail.create_file(settings_file_name, &settings_file_contents)
+                .expect("should create test settings.toml");
+            jail.set_env(
+                SETTINGS_PATH_VAR,
+                settings_file_path
+                    .to_str()
+                    .expect("settings file path should be a string"),
+            );
+
+            jail.create_file(secrets_file_name, &secrets_file_contents)
+                .expect("should create test secrets.toml");
+            jail.set_env(
+                SECRETS_PATH_VAR,
+                secrets_file_path
+                    .to_str()
+                    .expect("secrets file path should be a string"),
+            );
+
+            runtime.block_on(async {
+                let cancel_token = CancellationToken::new();
+
+                // The expired access token should be refreshed using the stored refresh token,
+                // without falling back to an interactive login flow.
+                let configuration = ClientConfiguration::load_with_login(cancel_token, None)
+                    .await
+                    .expect("should refresh using the stored refresh token");
+
+                oidc_mock.assert_async().await;
+                issuer_mock.assert_async().await;
+
+                let oauth_session = configuration
+                    .oauth_session()
+                    .await
+                    .expect("should get oauth session");
+
+                assert_eq!(
+                    oauth_session.access_token().cloned().ok(),
+                    Some(SecretAccessToken::from(new_access_token.clone())),
+                    "in-memory access token should be the freshly refreshed one"
+                );
+
+                match oauth_session.payload() {
+                    OAuthGrant::RefreshToken(payload) => {
+                        assert_eq!(
+                            payload.refresh_token,
+                            SecretRefreshToken::from(rotated_refresh_token.clone()),
+                            "in-memory refresh token should be updated to the rotated value"
+                        );
+                    }
+                    other => panic!("expected a RefreshToken grant, got {other:?}"),
+                }
+
+                let token_payload = Secrets::load_from_path(&secrets_file_path)
+                    .expect("should load secrets")
+                    .credentials
+                    .remove("default")
+                    .expect("should get default credentials")
+                    .token_payload
+                    .expect("should get token payload");
+
+                assert_eq!(
+                    token_payload.access_token,
+                    Some(SecretAccessToken::from(new_access_token.clone())),
+                    "new access token should be persisted to the secrets file"
+                );
+                assert_eq!(
+                    token_payload.refresh_token,
+                    Some(SecretRefreshToken::from(rotated_refresh_token.clone())),
+                    "rotated refresh token should be persisted to the secrets file, otherwise \
+                     the next process to load this profile will retry the stale, \
+                     already-consumed refresh token and be forced back into a login flow"
+                );
+            });
+
+            Ok(())
+        });
+    }
+
+    /// A profile's `credentials_name` may differ from the profile's own name, and several profiles
+    /// may point at the same credential. Tokens are *read* from `credentials.<credentials_name>`,
+    /// so they must also be *written* there.
+    ///
+    /// Persisting under the profile name instead means every refresh lands in an entry nobody
+    /// reads, leaving the credential actually in use permanently stale: the profile works until
+    /// the access token expires (~1 hour), then retries the same consumed refresh token forever.
+    ///
+    /// This exercises the runtime path taken by ordinary API calls
+    /// ([`ClientConfiguration::get_bearer_access_token`] -> [`TokenDispatcher::refresh`]), not just
+    /// the login path.
+    #[test]
+    #[serial_test::serial(oauth2_test_server)]
+    fn test_refresh_persists_to_credentials_name_not_profile_name() {
+        let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+
+        let mock_server = runtime.block_on(MockServer::start_async());
+
+        let new_access_token = Claims::new_valid().to_encoded();
+        let rotated_refresh_token = "rotated_refresh_token".to_string();
+
+        let oidc_mock = runtime.block_on(mock_server.mock_async(|when, then| {
+            when.method(GET).path("/.well-known/openid-configuration");
+            then.status(200)
+                .json_body_obj(&oidc::Discovery::new_for_test(
+                    mock_server.base_url().parse().unwrap(),
+                ));
+        }));
+
+        let issuer_mock = runtime.block_on(mock_server.mock_async(|when, then| {
+            when.method(POST).path("/v1/token");
+            then.status(200).json_body_obj(&RefreshTokenResponse {
+                access_token: SecretAccessToken::from(new_access_token.clone()),
+                refresh_token: Some(SecretRefreshToken::from(rotated_refresh_token.clone())),
+            });
+        }));
+
+        let client_id = "client_id";
+        let issuer = mock_server.base_url();
+        let initial_refresh_token = "initial_refresh_token";
+        let expired_access_token = Claims::new_expired().to_encoded();
+
+        // The profile and the credential it uses are deliberately named differently.
+        let profile_name = "funnel";
+        let credentials_name = "shared";
+
+        figment::Jail::expect_with(|jail| {
+            jail.set_env(SECRETS_READ_ONLY_VAR, "false");
+
+            let directory = jail.directory();
+            let settings_file_name = "settings.toml";
+            let settings_file_path = directory.join(settings_file_name);
+
+            let secrets_file_name = "secrets.toml";
+            let secrets_file_path = directory.join(secrets_file_name);
+
+            let settings_file_contents = format!(
+                r#"
+default_profile_name = "{profile_name}"
+
+[profiles]
+[profiles.{profile_name}]
+api_url = ""
+auth_server_name = "default"
+credentials_name = "{credentials_name}"
+
+[auth_servers]
+[auth_servers.default]
+client_id = "{client_id}"
+issuer = "{issuer}"
+"#
+            );
+
+            // A decoy credential named after the profile. Persisting by profile name would write
+            // here, silently succeed, and leave `{credentials_name}` (the one actually loaded)
+            // stale, which is exactly the failure this test guards against.
+            let secrets_file_contents = format!(
+                r#"
+[credentials]
+[credentials.{credentials_name}]
+[credentials.{credentials_name}.token_payload]
+access_token = "{expired_access_token}"
+refresh_token = "{initial_refresh_token}"
+
+[credentials.{profile_name}]
+[credentials.{profile_name}.token_payload]
+access_token = "decoy_access_token"
+refresh_token = "decoy_refresh_token"
+"#
+            );
+
+            jail.create_file(settings_file_name, &settings_file_contents)
+                .expect("should create test settings.toml");
+            jail.set_env(
+                SETTINGS_PATH_VAR,
+                settings_file_path
+                    .to_str()
+                    .expect("settings file path should be a string"),
+            );
+
+            jail.create_file(secrets_file_name, &secrets_file_contents)
+                .expect("should create test secrets.toml");
+            jail.set_env(
+                SECRETS_PATH_VAR,
+                secrets_file_path
+                    .to_str()
+                    .expect("secrets file path should be a string"),
+            );
+
+            runtime.block_on(async {
+                let configuration = ClientConfiguration::load_profile(profile_name.to_string())
+                    .expect("should load the profile");
+
+                assert_eq!(configuration.profile(), profile_name);
+                assert_eq!(configuration.credentials_name(), credentials_name);
+
+                // The stored access token is expired, so this refreshes and persists.
+                let access_token = configuration
+                    .get_bearer_access_token()
+                    .await
+                    .expect("should refresh the expired access token");
+
+                oidc_mock.assert_async().await;
+                issuer_mock.assert_async().await;
+
+                assert_eq!(
+                    access_token,
+                    SecretAccessToken::from(new_access_token.clone())
+                );
+
+                let mut credentials = Secrets::load_from_path(&secrets_file_path)
+                    .expect("should load secrets")
+                    .credentials;
+
+                let token_payload = credentials
+                    .remove(credentials_name)
+                    .expect("should get the credential the profile points at")
+                    .token_payload
+                    .expect("should get token payload");
+
+                assert_eq!(
+                    token_payload.access_token,
+                    Some(SecretAccessToken::from(new_access_token.clone())),
+                    "the refreshed access token should be persisted under `credentials_name`, \
+                     which is where the next load reads it from"
+                );
+                assert_eq!(
+                    token_payload.refresh_token,
+                    Some(SecretRefreshToken::from(rotated_refresh_token.clone())),
+                    "the rotated refresh token should be persisted under `credentials_name`"
+                );
+
+                let decoy_payload = credentials
+                    .remove(profile_name)
+                    .expect("decoy credential should still exist")
+                    .token_payload
+                    .expect("decoy credential should still have a token payload");
+
+                assert_eq!(
+                    decoy_payload.access_token,
+                    Some(SecretAccessToken::from("decoy_access_token".to_string())),
+                    "the credential named after the profile is not the one in use and \
+                     should be left untouched"
+                );
+            });
+
+            Ok(())
+        });
     }
 }

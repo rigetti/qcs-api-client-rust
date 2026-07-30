@@ -16,7 +16,7 @@ use super::{
     ClientConfiguration, ConfigSource, TokenError, oidc, secrets::Secrets, settings::AuthServer,
 };
 use crate::configuration::{
-    error::DiscoveryError,
+    error::{DiscoveryError, WriteError},
     pkce::{PkceLoginError, PkceLoginRequest, pkce_login},
     secrets::{Credential, SecretAccessToken, SecretRefreshToken, TokenPayload},
 };
@@ -47,6 +47,7 @@ impl RefreshToken {
     }
 
     /// Request and return a new access token from the given authorization server using this refresh token.
+    /// Updates the refresh token in-place if the authorization server returns a new one.
     ///
     /// # Errors
     ///
@@ -66,10 +67,29 @@ impl RefreshToken {
         let data = TokenRefreshRequest::new(&auth_server.client_id, self.refresh_token.secret());
         let resp = client.post(token_url).form(&data).send().await?;
 
+        // `error_for_status()` discards the response body, which is where OAuth2 servers put the
+        // actual reason a refresh was rejected (e.g. `invalid_grant`). Log it before converting to
+        // an opaque error, since callers otherwise have no way to tell "the refresh token is
+        // expired/revoked" apart from "a network blip happened" - both currently look identical
+        // and silently fall back to an interactive login.
+        if let Err(error) = resp.error_for_status_ref() {
+            #[cfg(feature = "tracing")]
+            {
+                let status = resp.status();
+                let body = resp.text().await.unwrap_or_default();
+                tracing::warn!(
+                    %status,
+                    %body,
+                    "the auth server rejected the refresh token request"
+                );
+            }
+            return Err(error.into());
+        }
+
         let RefreshTokenResponse {
             access_token,
             refresh_token,
-        } = resp.error_for_status()?.json().await?;
+        } = resp.json().await?;
 
         if let Some(refresh_token) = refresh_token {
             self.refresh_token = refresh_token;
@@ -498,6 +518,63 @@ impl std::fmt::Debug for OAuthSession {
     }
 }
 
+/// Persists `oauth_session`'s tokens to the secrets file backing `source`, if any.
+///
+/// This is a no-op if `source` is not file-backed ([`ConfigSource::Default`] or
+/// [`ConfigSource::Builder`]), or if the secrets file is read-only (see [`Secrets::is_read_only`]).
+///
+/// Every code path that obtains a new or refreshed [`OAuthSession`] (whether through the
+/// [`TokenDispatcher`], or through [`ClientConfiguration::load_with_login`]'s manual refresh and
+/// PKCE login branches) should call this so that a rotated refresh token isn't silently dropped.
+/// Otherwise, the next process to load the profile will retry a stale, already-consumed refresh
+/// token and be forced back into an interactive login.
+///
+/// # Errors
+///
+/// See [`WriteError`]
+pub(crate) async fn persist_oauth_session(
+    oauth_session: &OAuthSession,
+    source: &ConfigSource,
+    credentials_name: &str,
+) -> Result<(), WriteError> {
+    let ConfigSource::File {
+        settings_path: _,
+        secrets_path,
+    } = source
+    else {
+        return Ok(());
+    };
+
+    if Secrets::is_read_only(secrets_path).await? {
+        return Ok(());
+    }
+
+    // Persist the fresh refresh token if the grant carries one, so that a rotated
+    // refresh token isn't lost on the next load. Both the PKCE and refresh-token
+    // grants can hold a refresh token that the auth server may have rotated.
+    let refresh_token = match &oauth_session.payload {
+        OAuthGrant::PkceFlow(payload) => payload.refresh_token.as_ref().map(|rt| &rt.refresh_token),
+        OAuthGrant::RefreshToken(payload) => Some(&payload.refresh_token),
+        OAuthGrant::ExternallyManaged(_) | OAuthGrant::ClientCredentials(_) => None,
+    };
+
+    // Nothing to persist without an access token; this shouldn't happen for a session that was
+    // just successfully refreshed or logged in, but there's nothing useful to write otherwise.
+    let Ok(access_token) = oauth_session.access_token() else {
+        return Ok(());
+    };
+
+    let now = OffsetDateTime::now_utc();
+    Secrets::write_tokens(
+        secrets_path,
+        credentials_name,
+        refresh_token,
+        access_token,
+        now,
+    )
+    .await
+}
+
 /// A wrapper for [`OAuthSession`] that provides thread-safe access to the inner tokens.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "stubs", gen_stub_pyclass)]
@@ -553,9 +630,9 @@ impl TokenDispatcher {
     pub async fn refresh(
         &self,
         source: &ConfigSource,
-        profile: &str,
+        credentials_name: &str,
     ) -> Result<OAuthSession, TokenError> {
-        self.managed_refresh(Self::perform_refresh, source, profile)
+        self.managed_refresh(Self::perform_refresh, source, credentials_name)
             .await
     }
 
@@ -576,7 +653,7 @@ impl TokenDispatcher {
         &self,
         refresh_fn: F,
         source: &ConfigSource,
-        profile: &str,
+        credentials_name: &str,
     ) -> Result<OAuthSession, TokenError>
     where
         F: FnOnce(Arc<RwLock<OAuthSession>>) -> Fut + Send,
@@ -595,41 +672,7 @@ impl TokenDispatcher {
 
         let oauth_session = refresh_fn(self.lock.clone()).await?;
 
-        // If the config source is a file, write the new access token to the file
-        let write_result = if let ConfigSource::File {
-            settings_path: _,
-            secrets_path,
-        } = source
-        {
-            match Secrets::is_read_only(secrets_path).await {
-                Ok(true) => Ok(()),
-                Ok(false) => {
-                    // Persist the fresh refresh token if the grant carries one, so that a rotated
-                    // refresh token isn't lost on the next load. Both the PKCE and refresh-token
-                    // grants can hold a refresh token that the auth server may have rotated.
-                    let refresh_token = match &oauth_session.payload {
-                        OAuthGrant::PkceFlow(payload) => {
-                            payload.refresh_token.as_ref().map(|rt| &rt.refresh_token)
-                        }
-                        OAuthGrant::RefreshToken(payload) => Some(&payload.refresh_token),
-                        OAuthGrant::ExternallyManaged(_) | OAuthGrant::ClientCredentials(_) => None,
-                    };
-
-                    let now = OffsetDateTime::now_utc();
-                    Secrets::write_tokens(
-                        secrets_path,
-                        profile,
-                        refresh_token,
-                        oauth_session.access_token()?,
-                        now,
-                    )
-                    .await
-                }
-                Err(e) => Err(e),
-            }
-        } else {
-            Ok(())
-        };
+        let write_result = persist_oauth_session(&oauth_session, source, credentials_name).await;
 
         // Always clean up the refreshing lock, even if write failed
         *self.refreshing.lock().await = false;
@@ -1057,6 +1100,51 @@ mod test {
                 read_result.payload
             );
         }
+    }
+
+    /// When the auth server rejects a refresh token request (e.g. the refresh token was revoked
+    /// or has expired), the failure should still surface as a normal error - not panic - even
+    /// though the response body is read for logging before the error is returned.
+    #[tokio::test]
+    async fn test_refresh_token_request_rejected_by_auth_server() {
+        let mock_server = MockServer::start_async().await;
+
+        let oidc_mock = mock_server
+            .mock_async(|when, then| {
+                when.method(GET).path("/.well-known/openid-configuration");
+                then.status(200)
+                    .json_body_obj(&oidc::Discovery::new_for_test(
+                        mock_server.base_url().parse().unwrap(),
+                    ));
+            })
+            .await;
+
+        let issuer_mock = mock_server
+            .mock_async(|when, then| {
+                when.method(POST).path("/v1/token");
+                then.status(400).json_body_obj(&serde_json::json!({
+                    "error": "invalid_grant",
+                    "error_description": "Unknown or invalid refresh token.",
+                }));
+            })
+            .await;
+
+        let mut refresh_token = RefreshToken::new(SecretRefreshToken::from("revoked_refresh"));
+        let auth_server = AuthServer {
+            client_id: "client_id".to_string(),
+            issuer: mock_server.base_url(),
+            scopes: None,
+        };
+
+        let result = refresh_token.request_access_token(&auth_server).await;
+
+        oidc_mock.assert_async().await;
+        issuer_mock.assert_async().await;
+
+        assert!(
+            result.is_err(),
+            "a rejected refresh token request should be an error, got {result:?}"
+        );
     }
 
     #[rstest]
