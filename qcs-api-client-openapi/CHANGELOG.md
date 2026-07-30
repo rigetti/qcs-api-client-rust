@@ -1,3 +1,19 @@
+## 0.19.6 (2026-07-30)
+
+### Fixes
+
+- macos CLI build requires updated `rustc`; ensure Windows build can't break in the same way
+
+## 0.19.6-rc.1 (2026-07-30)
+
+### Fixes
+
+- macos CLI build
+- need to update PATH on Windows
+- Windows path manipulation
+- prerelease label must be Python-compatible
+- use default macos version
+
 ## 0.19.5 (2026-07-28)
 
 ### Fixes
