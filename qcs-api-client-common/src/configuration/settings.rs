@@ -144,7 +144,13 @@ pub(crate) const QCS_DEFAULT_AUTH_ISSUER_PRODUCTION: &str =
 #[cfg_attr(feature = "stubs", gen_stub_pyclass)]
 #[cfg_attr(
     feature = "python",
-    pyo3::pyclass(module = "qcs_api_client_common.configuration", eq, get_all, set_all)
+    pyo3::pyclass(
+        module = "qcs_api_client_common._qcs_api_client_common.configuration",
+        eq,
+        get_all,
+        set_all,
+        from_py_object
+    )
 )]
 pub struct AuthServer {
     /// OAuth 2.0 client id.

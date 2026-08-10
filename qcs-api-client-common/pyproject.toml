@@ -1,7 +1,7 @@
 [project]
 name = "qcs-api-client-common"
 requires-python = ">=3.10,<4"
-version = "0.19.0-rc.0"
+version = "0.19.0-rc.1"
 description = "Contains core QCS client functionality and middleware implementations."
 readme = "README-py.md"
 license = { text = "Apache-2.0" }
@@ -42,6 +42,14 @@ dev = [
     "griffe >= 1.15.0",
     "pyo3_linter @ git+https://github.com/rigetti/rigetti-pyo3.git@feat-pyo3-linter#subdirectory=pyo3_linter",
 ]
+
+[tool.pyo3-stub-gen]
+# Only the `configuration` package's `__init__.py` is generated (from the
+# `reexport_module_members!` declaration in `src/lib.rs`). The top-level
+# `qcs_api_client_common/__init__.py` is hand-written — it also exposes the
+# pure-Python `grpc` and `httpx` modules — so it is deliberately excluded here
+# to keep stub generation from clobbering it.
+generate-init-py = ["qcs_api_client_common.configuration"]
 
 [build-system]
 requires = ["maturin>=1.9.4,<2.0.0"]
@@ -85,9 +93,11 @@ exclude = [
     "node_modules",
     "site-packages",
     "venv",
-    # Ignore our generated type stub files.
+    # Ignore our generated type stub files, and the `__init__.py` files generated
+    # alongside them by pyo3_stub_gen. Note that the top-level
+    # `python/qcs_api_client_common/__init__.py` is *not* generated, and so is linted.
     "python/qcs_api_client_common/**/*.pyi",
-    "python/qcs_api_client_common/__init__.py",
+    "python/qcs_api_client_common/configuration/__init__.py",
 ]
 line-length = 120
 indent-width = 4
@@ -110,10 +120,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 "python/qcs_api_client_common/**/*.pyi" = [
     "B008"  # In type hints, a function call in a default argument serves as documentation, and doesn't cause a bug.
 ]
-# The module initialization script does some special tricks
-# to expose the rest of the package properly in a way users would expect to import it,
-# and so it's fine that it uses `assert` and `exec` to do so.
-"python/qcs_api_client_common/__init__.py" = [ "S101", "S102" ]
 
 [tool.ruff.format]
 # Like Black,  use double quotes for strings.

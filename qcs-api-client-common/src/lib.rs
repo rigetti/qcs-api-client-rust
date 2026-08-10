@@ -49,7 +49,21 @@ rigetti_pyo3::create_init_submodule! {
 #[pymodule]
 #[pyo3(name = "_qcs_api_client_common")]
 fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    init_submodule("qcs_api_client_common", m.py(), m)
+    init_submodule("qcs_api_client_common._qcs_api_client_common", m.py(), m)
+}
+
+#[cfg(feature = "stubs")]
+mod stubs {
+    use pyo3_stub_gen::reexport_module_members;
+
+    // During stub generation, this `qcs_api_client_common._qcs_api_client_common` submodule
+    // and its contents will be re-exported into the `qcs_api_client_common` namespace.
+    //
+    // The top-level module is intentionally not re-exported here: its `__init__.py` is
+    // hand-written, because it also exposes the pure-Python `grpc` and `httpx` modules.
+    reexport_module_members!(
+        "qcs_api_client_common.configuration" from "qcs_api_client_common._qcs_api_client_common.configuration"
+    );
 }
 
 #[cfg(feature = "stubs")]

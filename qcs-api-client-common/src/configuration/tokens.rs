@@ -32,7 +32,13 @@ pub use super::secret_string::ClientSecret;
 #[cfg_attr(feature = "stubs", gen_stub_pyclass)]
 #[cfg_attr(
     feature = "python",
-    pyo3::pyclass(eq, get_all, set_all, module = "qcs_api_client_common.configuration")
+    pyo3::pyclass(
+        eq,
+        get_all,
+        set_all,
+        module = "qcs_api_client_common._qcs_api_client_common.configuration",
+        from_py_object
+    )
 )]
 pub struct RefreshToken {
     /// The token used to refresh the access token.
@@ -108,7 +114,13 @@ pub(super) struct ClientCredentialsResponse {
 #[cfg_attr(feature = "stubs", gen_stub_pyclass)]
 #[cfg_attr(
     feature = "python",
-    pyo3::pyclass(eq, get_all, frozen, module = "qcs_api_client_common.configuration")
+    pyo3::pyclass(
+        eq,
+        get_all,
+        frozen,
+        module = "qcs_api_client_common._qcs_api_client_common.configuration",
+        from_py_object
+    )
 )]
 pub struct ClientCredentials {
     /// The client ID
@@ -171,7 +183,13 @@ impl ClientCredentials {
 #[cfg_attr(feature = "stubs", gen_stub_pyclass)]
 #[cfg_attr(
     feature = "python",
-    pyo3::pyclass(eq, get_all, frozen, module = "qcs_api_client_common.configuration")
+    pyo3::pyclass(
+        eq,
+        get_all,
+        frozen,
+        module = "qcs_api_client_common._qcs_api_client_common.configuration",
+        from_py_object
+    )
 )]
 /// The Access (Bearer) and refresh (if available) tokens from a PKCE login.
 pub struct PkceFlow {
@@ -347,7 +365,12 @@ impl std::fmt::Debug for OAuthGrant {
 #[cfg_attr(feature = "stubs", gen_stub_pyclass)]
 #[cfg_attr(
     feature = "python",
-    pyo3::pyclass(module = "qcs_api_client_common.configuration", frozen, get_all)
+    pyo3::pyclass(
+        module = "qcs_api_client_common._qcs_api_client_common.configuration",
+        frozen,
+        get_all,
+        from_py_object
+    )
 )]
 pub struct OAuthSession {
     /// The grant type to use to request an access token.
@@ -580,7 +603,11 @@ pub(crate) async fn persist_oauth_session(
 #[cfg_attr(feature = "stubs", gen_stub_pyclass)]
 #[cfg_attr(
     feature = "python",
-    pyo3::pyclass(module = "qcs_api_client_common.configuration", frozen)
+    pyo3::pyclass(
+        module = "qcs_api_client_common._qcs_api_client_common.configuration",
+        frozen,
+        from_py_object
+    )
 )]
 pub struct TokenDispatcher {
     lock: Arc<RwLock<OAuthSession>>,
@@ -716,7 +743,11 @@ pub type RefreshFunction = Box<dyn (Fn(AuthServer) -> RefreshResult) + Send + Sy
 #[cfg_attr(feature = "stubs", gen_stub_pyclass)]
 #[cfg_attr(
     feature = "python",
-    pyo3::pyclass(module = "qcs_api_client_common.configuration", frozen)
+    pyo3::pyclass(
+        module = "qcs_api_client_common._qcs_api_client_common.configuration",
+        frozen,
+        from_py_object
+    )
 )]
 pub struct ExternallyManaged {
     refresh_function: Arc<RefreshFunction>,
