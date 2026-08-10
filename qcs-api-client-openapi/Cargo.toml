@@ -7,7 +7,7 @@ license = 'Apache-2.0'
 name = 'qcs-api-client-openapi'
 publish = true
 repository = 'https://github.com/rigetti/qcs-api-client-rust'
-version = '0.20.0-rc.2'
+version = '0.20.0-rc.3'
 
 [package.authors]
 workspace = true

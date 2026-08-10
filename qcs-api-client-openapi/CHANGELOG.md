@@ -1,8 +1,13 @@
-## 0.20.0-rc.2 (2026-08-10)
+## 0.20.0-rc.3 (2026-08-10)
 
 ### Breaking Changes
 
 - update PyO3 and related dependencies
+
+### Fixes
+
+- try using the new job templates for CLI building
+- build.rs can't use cross-compilation flags
 
 ## 0.19.7 (2026-07-30)
 
