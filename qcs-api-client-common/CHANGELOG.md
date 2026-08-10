@@ -1,4 +1,4 @@
-## 0.19.0-rc.4 (2026-08-10)
+## 0.19.0-rc.5 (2026-08-10)
 
 ### Breaking Changes
 
@@ -9,6 +9,7 @@
 - try using the new job templates for CLI building
 - build.rs can't use cross-compilation flags
 - protobuf install
+- release-build folder name has changed
 
 ## 0.18.7 (2026-07-30)
 
