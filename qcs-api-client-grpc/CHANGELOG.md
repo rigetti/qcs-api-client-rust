@@ -1,4 +1,4 @@
-## 0.19.0-rc.5 (2026-08-10)
+## 0.19.0-rc.6 (2026-08-10)
 
 ### Breaking Changes
 
@@ -10,6 +10,7 @@
 - build.rs can't use cross-compilation flags
 - protobuf install
 - release-build folder name has changed
+- version variable has also changed
 
 ## 0.18.7 (2026-07-30)
 
