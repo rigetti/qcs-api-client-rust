@@ -57,6 +57,7 @@
 
 use std::{collections::HashSet, str::FromStr};
 
+use urlpattern::{RegexSyntax, UrlPatternOptions};
 pub use urlpattern::{UrlPatternInit, UrlPatternMatchInput, UrlPatternResult};
 
 use {std::env, thiserror::Error, urlpattern::UrlPattern};
@@ -94,17 +95,22 @@ where
 
 /// A trait for filtering header values into a [`Vec<(String, String)>`] of tracing attributes.
 pub trait HeaderAttributesFilter {
-    /// Given a [`http::HeaderMap`], return a corresponding list of tracing attributes.
-    fn get_header_attributes(&self, headers: &http::HeaderMap) -> Vec<(String, String)>;
+    /// Given a [`qcs_dependencies_client::http::HeaderMap`], return a corresponding list of tracing attributes.
+    fn get_header_attributes(
+        &self,
+        headers: &qcs_dependencies_client::http::HeaderMap,
+    ) -> Vec<(String, String)>;
 }
 
 impl HeaderAttributesFilter for IncludeExclude<String> {
-    /// Any header values that return an error on [`http::HeaderValue::to_str`] will be excluded.
+    /// Any header values that return an error on [`qcs_dependencies_client::http::HeaderValue::to_str`] will be excluded.
     /// Note, this implementation intentionally scales linearly with the number of included headers
-    /// when [`Self::Include`] is used and scales linearly with [`http::HeaderMap::len`]
+    /// when [`Self::Include`] is used and scales linearly with [`qcs_dependencies_client::http::HeaderMap::len`]
     /// when [`Self::Exclude`] is used.
-    #[must_use]
-    fn get_header_attributes(&self, headers: &http::HeaderMap) -> Vec<(String, String)> {
+    fn get_header_attributes(
+        &self,
+        headers: &qcs_dependencies_client::http::HeaderMap,
+    ) -> Vec<(String, String)> {
         match self {
             Self::Include(set) => {
                 let mut header_attributes = Vec::new();
@@ -113,7 +119,7 @@ impl HeaderAttributesFilter for IncludeExclude<String> {
                         .get(header_name)
                         .and_then(|header_value| header_value.to_str().ok())
                     {
-                        header_attributes.push((header_name.to_string(), header_value.to_string()));
+                        header_attributes.push((header_name.clone(), header_value.to_string()));
                     }
                 }
                 header_attributes
@@ -144,9 +150,10 @@ pub static QCS_API_TRACING_FILTER: &str = "QCS_API_TRACING_FILTER";
 /// Environment variable to turn the tracing filter into an exclusive filter.
 pub static QCS_API_NEGATE_TRACING_FILTER: &str = "QCS_API_NEGATE_TRACING_FILTER";
 
-/// An error indicating that a tracing filter URL pattern could not be parsed. Note that tracing
-/// filters must conform to [URL Pattern API syntax](https://wicg.github.io/urlpattern/). Only
-/// https, http, and tcp schemes are supported.
+/// An error indicating that a tracing filter URL pattern could not be parsed.
+///
+/// Note that tracing filters must conform to [URL Pattern API syntax](https://wicg.github.io/urlpattern/).
+/// Only https, http, and tcp schemes are supported.
 #[derive(Error, Debug)]
 pub enum TracingFilterError {
     /// The pattern is not a valid URL pattern.
@@ -348,7 +355,7 @@ impl TracingConfiguration {
     pub fn is_enabled(&self, url: &UrlPatternMatchInput) -> bool {
         self.filter
             .as_ref()
-            .map_or(true, |filter| filter.is_enabled(url))
+            .is_none_or(|filter| filter.is_enabled(url))
     }
 }
 
@@ -447,7 +454,7 @@ impl TracingFilter {
     pub fn from_env() -> Result<Option<Self>, TracingFilterError> {
         if let Ok(filter) = env::var(QCS_API_TRACING_FILTER) {
             let is_negated = env::var(QCS_API_NEGATE_TRACING_FILTER)
-                .map_or(false, |_| is_env_var_true(QCS_API_NEGATE_TRACING_FILTER));
+                .is_ok_and(|_| is_env_var_true(QCS_API_NEGATE_TRACING_FILTER));
             return Ok(Self::builder()
                 .parse_strs_and_set_paths(&filter.split(',').collect::<Vec<_>>())?
                 .set_is_negated(is_negated)
@@ -461,13 +468,20 @@ impl TracingFilter {
     /// logged, but otherwise ignored (i.e. prevents poison pill effects).
     fn first_match(&self, input: &UrlPatternMatchInput) -> Option<UrlPatternResult> {
         self.paths.iter().find_map(|init| {
-            <UrlPattern>::parse(init.clone())
-                .and_then(|pattern| pattern.exec(input.clone()))
-                .map_err(|e| {
-                    tracing::error!("error matching url pattern: {}", e);
-                })
-                .ok()
-                .flatten()
+            <UrlPattern>::parse(
+                init.clone(),
+                UrlPatternOptions {
+                    ignore_case: false,
+                    regex_syntax: RegexSyntax::Rust,
+                },
+            )
+            .and_then(|pattern| pattern.exec(input.clone()))
+            .map_err(|e| {
+                #[cfg(feature = "tracing")]
+                tracing::error!("error matching url pattern: {}", e);
+            })
+            .ok()
+            .flatten()
         })
     }
 

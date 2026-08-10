@@ -1,6 +1,9 @@
 use std::{error::Error, path::PathBuf};
 
+use crate::configuration::{oidc::DISCOVERY_REQUIRED_SCOPE, tokens::PkceFlowError};
+
 use super::ClientConfigurationBuilderError;
+use super::secrets::SECRETS_READ_ONLY_VAR;
 
 /// Errors that can occur when loading a configuration.
 #[derive(Debug, thiserror::Error)]
@@ -25,6 +28,9 @@ pub enum LoadError {
         /// The error message.
         message: String,
     },
+    /// The file could not be read or written to.
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
     /// Failed to use the builder to build a configuration.
     #[error("Failed to build the ClientConfiguration: {0}")]
     Build(#[from] ClientConfigurationBuilderError),
@@ -34,7 +40,9 @@ pub enum LoadError {
     /// Provided authorization server not found.
     #[error("Expected auth server {0} in settings.auth_servers but it does not exist")]
     AuthServerNotFound(String),
-
+    /// Failed to complete a PKCE login flow.
+    #[error("Failed to complete PKCE login: {0}")]
+    PkceFlow(#[from] PkceFlowError),
     #[cfg(feature = "tracing-config")]
     /// Failed to parse tracing filter. These should be a comma separated list of URL patterns. See
     /// <https://wicg.github.io/urlpattern> for reference.
@@ -77,8 +85,84 @@ pub enum TokenError {
     NoAuthServer,
     /// Failure fetching a refreshed access token from the QCS API.
     #[error("Error fetching new token from the QCS API: {0}")]
-    Fetch(#[from] reqwest::Error),
+    Fetch(#[from] qcs_dependencies_client::reqwest::Error),
     /// Catch all for errors returned from an [`super::ExternallyManaged`] refresh function.
     #[error("Failed to request an externally managed access token: {0}")]
     ExternallyManaged(String),
+    /// Failure writing the new access token to the secrets file.
+    #[error(
+        "Failed to write the new access token to the secrets file. Setting `{SECRETS_READ_ONLY_VAR}=true` in the environment will skip persistence of newly acquired tokens. Error details: {error}"
+    )]
+    Write {
+        /// The underlying write error.
+        error: WriteError,
+        /// The successfully refreshed OAuth session that failed to persist. The token is valid and can be used despite the write failure.
+        ///
+        /// Boxed to reduce the size of the `TokenError` enum and avoid `clippy::result_large_err` warnings.
+        oauth_session: Box<super::OAuthSession>,
+    },
+    /// Failure fetching the OIDC discovery document.
+    #[error("Failed to fetch the OIDC discovery document: {0}")]
+    Discovery(#[from] DiscoveryError),
+}
+
+/// Errors that can occur when attempting to fetch and process an OIDC discovery document.
+#[derive(Debug, thiserror::Error)]
+pub enum DiscoveryError {
+    #[error("invalid issuer URL: {0}")]
+    Url(#[from] url::ParseError),
+    #[error("error fetching discovery document: {0}")]
+    Fetch(#[from] qcs_dependencies_client::reqwest::Error),
+    #[error("failed to parse discovery document: {0}")]
+    Json(#[from] serde_json::Error),
+    #[error("issuer URL ({issuer}) is invalid: {reason}")]
+    InvalidIssuer { issuer: String, reason: String },
+    #[error("discovery document is invalid: {reason}")]
+    InvalidDocument { reason: String },
+    #[error("discovery document issuer ({document}) does not match the queried issuer ({query})")]
+    IssuerMismatch { document: String, query: String },
+    #[error("discovery document `supported_scopes` does not include the required minimum scope \"{expected}\", received: {0:?}", expected = DISCOVERY_REQUIRED_SCOPE)]
+    InvalidScopes(Vec<String>),
+}
+
+/// Errors that can occur when trying to write or update a configuration file.
+#[derive(Debug, thiserror::Error)]
+pub enum WriteError {
+    /// There was an IO error while updating the secrets file.
+    #[error(transparent)]
+    IoWithPath(#[from] IoErrorWithPath),
+    /// The file's contents are not valid TOML
+    #[error("File could not be read as TOML: {0}")]
+    InvalidToml(#[from] toml_edit::TomlError),
+    /// TOML table could not be found.
+    #[error("The table `{0}` does not exist.")]
+    MissingTable(String),
+    /// There was an error with time formatting
+    #[error("Error formatting time: {0}.")]
+    TimeFormat(#[from] time::error::Format),
+    /// There was an error writing or persisting the temporary secrets file during access token refresh.
+    #[error("Error writing or persisting temporary secrets file during access token refresh: {0}")]
+    TempFile(#[from] async_tempfile::Error),
+}
+
+/// A fallible IO operation that can result in a [`IoErrorWithPath`]
+#[derive(Debug)]
+pub enum IoOperation {
+    Open,
+    Read,
+    Write,
+    Rename { dest: PathBuf },
+    GetMetadata,
+    SetPermissions,
+    Flush,
+}
+
+/// An error wrapping [`std::io::Error`] that includes the path and operation as additional context.
+#[derive(Debug, thiserror::Error)]
+#[error("Io error while error performing {operation:?} on {path}: {error}")]
+pub struct IoErrorWithPath {
+    #[source]
+    pub error: std::io::Error,
+    pub path: PathBuf,
+    pub operation: IoOperation,
 }

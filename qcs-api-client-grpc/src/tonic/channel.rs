@@ -4,28 +4,29 @@
 use std::time::Duration;
 
 use backoff::ExponentialBackoff;
-use http::{uri::InvalidUri, Uri};
-use hyper_proxy2::{Intercept, Proxy, ProxyConnector};
 use hyper_socks2::{Auth, SocksConnector};
 use hyper_util::client::legacy::connect::HttpConnector;
-use tonic::{
-    body::BoxBody,
+use qcs_dependencies_client::http::{Uri, uri::InvalidUri};
+use qcs_dependencies_client::tonic::{
+    body::Body,
     client::GrpcService,
     transport::{Channel, ClientTlsConfig, Endpoint},
 };
-use tower::{Layer, ServiceBuilder};
+use qcs_dependencies_client::tower::{Layer, ServiceBuilder};
 use url::Url;
 
 use qcs_api_client_common::{
     backoff::{self, default_backoff},
-    configuration::{ClientConfiguration, LoadError, TokenError, TokenRefresher},
+    configuration::{ClientConfiguration, LoadError, TokenError, tokens::TokenRefresher},
 };
 
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::tracing_configuration::TracingConfiguration;
 
+use rigetti_hyper_proxy::{Intercept, Proxy, ProxyConnector};
+
 #[cfg(feature = "tracing")]
-use super::trace::{build_trace_layer, CustomTraceLayer, CustomTraceService};
+use super::trace::{CustomTraceLayer, CustomTraceService, build_trace_layer};
 use super::{Error, RefreshLayer, RefreshService, RetryLayer, RetryService};
 
 /// Errors that may occur when configuring a channel connection
@@ -55,9 +56,9 @@ pub enum ChannelError {
 }
 
 /// Defines a logic for turning some object into a [`GrpcService`].
-pub trait IntoService<C: GrpcService<BoxBody>> {
+pub trait IntoService<C: GrpcService<Body>> {
     /// The service type that will be returned.
-    type Service: GrpcService<BoxBody>;
+    type Service: GrpcService<Body>;
 
     /// Convert the object into a service.
     fn into_service(self, channel: C) -> Self::Service;
@@ -65,7 +66,7 @@ pub trait IntoService<C: GrpcService<BoxBody>> {
 
 impl<C> IntoService<C> for ()
 where
-    C: GrpcService<BoxBody>,
+    C: GrpcService<Body>,
 {
     type Service = C;
     fn into_service(self, channel: C) -> Self::Service {
@@ -97,10 +98,10 @@ where
 
 impl<C, T, O> IntoService<C> for RefreshOptions<O, T>
 where
-    C: GrpcService<BoxBody>,
+    C: GrpcService<Body>,
     O: IntoService<C>,
-    O::Service: GrpcService<BoxBody>,
-    RefreshService<O::Service, T>: GrpcService<BoxBody>,
+    O::Service: GrpcService<Body>,
+    RefreshService<O::Service, T>: GrpcService<Body>,
     T: TokenRefresher + Clone + Send + Sync + 'static,
 {
     type Service = RefreshService<O::Service, T>;
@@ -128,10 +129,10 @@ impl From<ExponentialBackoff> for RetryOptions<()> {
 
 impl<C, O> IntoService<C> for RetryOptions<O>
 where
-    C: GrpcService<BoxBody>,
+    C: GrpcService<Body>,
     O: IntoService<C>,
-    O::Service: GrpcService<BoxBody>,
-    RetryService<O::Service>: GrpcService<BoxBody>,
+    O::Service: GrpcService<Body>,
+    RetryService<O::Service>: GrpcService<Body>,
 {
     type Service = RetryService<O::Service>;
     fn into_service(self, channel: C) -> Self::Service {
@@ -316,6 +317,7 @@ where
     /// # Errors
     ///
     /// Returns a [`ChannelError`] if the service cannot be built.
+    #[allow(clippy::result_large_err)]
     pub fn build(self) -> Result<O::Service, ChannelError> {
         let channel = get_channel_with_endpoint(&self.endpoint)?;
         #[cfg(feature = "tracing")]
@@ -336,6 +338,7 @@ where
 /// # Errors
 ///
 /// [`Error::InvalidUri`] if the string is an invalid URI.
+#[allow(clippy::result_large_err)]
 pub fn parse_uri(s: &str) -> Result<Uri, Error<TokenError>> {
     s.parse().map_err(Error::from)
 }
@@ -349,6 +352,7 @@ pub fn get_endpoint(uri: Uri) -> Endpoint {
             env!("CARGO_PKG_VERSION")
         ))
         .expect("user agent string should be valid")
+        .http2_adaptive_window(true)
         .tls_config(ClientTlsConfig::new().with_enabled_roots())
         .expect("tls setup should succeed")
 }
@@ -400,6 +404,7 @@ fn get_uri_socks_auth(uri: &Uri) -> Result<Option<Auth>, url::ParseError> {
 /// # Errors
 ///
 /// See [`ChannelError`].
+#[allow(clippy::result_large_err)]
 pub fn get_channel(uri: Uri) -> Result<Channel, ChannelError> {
     let endpoint = get_endpoint(uri);
     get_channel_with_endpoint(&endpoint)
@@ -421,6 +426,7 @@ pub fn get_channel(uri: Uri) -> Result<Channel, ChannelError> {
 /// # Errors
 ///
 /// See [`ChannelError`].
+#[allow(clippy::result_large_err)]
 pub fn get_channel_with_timeout(
     uri: Uri,
     timeout: Option<Duration>,
@@ -447,7 +453,11 @@ pub fn get_channel_with_timeout(
 /// # Errors
 ///
 /// Returns a [`ChannelError`] if the channel cannot be constructed.
-#[allow(clippy::similar_names)] // http(s)_proxy are similar but precise in this case.
+#[allow(
+    clippy::similar_names,
+    reason = "http(s)_proxy are similar but precise in this case"
+)]
+#[allow(clippy::result_large_err)]
 pub fn get_channel_with_endpoint(endpoint: &Endpoint) -> Result<Channel, ChannelError> {
     let https_proxy = get_env_uri("HTTPS_PROXY")?;
     let http_proxy = get_env_uri("HTTP_PROXY")?;
@@ -455,7 +465,7 @@ pub fn get_channel_with_endpoint(endpoint: &Endpoint) -> Result<Channel, Channel
     let mut connector = HttpConnector::new();
     connector.enforce_http(false);
 
-    let connect_to = |uri: http::Uri, intercept: Intercept| {
+    let connect_to = |uri: qcs_dependencies_client::http::Uri, intercept: Intercept| {
         let connector = connector.clone();
         match uri.scheme_str() {
             Some("socks5") => {
@@ -467,7 +477,8 @@ pub fn get_channel_with_endpoint(endpoint: &Endpoint) -> Result<Channel, Channel
                 Ok(endpoint.connect_with_connector_lazy(socks_connector))
             }
             Some("https" | "http") => {
-                let is_http = uri.scheme() == Some(&http::uri::Scheme::HTTP);
+                let is_http =
+                    uri.scheme() == Some(&qcs_dependencies_client::http::uri::Scheme::HTTP);
                 let proxy = Proxy::new(intercept, uri);
                 let mut proxy_connector = ProxyConnector::from_proxy(connector, proxy)?;
                 if is_http {
@@ -521,6 +532,7 @@ pub fn get_channel_with_endpoint(endpoint: &Endpoint) -> Result<Channel, Channel
 /// # Errors
 ///
 /// See [`Error`]
+#[allow(clippy::result_large_err)]
 pub fn get_wrapped_channel(
     uri: Uri,
 ) -> Result<RefreshService<Channel, ClientConfiguration>, Error<TokenError>> {
@@ -534,7 +546,7 @@ pub fn wrap_channel_with<C>(
     config: ClientConfiguration,
 ) -> RefreshService<C, ClientConfiguration>
 where
-    C: GrpcService<BoxBody>,
+    C: GrpcService<Body>,
 {
     ServiceBuilder::new()
         .layer(RefreshLayer::with_config(config))
@@ -549,7 +561,7 @@ pub fn wrap_channel_with_token_refresher<C, T>(
     token_refresher: T,
 ) -> RefreshService<C, T>
 where
-    C: GrpcService<BoxBody>,
+    C: GrpcService<Body>,
     T: TokenRefresher + Clone + Send + Sync,
 {
     ServiceBuilder::new()
@@ -562,11 +574,12 @@ where
 /// # Errors
 ///
 /// See [`Error`]
+#[allow(clippy::result_large_err)]
 pub fn wrap_channel<C>(
     channel: C,
 ) -> Result<RefreshService<C, ClientConfiguration>, Error<TokenError>>
 where
-    C: GrpcService<BoxBody>,
+    C: GrpcService<Body>,
 {
     Ok(wrap_channel_with(channel, {
         ClientConfiguration::load_default()?
@@ -578,12 +591,13 @@ where
 /// # Errors
 ///
 /// See [`Error`]
+#[allow(clippy::result_large_err)]
 pub fn wrap_channel_with_profile<C>(
     channel: C,
     profile: String,
 ) -> Result<RefreshService<C, ClientConfiguration>, Error<TokenError>>
 where
-    C: GrpcService<BoxBody>,
+    C: GrpcService<Body>,
 {
     Ok(wrap_channel_with(
         channel,
@@ -594,7 +608,7 @@ where
 /// Add exponential backoff retry logic to the `channel`.
 pub fn wrap_channel_with_retry<C>(channel: C) -> RetryService<C>
 where
-    C: GrpcService<BoxBody>,
+    C: GrpcService<Body>,
 {
     ServiceBuilder::new()
         .layer(RetryLayer::default())

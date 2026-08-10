@@ -16,7 +16,7 @@ use qcs_api_client_common::ClientConfiguration;
 use qcs_api_client_grpc::client_configuration::TokenError;
 use qcs_api_client_grpc::services::translation::translation_client::TranslationClient;
 use qcs_api_client_grpc::tonic::{
-    get_channel, parse_uri, wrap_channel_with, wrap_channel_with_retry, Error,
+    Error, get_channel, parse_uri, wrap_channel_with, wrap_channel_with_retry,
 };
 
 #[cfg(feature = "grpc-web")]

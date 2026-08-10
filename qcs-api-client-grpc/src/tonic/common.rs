@@ -31,8 +31,8 @@ pub(crate) enum ParsedStatusCodeError {
 ///
 /// See [`ParsedStatusCodeError`] for the possible error variants.
 pub(crate) fn get_status_code_from_headers(
-    header_map: &http::header::HeaderMap,
-) -> Result<tonic::Code, ParsedStatusCodeError> {
+    header_map: &qcs_dependencies_client::http::header::HeaderMap,
+) -> Result<qcs_dependencies_client::tonic::Code, ParsedStatusCodeError> {
     header_map
         .get(GRPC_STATUS_CODE_HEADER_NAME)
         .ok_or(ParsedStatusCodeError::StatusHeaderMissing)
@@ -46,10 +46,10 @@ pub(crate) fn get_status_code_from_headers(
                 .parse::<i32>()
                 .map_err(|_| ParsedStatusCodeError::HeaderNotInt)
         })
-        .map(tonic::Code::from)
+        .map(qcs_dependencies_client::tonic::Code::from)
 }
 
-/// Wrap the future in [`opentelemetry::trace::WithContext`] if the "tracing-opentelemetry" feature
+/// Wrap the future in [`qcs_dependencies_client::opentelemetry::trace::WithContext`] if the "tracing-opentelemetry" feature
 /// is enabled. This ensures the OpenTelemetry context is propagated across async boundaries. The
 /// result is then pinned and boxed.
 ///
@@ -57,16 +57,16 @@ pub(crate) fn get_status_code_from_headers(
 /// information.
 ///
 /// Note, this function is intended to draw attention to the common pattern of wrapping
-/// futures within [`Box::pin`] when [`tonic::client::GrpcService::call`] requires
+/// futures within [`Box::pin`] when [`qcs_dependencies_client::tonic::client::GrpcService::call`] requires
 /// asynchonous processing and we want the OpenTelemetry context propagated.
 #[cfg(feature = "tracing-opentelemetry")]
 pub(super) fn pin_future_with_otel_context_if_available<F>(
     fut: F,
-) -> std::pin::Pin<Box<opentelemetry::trace::WithContext<F>>> {
-    Box::pin(opentelemetry::trace::FutureExt::with_current_context(fut))
+) -> std::pin::Pin<Box<qcs_dependencies_client::opentelemetry::trace::WithContext<F>>> {
+    Box::pin(qcs_dependencies_client::opentelemetry::trace::FutureExt::with_current_context(fut))
 }
 
-/// Pin and box a future, as is common when [`tonic::client::GrpcService::call`] requires
+/// Pin and box a future, as is common when [`qcs_dependencies_client::tonic::client::GrpcService::call`] requires
 /// asynchronous processing.
 ///
 /// This trivial implementation is used to distinguish between the implementation

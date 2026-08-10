@@ -1,20 +1,21 @@
-use http::{HeaderValue, Request, Response};
+use super::Body;
 use qcs_api_client_common::{
-    backoff::{self, backoff::Backoff, ExponentialBackoff},
+    backoff::{self, ExponentialBackoff, backoff::Backoff},
     configuration::TokenError,
 };
-use tonic::{body::BoxBody, client::GrpcService, Status};
+use qcs_dependencies_client::http::{HeaderValue, Request, Response};
+use qcs_dependencies_client::tonic::{Status, client::GrpcService};
 
 use qcs_api_client_common::backoff::duration_from_response as duration_from_http_response;
 use std::{
-    future::{poll_fn, Future},
+    future::{Future, poll_fn},
     pin::Pin,
     task::{Context, Poll},
     time::Duration,
 };
 
-use super::{build_duplicate_request, RequestBodyDuplicationError};
-use tower::Layer;
+use super::{RequestBodyDuplicationError, build_duplicate_request};
+use qcs_dependencies_client::tower::Layer;
 
 /// The [`Layer`] used to apply exponential backoff retry logic to requests.
 #[derive(Debug, Clone)]
@@ -30,7 +31,7 @@ impl Default for RetryLayer {
     }
 }
 
-impl<S: GrpcService<BoxBody>> Layer<S> for RetryLayer {
+impl<S: GrpcService<Body>> Layer<S> for RetryLayer {
     type Service = RetryService<S>;
 
     fn layer(&self, service: S) -> Self::Service {
@@ -50,11 +51,15 @@ impl<S: GrpcService<BoxBody>> Layer<S> for RetryLayer {
 ///
 /// See also: [`RetryLayer`].
 #[derive(Clone, Debug)]
-pub struct RetryService<S: GrpcService<BoxBody>> {
+pub struct RetryService<S: GrpcService<Body>> {
     backoff: ExponentialBackoff,
     service: S,
 }
 
+/// Return `Some` if the request should be retried and the provided `backoff`
+/// has another backoff to try, or, for an http request, if the response
+/// specifies a `Retry-After` header. If `None` is returned, the request should
+/// not be retried.
 fn duration_from_response<T>(
     response: &Response<T>,
     backoff: &mut ExponentialBackoff,
@@ -62,7 +67,8 @@ fn duration_from_response<T>(
     if let Some(grpc_status) = Status::from_header_map(response.headers()) {
         match grpc_status.code() {
             // gRPC has no equivalent to RETRY-AFTER, so just use the backoff
-            tonic::Code::Unavailable => backoff.next_backoff(),
+            qcs_dependencies_client::tonic::Code::Unavailable => backoff.next_backoff(),
+            // No other gRPC statuses are retried.
             _ => None,
         }
     } else {
@@ -70,14 +76,14 @@ fn duration_from_response<T>(
     }
 }
 
-impl<S> GrpcService<BoxBody> for RetryService<S>
+impl<S> GrpcService<Body> for RetryService<S>
 where
-    S: GrpcService<BoxBody> + Send + Clone + 'static,
+    S: GrpcService<Body> + Send + Clone + 'static,
     S::Future: Send,
     S::ResponseBody: Send,
     super::error::Error<TokenError>: From<S::Error> + From<RequestBodyDuplicationError>,
 {
-    type ResponseBody = <S as GrpcService<BoxBody>>::ResponseBody;
+    type ResponseBody = <S as GrpcService<Body>>::ResponseBody;
     type Error = super::error::Error<TokenError>;
     type Future =
         Pin<Box<dyn Future<Output = Result<Response<Self::ResponseBody>, Self::Error>> + Send>>;
@@ -88,7 +94,7 @@ where
             .map_err(super::error::Error::from)
     }
 
-    fn call(&mut self, mut req: Request<BoxBody>) -> Self::Future {
+    fn call(&mut self, mut req: Request<Body>) -> Self::Future {
         if let Ok(request_id) = new_request_id() {
             req.headers_mut().insert(KEY_X_REQUEST_ID, request_id);
         }
@@ -112,12 +118,14 @@ where
 
                 // Ensure that the service is ready before trying to use it.
                 // Failure to do this *will* cause a panic.
-                poll_fn(|cx| service.poll_ready(cx))
+                poll_fn(|cx| -> Poll<Result<(), _>> { service.poll_ready(cx) })
                     .await
                     .map_err(super::error::Error::from)?;
 
                 if let Ok(retry_index_header_value) =
-                    http::HeaderValue::from_str(attempt.to_string().as_str())
+                    qcs_dependencies_client::http::HeaderValue::from_str(
+                        attempt.to_string().as_str(),
+                    )
                 {
                     request
                         .headers_mut()
@@ -141,7 +149,8 @@ where
     }
 }
 
-fn new_request_id() -> Result<HeaderValue, http::header::InvalidHeaderValue> {
+fn new_request_id() -> Result<HeaderValue, qcs_dependencies_client::http::header::InvalidHeaderValue>
+{
     let request_id = uuid::Uuid::new_v4().to_string();
     HeaderValue::from_str(request_id.as_str())
 }
@@ -158,11 +167,13 @@ mod tests {
 
     use super::*;
     use ::backoff::ExponentialBackoffBuilder;
-    use tonic::server::NamedService;
-    use tonic::Request;
-    use tonic_health::pb::health_check_response::ServingStatus;
-    use tonic_health::pb::health_server::{Health, HealthServer};
-    use tonic_health::{pb::health_client::HealthClient, server::HealthService};
+    use qcs_dependencies_client::tonic::Request;
+    use qcs_dependencies_client::tonic::server::NamedService;
+    use qcs_dependencies_client::tonic_health::pb::health_check_response::ServingStatus;
+    use qcs_dependencies_client::tonic_health::pb::health_server::{Health, HealthServer};
+    use qcs_dependencies_client::tonic_health::{
+        pb::health_client::HealthClient, server::HealthService,
+    };
 
     struct FlakyHealthService {
         required_tries_count: AtomicUsize,
@@ -175,10 +186,14 @@ mod tests {
             }
         }
 
-        fn make_response(&self) -> Result<tonic_health::pb::HealthCheckResponse, Status> {
+        #[allow(clippy::result_large_err)]
+        fn make_response(
+            &self,
+        ) -> Result<qcs_dependencies_client::tonic_health::pb::HealthCheckResponse, Status>
+        {
             let remaining = self.required_tries_count.fetch_sub(1, Ordering::SeqCst);
             if remaining == 0 {
-                let response = tonic_health::pb::HealthCheckResponse {
+                let response = qcs_dependencies_client::tonic_health::pb::HealthCheckResponse {
                     status: ServingStatus::Serving as i32,
                 };
                 Ok(response)
@@ -196,26 +211,32 @@ mod tests {
         }
     }
 
-    #[tonic::async_trait]
+    #[qcs_dependencies_client::tonic::async_trait]
     impl Health for FlakyHealthService {
         type WatchStream = tokio_stream::wrappers::ReceiverStream<
-            Result<tonic_health::pb::HealthCheckResponse, Status>,
+            Result<qcs_dependencies_client::tonic_health::pb::HealthCheckResponse, Status>,
         >;
 
         async fn check(
             &self,
-            _request: Request<tonic_health::pb::HealthCheckRequest>,
-        ) -> Result<tonic::Response<tonic_health::pb::HealthCheckResponse>, Status> {
-            self.make_response().map(tonic::Response::new)
+            _request: Request<qcs_dependencies_client::tonic_health::pb::HealthCheckRequest>,
+        ) -> Result<
+            qcs_dependencies_client::tonic::Response<
+                qcs_dependencies_client::tonic_health::pb::HealthCheckResponse,
+            >,
+            Status,
+        > {
+            self.make_response()
+                .map(qcs_dependencies_client::tonic::Response::new)
         }
 
         async fn watch(
             &self,
-            _request: Request<tonic_health::pb::HealthCheckRequest>,
-        ) -> Result<tonic::Response<Self::WatchStream>, Status> {
+            _request: Request<qcs_dependencies_client::tonic_health::pb::HealthCheckRequest>,
+        ) -> Result<qcs_dependencies_client::tonic::Response<Self::WatchStream>, Status> {
             let (tx, rx) = tokio::sync::mpsc::channel(1);
             tx.send(self.make_response()).await.unwrap();
-            Ok(tonic::Response::new(
+            Ok(qcs_dependencies_client::tonic::Response::new(
                 tokio_stream::wrappers::ReceiverStream::new(rx),
             ))
         }
@@ -228,9 +249,11 @@ mod tests {
         uds_grpc_stream::serve(health_server, |channel| async {
             let wrapped_channel = wrap_channel_with_retry(channel);
             let response = HealthClient::new(wrapped_channel)
-                .check(Request::new(tonic_health::pb::HealthCheckRequest {
-                    service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),
-                }))
+                .check(Request::new(
+                    qcs_dependencies_client::tonic_health::pb::HealthCheckRequest {
+                        service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),
+                    },
+                ))
                 .await
                 .unwrap();
             assert_eq!(response.into_inner().status(), ServingStatus::Serving);
@@ -253,12 +276,17 @@ mod tests {
                 }
                 .layer(channel),
             )
-            .check(Request::new(tonic_health::pb::HealthCheckRequest {
-                service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),
-            }))
+            .check(Request::new(
+                qcs_dependencies_client::tonic_health::pb::HealthCheckRequest {
+                    service: <HealthServer<HealthService> as NamedService>::NAME.to_string(),
+                },
+            ))
             .await
             .unwrap_err();
-            assert_eq!(status.code(), tonic::Code::Unavailable);
+            assert_eq!(
+                status.code(),
+                qcs_dependencies_client::tonic::Code::Unavailable
+            );
         })
         .await
         .unwrap();

@@ -97,6 +97,9 @@ tags:
   - description: The Quantum Processor is the heart of the Rigetti services.
     name: quantumProcessors
     x-displayName: Quantum Processors
+  - description: Deployments manage Controller Services and supporting services.
+    name: deployments
+    x-displayName: Quantum Processor Deployments
   - description: The Endpoint is the means of access to a Quantum Processor.
     name: endpoints
     x-displayName: Quantum Processor Endpoints
@@ -174,6 +177,7 @@ x-tagGroups:
   - name: QPU Access
     tags:
       - endpoints
+      - deployments
       - engagements
       - quantumProcessors
       - reservations
@@ -494,178 +498,6 @@ paths:
       summary: Create Engagement
       tags:
         - engagements
-  /v1/healthcheck:
-    get:
-      description: Endpoint to return a status 200 for load balancer health checks
-      operationId: HealthCheck
-      responses:
-        "200":
-          content:
-            application/json:
-              schema: {}
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      summary: Health Check
-  /v1/instructionSetArchitectures:
-    get:
-      description: Retrieve all Instruction Set Architectures available to the user.
-      operationId: ListInstructionSetArchitectures
-      parameters:
-        - in: query
-          name: pageSize
-          required: false
-          schema:
-            default: 5
-            exclusiveMinimum: 0
-            maximum: 5
-            title: Pagesize
-            type: integer
-        - in: query
-          name: pageToken
-          required: false
-          schema:
-            title: Pagetoken
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListInstructionSetArchitectureResponse"
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: List Instruction Set Architectures
-      tags:
-        - quantumProcessors
-  /v1/quantumProcessors:
-    get:
-      description: List all QuantumProcessors available to the user.
-      operationId: ListQuantumProcessors
-      parameters:
-        - in: query
-          name: pageSize
-          required: false
-          schema:
-            default: 10
-            title: Pagesize
-            type: integer
-        - in: query
-          name: pageToken
-          required: false
-          schema:
-            title: Pagetoken
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListQuantumProcessorsResponse"
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: List Quantum Processors
-      tags:
-        - quantumProcessors
-  "/v1/quantumProcessors/{quantumProcessorId}":
-    get:
-      description: Retrieve a single QuantumProcessor by ID.
-      operationId: GetQuantumProcessor
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QuantumProcessor"
-          description: Successful Response
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Get Quantum Processor
-      tags:
-        - quantumProcessors
-  "/v1/quantumProcessors/{quantumProcessorId}/accessors":
-    get:
-      description: List all means of accessing a QuantumProcessor available to the user.
-      operationId: ListQuantumProcessorAccessors
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
-        - in: query
-          name: pageSize
-          required: false
-          schema:
-            default: 10
-            title: Pagesize
-            type: integer
-        - in: query
-          name: pageToken
-          required: false
-          schema:
-            title: Pagetoken
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListQuantumProcessorAccessorsResponse"
-          description: Successful Response
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: List Quantum Processor Accessors
-      tags:
-        - quantumProcessors
   "/v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault":
     get:
       description: |-
@@ -706,41 +538,222 @@ paths:
       summary: Get Default Endpoint
       tags:
         - endpoints
-  "/v1/quantumProcessors/{quantumProcessorId}/instructionSetArchitecture":
+  "/v1/quantumProcessors/{quantum_processor_id}":
     get:
-      description: Retrieve the Instruction Set Architecture of a QuantumProcessor by ID.
-      operationId: GetInstructionSetArchitecture
-      parameters:
-        - in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            title: Quantum Processor ID
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InstructionSetArchitecture"
-          description: Successful Response
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Get Instruction Set Architecture
       tags:
         - quantumProcessors
+      summary: Get Quantum Processor
+      description: Retrieve a single `QuantumProcessor` by ID.
+      parameters:
+        - name: quantum_processor_id
+          schema:
+            type: string
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/QuantumProcessor"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearerOptional: []
+      operationId: GetQuantumProcessor
+  /v1/quantumProcessors:
+    get:
+      tags:
+        - quantumProcessors
+      summary: List Quantum Processors
+      description: |-
+        List the [`QuantumProcessor`]s that this user is authorized to access.
+
+        If no auth token is provided, only public processors will be returned.
+      parameters:
+        - name: pageSize
+          schema:
+            type: integer
+            format: uint64
+            title: How many items to return in a single page.
+            default: 10
+            minimum: 0
+            exclusiveMinimum: true
+          in: query
+          required: false
+          deprecated: false
+          explode: true
+        - name: pageToken
+          schema:
+            type: string
+            title: A page token to continue pagination across requests.
+          in: query
+          required: false
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ListQuantumProcessorsResponse"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearerOptional: []
+      operationId: ListQuantumProcessors
+  "/v1/quantumProcessors/{quantum_processor_id}/accessors":
+    get:
+      tags:
+        - quantumProcessors
+      summary: Get Quantum Processor Accessors
+      description: Retrieve a single `QuantumProcessor` by ID.
+      parameters:
+        - name: quantum_processor_id
+          schema:
+            type: string
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ListQuantumProcessorAccessorsResponse"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearerOptional: []
+      operationId: GetQuantumProcessorAccessors
+  "/v1/quantumProcessors/{quantum_processor_id}/instructionSetArchitecture":
+    get:
+      tags:
+        - quantumProcessors
+      summary: Get Instruction Set Architecture
+      parameters:
+        - name: quantum_processor_id
+          schema:
+            type: string
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/InstructionSetArchitecture"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearerOptional: []
+      operationId: GetInstructionSetArchitecture
+  /v1/instructionSetArchitectures:
+    get:
+      tags:
+        - quantumProcessors
+      summary: List Instruction Set Architectures
+      parameters:
+        - name: pageSize
+          schema:
+            type: integer
+            format: uint64
+            title: How many items to return in a single page.
+            default: 5
+            maximum: 5
+            minimum: 0
+            exclusiveMinimum: true
+          in: query
+          required: false
+          deprecated: false
+          explode: true
+        - name: pageToken
+          schema:
+            type: string
+            title: A page token to continue pagination across requests.
+          in: query
+          required: false
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ListInstructionSetArchitectureResponse"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearerOptional: []
+      operationId: ListInstructionSetArchitectures
+  /v1/healthcheck:
+    get:
+      summary: Health Check
+      description: Check the health of the service.
+      responses:
+        "200":
+          description: The service is healthy, but there are no additional details.
+      operationId: HealthCheck
   /v1/auth:emailPasswordResetToken:
     post:
       description: Send a password reset link to the provided email address, if that
@@ -767,6 +780,7 @@ paths:
     get:
       description: Retrieve the profile of the authenticated user.
       operationId: AuthGetUser
+      parameters: []
       responses:
         "200":
           content:
@@ -792,7 +806,6 @@ paths:
       summary: Get User
       tags:
         - authentication
-    parameters: []
   /v1/auth:resetPassword:
     parameters: []
     post:
@@ -1498,6 +1511,39 @@ paths:
       tags:
         - reservations
   "/v1/reservations/{reservationId}":
+    get:
+      description: Find an existing reservation by ID.
+      operationId: GetReservation
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: User not authorized to retrieve reservation.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Requested reservation does not exist.
+      security:
+        - JWTBearer: []
+      summary: Get Reservation
+      tags:
+        - reservations
     delete:
       description: Cancel an existing reservation for the user.
       operationId: DeleteReservation
@@ -1909,96 +1955,186 @@ paths:
       summary: List QCS groups for the requested user
       tags:
         - account
-  "/v1/quantumProcessors/{quantumProcessorId}/quiltCalibrations":
+  /v1/users:activate:
+    post:
+      description: Activate a user, completing an invitation request.
+      operationId: ActivateUser
+      summary: Activate User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivateUserRequest"
+      responses:
+        "204":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Request completed successfully.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      tags:
+        - account
+  /v1/viewer/announcements:
     get:
-      description: Retrieve the calibration data used for client-side Quilt generation.
-      operationId: GetQuiltCalibrations
+      description: List all announcements relevant to the authenticating user. By
+        default, does not include dismissed announcements.
+      operationId: ListViewerAnnouncements
       parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
+        - $ref: "#/components/parameters/pageSizeParam"
+        - $ref: "#/components/parameters/pageTokenParam"
+        - name: includeDismissed
+          description: Include dismissed announcements in the response.
+          in: query
           schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
+            type: boolean
+            default: false
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetQuiltCalibrationsResponse"
-          description: Successful Response
+                $ref: "#/components/schemas/AnnouncementsResponse"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request validation failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+  "/v1/viewer/announcements/{announcementId}":
+    delete:
+      description: Dismiss an announcement for an authenticating user, indicating that
+        they do not want to see it again.
+      operationId: DismissViewerAnnouncement
+      parameters:
+        - name: announcementId
+          description: The ID of an existing announcement.
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
         "404":
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
+          description: Unknown announcement ID.
       security:
         - JWTBearer: []
-      summary: Get Quilt Calibrations
       tags:
-        - translation
-  "/v1/quantumProcessors/{quantumProcessorId}:translateNativeQuilToEncryptedBinary":
-    post:
-      description: >-
-        Compile Rigetti-native Quil code to encrypted binary form, ready for
-        execution on a
-
-        Rigetti Quantum Processor.
-      operationId: TranslateNativeQuilToEncryptedBinary
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
+        - account
+  /v1/viewer/userProfile:
+    put:
+      description: Update the profile of the authenticated user.
+      operationId: UpdateViewerUserProfile
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TranslateNativeQuilToEncryptedBinaryRequest"
+              $ref: "#/components/schemas/UpdateViewerUserProfileRequest"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TranslateNativeQuilToEncryptedBinaryResponse"
-          description: Successful Response
-        "400":
+                $ref: "#/components/schemas/User"
+          description: Request completed successfully.
+        "401":
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description: Translation Failure
+          description: Request authentication failed.
         "404":
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-          description: Not Found
+          description: The authenticated user could not be located within our records.
+            Please contact support@rigetti.com if you reach this error.
         "422":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
+                $ref: "#/components/schemas/Error"
+          description: The request could not be validated.
       security:
         - JWTBearer: []
-      summary: Translate Native Quil To Encrypted Binary
       tags:
-        - translation
+        - account
+  /v1/viewer/onboardingCompleted:
+    get:
+      description: Get the onboarding status of the authenticated user.
+      operationId: GetViewerUserOnboardingCompleted
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
+    put:
+      description: Update the onboarding status of the authenticated user.
+      operationId: PutViewerUserOnboardingCompleted
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
+          description: Request completed successfully.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Request authentication failed.
+      security:
+        - JWTBearer: []
+      tags:
+        - account
 components:
   schemas:
     Error:
@@ -2053,124 +2189,6 @@ components:
         status:
           type: string
           example: PASS
-    AccountType:
-      description: >-
-        There are two types of accounts within QCS: user (representing a single
-        user in Okta) and group
-
-        (representing one or more users in Okta).
-      enum:
-        - group
-        - user
-      title: AccountType
-      type: string
-    Architecture:
-      additionalProperties: false
-      description: >-
-        Represents the logical underlying architecture of a quantum processor.
-
-
-        The architecture is defined in detail by the nodes and edges that constitute the quantum
-
-        processor. This defines the set of all nodes that could be operated upon, and indicates to
-
-        some approximation their physical layout. The main purpose of this is to support geometry
-
-        calculations that are independent of the available operations, and rendering ISA-based
-
-        information. Architecture layouts are defined by the `family`, as follows.
-
-
-        The "Aspen" family of quantum processor indicates a 2D planar grid layout of octagon unit
-
-        cells. The `node_id` in this architecture is computed as :math:`100 p_y + 10 p_x + p_u` where
-
-        :math:`p_y` is the zero-based Y position in the unit cell grid, :math:`p_x` is the zero-based
-
-        X position in the unit cell grid, and :math:`p_u` is the zero-based position in the octagon
-
-        unit cell and always ranges from 0 to 7. This scheme has a natural size limit of a 10x10
-
-        unit cell grid, which permits the architecture to scale up to 800 nodes.
-
-
-        Note that the operations that are actually available are defined entirely by `Operation`
-
-        instances. The presence of a node or edge in the `Architecture` model provides no guarantee
-
-        that any 1Q or 2Q operation will be available to users writing QUIL programs.
-      properties:
-        edges:
-          description: A list of all computational edges in the instruction set
-            architecture.
-          items:
-            $ref: "#/components/schemas/Edge"
-          title: Edges
-          type: array
-        family:
-          allOf:
-            - $ref: "#/components/schemas/Family"
-          description: The architecture family. The nodes and edges conform to this family.
-        nodes:
-          description: A list of all computational nodes in the instruction set
-            architecture.
-          items:
-            $ref: "#/components/schemas/Node"
-          title: Nodes
-          type: array
-      required:
-        - family
-        - nodes
-        - edges
-      title: Architecture
-      type: object
-    Characteristic:
-      additionalProperties: false
-      description: A measured characteristic of an operation.
-      properties:
-        error:
-          description: The error in the characteristic value, or None otherwise.
-          title: Error
-          type: number
-        name:
-          description: The name of the characteristic.
-          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
-          title: Name
-          type: string
-        node_ids:
-          description: The list of architecture node ids for the site where the
-            characteristic is measured, if that is different from the site of
-            the enclosing operation. None if it is the same. The order of this
-            or the enclosing node ids obey the definition of node symmetry from
-            the enclosing operation.
-          items:
-            minimum: 0
-            type: integer
-          title: Node Ids
-          type: array
-        parameter_values:
-          description: The optional ordered list of parameter values used to generate the
-            characteristic. The order matches the parameters in the enclosing
-            operation, and so the lengths of these two lists must match.
-          items:
-            type: number
-          title: Parameter Values
-          type: array
-        timestamp:
-          description: The date and time at which the characteristic was measured.
-          format: date-time
-          title: Timestamp
-          type: string
-        value:
-          description: The characteristic value measured.
-          title: Value
-          type: number
-      required:
-        - name
-        - value
-        - timestamp
-      title: Characteristic
-      type: object
     CreateEndpointParameters:
       description: A publicly available set of parameters for defining an endpoint.
       properties:
@@ -2220,38 +2238,6 @@ components:
           title: Tags
           type: array
       title: CreateEngagementRequest
-      type: object
-    Edge:
-      additionalProperties: false
-      description: >-
-        A degree-two logical connection in the quantum processor's architecture.
-
-
-        The existence of an edge in the ISA `Architecture` does not necessarily mean that a given 2Q
-
-        operation will be available on the edge. This information is conveyed by the presence of the
-
-        two `node_id` values in instances of `Instruction`.
-
-
-        Note that edges are undirected in this model. Thus edge :math:`(a, b)` is equivalent to edge
-
-        :math:`(b, a)`.
-      properties:
-        node_ids:
-          description: The integer ids of the computational nodes at the two ends of the
-            edge. Order is not important; an architecture edge is treated as
-            undirected.
-          items:
-            minimum: 0
-            type: integer
-          maxItems: 2
-          minItems: 2
-          title: Node Ids
-          type: array
-      required:
-        - node_ids
-      title: Edge
       type: object
     Endpoint:
       description: An Endpoint is the entry point for remote access to a QuantumProcessor.
@@ -2388,7 +2374,202 @@ components:
         - credentials
       title: EngagementWithCredentials
       type: object
+    ListEndpointsResponse:
+      properties:
+        endpoints:
+          items:
+            $ref: "#/components/schemas/Endpoint"
+          title: Endpoints
+          type: array
+        nextPageToken:
+          description: Opaque token indicating the start of the next page of results to
+            return; do not decode
+          title: Next Page Token
+          type: string
+      required:
+        - endpoints
+      title: ListEndpointsResponse
+      type: object
+    NomadJobDatacenters:
+      description: An enumeration.
+      enum:
+        - berkeley-775
+        - fremont-fab
+        - rigetti-gb-1
+      title: NomadJobDatacenters
+      type: string
+    RestartEndpointRequest:
+      properties:
+        componentName:
+          description: Individual component to restart
+          title: Component Name
+          type: string
+      title: RestartEndpointRequest
+      type: object
+    Architecture:
+      type: object
+      title: Architecture
+      description: >-
+        Represents the logical underlying architecture of a quantum processor.
+
+
+        The architecture is defined in detail by the nodes and edges that constitute the quantum
+
+        processor. This defines the set of all nodes that could be operated upon, and indicates to
+
+        some approximation their physical layout. The main purpose of this is to support geometry
+
+        calculations that are independent of the available operations, and rendering ISA-based
+
+        information. Architecture layouts are defined by the `family`, as follows.
+
+
+        The "Aspen" family of quantum processor indicates a 2D planar grid layout of octagon unit
+
+        cells. The `node_id` in this architecture is computed as `100 p_y + 10 p_x + p_u` where
+
+        `p_y` is the zero-based Y position in the unit cell grid, `p_x` is the zero-based
+
+        X position in the unit cell grid, and `p_u` is the zero-based position in the octagon
+
+        unit cell and always ranges from 0 to 7. This scheme has a natural size limit of a 10x10
+
+        unit cell grid, which permits the architecture to scale up to 800 nodes.
+
+
+        Note that the operations that are actually available are defined entirely by `Operation`
+
+        instances. The presence of a node or edge in the `Architecture` model provides no guarantee
+
+        that any 1Q or 2Q operation will be available to users writing QUIL programs.
+      required:
+        - family
+        - nodes
+        - edges
+      properties:
+        family:
+          description: The architecture family. The nodes and edges conform to this family.
+          allOf:
+            - $ref: "#/components/schemas/Family"
+            - description: The architecture family. The nodes and edges conform to this
+                family.
+        nodes:
+          type: array
+          description: A list of all computational nodes in the instruction set
+            architecture.
+          items:
+            $ref: "#/components/schemas/Node"
+          uniqueItems: true
+        edges:
+          type: array
+          description: A list of all computational edges in the instruction set
+            architecture.
+          items:
+            $ref: "#/components/schemas/Edge"
+          uniqueItems: true
+    Characteristic:
+      type: object
+      title: Characteristic
+      description: A measured characteristic of an operation.
+      required:
+        - name
+        - value
+        - timestamp
+      properties:
+        name:
+          type: string
+          title: The format of a name (an identifier).
+          description: The name of the characteristic.
+        value:
+          type: number
+          format: double
+          description: The characteristic value measured.
+        error:
+          type: number
+          format: double
+          description: The error in the characteristic value, or None otherwise.
+        node_ids:
+          type: array
+          description: >-
+            The list of architecture node ids for the site where the
+            characteristic is
+
+            measured, if that is different from the site of the enclosing operation.
+
+            None if it is the same. The order of this or the enclosing node ids obey
+
+            the definition of node symmetry from the enclosing operation.
+          items:
+            type: integer
+            format: uint64
+            title: A node integer identifier; must be greater than or equal to zero.
+          minItems: 1
+          uniqueItems: true
+        timestamp:
+          type: string
+          format: date-time
+          description: The date and time at which the characteristic was measured.
+        parameter_values:
+          type: array
+          description: >-
+            The optional ordered list of parameter values used to generate the
+
+            characteristic. The order matches the parameters in the enclosing operation,
+
+            and so the lengths of these two lists must match.
+          items:
+            type: number
+            format: double
+    Code:
+      type: string
+      description: API error codes to indicate what kind of error occurred beyond what
+        an HTTP status can convey.
+      enum:
+        - conflicting_resource_access
+        - resource_exists
+        - access_forbidden
+        - internal_error
+        - invalid_request
+        - invalid_token
+        - resource_not_found
+        - under_load
+        - unauthenticated
+        - unimplemented
+    Edge:
+      type: object
+      title: Edge
+      description: >-
+        A degree-two logical connection in the quantum processor's architecture.
+
+
+        The existence of an edge in the ISA `Architecture` does not necessarily mean that a given 2Q
+
+        operation will be available on the edge. This information is conveyed by the presence of the
+
+        two `node_id` values in instances of `Instruction`.
+
+
+        Note that edges are undirected in this model. Thus edge `(a, b)` is equivalent to edge
+
+        `(b, a)`.
+      required:
+        - node_ids
+      properties:
+        node_ids:
+          type: array
+          description: >-
+            The integer ids of the computational nodes at the two ends of the
+            edge.
+
+            Order is not important; an architecture edge is treated as undirected.
+          items:
+            type: integer
+            format: uint64
+            title: A node integer identifier; must be greater than or equal to zero.
+          maxItems: 2
+          minItems: 2
     Family:
+      type: string
       description: >-
         Family identifier.
 
@@ -2406,10 +2587,9 @@ components:
         - Full
         - Aspen
         - Ankaa
-      title: Family
-      type: string
     InstructionSetArchitecture:
-      additionalProperties: false
+      type: object
+      title: InstructionSetArchitecture
       description: >-
         The native instruction set architecture of a quantum processor,
         annotated with characteristics.
@@ -2425,103 +2605,68 @@ components:
         The characteristics that annotate both instructions and benchmarks assist the user to generate
 
         the best native QUIL program for a desired task, and so are provided as part of the native ISA.
-      properties:
-        architecture:
-          allOf:
-            - $ref: "#/components/schemas/Architecture"
-          description: The architecture of the quantum processor.
-          title: Architecture
-        benchmarks:
-          description: The list of benchmarks that have characterized the quantum processor.
-          items:
-            $ref: "#/components/schemas/Operation"
-          title: Benchmarks
-          type: array
-        instructions:
-          description: The list of native QUIL instructions supported by the quantum
-            processor.
-          items:
-            $ref: "#/components/schemas/Operation"
-          title: Instructions
-          type: array
-        name:
-          description: The name of the quantum processor.
-          minLength: 1
-          title: Name
-          type: string
       required:
         - name
         - architecture
         - instructions
         - benchmarks
-      title: InstructionSetArchitecture
-      type: object
-    ListEndpointsResponse:
       properties:
-        endpoints:
-          items:
-            $ref: "#/components/schemas/Endpoint"
-          title: Endpoints
-          type: array
-        nextPageToken:
-          description: Opaque token indicating the start of the next page of results to
-            return; do not decode
-          title: Next Page Token
+        name:
           type: string
-      required:
-        - endpoints
-      title: ListEndpointsResponse
-      type: object
+          description: The name of the quantum processor.
+          minLength: 1
+        architecture:
+          $ref: "#/components/schemas/Architecture"
+        instructions:
+          type: array
+          description: The list of native QUIL instructions supported by the quantum
+            processor.
+          items:
+            $ref: "#/components/schemas/Operation"
+        benchmarks:
+          type: array
+          description: The list of benchmarks that have characterized the quantum processor.
+          items:
+            $ref: "#/components/schemas/Operation"
     ListInstructionSetArchitectureResponse:
-      properties:
-        instructionSetArchitectures:
-          items:
-            $ref: "#/components/schemas/InstructionSetArchitecture"
-          title: Instruction Set Architectures
-          type: array
-        nextPageToken:
-          description: Send an opaque page token returned from a prior request
-          title: Next Page Token
-          type: string
+      type: object
       required:
         - instructionSetArchitectures
-      title: ListInstructionSetArchitectureResponse
-      type: object
-    ListQuantumProcessorAccessorsResponse:
       properties:
-        accessors:
-          description: Methods of accessing the relevant Quantum Processor
-          items:
-            $ref: "#/components/schemas/QuantumProcessorAccessor"
-          title: Accessors
-          type: array
         nextPageToken:
-          description: Opaque token indicating the start of the next page of results to
-            return; do not decode
-          title: Next Page Token
           type: string
+          description: Send an opaque page token returned from a prior request
+        instructionSetArchitectures:
+          type: array
+          items:
+            $ref: "#/components/schemas/InstructionSetArchitecture"
+    ListQuantumProcessorAccessorsResponse:
+      type: object
       required:
         - accessors
-      title: ListQuantumProcessorAccessorsResponse
-      type: object
-    ListQuantumProcessorsResponse:
       properties:
         nextPageToken:
-          description: Opaque token indicating the start of the next page of results to
-            return; do not decode
-          title: Next Page Token
           type: string
-        quantumProcessors:
-          items:
-            $ref: "#/components/schemas/QuantumProcessor"
-          title: Quantum Processors
+          description: Send an opaque page token returned from a prior request
+        accessors:
           type: array
+          items:
+            $ref: "#/components/schemas/QuantumProcessorAccessor"
+    ListQuantumProcessorsResponse:
+      type: object
       required:
         - quantumProcessors
-      title: ListQuantumProcessorsResponse
-      type: object
+      properties:
+        nextPageToken:
+          type: string
+          description: Send an opaque page token returned from a prior request
+        quantumProcessors:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuantumProcessor"
     Node:
-      additionalProperties: false
+      type: object
+      title: Node
       description: >-
         A logical node in the quantum processor's architecture.
 
@@ -2531,171 +2676,157 @@ components:
         operation will be available on the node. This information is conveyed by the presence of the
 
         specific `node_id` in instances of `Instruction`.
-      properties:
-        node_id:
-          description: An integer id assigned to the computational node. The ids may not
-            be contiguous and will be assigned based on the architecture family.
-          minimum: 0
-          title: Node Id
-          type: integer
       required:
         - node_id
-      title: Node
-      type: object
-    NomadJobDatacenters:
-      description: An enumeration.
-      enum:
-        - berkeley-775
-        - fremont-fab
-        - rigetti-gb-1
-      title: NomadJobDatacenters
-      type: string
-    Operation:
-      additionalProperties: false
-      description: An operation, with its sites and site-independent characteristics.
       properties:
-        characteristics:
-          description: The list of site-independent characteristics of this operation.
-          items:
-            $ref: "#/components/schemas/Characteristic"
-          title: Characteristics
-          type: array
-        name:
-          description: The name of the operation.
-          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
-          title: Name
-          type: string
-        node_count:
-          description: The number of nodes that this operation applies to. None if
-            unspecified.
-          exclusiveMinimum: 0
-          title: Node Count
+        node_id:
           type: integer
-        parameters:
-          description: The list of parameters. Each parameter must be uniquely named. May
-            be empty.
-          items:
-            $ref: "#/components/schemas/Parameter"
-          title: Parameters
-          type: array
-        sites:
-          description: The list of sites at which this operation can be applied, together
-            with its site-dependent characteristics.
-          items:
-            $ref: "#/components/schemas/OperationSite"
-          title: Sites
-          type: array
+          format: uint64
+          title: A node integer identifier; must be greater than or equal to zero.
+          description: >-
+            An integer id assigned to the computational node. The ids may not be
+            contiguous and will be assigned based
+
+            on the architecture family.
+    Operation:
+      type: object
+      title: Operation
+      description: An operation, with its sites and site-independent characteristics.
       required:
         - name
         - parameters
         - sites
         - characteristics
-      title: Operation
-      type: object
-    OperationSite:
-      additionalProperties: false
-      description: A site for an operation, with its site-dependent characteristics.
       properties:
+        name:
+          type: string
+          title: The format of a name (an identifier).
+          description: The name of the operation.
+        node_count:
+          type: integer
+          format: uint64
+          description: The number of nodes that this operation applies to. None if
+            unspecified.
+          minimum: 0
+          exclusiveMinimum: true
+        parameters:
+          type: array
+          description: The list of parameters. Each parameter must be uniquely named. May
+            be empty.
+          items:
+            $ref: "#/components/schemas/Parameter"
+        sites:
+          type: array
+          description: The list of sites at which this operation can be applied, together
+            with its site-dependent characteristics.
+          items:
+            $ref: "#/components/schemas/OperationSite"
         characteristics:
-          description: The list of site-dependent characteristics of this operation.
+          type: array
+          description: The list of site-independent characteristics of this operation.
           items:
             $ref: "#/components/schemas/Characteristic"
-          title: Characteristics
-          type: array
-        node_ids:
-          description: The list of architecture node ids for the site. The order of these
-            node ids obey the definition of node symmetry from the enclosing
-            operation.
-          items:
-            minimum: 0
-            type: integer
-          title: Node Ids
-          type: array
+    OperationSite:
+      type: object
+      title: OperationSite
+      description: A site for an operation, with its site-dependent characteristics.
       required:
         - node_ids
         - characteristics
-      title: OperationSite
-      type: object
-    Parameter:
-      additionalProperties: false
-      description: A parameter to an operation.
       properties:
-        name:
-          description: The name of the parameter, such as the name of a mathematical symbol.
-          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
-          title: Name
-          type: string
+        node_ids:
+          type: array
+          description: >-
+            The list of architecture node ids for the site. The order of these
+            node ids
+
+            obey the definition of node symmetry from the enclosing operation.
+          items:
+            type: integer
+            format: uint64
+            title: A node integer identifier; must be greater than or equal to zero.
+          minItems: 1
+          uniqueItems: true
+        characteristics:
+          type: array
+          description: The list of site-dependent characteristics of this operation.
+          items:
+            $ref: "#/components/schemas/Characteristic"
+    Parameter:
+      type: object
+      title: Parameter
+      description: A parameter to an operation.
       required:
         - name
-      title: Parameter
-      type: object
-    QuantumProcessor:
       properties:
-        id:
-          description: "Immutable, unique identifier for a quantum processor [example:
-            Aspen-1]"
-          title: ID
+        name:
           type: string
+          title: The format of a name (an identifier).
+          description: The name of the parameter, such as the name of a mathematical symbol.
+    QuantumProcessor:
+      type: object
+      title: QuantumProcessor
+      description: An object representing a quantum processor.
       required:
         - id
-      title: QuantumProcessor
-      type: object
-    QuantumProcessorAccessor:
-      description: Method of accessing an available QPU.
       properties:
-        accessType:
-          allOf:
-            - $ref: "#/components/schemas/QuantumProcessorAccessorType"
-          description: Type of the accessor. Each accessor type is a different mechanism
-            of accessing a QPU, each with their own benefits and/or drawbacks.
-          title: Type
         id:
-          description: Unique identifier for the accessor.
-          title: ID
           type: string
-        live:
-          description: Whether an accessor represents access to a physical, live quantum
-            processor. When false, this accessor provides access instead to a
-            simulated or test QPU.
-          title: Live
-          type: boolean
-        rank:
-          default: 100
-          description: Rank of this accessor against others for the same QPU. If two
-            accessors both serve a client's purposes, that with the lower rank
-            value should be used for access.
-          title: Rank
-          type: integer
-        url:
-          description: Address used to connect to the accessor.
-          format: uri
-          maxLength: 2083
-          minLength: 1
-          title: URL
-          type: string
+          description: "Immutable, unique identifier for a quantum processor [example:
+            Aspen-1]"
+    QuantumProcessorAccessor:
+      type: object
+      title: QuantumProcessorAccessor
+      description: An accessor for a controller deployment.
       required:
         - accessType
-        - url
         - live
-      title: QuantumProcessorAccessor
-      type: object
-    QuantumProcessorAccessorType:
-      description: >-
-        Types of access mechanisms for a QPU. Each accessor type has its own
-        access characteristics, benefits,
+        - url
+      properties:
+        accessType:
+          description: The type of access to the controller.
+          allOf:
+            - $ref: "#/components/schemas/QuantumProcessorAccessorType"
+            - description: The type of access to the controller.
+        live:
+          type: boolean
+          description: Whether this connection is attached to live hardware.
+        id:
+          type: string
+          description: |-
+            The unique ID of this accessor.
 
-        and drawbacks.
+            This is set only for client-created (v1) accessors.
+            Automatically-available accessors, including direct accessors and
+            discovered kubernetes Controller Gateway instances, have no ID.
+          deprecated: true
+        url:
+          type: string
+          description: The gRPC endpoint for this accessor.
+        rank:
+          type: integer
+          format: int64
+          description: >-
+            (Deprecated) Rank of this accessor against others for the same QPU.
+            If two accessors both serve a client's
+
+            purposes, that with the lower rank value should be used for access.
+          deprecated: true
+    QuantumProcessorAccessorType:
+      type: string
+      description: Type of the accessor. Each accessor type is a different mechanism
+        of accessing a QPU, each with their own benefits and/or drawbacks.
       enum:
         - gateway.v1
-      title: QuantumProcessorAccessorType
-    RestartEndpointRequest:
-      properties:
-        componentName:
-          description: Individual component to restart
-          title: Component Name
-          type: string
-      title: RestartEndpointRequest
-      type: object
+        - direct.v1
+    ValidationLocation:
+      type: string
+      description: What part of the request contains the invalid data.
+      enum:
+        - header
+        - query
+        - path
+        - body
     AccountBalance:
       description: Balance of QCS account in billing system. Note, a negative balance
         signifies that the account has QCS credits to spend. A positive account
@@ -2712,6 +2843,15 @@ components:
     AccountId:
       description: userId for `accountType` "user", group name for `accountType` "group".
       type: string
+    AccountType:
+      description: "There are two types of accounts within QCS: user (representing a
+        single user in Okta) and group (representing one or more users in
+        Okta)."
+      default: user
+      enum:
+        - group
+        - user
+      type: string
     AddGroupUserRequest:
       description: Must provide either `userId` or `userEmail` and `groupId` or `groupName`.
       properties:
@@ -2724,6 +2864,37 @@ components:
         userId:
           type: string
       type: object
+    Announcement:
+      description: An announcement to be displayed to users.
+      properties:
+        id:
+          type: integer
+        contentHtml:
+          description: The HTML content of the announcement to be displayed.
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          description: The RFC3339-format time the announcement was created.
+        active:
+          type: boolean
+          description: Whether the announcement is currently active.
+      required:
+        - id
+        - contentHtml
+        - createdAt
+        - active
+    AnnouncementsResponse:
+      description: A page of announcements.
+      properties:
+        nextPageToken:
+          type: string
+        announcements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Announcement"
+      required:
+        - announcements
     AuthEmailPasswordResetTokenRequest:
       properties:
         email:
@@ -3177,6 +3348,20 @@ components:
         - startTime
         - endTime
       type: object
+    ActivateUserRequest:
+      properties:
+        credentials:
+          $ref: "#/components/schemas/UserCredentials"
+        profile:
+          $ref: "#/components/schemas/UserProfile"
+        token:
+          description: Verification token provided in invitation email.
+          type: string
+      required:
+        - profile
+        - credentials
+        - token
+      type: object
     EventBillingPriceRate:
       description: |
         The per-unit price associated with a particular QCS service product,
@@ -3276,6 +3461,8 @@ components:
           type: string
         groupName:
           type: string
+        billingOrganizationId:
+          type: integer
       required:
         - email
       type: object
@@ -3484,81 +3671,32 @@ components:
         - lastName
         - organization
       type: object
-    GetQuiltCalibrationsResponse:
+    UpdateViewerUserProfileRequest:
       properties:
-        quilt:
-          description: Calibrations suitable for use in a Quil-T program
-          title: Quil-T
+        firstName:
           type: string
-        settingsTimestamp:
-          description: ISO8601 timestamp of the settings used to generate these calibrations
-          title: Settings Timestamp
+        lastName:
+          type: string
+        organization:
           type: string
       required:
-        - quilt
-      title: GetQuiltCalibrationsResponse
+        - firstName
+        - lastName
+        - organization
       type: object
-    ParameterSpec:
+    ViewerUserOnboardingCompleted:
       properties:
-        length:
-          default: 1
-          title: Length
-          type: integer
-      title: ParameterSpec
-      type: object
-    TranslateNativeQuilToEncryptedBinaryRequest:
-      properties:
-        numShots:
-          description: Number of iterations to execute on the control hardware
-          title: Number of Shots
-          type: integer
-        quil:
-          description: The native Quil program to be translated for execution
-          title: Quil
-          type: string
-        settingsTimestamp:
-          description: ISO8601 timestamp of the latest settings to be used in translation.
-            If omitted, latest settings will be used.
-          title: Settings Timestamp
-          type: string
+        onboardingCompleted:
+          type: boolean
       required:
-        - quil
-        - numShots
-      title: TranslateNativeQuilToEncryptedBinaryRequest
-      type: object
-    TranslateNativeQuilToEncryptedBinaryResponse:
-      properties:
-        memoryDescriptors:
-          additionalProperties:
-            $ref: "#/components/schemas/ParameterSpec"
-          default: {}
-          title: Memory Descriptors
-          type: object
-        program:
-          description: Encrypted binary built for execution on the target quantum processor
-          title: Binary Program
-          type: string
-        roSources:
-          default: []
-          items:
-            items:
-              type: string
-            type: array
-          title: Readout Sources
-          type: array
-        settingsTimestamp:
-          description: ISO8601 timestamp of the settings used to translate the program.
-            Translation is deterministic; a program translated twice with the
-            same settings by the same version of the service will have identical
-            output.
-          title: Settings Timestamp
-          type: string
-      required:
-        - program
-      title: TranslateNativeQuilToEncryptedBinaryResponse
-      type: object
+        - onboardingCompleted
   securitySchemes:
     JWTBearer:
+      bearerFormat: JWT
+      description: A JSON web token with `sub` or `uid` claim, as well as `groups`
+        claim. If the token is absent, invalid or expired, the client will
+        receive a 401 response. If the token is valid, the server uses the
+        claims to authorize the request, which may result in a 403 response.
       scheme: bearer
       type: http
     JWTBearerOptional:

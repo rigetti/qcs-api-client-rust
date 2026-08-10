@@ -1,8 +1,458 @@
-## 0.12.2-rc.0 (2024-10-08)
+## 0.20.0-rc.0 (2026-08-10)
+
+### Breaking Changes
+
+- update PyO3 and related dependencies
+
+## 0.19.7 (2026-07-30)
+
+### Fixes
+
+- persist tokens immediately after a 'qcs login' and save then under 'credential_name' key instead of 'profile_name'
+
+## 0.19.6 (2026-07-30)
+
+### Fixes
+
+- macos CLI build requires updated `rustc`; ensure Windows build can't break in the same way
+
+## 0.19.6-rc.1 (2026-07-30)
+
+### Fixes
+
+- macos CLI build
+- need to update PATH on Windows
+- Windows path manipulation
+- prerelease label must be Python-compatible
+- use default macos version
+
+## 0.19.5 (2026-07-28)
+
+### Fixes
+
+- cross-device link errors with the QCS CLI
+
+## 0.19.4 (2026-07-24)
+
+### Fixes
+
+- update dependencies
+
+## 0.19.3 (2026-06-30)
+
+### Fixes
+
+- persist refresh token changes
+
+## 0.19.2 (2026-06-01)
+
+### Fixes
+
+- use package registry for CLI assets, permitting 'glab release download' to retrieve them
+
+## 0.19.2-dev.0 (2026-06-01)
+
+### Fixes
+
+- use package registry for CLI assets, permitting 'glab release download' to retrieve them
+
+## 0.19.1 (2026-05-16)
 
 ### Features
 
-#### update PyO3
+- use 'core-deps' client crate
+
+## 0.19.1-dev.4 (2026-05-14)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+- test release again
+
+## 0.19.1-dev.3 (2026-05-14)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+
+## 0.19.1-dev.2 (2026-05-14)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+
+## 0.19.1-dev.1 (2026-05-14)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+
+## 0.19.1-dev.0 (2026-05-13)
+
+### Features
+
+- use 'core-deps' client crate
+- update protobuf schema
+
+### Fixes
+
+- dasel invocation (mostly Claude)
+
+## 0.19.0 (2026-05-04)
+
+### Breaking Changes
+
+- upgrade tonic
+
+### Fixes
+
+- Return valid OAuthSession even if there is a WriteError
+
+## 0.18.6 (2026-04-21)
+
+### Fixes
+
+- adopt Rust fork of hyper-proxy; adopt pastey (fork of paste)
+
+## 0.18.5 (2026-04-20)
+
+### Fixes
+
+- don't include dev dependencies in published builds
+
+## 0.18.4 (2026-04-17)
+
+### Features
+
+- allow any callable for ExternallyManaged
+
+### Fixes
+
+- ensure synchronous variants of PyO3 functions are safe to call even if a Python event loop already exists
+
+## 0.18.3 (2026-04-13)
+
+### Fixes
+
+- update QCS schema with fix for the `backplane.identity` fields
+
+## 0.18.2 (2026-03-25)
+
+### Fixes
+
+- qcs-cli 'internal' feature for installation from registry
+
+## 0.18.2-dev-199.0 (2026-03-24)
+
+### Fixes
+
+- qcs-cli 'internal' feature for installation from registry
+
+## 0.18.1 (2026-03-24)
+
+### Features
+
+- generate client with custom endpoint id config
+
+## 0.18.0 (2026-03-18)
+
+### Breaking Changes
+
+- simplify test matrix and ensure common python bindings publishing
+
+## 0.17.0 (2026-03-17)
+
+### Breaking Changes
+
+- update openapi generator to 7.20.0, regenerate clients
+
+## 0.16.3 (2026-03-13)
+
+### Fixes
+
+- oneofs should generate as enums
+- secrets and settings QOL fixes, debug logging in cli
+- compatibility with conserv-v2 gateway
+
+## 0.16.2 (2026-03-04)
+
+### Fixes
+
+- v1 and v2 schema compat
+
+## 0.16.1 (2026-03-03)
+
+### Features
+
+- release internal controller-deployments changes
+
+## 0.16.0 (2026-02-10)
+
+### Breaking Changes
+
+- update pyo3
+
+## 0.15.0 (2026-01-15)
+
+### Breaking Changes
+
+- add cli
+
+### Fixes
+
+- publish qcs-cli artifacts for public consumption
+
+## 0.14.1 (2026-01-07)
+
+### Fixes
+
+- oauth2 dependency should use rustls
+- upgrade Tower
+
+## 0.14.0 (2026-01-06)
+
+### Breaking Changes
+
+- export Secrets and Settings structs, add secret value wrappers to help prevent accidental leakage.
+- add AuthServer::scopes and fix reqwest-middleware dependency version mismatch
+- upgrade tonic
+
+### Fixes
+
+- upgrade knope usage
+
+## 0.13.13 (2025-12-05)
+
+### Fixes
+
+#### add test feature to enable insecure issuer validation
+
+## 0.13.12 (2025-12-04)
+
+### Fixes
+
+#### add additional help information for TokenError::Write
+
+## 0.13.11 (2025-12-04)
+
+### Fixes
+
+#### regenerate from new schema
+
+## 0.13.10 (2025-11-24)
+
+### Fixes
+
+#### redirect should only bind locally
+
+## 0.13.9 (2025-11-24)
+
+### Features
+
+#### also retry on 502: Bad Gateway, as these often succeed on manual retry
+
+#### support arbitrary oauth providers
+
+#### implement PKCE login flow
+
+### Fixes
+
+#### remove problematic 'dirs' from dependencies
+
+## 0.13.8 (2025-10-30)
+
+### Fixes
+
+#### update service-model again
+
+## 0.13.8-dev.1 (2025-10-30)
+
+### Fixes
+
+#### update service-model again
+
+#### 'unhide' the cargo-config for private registry
+
+## 0.13.8-dev.0 (2025-10-30)
+
+### Fixes
+
+#### update service-model again
+
+## 0.13.7 (2025-10-23)
+
+### Fixes
+
+#### upgrade 'urlpattern' to version that doesn't rely on unmaintained crates
+
+## 0.13.6 (2025-10-10)
+
+### Fixes
+
+#### publish to CodeArtifact
+
+## 0.13.6-dev.11 (2025-10-09)
+
+### Fixes
+
+#### publish to code-artifact
+
+#### docs for release
+
+#### explicitly set 'publish' in all crates
+
+#### set publish to 'false' for public crates, so they don't get double-published
+
+#### map scope tags to crates
+
+#### force token auth for crates-io; run all publishing on a single tag
+
+#### explicitly use the variable for the cargo-registry token
+
+#### import public-grpc 'tonic' crate instead of including the file
+
+#### push tags individually
+
+#### non-interruptible; don't permit running knope releases on release commits
+
+#### separate 'release'/'prerelease' flows in knope are not necessary
+
+## 0.13.6-dev.10 (2025-10-09)
+
+### Fixes
+
+#### publish to code-artifact
+
+#### docs for release
+
+#### explicitly set 'publish' in all crates
+
+#### set publish to 'false' for public crates, so they don't get double-published
+
+#### map scope tags to crates
+
+#### force token auth for crates-io; run all publishing on a single tag
+
+#### explicitly use the variable for the cargo-registry token
+
+#### import public-grpc 'tonic' crate instead of including the file
+
+#### push tags individually
+
+#### non-interruptible; don't permit running knope releases on release commits
+
+## 0.13.5 (2025-10-01)
+
+### Features
+
+#### update service-model protos for Riverlane DF2 support
+
+## 0.13.4 (2025-09-26)
+
+### Fixes
+
+#### updates the 'patch_schema' script to prevent unintentional int-type breakage
+
+## 0.13.3 (2025-05-13)
+
+### Fixes
+
+- revert "feat: regenerate mustache template"
+
+## 0.13.2 (2025-05-13)
+
+### Features
+
+- support for client-credentials flow
+- regenerate mustache template
+
+## 0.13.1 (2025-05-08)
+
+### Fixes
+
+- make ClientCredentials deserializable; make sure secrets are not printed by 'Debug'
+
+## 0.13.0 (2025-03-20)
+
+### Breaking Changes
+
+#### bump OTEL dependency versions
+
+## 0.12.9 (2025-03-03)
+
+### Fixes
+
+#### macos release should include repo-token for protoc install
+
+## 0.12.8 (2025-01-27)
+
+### Fixes
+
+#### allow oauth_session to be constructed without refresh tokens, allow JWTBearerOptional operations to skip bearer tokens
+
+#### temporarily revert python 3.13 support introduced in common/v0.11.7
+
+## 0.12.7 (2025-01-27)
+
+### Features
+
+#### support python 3.13
+
+## 0.12.6 (2025-01-22)
+
+### Features
+
+#### Access tokens are written back to QCS configuration
+
+### Fixes
+
+#### respect env var for api_url
+
+## 0.12.5 (2024-11-20)
+
+### Fixes
+
+#### generate rust structs for missing proto messages
+
+## 0.12.4 (2024-11-20)
+
+### Features
+
+#### update protobuf messages
+
+## 0.12.3 (2024-11-18)
+
+### Fixes
+
+#### wait for channel to be ready again before retrying request after token-refresh
+
+#### expose OAuthGrant via public API, allow creating OAuthSession from ExternallyManaged
+
+## 0.12.2 (2024-10-09)
+
+### Fixes
+
+#### update dev (codegen) dependencies
 
 ## 0.12.1 (2024-10-08)
 

@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2026 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,10 @@
 use std::error;
 use std::fmt;
 
+use qcs_dependencies_client::reqwest;
+#[cfg(feature = "tracing-opentelemetry")]
+use qcs_dependencies_client::reqwest_middleware;
+
 #[derive(Debug, Clone)]
 pub struct ResponseContent<T> {
     pub status: reqwest::StatusCode,
@@ -26,11 +30,15 @@ pub struct ResponseContent<T> {
 #[derive(Debug)]
 pub enum Error<T> {
     Reqwest(reqwest::Error),
-    Serde(serde_json::Error),
+    Serde(serde_path_to_error::Error<serde_json::Error>),
     Io(std::io::Error),
     QcsToken(crate::common::configuration::TokenError),
     ResponseError(ResponseContent<T>),
-    #[cfg(feature = "otel-tracing")]
+    InvalidContentType {
+        content_type: String,
+        return_type: &'static str,
+    },
+    #[cfg(feature = "tracing-opentelemetry")]
     ReqwestMiddleware(anyhow::Error),
 }
 
@@ -54,7 +62,16 @@ impl<T> fmt::Display for Error<T> {
                 "response",
                 format!("status code {}: {}", e.status, e.content),
             ),
-            #[cfg(feature = "otel-tracing")]
+            Error::InvalidContentType {
+                content_type,
+                return_type,
+            } => (
+                "api",
+                format!(
+                    "received {content_type} content type response that cannot be converted to `{return_type}`"
+                ),
+            ),
+            #[cfg(feature = "tracing-opentelemetry")]
             Error::ReqwestMiddleware(e) => ("reqwest-middleware", e.to_string()),
         };
         write!(f, "error in {}: {}", module, e)
@@ -68,8 +85,9 @@ impl<T: fmt::Debug> error::Error for Error<T> {
             Error::Serde(e) => e,
             Error::Io(e) => e,
             Error::QcsToken(e) => e,
-            #[cfg(feature = "otel-tracing")]
+            #[cfg(feature = "tracing-opentelemetry")]
             Error::ReqwestMiddleware(e) => e.source()?,
+            Error::InvalidContentType { .. } => return None,
             Error::ResponseError(_) => return None,
         })
     }
@@ -81,7 +99,7 @@ impl<T> From<reqwest::Error> for Error<T> {
     }
 }
 
-#[cfg(feature = "otel-tracing")]
+#[cfg(feature = "tracing-opentelemetry")]
 impl<T> From<reqwest_middleware::Error> for Error<T> {
     fn from(e: reqwest_middleware::Error) -> Self {
         match e {
@@ -91,8 +109,8 @@ impl<T> From<reqwest_middleware::Error> for Error<T> {
     }
 }
 
-impl<T> From<serde_json::Error> for Error<T> {
-    fn from(e: serde_json::Error) -> Self {
+impl<T> From<serde_path_to_error::Error<serde_json::Error>> for Error<T> {
+    fn from(e: serde_path_to_error::Error<serde_json::Error>) -> Self {
         Error::Serde(e)
     }
 }
@@ -113,6 +131,58 @@ pub fn urlencode<T: AsRef<str>>(s: T) -> String {
     ::url::form_urlencoded::byte_serialize(s.as_ref().as_bytes()).collect()
 }
 
+pub fn parse_deep_object(prefix: &str, value: &serde_json::Value) -> Vec<(String, String)> {
+    if let serde_json::Value::Object(object) = value {
+        let mut params = vec![];
+
+        for (key, value) in object {
+            match value {
+                serde_json::Value::Object(_) => params.append(&mut parse_deep_object(
+                    &format!("{}[{}]", prefix, key),
+                    value,
+                )),
+                serde_json::Value::Array(array) => {
+                    for (i, value) in array.iter().enumerate() {
+                        params.append(&mut parse_deep_object(
+                            &format!("{}[{}][{}]", prefix, key, i),
+                            value,
+                        ));
+                    }
+                }
+                serde_json::Value::String(s) => {
+                    params.push((format!("{}[{}]", prefix, key), s.clone()))
+                }
+                _ => params.push((format!("{}[{}]", prefix, key), value.to_string())),
+            }
+        }
+
+        return params;
+    }
+
+    unimplemented!("Only objects are supported with style=deepObject, got: {value:#}")
+}
+
+/// Internal use only
+/// A content type supported by this client.
+#[allow(dead_code)]
+enum ContentType {
+    Json,
+    Text,
+    Unsupported(String),
+}
+
+impl From<&str> for ContentType {
+    fn from(content_type: &str) -> Self {
+        if content_type.starts_with("application") && content_type.contains("json") {
+            Self::Json
+        } else if content_type.starts_with("text/plain") {
+            Self::Text
+        } else {
+            Self::Unsupported(content_type.to_string())
+        }
+    }
+}
+
 pub mod account_api;
 pub mod authentication_api;
 pub mod client_applications_api;
@@ -121,6 +191,5 @@ pub mod endpoints_api;
 pub mod engagements_api;
 pub mod quantum_processors_api;
 pub mod reservations_api;
-pub mod translation_api;
 
 pub mod configuration;

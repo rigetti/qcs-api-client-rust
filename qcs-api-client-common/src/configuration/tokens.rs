@@ -1,33 +1,53 @@
+//! Models and utilities for managing `OAuth2` sessions.
 use std::{pin::Pin, sync::Arc};
 
 use futures::Future;
-use http::{header::CONTENT_TYPE, HeaderMap, HeaderValue};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
+use oauth2::TokenResponse;
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use tokio::sync::{Mutex, Notify, RwLock};
+use tokio_util::sync::CancellationToken;
 
-use super::{settings::AuthServer, ClientConfiguration, TokenError, QCS_AUDIENCE};
+#[cfg(feature = "stubs")]
+use pyo3_stub_gen::derive::gen_stub_pyclass;
+
+use super::{
+    ClientConfiguration, ConfigSource, TokenError, oidc, secrets::Secrets, settings::AuthServer,
+};
+use crate::configuration::{
+    error::{DiscoveryError, WriteError},
+    pkce::{PkceLoginError, PkceLoginRequest, pkce_login},
+    secrets::{Credential, SecretAccessToken, SecretRefreshToken, TokenPayload},
+};
 #[cfg(feature = "tracing-config")]
 use crate::tracing_configuration::TracingConfiguration;
 #[cfg(feature = "tracing")]
 use urlpattern::UrlPatternMatchInput;
 
+pub use super::secret_string::ClientSecret;
+
 /// A single type containing an access token and an associated refresh token.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(eq, get_all, set_all, module = "qcs_api_client_common.configuration")
+)]
 pub struct RefreshToken {
     /// The token used to refresh the access token.
-    pub refresh_token: String,
+    pub refresh_token: SecretRefreshToken,
 }
 
 impl RefreshToken {
     /// Create a new [`RefreshToken`] with the given refresh token.
     #[must_use]
-    pub const fn new(refresh_token: String) -> Self {
+    pub const fn new(refresh_token: SecretRefreshToken) -> Self {
         Self { refresh_token }
     }
 
     /// Request and return a new access token from the given authorization server using this refresh token.
+    /// Updates the refresh token in-place if the authorization server returns a new one.
     ///
     /// # Errors
     ///
@@ -35,40 +55,75 @@ impl RefreshToken {
     pub async fn request_access_token(
         &mut self,
         auth_server: &AuthServer,
-    ) -> Result<String, TokenError> {
-        let token_url = format!("{}/v1/token", auth_server.issuer());
-        let data = TokenRefreshRequest::new(auth_server.client_id(), &self.refresh_token);
-        let resp = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(10))
-            .build()?
-            .post(token_url)
-            .form(&data)
-            .send()
-            .await?;
+    ) -> Result<SecretAccessToken, TokenError> {
+        if self.refresh_token.is_empty() {
+            return Err(TokenError::NoRefreshToken);
+        }
 
-        let response_data: TokenResponse = resp.error_for_status()?.json().await?;
-        self.refresh_token = response_data.refresh_token;
-        Ok(response_data.access_token)
+        let client = default_http_client()?;
+        let token_url = oidc::fetch_discovery(&client, &auth_server.issuer)
+            .await?
+            .token_endpoint;
+        let data = TokenRefreshRequest::new(&auth_server.client_id, self.refresh_token.secret());
+        let resp = client.post(token_url).form(&data).send().await?;
+
+        // `error_for_status()` discards the response body, which is where OAuth2 servers put the
+        // actual reason a refresh was rejected (e.g. `invalid_grant`). Log it before converting to
+        // an opaque error, since callers otherwise have no way to tell "the refresh token is
+        // expired/revoked" apart from "a network blip happened" - both currently look identical
+        // and silently fall back to an interactive login.
+        if let Err(error) = resp.error_for_status_ref() {
+            #[cfg(feature = "tracing")]
+            {
+                let status = resp.status();
+                let body = resp.text().await.unwrap_or_default();
+                tracing::warn!(
+                    %status,
+                    %body,
+                    "the auth server rejected the refresh token request"
+                );
+            }
+            return Err(error.into());
+        }
+
+        let RefreshTokenResponse {
+            access_token,
+            refresh_token,
+        } = resp.json().await?;
+
+        if let Some(refresh_token) = refresh_token {
+            self.refresh_token = refresh_token;
+        }
+        Ok(access_token)
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
+#[derive(Deserialize, Debug, Serialize)]
+pub(super) struct ClientCredentialsResponse {
+    pub(super) access_token: SecretAccessToken,
+}
+
 /// A pair of Client ID and Client Secret, used to request an OAuth Client Credentials Grant
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(eq, get_all, frozen, module = "qcs_api_client_common.configuration")
+)]
 pub struct ClientCredentials {
     /// The client ID
     pub client_id: String,
     /// The client secret.
-    pub client_secret: String,
+    pub client_secret: ClientSecret,
 }
 
 impl ClientCredentials {
     #[must_use]
     /// Construct a new [`ClientCredentials`]
-    pub const fn new(client_id: String, client_secret: String) -> Self {
+    pub fn new(client_id: impl Into<String>, client_secret: impl Into<ClientSecret>) -> Self {
         Self {
-            client_id,
-            client_secret,
+            client_id: client_id.into(),
+            client_secret: client_secret.into(),
         }
     }
 
@@ -80,7 +135,7 @@ impl ClientCredentials {
 
     /// Get the client secret.
     #[must_use]
-    pub fn client_secret(&self) -> &str {
+    pub const fn client_secret(&self) -> &ClientSecret {
         &self.client_secret
     }
 
@@ -92,41 +147,125 @@ impl ClientCredentials {
     pub async fn request_access_token(
         &self,
         auth_server: &AuthServer,
-    ) -> Result<String, TokenError> {
-        let request = ClientCredentialsRequest::new(&self.client_id, &self.client_secret);
-        let url = format!("{}/v1/token", auth_server.issuer());
+    ) -> Result<SecretAccessToken, TokenError> {
+        let request = ClientCredentialsRequest::new(None);
+        let client = default_http_client()?;
 
-        // let credentials = format!("{}:{}", self.auth_server.client_id(), self.client_secret);
-        // let encoded_credentials = base64::encode(credentials);
-        // let authorization_value = format!("Basic {}", encoded_credentials);
-        let mut headers = HeaderMap::new();
-        // headers.insert(AUTHORIZATION, HeaderValue::from_str(&authorization_value)?);
-        headers.insert(
-            CONTENT_TYPE,
-            HeaderValue::from_static("application/x-www-form-urlencoded"),
-        );
-
-        let client = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(10))
-            .build()?;
-
-        let response = client
+        let url = oidc::fetch_discovery(&client, &auth_server.issuer)
+            .await?
+            .token_endpoint;
+        let ready_to_send = client
             .post(url)
-            .headers(headers)
-            .form(&request)
-            .send()
-            .await?;
+            .basic_auth(&auth_server.client_id, Some(&self.client_secret.secret()))
+            .form(&request);
+        let response = ready_to_send.send().await?;
 
         response.error_for_status_ref()?;
 
-        let response_body: TokenResponse = response.json().await?;
-
-        Ok(response_body.access_token)
+        let ClientCredentialsResponse { access_token } = response.json().await?;
+        Ok(access_token)
     }
 }
 
-#[derive(Clone, Debug)]
-#[cfg_attr(feature = "python", derive(pyo3::FromPyObject))]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(eq, get_all, frozen, module = "qcs_api_client_common.configuration")
+)]
+/// The Access (Bearer) and refresh (if available) tokens from a PKCE login.
+pub struct PkceFlow {
+    /// The access token.
+    pub access_token: SecretAccessToken,
+    /// The refresh token, if available.
+    pub refresh_token: Option<RefreshToken>,
+}
+
+/// Errors that can occur when attempting to perform a PKCE login flow.
+#[derive(Debug, thiserror::Error)]
+pub enum PkceFlowError {
+    /// Error that occurred while performing the PKCE login flow.
+    #[error(transparent)]
+    PkceLogin(#[from] PkceLoginError),
+    /// Error that occurred while fetching the discovery document from the `OAuth2` issuer.
+    #[error(transparent)]
+    Discovery(#[from] DiscoveryError),
+    /// Error that occurred while making http requests.
+    #[error(transparent)]
+    Request(#[from] qcs_dependencies_client::reqwest::Error),
+}
+
+impl PkceFlow {
+    /// Starts a new PKCE login flow to acquire a new set of tokens.
+    ///
+    /// # Errors
+    ///
+    /// See [`PkceFlowError`]
+    pub async fn new_login_flow(
+        cancel_token: CancellationToken,
+        auth_server: &AuthServer,
+    ) -> Result<Self, PkceFlowError> {
+        let issuer = auth_server.issuer.clone();
+
+        let client = default_http_client()?;
+        let discovery = oidc::fetch_discovery(&client, &issuer).await?;
+
+        let response = pkce_login(
+            cancel_token,
+            PkceLoginRequest {
+                client_id: auth_server.client_id.clone(),
+                redirect_port: None,
+                discovery,
+                scopes: auth_server.scopes.clone(),
+            },
+        )
+        .await?;
+
+        Ok(Self {
+            access_token: SecretAccessToken::from(response.access_token().secret().clone()),
+            refresh_token: response
+                .refresh_token()
+                .map(|rt| RefreshToken::new(SecretRefreshToken::from(rt.secret().clone()))),
+        })
+    }
+
+    /// Returns the access token if it is valid, otherwise requests a new access token using the refresh token if available.
+    ///
+    /// # Errors
+    ///
+    /// See [`TokenError`]
+    pub async fn request_access_token(
+        &mut self,
+        auth_server: &AuthServer,
+    ) -> Result<SecretAccessToken, TokenError> {
+        if insecure_validate_token_exp(&self.access_token).is_ok() {
+            return Ok(self.access_token.clone());
+        }
+
+        if let Some(refresh_token) = &mut self.refresh_token {
+            let access_token = refresh_token.request_access_token(auth_server).await?;
+            self.access_token.clone_from(&access_token);
+            return Ok(access_token);
+        }
+
+        Err(TokenError::NoRefreshToken)
+    }
+}
+
+impl From<PkceFlow> for Credential {
+    fn from(value: PkceFlow) -> Self {
+        let mut token_payload = TokenPayload::default();
+        token_payload.access_token = Some(value.access_token);
+        token_payload.refresh_token = value.refresh_token.map(|rt| rt.refresh_token);
+
+        Self {
+            token_payload: Some(token_payload),
+        }
+    }
+}
+
+#[derive(Clone)]
+#[cfg_attr(feature = "python", derive(pyo3::FromPyObject, pyo3::IntoPyObject))]
 /// Specifies the [OAuth2 grant type](https://oauth.net/2/grant-types/) to use, along with the data
 /// needed to request said grant type.
 pub enum OAuthGrant {
@@ -136,6 +275,32 @@ pub enum OAuthGrant {
     ClientCredentials(ClientCredentials),
     /// Defers to a user provided function for access token requests.
     ExternallyManaged(ExternallyManaged),
+    /// The tokens returned by the PKCE login that are an [Authorization Code grant type](https://oauth.net/2/pkce/).
+    PkceFlow(PkceFlow),
+}
+
+impl From<ExternallyManaged> for OAuthGrant {
+    fn from(v: ExternallyManaged) -> Self {
+        Self::ExternallyManaged(v)
+    }
+}
+
+impl From<ClientCredentials> for OAuthGrant {
+    fn from(v: ClientCredentials) -> Self {
+        Self::ClientCredentials(v)
+    }
+}
+
+impl From<RefreshToken> for OAuthGrant {
+    fn from(v: RefreshToken) -> Self {
+        Self::RefreshToken(v)
+    }
+}
+
+impl From<PkceFlow> for OAuthGrant {
+    fn from(v: PkceFlow) -> Self {
+        Self::PkceFlow(v)
+    }
 }
 
 impl OAuthGrant {
@@ -143,7 +308,7 @@ impl OAuthGrant {
     async fn request_access_token(
         &mut self,
         auth_server: &AuthServer,
-    ) -> Result<String, TokenError> {
+    ) -> Result<SecretAccessToken, TokenError> {
         match self {
             Self::RefreshToken(tokens) => tokens.request_access_token(auth_server).await,
             Self::ClientCredentials(tokens) => tokens.request_access_token(auth_server).await,
@@ -151,6 +316,18 @@ impl OAuthGrant {
                 .request_access_token(auth_server)
                 .await
                 .map_err(|e| TokenError::ExternallyManaged(e.to_string())),
+            Self::PkceFlow(tokens) => tokens.request_access_token(auth_server).await,
+        }
+    }
+}
+
+impl std::fmt::Debug for OAuthGrant {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::RefreshToken(_) => f.write_str("RefreshToken"),
+            Self::ClientCredentials(_) => f.write_str("ClientCredentials"),
+            Self::ExternallyManaged(_) => f.write_str("ExternallyManaged"),
+            Self::PkceFlow(_) => f.write_str("PkceTokens"),
         }
     }
 }
@@ -166,13 +343,17 @@ impl OAuthGrant {
 /// * `payload` - The `OAuth2` grant type and associated data that will be used to request an access token.
 /// * `access_token` - The access token currently in use, if any. If no token has been provided or requested yet, this will be `None`.
 /// * `auth_server` - The authorization server responsible for issuing tokens.
-#[derive(Clone, Debug)]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
+#[derive(Clone)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(module = "qcs_api_client_common.configuration", frozen, get_all)
+)]
 pub struct OAuthSession {
     /// The grant type to use to request an access token.
     payload: OAuthGrant,
     /// The access token that is currently in use. None if no token has been requested yet.
-    access_token: Option<String>,
+    access_token: Option<SecretAccessToken>,
     /// The [`AuthServer`] that issues the tokens.
     auth_server: AuthServer,
 }
@@ -186,13 +367,30 @@ impl OAuthSession {
     pub const fn new(
         payload: OAuthGrant,
         auth_server: AuthServer,
-        access_token: Option<String>,
+        access_token: Option<SecretAccessToken>,
     ) -> Self {
         Self {
             payload,
             access_token,
             auth_server,
         }
+    }
+
+    /// Initialize a new set of [`Credentials`] using an [`ExternallyManaged`].
+    ///
+    /// Optionally include an `access_token`, if not included, then one can be requested
+    /// with [`Self::request_access_token`].
+    #[must_use]
+    pub const fn from_externally_managed(
+        tokens: ExternallyManaged,
+        auth_server: AuthServer,
+        access_token: Option<SecretAccessToken>,
+    ) -> Self {
+        Self::new(
+            OAuthGrant::ExternallyManaged(tokens),
+            auth_server,
+            access_token,
+        )
     }
 
     /// Initialize a new set of [`Credentials`] using a [`RefreshToken`].
@@ -203,7 +401,7 @@ impl OAuthSession {
     pub const fn from_refresh_token(
         tokens: RefreshToken,
         auth_server: AuthServer,
-        access_token: Option<String>,
+        access_token: Option<SecretAccessToken>,
     ) -> Self {
         Self::new(OAuthGrant::RefreshToken(tokens), auth_server, access_token)
     }
@@ -216,13 +414,26 @@ impl OAuthSession {
     pub const fn from_client_credentials(
         tokens: ClientCredentials,
         auth_server: AuthServer,
-        access_token: Option<String>,
+        access_token: Option<SecretAccessToken>,
     ) -> Self {
         Self::new(
             OAuthGrant::ClientCredentials(tokens),
             auth_server,
             access_token,
         )
+    }
+
+    /// Initialize a new set of [`Credentials`] using [`PkceFlow`].
+    ///
+    /// Optionally include an `access_token`, if not included, then one can be requested
+    /// with [`Self::request_access_token`].
+    #[must_use]
+    pub const fn from_pkce_flow(
+        flow: PkceFlow,
+        auth_server: AuthServer,
+        access_token: Option<SecretAccessToken>,
+    ) -> Self {
+        Self::new(OAuthGrant::PkceFlow(flow), auth_server, access_token)
     }
 
     /// Get the current access token.
@@ -233,11 +444,8 @@ impl OAuthSession {
     /// # Errors
     ///
     /// - [`TokenError::NoAccessToken`] if there is no access token
-    pub fn access_token(&self) -> Result<&str, TokenError> {
-        self.access_token.as_ref().map_or_else(
-            || Err(TokenError::NoAccessToken),
-            |token| Ok(token.as_str()),
-        )
+    pub fn access_token(&self) -> Result<&SecretAccessToken, TokenError> {
+        self.access_token.as_ref().ok_or(TokenError::NoAccessToken)
     }
 
     /// Get the payload used to request an access token.
@@ -252,13 +460,9 @@ impl OAuthSession {
     ///
     /// See [`TokenError`]
     #[allow(clippy::missing_panics_doc)]
-    pub async fn request_access_token(&mut self) -> Result<&str, TokenError> {
+    pub async fn request_access_token(&mut self) -> Result<&SecretAccessToken, TokenError> {
         let access_token = self.payload.request_access_token(&self.auth_server).await?;
-        self.access_token = Some(access_token);
-        Ok(self
-            .access_token
-            .as_ref()
-            .expect("This value is set in the previous line, so it cannot be None"))
+        Ok(self.access_token.insert(access_token))
     }
 
     /// The [`AuthServer`] that issues the tokens.
@@ -274,27 +478,110 @@ impl OAuthSession {
     ///
     /// - [`TokenError::NoAccessToken`] if an access token has not been requested.
     /// - [`TokenError::InvalidAccessToken`] if the access token is invalid.
-    pub fn validate(&self) -> Result<String, TokenError> {
-        self.access_token().map_or_else(
-            |_| Err(TokenError::NoAccessToken),
-            |access_token| {
-                let placeholder_key = DecodingKey::from_secret(&[]);
-                let mut validation = Validation::new(Algorithm::RS256);
-                validation.validate_exp = true;
-                validation.leeway = 60;
-                validation.set_audience(&[QCS_AUDIENCE]);
-                validation.insecure_disable_signature_validation();
-                jsonwebtoken::decode::<toml::Value>(access_token, &placeholder_key, &validation)
-                    .map(|_| access_token.to_string())
-                    .map_err(TokenError::InvalidAccessToken)
-            },
-        )
+    pub fn validate(&self) -> Result<SecretAccessToken, TokenError> {
+        let access_token = self.access_token()?;
+        insecure_validate_token_exp(access_token)?;
+        Ok(access_token.clone())
     }
+}
+
+/// Validates the access token's format and `exp` claim, but no other claims or
+/// signature. We do this only to determine if the token is expired and needs refreshing,
+/// there is no way to securely validate the token's signature on the client side.
+pub(crate) fn insecure_validate_token_exp(
+    access_token: &SecretAccessToken,
+) -> Result<(), TokenError> {
+    let placeholder_key = DecodingKey::from_secret(&[]);
+    let mut validation = Validation::new(Algorithm::RS256);
+    validation.validate_exp = true;
+    validation.leeway = 60;
+    validation.validate_aud = false;
+    validation.insecure_disable_signature_validation();
+
+    jsonwebtoken::decode::<toml::Value>(access_token.secret(), &placeholder_key, &validation)
+        .map(|_| ())
+        .map_err(TokenError::InvalidAccessToken)
+}
+
+impl std::fmt::Debug for OAuthSession {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let token_populated = if self.access_token.is_some() {
+            Some(())
+        } else {
+            None
+        };
+        f.debug_struct("OAuthSession")
+            .field("payload", &self.payload)
+            .field("access_token", &token_populated)
+            .field("auth_server", &self.auth_server)
+            .finish()
+    }
+}
+
+/// Persists `oauth_session`'s tokens to the secrets file backing `source`, if any.
+///
+/// This is a no-op if `source` is not file-backed ([`ConfigSource::Default`] or
+/// [`ConfigSource::Builder`]), or if the secrets file is read-only (see [`Secrets::is_read_only`]).
+///
+/// Every code path that obtains a new or refreshed [`OAuthSession`] (whether through the
+/// [`TokenDispatcher`], or through [`ClientConfiguration::load_with_login`]'s manual refresh and
+/// PKCE login branches) should call this so that a rotated refresh token isn't silently dropped.
+/// Otherwise, the next process to load the profile will retry a stale, already-consumed refresh
+/// token and be forced back into an interactive login.
+///
+/// # Errors
+///
+/// See [`WriteError`]
+pub(crate) async fn persist_oauth_session(
+    oauth_session: &OAuthSession,
+    source: &ConfigSource,
+    credentials_name: &str,
+) -> Result<(), WriteError> {
+    let ConfigSource::File {
+        settings_path: _,
+        secrets_path,
+    } = source
+    else {
+        return Ok(());
+    };
+
+    if Secrets::is_read_only(secrets_path).await? {
+        return Ok(());
+    }
+
+    // Persist the fresh refresh token if the grant carries one, so that a rotated
+    // refresh token isn't lost on the next load. Both the PKCE and refresh-token
+    // grants can hold a refresh token that the auth server may have rotated.
+    let refresh_token = match &oauth_session.payload {
+        OAuthGrant::PkceFlow(payload) => payload.refresh_token.as_ref().map(|rt| &rt.refresh_token),
+        OAuthGrant::RefreshToken(payload) => Some(&payload.refresh_token),
+        OAuthGrant::ExternallyManaged(_) | OAuthGrant::ClientCredentials(_) => None,
+    };
+
+    // Nothing to persist without an access token; this shouldn't happen for a session that was
+    // just successfully refreshed or logged in, but there's nothing useful to write otherwise.
+    let Ok(access_token) = oauth_session.access_token() else {
+        return Ok(());
+    };
+
+    let now = OffsetDateTime::now_utc();
+    Secrets::write_tokens(
+        secrets_path,
+        credentials_name,
+        refresh_token,
+        access_token,
+        now,
+    )
+    .await
 }
 
 /// A wrapper for [`OAuthSession`] that provides thread-safe access to the inner tokens.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(module = "qcs_api_client_common.configuration", frozen)
+)]
 pub struct TokenDispatcher {
     lock: Arc<RwLock<OAuthSession>>,
     refreshing: Arc<Mutex<bool>>,
@@ -340,8 +627,13 @@ impl TokenDispatcher {
     /// # Errors
     ///
     /// See [`TokenError`]
-    pub async fn refresh(&self) -> Result<OAuthSession, TokenError> {
-        self.managed_refresh(Self::perform_refresh).await
+    pub async fn refresh(
+        &self,
+        source: &ConfigSource,
+        credentials_name: &str,
+    ) -> Result<OAuthSession, TokenError> {
+        self.managed_refresh(Self::perform_refresh, source, credentials_name)
+            .await
     }
 
     /// Validate the access token, returning it if it is valid, or an error describing why it is
@@ -351,13 +643,18 @@ impl TokenDispatcher {
     ///
     /// - [`TokenError::NoAccessToken`] if there is no access token
     /// - [`TokenError::InvalidAccessToken`] if the access token is invalid
-    pub async fn validate(&self) -> Result<String, TokenError> {
+    pub async fn validate(&self) -> Result<SecretAccessToken, TokenError> {
         self.use_tokens(OAuthSession::validate).await
     }
 
     /// If tokens are already being refreshed, wait and return the updated tokens. Otherwise, run
     /// ``refresh_fn``.
-    async fn managed_refresh<F, Fut>(&self, refresh_fn: F) -> Result<OAuthSession, TokenError>
+    async fn managed_refresh<F, Fut>(
+        &self,
+        refresh_fn: F,
+        source: &ConfigSource,
+        credentials_name: &str,
+    ) -> Result<OAuthSession, TokenError>
     where
         F: FnOnce(Arc<RwLock<OAuthSession>>) -> Fut + Send,
         Fut: Future<Output = Result<OAuthSession, TokenError>> + Send,
@@ -373,12 +670,23 @@ impl TokenDispatcher {
         *is_refreshing = true;
         drop(is_refreshing);
 
-        let result = refresh_fn(self.lock.clone()).await;
+        let oauth_session = refresh_fn(self.lock.clone()).await?;
 
+        let write_result = persist_oauth_session(&oauth_session, source, credentials_name).await;
+
+        // Always clean up the refreshing lock, even if write failed
         *self.refreshing.lock().await = false;
         self.notify_refreshed.notify_waiters();
 
-        result
+        // If write failed, return error with the valid oauth_session
+        if let Err(error) = write_result {
+            return Err(TokenError::Write {
+                error,
+                oauth_session: Box::new(oauth_session),
+            });
+        }
+
+        Ok(oauth_session)
     }
 
     /// Refreshes the tokens. Readers will be blocked until the refresh is complete. Returns a copy
@@ -405,7 +713,11 @@ pub type RefreshFunction = Box<dyn (Fn(AuthServer) -> RefreshResult) + Send + Sy
 /// The [`ExternallyManaged`] struct allows users to define custom logic for
 /// fetching or refreshing access tokens.
 #[derive(Clone)]
-#[cfg_attr(feature = "python", pyo3::pyclass)]
+#[cfg_attr(feature = "stubs", gen_stub_pyclass)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::pyclass(module = "qcs_api_client_common.configuration", frozen)
+)]
 pub struct ExternallyManaged {
     refresh_function: Arc<RefreshFunction>,
 }
@@ -423,7 +735,7 @@ impl ExternallyManaged {
     /// # Example
     ///
     /// ```
-    /// use qcs_api_client_common::configuration::{AuthServer, ExternallyManaged, TokenError};
+    /// use qcs_api_client_common::configuration::{settings::AuthServer, tokens::ExternallyManaged, TokenError};
     /// use std::future::Future;
     /// use std::pin::Pin;
     /// use std::boxed::Box;
@@ -456,7 +768,7 @@ impl ExternallyManaged {
     /// # Example
     ///
     /// ```
-    /// use qcs_api_client_common::configuration::{AuthServer, ExternallyManaged, TokenError};
+    /// use qcs_api_client_common::configuration::{settings::AuthServer, tokens::ExternallyManaged, TokenError};
     /// use tokio::runtime::Runtime;
     /// use std::error::Error;
     ///
@@ -470,7 +782,7 @@ impl ExternallyManaged {
     /// let rt = Runtime::new().unwrap();
     /// rt.block_on(async {
     ///     match token_manager.request_access_token(&AuthServer::default()).await {
-    ///         Ok(token) => println!("Token: {}", token),
+    ///         Ok(token) => println!("Token: {token:?}"),
     ///         Err(e) => println!("Failed to refresh token: {:?}", e),
     ///     }
     /// });
@@ -500,7 +812,7 @@ impl ExternallyManaged {
     /// # Example
     ///
     /// ```
-    /// use qcs_api_client_common::configuration::{AuthServer, ExternallyManaged, TokenError};
+    /// use qcs_api_client_common::configuration::{settings::AuthServer, tokens::ExternallyManaged, TokenError};
     /// use tokio::runtime::Runtime;
     /// use std::error::Error;
     ///
@@ -514,19 +826,23 @@ impl ExternallyManaged {
     /// let rt = Runtime::new().unwrap();
     /// rt.block_on(async {
     ///     match token_manager.request_access_token(&AuthServer::default()).await {
-    ///         Ok(token) => println!("Token: {}", token),
+    ///         Ok(token) => println!("Token: {token:?}"),
     ///         Err(e) => println!("Failed to refresh token: {:?}", e),
     ///     }
     /// });
     /// ```
     pub fn from_sync(
-        refresh_function: fn(
+        refresh_function: impl Fn(
             AuthServer,
-        ) -> Result<String, Box<dyn std::error::Error + Send + Sync>>,
+        ) -> Result<String, Box<dyn std::error::Error + Send + Sync>>
+        + Send
+        + Sync
+        + 'static,
     ) -> Self {
         Self {
             refresh_function: Arc::new(Box::new(move |auth_server| {
-                Box::pin(async move { refresh_function(auth_server) })
+                let result = refresh_function(auth_server);
+                Box::pin(async move { result })
             })),
         }
     }
@@ -539,8 +855,10 @@ impl ExternallyManaged {
     pub async fn request_access_token(
         &self,
         auth_server: &AuthServer,
-    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        (self.refresh_function)(auth_server.clone()).await
+    ) -> Result<SecretAccessToken, Box<dyn std::error::Error + Send + Sync>> {
+        (self.refresh_function)(auth_server.clone())
+            .await
+            .map(SecretAccessToken::from)
     }
 }
 
@@ -573,26 +891,24 @@ impl<'a> TokenRefreshRequest<'a> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub(super) struct ClientCredentialsRequest<'a> {
+pub(super) struct ClientCredentialsRequest {
     grant_type: &'static str,
-    client_id: &'a str,
-    client_secret: &'a str,
+    scope: Option<&'static str>,
 }
 
-impl<'a> ClientCredentialsRequest<'a> {
-    pub(super) const fn new(client_id: &'a str, client_secret: &'a str) -> Self {
+impl ClientCredentialsRequest {
+    pub(super) const fn new(scope: Option<&'static str>) -> Self {
         Self {
             grant_type: "client_credentials",
-            client_id,
-            client_secret,
+            scope,
         }
     }
 }
 
 #[derive(Deserialize, Debug, Serialize)]
-pub(super) struct TokenResponse {
-    pub(super) refresh_token: String,
-    pub(super) access_token: String,
+pub(super) struct RefreshTokenResponse {
+    pub(super) refresh_token: Option<SecretRefreshToken>,
+    pub(super) access_token: SecretAccessToken,
 }
 
 /// Get and refresh access tokens
@@ -603,13 +919,13 @@ pub trait TokenRefresher: Clone + std::fmt::Debug + Send {
     type Error;
 
     /// Get and validate the current access token, refreshing it if it doesn't exist or is invalid.
-    async fn validated_access_token(&self) -> Result<String, Self::Error>;
+    async fn validated_access_token(&self) -> Result<SecretAccessToken, Self::Error>;
 
     /// Get the current access token, if any
-    async fn get_access_token(&self) -> Result<Option<String>, Self::Error>;
+    async fn get_access_token(&self) -> Result<Option<SecretAccessToken>, Self::Error>;
 
     /// Get a fresh access token
-    async fn refresh_access_token(&self) -> Result<String, Self::Error>;
+    async fn refresh_access_token(&self) -> Result<SecretAccessToken, Self::Error>;
 
     /// Get the base URL for requests
     #[cfg(feature = "tracing")]
@@ -632,7 +948,7 @@ pub trait TokenRefresher: Clone + std::fmt::Debug + Send {
 
         #[cfg(feature = "tracing-config")]
         self.tracing_configuration()
-            .map_or(true, |config| config.is_enabled(url))
+            .is_none_or(|config| config.is_enabled(url))
     }
 }
 
@@ -640,18 +956,31 @@ pub trait TokenRefresher: Clone + std::fmt::Debug + Send {
 impl TokenRefresher for ClientConfiguration {
     type Error = TokenError;
 
-    async fn validated_access_token(&self) -> Result<String, Self::Error> {
+    async fn validated_access_token(&self) -> Result<SecretAccessToken, Self::Error> {
         self.get_bearer_access_token().await
     }
 
-    async fn refresh_access_token(&self) -> Result<String, Self::Error> {
-        Ok(self.refresh().await?.access_token()?.to_string())
+    async fn refresh_access_token(&self) -> Result<SecretAccessToken, Self::Error> {
+        match self.refresh().await {
+            Ok(session) => Ok(session.access_token()?.clone()),
+            Err(TokenError::Write {
+                error,
+                oauth_session,
+            }) => {
+                // Token refresh succeeded but persistence failed. Extract and return the access token from the error.
+                #[cfg(feature = "tracing")]
+                tracing::warn!(
+                    "Token refresh succeeded but failed to persist: {}. Returning access token from error.",
+                    error
+                );
+                Ok(oauth_session.access_token()?.clone())
+            }
+            Err(e) => Err(e),
+        }
     }
 
-    async fn get_access_token(&self) -> Result<Option<String>, Self::Error> {
-        Ok(Some(
-            self.oauth_session().await?.access_token()?.to_string(),
-        ))
+    async fn get_access_token(&self) -> Result<Option<SecretAccessToken>, Self::Error> {
+        Ok(Some(self.oauth_session().await?.access_token()?.clone()))
     }
 
     #[cfg(feature = "tracing")]
@@ -665,17 +994,40 @@ impl TokenRefresher for ClientConfiguration {
     }
 }
 
+/// Get a default http client.
+pub(super) fn default_http_client()
+-> Result<qcs_dependencies_client::reqwest::Client, qcs_dependencies_client::reqwest::Error> {
+    qcs_dependencies_client::reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+}
+
 #[cfg(test)]
 mod test {
+    #![allow(clippy::result_large_err, reason = "happens in figment tests")]
+
     use std::time::Duration;
 
     use super::*;
     use httpmock::prelude::*;
+    use rstest::rstest;
+    use time::format_description::well_known::Rfc3339;
     use tokio::time::Instant;
+    use toml_edit::DocumentMut;
 
     #[tokio::test]
     async fn test_tokens_blocked_during_refresh() {
         let mock_server = MockServer::start_async().await;
+
+        let oidc_mock = mock_server
+            .mock_async(|when, then| {
+                when.method(GET).path("/.well-known/openid-configuration");
+                then.status(200)
+                    .json_body_obj(&oidc::Discovery::new_for_test(
+                        mock_server.base_url().parse().unwrap(),
+                    ));
+            })
+            .await;
 
         let issuer_mock = mock_server
             .mock_async(|when, then| {
@@ -683,16 +1035,20 @@ mod test {
 
                 then.status(200)
                     .delay(Duration::from_secs(3))
-                    .json_body_obj(&TokenResponse {
-                        access_token: "new_access".to_string(),
-                        refresh_token: "new_refresh".to_string(),
+                    .json_body_obj(&RefreshTokenResponse {
+                        access_token: SecretAccessToken::from("new_access"),
+                        refresh_token: Some(SecretRefreshToken::from("new_refresh")),
                     });
             })
             .await;
 
         let original_tokens = OAuthSession::from_refresh_token(
-            RefreshToken::new("refresh".to_string()),
-            AuthServer::new("client_id".to_string(), mock_server.base_url()),
+            RefreshToken::new(SecretRefreshToken::from("refresh")),
+            AuthServer {
+                client_id: "client_id".to_string(),
+                issuer: mock_server.base_url(),
+                scopes: None,
+            },
             None,
         );
         let dispatcher: TokenDispatcher = original_tokens.clone().into();
@@ -702,7 +1058,12 @@ mod test {
         let refresh_duration = Duration::from_secs(3);
 
         let start_write = Instant::now();
-        let write_future = tokio::spawn(async move { dispatcher_clone1.refresh().await.unwrap() });
+        let write_future = tokio::spawn(async move {
+            dispatcher_clone1
+                .refresh(&ConfigSource::Default, "")
+                .await
+                .unwrap()
+        });
 
         let start_read = Instant::now();
         let read_future = tokio::spawn(async move { dispatcher_clone2.tokens().await });
@@ -713,6 +1074,7 @@ mod test {
         let write_duration = start_write.elapsed();
         let read_duration = start_read.elapsed();
 
+        oidc_mock.assert_async().await;
         issuer_mock.assert_async().await;
 
         assert!(
@@ -723,14 +1085,343 @@ mod test {
             read_duration >= refresh_duration,
             "Read operation was not blocked by the write operation"
         );
-        assert_eq!(read_result.access_token.as_ref().unwrap(), "new_access");
+        assert_eq!(
+            read_result.access_token.unwrap(),
+            SecretAccessToken::from("new_access")
+        );
         if let OAuthGrant::RefreshToken(payload) = read_result.payload {
-            assert_eq!(&payload.refresh_token, "new_refresh");
+            assert_eq!(
+                payload.refresh_token,
+                SecretRefreshToken::from("new_refresh")
+            );
         } else {
             panic!(
                 "Expected RefreshToken payload, got {:?}",
                 read_result.payload
             );
         }
+    }
+
+    /// When the auth server rejects a refresh token request (e.g. the refresh token was revoked
+    /// or has expired), the failure should still surface as a normal error - not panic - even
+    /// though the response body is read for logging before the error is returned.
+    #[tokio::test]
+    async fn test_refresh_token_request_rejected_by_auth_server() {
+        let mock_server = MockServer::start_async().await;
+
+        let oidc_mock = mock_server
+            .mock_async(|when, then| {
+                when.method(GET).path("/.well-known/openid-configuration");
+                then.status(200)
+                    .json_body_obj(&oidc::Discovery::new_for_test(
+                        mock_server.base_url().parse().unwrap(),
+                    ));
+            })
+            .await;
+
+        let issuer_mock = mock_server
+            .mock_async(|when, then| {
+                when.method(POST).path("/v1/token");
+                then.status(400).json_body_obj(&serde_json::json!({
+                    "error": "invalid_grant",
+                    "error_description": "Unknown or invalid refresh token.",
+                }));
+            })
+            .await;
+
+        let mut refresh_token = RefreshToken::new(SecretRefreshToken::from("revoked_refresh"));
+        let auth_server = AuthServer {
+            client_id: "client_id".to_string(),
+            issuer: mock_server.base_url(),
+            scopes: None,
+        };
+
+        let result = refresh_token.request_access_token(&auth_server).await;
+
+        oidc_mock.assert_async().await;
+        issuer_mock.assert_async().await;
+
+        assert!(
+            result.is_err(),
+            "a rejected refresh token request should be an error, got {result:?}"
+        );
+    }
+
+    #[rstest]
+    fn test_qcs_secrets_readonly(
+        #[values(
+            (Some("TRUE"), true),
+            (Some("tRue"), true),
+            (Some("true"), true),
+            (Some("YES"), true),
+            (Some("yEs"), true),
+            (Some("yes"), true),
+            (Some("1"), true),
+            (Some("2"), false),
+            (Some("other"), false),
+            (Some(""), false),
+            (None, false),
+        )]
+        read_only_values: (Option<&str>, bool),
+        #[values(true, false)] read_only_perm: bool,
+    ) {
+        let (maybe_read_only_env, env_is_read_only) = read_only_values;
+        let expected_update = !env_is_read_only && !read_only_perm;
+        figment::Jail::expect_with(|jail| {
+            let profile_name = "test";
+            let initial_access_token = "initial_access_token";
+            let initial_refresh_token = "initial_refresh_token";
+
+            let initial_secrets_file_contents = format!(
+                r#"
+[credentials]
+[credentials.{profile_name}]
+[credentials.{profile_name}.token_payload]
+access_token = "{initial_access_token}"
+expires_in = 3600
+id_token = "id_token"
+refresh_token = "{initial_refresh_token}"
+scope = "offline_access openid profile email"
+token_type = "Bearer"
+updated_at = "2024-01-01T00:00:00Z"
+"#
+            );
+
+            // Ignore any existing environment variables.
+            jail.clear_env();
+
+            // Create a temporary secrets file
+            let secrets_path = "secrets.toml";
+            jail.create_file(secrets_path, initial_secrets_file_contents.as_str())
+                .expect("should create test secrets.toml");
+
+            if read_only_perm {
+                let mut permissions = std::fs::metadata(secrets_path)
+                    .expect("Should be able to get file metadata")
+                    .permissions();
+                permissions.set_readonly(true);
+                std::fs::set_permissions(secrets_path, permissions)
+                    .expect("Should be able to set file permissions");
+            }
+
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                let mock_server = MockServer::start_async().await;
+
+                let oidc_mock = mock_server
+                    .mock_async(|when, then| {
+                        when.method(GET).path("/.well-known/openid-configuration");
+                        then.status(200)
+                            .json_body_obj(&oidc::Discovery::new_for_test(mock_server.base_url().parse().unwrap()));
+                    })
+                    .await;
+
+                // Set up the mock token endpoint
+                let new_access_token = SecretAccessToken::from("new_access_token");
+                let issuer_mock = mock_server
+                    .mock_async(|when, then| {
+                        when.method(POST).path("/v1/token");
+                        then.status(200).json_body_obj(&RefreshTokenResponse {
+                            access_token: new_access_token.clone(),
+                            refresh_token: Some(SecretRefreshToken::from(initial_refresh_token)),
+                        });
+                    })
+                    .await;
+
+                // Create tokens and dispatcher
+                let original_tokens = OAuthSession::from_refresh_token(
+                    RefreshToken::new(SecretRefreshToken::from(initial_refresh_token)),
+                    AuthServer { client_id: "client_id".to_string(), issuer: mock_server.base_url(), scopes: None },
+                    Some(SecretAccessToken::from(initial_refresh_token)),
+                );
+                let dispatcher: TokenDispatcher = original_tokens.into();
+
+                // Test with QCS_SECRETS_READ_ONLY set first
+                jail.set_env("QCS_SECRETS_FILE_PATH", "secrets.toml");
+                jail.set_env("QCS_PROFILE_NAME", "test");
+                if let Some(read_only_env) = maybe_read_only_env {
+                    jail.set_env("QCS_SECRETS_READ_ONLY", read_only_env);
+                }
+
+                let before_refresh = OffsetDateTime::now_utc();
+
+                dispatcher
+                    .refresh(
+                        &ConfigSource::File {
+                            settings_path: "".into(),
+                            secrets_path: "secrets.toml".into(),
+                        },
+                        profile_name,
+                    )
+                    .await
+                    .unwrap();
+
+                oidc_mock.assert_async().await;
+                issuer_mock.assert_async().await;
+
+                // Verify the file was not updated if QCS_SECRETS_READ_ONLY is set truthy
+                let content = std::fs::read_to_string("secrets.toml").unwrap();
+                if !expected_update {
+                    assert!(
+                        content.eq(initial_secrets_file_contents.as_str()),
+                        "File should not be updated when QCS_SECRETS_READ_ONLY is set or file permissions are read-only"
+                    );
+                    return;
+                }
+
+                // Verify the file was updated
+                let mut toml = std::fs::read_to_string(secrets_path)
+                    .unwrap()
+                    .parse::<DocumentMut>()
+                    .unwrap();
+
+                let token_payload = toml
+                    .get_mut("credentials")
+                    .and_then(|credentials| {
+                        credentials.get_mut(profile_name)?.get_mut("token_payload")
+                    })
+                    .expect("Should be able to get token_payload table");
+
+                let access_token = token_payload.get("access_token").unwrap().as_str().map(str::to_string).map(SecretAccessToken::from);
+
+                assert_eq!(
+                    access_token,
+                    Some(new_access_token)
+                );
+
+                assert!(
+                    OffsetDateTime::parse(
+                        token_payload.get("updated_at").unwrap().as_str().unwrap(),
+                        &Rfc3339
+                    )
+                    .unwrap()
+                        > before_refresh
+                );
+
+                let content = std::fs::read_to_string("secrets.toml").unwrap();
+                assert!(
+                content.contains("new_access_token"),
+                "File should be updated with new access token when QCS_SECRETS_READ_ONLY is not set or is set but disabled, and file permissions allow writing"
+                );
+            });
+            Ok(())
+        });
+    }
+
+    /// When the auth server rotates the refresh token, a [`OAuthGrant::RefreshToken`] grant should
+    /// persist the new refresh token to the secrets file (not just the access token).
+    #[test]
+    fn test_refresh_token_grant_persists_rotated_refresh_token() {
+        let initial_refresh_token = "initial_refresh_token";
+        let rotated_refresh_token = "rotated_refresh_token";
+        let new_access_token = "new_access_token";
+
+        figment::Jail::expect_with(|jail| {
+            jail.clear_env();
+
+            let secrets_path = "secrets.toml";
+            let initial_secrets_file_contents = format!(
+                r#"
+[credentials]
+[credentials.test]
+[credentials.test.token_payload]
+access_token = "initial_access_token"
+refresh_token = "{initial_refresh_token}"
+updated_at = "2024-01-01T00:00:00Z"
+"#
+            );
+            jail.create_file(secrets_path, &initial_secrets_file_contents)
+                .expect("should create test secrets.toml");
+
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                let mock_server = MockServer::start_async().await;
+                let oidc_mock = mock_server
+                    .mock_async(|when, then| {
+                        when.method(GET).path("/.well-known/openid-configuration");
+                        then.status(200)
+                            .json_body_obj(&oidc::Discovery::new_for_test(
+                                mock_server.base_url().parse().unwrap(),
+                            ));
+                    })
+                    .await;
+                let issuer_mock = mock_server
+                    .mock_async(|when, then| {
+                        when.method(POST).path("/v1/token");
+                        then.status(200).json_body_obj(&RefreshTokenResponse {
+                            access_token: SecretAccessToken::from(new_access_token),
+                            refresh_token: Some(SecretRefreshToken::from(rotated_refresh_token)),
+                        });
+                    })
+                    .await;
+
+                let dispatcher: TokenDispatcher = OAuthSession::from_refresh_token(
+                    RefreshToken::new(SecretRefreshToken::from(initial_refresh_token)),
+                    AuthServer {
+                        client_id: "client_id".to_string(),
+                        issuer: mock_server.base_url(),
+                        scopes: None,
+                    },
+                    Some(SecretAccessToken::from("initial_access_token")),
+                )
+                .into();
+
+                dispatcher
+                    .refresh(
+                        &ConfigSource::File {
+                            settings_path: "".into(),
+                            secrets_path: secrets_path.into(),
+                        },
+                        "test",
+                    )
+                    .await
+                    .expect("refresh should succeed");
+
+                oidc_mock.assert_async().await;
+                issuer_mock.assert_async().await;
+            });
+
+            // The rotated refresh token (and the new access token) should be persisted.
+            let payload = Secrets::load_from_path(&secrets_path.into())
+                .expect("should load secrets")
+                .credentials
+                .remove("test")
+                .expect("should have test credentials")
+                .token_payload
+                .expect("should have token payload");
+            assert_eq!(
+                payload.refresh_token.unwrap(),
+                SecretRefreshToken::from(rotated_refresh_token),
+                "rotated refresh token should be persisted to the secrets file"
+            );
+            assert_eq!(
+                payload.access_token.unwrap(),
+                SecretAccessToken::from(new_access_token),
+                "new access token should be persisted to the secrets file"
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_auth_session_debug_fmt() {
+        let session = OAuthSession {
+            payload: OAuthGrant::ClientCredentials(ClientCredentials::new(
+                "hidden_id",
+                "hidden_secret",
+            )),
+            access_token: Some(SecretAccessToken::from("token")),
+            auth_server: AuthServer {
+                client_id: "some_id".into(),
+                issuer: "some_url".into(),
+                scopes: None,
+            },
+        };
+
+        assert_eq!(
+            "OAuthSession { payload: ClientCredentials, access_token: Some(()), auth_server: AuthServer { client_id: \"some_id\", issuer: \"some_url\", scopes: None } }",
+            &format!("{session:?}")
+        );
     }
 }

@@ -1,12 +1,14 @@
 """Middleware for gRPC clients."""
+
 from abc import ABCMeta
-from typing import Any, Callable, List, Optional, Tuple
+from collections.abc import Callable
+from typing import Any
 
 import grpc  # type: ignore
 from grpc import ClientCallDetails  # type: ignore
 from grpc.aio import Call, UnaryUnaryClientInterceptor  # type: ignore
 
-from qcs_api_client_common.configuration import ClientConfiguration
+from .configuration import ClientConfiguration, SecretAccessToken  # type: ignore
 
 
 class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
@@ -14,7 +16,8 @@ class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
 
     The interceptor will automatically refresh your token as needed.
     """
-    def __init__(self, client_configuration: Optional[ClientConfiguration]=None):
+
+    def __init__(self, client_configuration: ClientConfiguration | None = None):
         """Initialize the interceptor using a `ClientConfiguration`.
 
         If `client_configuration` is unset, `ClientConfiguratio.load_default()` will be used.
@@ -23,22 +26,22 @@ class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
             client_configuration = ClientConfiguration.load_default()
         self.configuration = client_configuration
 
-    async def _get_access_token(self) -> str:
+    async def _get_access_token(self) -> SecretAccessToken:
         return await self.configuration.get_bearer_access_token_async()
 
     async def intercept_unary_unary(
         self,
         continuation: Callable[[ClientCallDetails, Any], Call],
         client_call_details: ClientCallDetails,
-        request: Any
+        request: Any,
     ) -> Any:
         """Adds the QCS authorization token to the request metadata, refreshing the token if needed."""
         # Modify the headers to add the access token
-        authorized_metadata: List[Tuple[str, str]] = []
+        authorized_metadata: list[tuple[str, str]] = []
         if client_call_details.metadata is not None:
             authorized_metadata = list(client_call_details.metadata)
 
-        authorized_metadata.append(('authorization', f'Bearer {await self._get_access_token()}'))
+        authorized_metadata.append(("authorization", f"Bearer {await self._get_access_token()}"))
 
         new_client_call_details = grpc.aio.ClientCallDetails(
             client_call_details.method,

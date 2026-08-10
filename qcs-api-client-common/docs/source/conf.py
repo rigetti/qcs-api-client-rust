@@ -24,7 +24,7 @@ extensions = [
 ]
 
 autoapi_type = 'python'
-autoapi_dirs = ['../../qcs_api_client_common']
+autoapi_dirs = ['../../python/qcs_api_client_common']
 autoapi_ignore = []
 autoapi_options = [
     'members',

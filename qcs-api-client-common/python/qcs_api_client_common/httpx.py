@@ -1,6 +1,5 @@
 """QCS Middleware for requests made with `httpx`."""
 
-from typing import Optional
 
 import httpx
 from httpx import Request
@@ -38,7 +37,8 @@ class QCSAuthorization(httpx.Auth):
     asyncio.run(main())
     ```
     """
-    def __init__(self, client_configuration: Optional[ClientConfiguration] = None):
+
+    def __init__(self, client_configuration: ClientConfiguration | None = None):
         """Initialize the authorization with an optional client configuration.
 
         If `client_configuration` is set to None, `ClientConfiguration.load_default()` will be used.
@@ -49,12 +49,11 @@ class QCSAuthorization(httpx.Auth):
     async def async_auth_flow(self, request: Request):
         """Add the QCS authorization token to the request, refreshing the token as needed."""
         token = await self.configuration.get_bearer_access_token_async()
-        request.headers['Authorization'] = f'Bearer {token}'
+        request.headers["Authorization"] = f"Bearer {token}"
         yield request
-
 
     def sync_auth_flow(self, request: Request):
         """Add the QCS authorization token to the request, refreshing the token as needed."""
         token = self.configuration.get_bearer_access_token()
-        request.headers['Authorization'] = f'Bearer {token}'
+        request.headers["Authorization"] = f"Bearer {token}"
         yield request

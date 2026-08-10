@@ -1,4 +1,4 @@
-// Copyright 2023 Rigetti Computing
+// Copyright 2026 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use qcs_dependencies_client::pbjson;
 
 impl serde::Serialize for BackendV1Options {
     #[allow(deprecated)]
@@ -44,7 +45,7 @@ impl<'de> serde::Deserialize<'de> for BackendV1Options {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -160,7 +161,7 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -215,7 +216,7 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
                                 return Err(serde::de::Error::duplicate_field("passiveResetDelaySeconds"));
                             }
                             passive_reset_delay_seconds__ = 
-                                map_.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                                map_.next_value::<::std::option::Option<pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
                         GeneratedField::AllowUncheckedPointerArithmetic => {
@@ -290,7 +291,7 @@ impl<'de> serde::Deserialize<'de> for GetQuantumProcessorQuilCalibrationProgramR
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -382,7 +383,7 @@ impl<'de> serde::Deserialize<'de> for QuantumProcessorQuilCalibrationProgram {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -504,7 +505,7 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobReque
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -568,7 +569,7 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobReque
                             if num_shots__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("numShotsValue"));
                             }
-                            num_shots__ = map_.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| translate_quil_to_encrypted_controller_job_request::NumShots::NumShotsValue(x.0));
+                            num_shots__ = map_.next_value::<::std::option::Option<pbjson::private::NumberDeserialize<_>>>()?.map(|x| translate_quil_to_encrypted_controller_job_request::NumShots::NumShotsValue(x.0));
                         }
                     }
                 }
@@ -630,7 +631,7 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobRespo
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -699,10 +700,22 @@ impl serde::Serialize for TranslationOptions {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
+        if self.q_ctrl.is_some() {
+            len += 1;
+        }
+        if self.riverlane.is_some() {
+            len += 1;
+        }
         if self.translation_backend.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("services.translation.TranslationOptions", len)?;
+        if let Some(v) = self.q_ctrl.as_ref() {
+            struct_ser.serialize_field("qCtrl", v)?;
+        }
+        if let Some(v) = self.riverlane.as_ref() {
+            struct_ser.serialize_field("riverlane", v)?;
+        }
         if let Some(v) = self.translation_backend.as_ref() {
             match v {
                 translation_options::TranslationBackend::V1(v) => {
@@ -723,12 +736,17 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "q_ctrl",
+            "qCtrl",
+            "riverlane",
             "v1",
             "v2",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
+            QCtrl,
+            Riverlane,
             V1,
             V2,
         }
@@ -739,7 +757,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
             {
                 struct GeneratedVisitor;
 
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -752,6 +770,8 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                         E: serde::de::Error,
                     {
                         match value {
+                            "qCtrl" | "q_ctrl" => Ok(GeneratedField::QCtrl),
+                            "riverlane" => Ok(GeneratedField::Riverlane),
                             "v1" => Ok(GeneratedField::V1),
                             "v2" => Ok(GeneratedField::V2),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -773,9 +793,23 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                 where
                     V: serde::de::MapAccess<'de>,
             {
+                let mut q_ctrl__ = None;
+                let mut riverlane__ = None;
                 let mut translation_backend__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
+                        GeneratedField::QCtrl => {
+                            if q_ctrl__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("qCtrl"));
+                            }
+                            q_ctrl__ = map_.next_value()?;
+                        }
+                        GeneratedField::Riverlane => {
+                            if riverlane__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("riverlane"));
+                            }
+                            riverlane__ = map_.next_value()?;
+                        }
                         GeneratedField::V1 => {
                             if translation_backend__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("v1"));
@@ -793,11 +827,224 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                     }
                 }
                 Ok(TranslationOptions {
+                    q_ctrl: q_ctrl__,
+                    riverlane: riverlane__,
                     translation_backend: translation_backend__,
                 })
             }
         }
         deserializer.deserialize_struct("services.translation.TranslationOptions", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for translation_options::QCtrl {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.fixed_layout.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("services.translation.TranslationOptions.QCtrl", len)?;
+        if let Some(v) = self.fixed_layout.as_ref() {
+            struct_ser.serialize_field("fixedLayout", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for translation_options::QCtrl {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "fixed_layout",
+            "fixedLayout",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            FixedLayout,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "fixedLayout" | "fixed_layout" => Ok(GeneratedField::FixedLayout),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = translation_options::QCtrl;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct services.translation.TranslationOptions.QCtrl")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<translation_options::QCtrl, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut fixed_layout__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::FixedLayout => {
+                            if fixed_layout__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("fixedLayout"));
+                            }
+                            fixed_layout__ = map_.next_value()?;
+                        }
+                    }
+                }
+                Ok(translation_options::QCtrl {
+                    fixed_layout: fixed_layout__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("services.translation.TranslationOptions.QCtrl", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for translation_options::Riverlane {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.qeci_configuration_data.is_empty() {
+            len += 1;
+        }
+        if self.qeci_max_nanoseconds_until_read_available != 0 {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("services.translation.TranslationOptions.Riverlane", len)?;
+        if !self.qeci_configuration_data.is_empty() {
+            let v: std::collections::HashMap<_, _> = self.qeci_configuration_data.iter()
+                .map(|(k, v)| (k, pbjson::private::base64::encode(v))).collect();
+            struct_ser.serialize_field("qeciConfigurationData", &v)?;
+        }
+        if self.qeci_max_nanoseconds_until_read_available != 0 {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("qeciMaxNanosecondsUntilReadAvailable", ToString::to_string(&self.qeci_max_nanoseconds_until_read_available).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for translation_options::Riverlane {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "qeci_configuration_data",
+            "qeciConfigurationData",
+            "qeci_max_nanoseconds_until_read_available",
+            "qeciMaxNanosecondsUntilReadAvailable",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            QeciConfigurationData,
+            QeciMaxNanosecondsUntilReadAvailable,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "qeciConfigurationData" | "qeci_configuration_data" => Ok(GeneratedField::QeciConfigurationData),
+                            "qeciMaxNanosecondsUntilReadAvailable" | "qeci_max_nanoseconds_until_read_available" => Ok(GeneratedField::QeciMaxNanosecondsUntilReadAvailable),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = translation_options::Riverlane;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct services.translation.TranslationOptions.Riverlane")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<translation_options::Riverlane, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut qeci_configuration_data__ = None;
+                let mut qeci_max_nanoseconds_until_read_available__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::QeciConfigurationData => {
+                            if qeci_configuration_data__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("qeciConfigurationData"));
+                            }
+                            qeci_configuration_data__ = Some(
+                                map_.next_value::<std::collections::HashMap<_, pbjson::private::BytesDeserialize<_>>>()?
+                                    .into_iter().map(|(k,v)| (k, v.0)).collect()
+                            );
+                        }
+                        GeneratedField::QeciMaxNanosecondsUntilReadAvailable => {
+                            if qeci_max_nanoseconds_until_read_available__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("qeciMaxNanosecondsUntilReadAvailable"));
+                            }
+                            qeci_max_nanoseconds_until_read_available__ = 
+                                Some(map_.next_value::<pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(translation_options::Riverlane {
+                    qeci_configuration_data: qeci_configuration_data__.unwrap_or_default(),
+                    qeci_max_nanoseconds_until_read_available: qeci_max_nanoseconds_until_read_available__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("services.translation.TranslationOptions.Riverlane", FIELDS, GeneratedVisitor)
     }
 }
 

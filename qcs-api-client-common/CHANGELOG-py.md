@@ -1,8 +1,209 @@
-## 0.11.2-rc.0 (2024-10-08)
+## 0.12.12 (2025-12-05)
+
+### Fixes
+
+#### add test feature to enable insecure issuer validation
+
+## 0.12.11 (2025-12-04)
+
+### Fixes
+
+#### add additional help information for TokenError::Write
+
+## 0.12.10 (2025-11-24)
+
+### Fixes
+
+#### redirect should only bind locally
+
+## 0.12.9 (2025-11-24)
 
 ### Features
 
-#### update PyO3
+#### also retry on 502: Bad Gateway, as these often succeed on manual retry
+
+#### support arbitrary oauth providers
+
+#### implement PKCE login flow
+
+### Fixes
+
+#### remove problematic 'dirs' from dependencies
+
+## 0.12.8 (2025-10-30)
+
+### Fixes
+
+#### update service-model again
+
+## 0.12.8-dev.1 (2025-10-30)
+
+### Fixes
+
+#### update service-model again
+
+#### 'unhide' the cargo-config for private registry
+
+## 0.12.8-dev.0 (2025-10-30)
+
+### Fixes
+
+#### update service-model again
+
+## 0.12.7 (2025-10-23)
+
+### Fixes
+
+#### upgrade 'urlpattern' to version that doesn't rely on unmaintained crates
+
+## 0.12.6 (2025-10-10)
+
+### Fixes
+
+#### publish to CodeArtifact
+
+## 0.12.6-dev.11 (2025-10-09)
+
+### Fixes
+
+#### publish to code-artifact
+
+#### docs for release
+
+#### explicitly set 'publish' in all crates
+
+#### set publish to 'false' for public crates, so they don't get double-published
+
+#### map scope tags to crates
+
+#### force token auth for crates-io; run all publishing on a single tag
+
+#### explicitly use the variable for the cargo-registry token
+
+#### import public-grpc 'tonic' crate instead of including the file
+
+#### push tags individually
+
+#### non-interruptible; don't permit running knope releases on release commits
+
+#### separate 'release'/'prerelease' flows in knope are not necessary
+
+## 0.12.6-dev.10 (2025-10-09)
+
+### Fixes
+
+#### publish to code-artifact
+
+#### docs for release
+
+#### explicitly set 'publish' in all crates
+
+#### set publish to 'false' for public crates, so they don't get double-published
+
+#### map scope tags to crates
+
+#### force token auth for crates-io; run all publishing on a single tag
+
+#### explicitly use the variable for the cargo-registry token
+
+#### import public-grpc 'tonic' crate instead of including the file
+
+#### push tags individually
+
+#### non-interruptible; don't permit running knope releases on release commits
+
+## 0.12.5 (2025-10-01)
+
+### Features
+
+#### update service-model protos for Riverlane DF2 support
+
+## 0.12.4 (2025-09-26)
+
+### Fixes
+
+#### updates the 'patch_schema' script to prevent unintentional int-type breakage
+
+## 0.12.3 (2025-05-13)
+
+### Fixes
+
+- revert "feat: regenerate mustache template"
+
+## 0.12.2 (2025-05-13)
+
+### Features
+
+- support for client-credentials flow
+- regenerate mustache template
+
+## 0.12.1 (2025-05-08)
+
+### Fixes
+
+- make ClientCredentials deserializable; make sure secrets are not printed by 'Debug'
+
+## 0.12.0 (2025-03-20)
+
+### Breaking Changes
+
+#### bump OTEL dependency versions
+
+## 0.11.9 (2025-03-03)
+
+### Fixes
+
+#### macos release should include repo-token for protoc install
+
+## 0.11.8 (2025-01-27)
+
+### Fixes
+
+#### allow oauth_session to be constructed without refresh tokens, allow JWTBearerOptional operations to skip bearer tokens
+
+#### temporarily revert python 3.13 support introduced in common/v0.11.7
+
+## 0.11.7 (2025-01-27)
+
+### Features
+
+#### support python 3.13
+
+## 0.11.6 (2025-01-22)
+
+### Features
+
+#### Access tokens are written back to QCS configuration
+
+### Fixes
+
+#### respect env var for api_url
+
+## 0.11.5 (2024-11-20)
+
+### Fixes
+
+#### generate rust structs for missing proto messages
+
+## 0.11.4 (2024-11-20)
+
+### Features
+
+#### update protobuf messages
+
+## 0.11.3 (2024-11-18)
+
+### Fixes
+
+#### wait for channel to be ready again before retrying request after token-refresh
+
+#### expose OAuthGrant via public API, allow creating OAuthSession from ExternallyManaged
+
+## 0.11.2 (2024-10-09)
+
+### Fixes
+
+#### update dev (codegen) dependencies
 
 ## 0.11.1 (2024-10-08)
 

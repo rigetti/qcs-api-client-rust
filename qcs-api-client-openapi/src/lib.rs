@@ -1,4 +1,4 @@
-// Copyright 2022 Rigetti Computing
+// Copyright 2026 Rigetti Computing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,11 +33,13 @@
 #![allow(clippy::clone_on_copy)]
 #![allow(clippy::too_many_arguments)]
 #![allow(noop_method_call)]
+#![allow(unused_imports)]
 
-pub use reqwest;
+pub use qcs_dependencies_client::reqwest;
 
 pub use serde;
 pub use serde_json;
+pub use serde_repr;
 pub use url;
 pub mod apis;
 pub mod models;
