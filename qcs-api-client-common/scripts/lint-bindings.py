@@ -62,11 +62,11 @@ def _make_secret_string(ctx: MacroContext, module: str | None = None) -> None:
         rust_name=rust_name,
         path=ctx.path,
         line=line,
-        stub_attr=StubAttr(kind=StubKind.Class, module="qcs_api_client_common.configuration"),
+        stub_attr=StubAttr(kind=StubKind.Class, module="qcs_api_client_common._qcs_api_client_common.configuration"),
     )
 
-    ctx.annotated["qcs_api_client_common.configuration"].add(item)
-    ctx.exported["qcs_api_client_common.configuration"].add(item)
+    ctx.annotated["qcs_api_client_common._qcs_api_client_common.configuration"].add(item)
+    ctx.exported["qcs_api_client_common._qcs_api_client_common.configuration"].add(item)
 
 
 @macro_handler(r"impl_instruction!")

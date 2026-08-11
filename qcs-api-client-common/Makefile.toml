@@ -30,7 +30,7 @@ command = "uv"
 args = ["pip", "install", "--group", "dev", "."]
 
 [tasks.install-python-package]
-dependencies = ["install-deps"]
+dependencies = ["install-deps", "generate-stubs"]
 description = "Build the qcs-api-client-common python package and install it in the current virtual environment."
 command = "maturin"
 args = ["develop"]
@@ -42,11 +42,13 @@ args = ["run", "-p", "qcs-api-client-common", "--features", "stubs", "--bin", "s
 install_crate = false
 
 [tasks.stubtest]
-dependencies = ["generate-stubs", "install-python-package"]
+dependencies = ["install-python-package"]
 description = "Validate type stubs using stubtest"
 cwd = "python"
-command = "stubtest"
+command = "uv"
 args = [
+    "run", "--group", "dev",
+    "stubtest",
     "--allowlist", "stubtest-allowlist",
     "--ignore-unused-allowlist",
     "--ignore-disjoint-bases",
@@ -56,17 +58,25 @@ args = [
 [tasks.pytest]
 dependencies = ["install-python-package"]
 description = "Run the Python unit test suite."
-command = "pytest"
-args = ["tests_py", "-vv"]
+command = "uv"
+args = [
+    "run", "--group", "dev",
+    "pytest",
+    "tests_py", "-vv"
+]
 
 [tasks.pytest-integration]
 dependencies = ["install-python-package"]
 description = "Run the integration tests in the Python test suite. Requires a valid QCS configuration."
-command = "pytest"
-args = ["tests_py", "--integration"]
+command = "uv"
+args = [
+    "run", "--group", "dev",
+    "pytest",
+    "tests_py", "--integration"
+]
 
 [tasks.build-python-docs]
-dependencies = ["install-python-package", "generate-stubs"]
+dependencies = ["install-python-package"]
 description = "Build the Sphinx documentation."
 cwd = "docs"
 script = [
@@ -77,12 +87,12 @@ script = [
 
 [tasks.ruff-check]
 dependencies = ["install-uv"]
-command = "ruff"
-args = ["check"]
+command = "uv"
+args = ["run", "--group", "dev", "ruff", "check"]
 
 [tasks.check-python-api]
 description = "Check if Python API has breaking changes."
-dependencies = ["generate-stubs", "install-python-package"]
+dependencies = ["install-python-package"]
 script = { file = "./scripts/check-py-api.sh" }
 
 [tasks.check-python-bindings]

@@ -1,3 +1,23 @@
+## 0.19.0 (2026-08-11)
+
+### Breaking Changes
+
+- update PyO3 and related dependencies; fix Windows CLI build
+
+## 0.19.0-rc.6 (2026-08-10)
+
+### Breaking Changes
+
+- update PyO3 and related dependencies
+
+### Fixes
+
+- try using the new job templates for CLI building
+- build.rs can't use cross-compilation flags
+- protobuf install
+- release-build folder name has changed
+- version variable has also changed
+
 ## 0.18.7 (2026-07-30)
 
 ### Fixes

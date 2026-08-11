@@ -33,9 +33,9 @@ once_cell = '1.17.0'
 openapiv3 = '2.0'
 optipy = '0.1.0'
 prettyplease = '0.3'
-pyo3-build-config = '0.27.2'
-pyo3-stub-gen = '0.17.2'
-rigetti-pyo3 = '0.5.4'
+pyo3-build-config = '0.29.1'
+pyo3-stub-gen = '0.23.0'
+rigetti-pyo3 = '0.8'
 rstest = '0.26.0'
 rustls = '0.23'
 serde = '1.0.228'
@@ -85,36 +85,36 @@ version = '0.1.6'
 
 [workspace.dependencies.pyo3]
 features = ['multiple-pymethods']
-version = '0.27.2'
+version = '0.29.1'
 
 [workspace.dependencies.pyo3-async-runtimes]
 features = ['tokio-runtime']
-version = '0.27.0'
+version = '0.29.0'
 
 [workspace.dependencies.qcs-api-client-common]
 path = 'qcs-api-client-common'
-version = '0.18.7'
+version = '0.19.0'
 
 [workspace.dependencies.qcs-api-client-grpc]
 path = 'qcs-api-client-grpc'
-version = '0.18.7'
+version = '0.19.0'
 
 [workspace.dependencies.qcs-api-client-grpc-internal]
 path = 'qcs-api-client-grpc-internal'
 registry = 'rigetti-cargo'
-version = '0.19.7'
+version = '0.20.0'
 
 [workspace.dependencies.qcs-api-client-openapi]
 path = 'qcs-api-client-openapi/public'
-version = '0.19.7'
+version = '0.20.0'
 
 [workspace.dependencies.qcs-api-client-openapi-internal]
 path = 'qcs-api-client-openapi/internal'
 registry = 'rigetti-cargo'
-version = '0.19.7'
+version = '0.20.0'
 
 [workspace.dependencies.qcs-dependencies-client]
-version = '0.4.1'
+version = '0.5'
 
 [workspace.dependencies.rigetti-hyper-proxy]
 default-features = false

@@ -45,8 +45,12 @@ async def test_refresh_interceptor(mock_config, client_call_details, make_reques
         continuation, client_call_details, make_request
     )
 
+    # `Metadata` membership tests keys, not pairs, so compare the pairs it iterates as.
+    pairs = list(updated_call_details.metadata)
+
     # Verify that the metadata now includes the authorization token
-    assert ("authorization", "Bearer mock_config_fixture_token") in updated_call_details.metadata, (
-        "Authorization token is missing in metadata"
-    )
-    assert ("initial", "metadata") in updated_call_details.metadata, "Original metadata is not preserved"
+    assert ("authorization", "Bearer mock_config_fixture_token") in pairs, "Authorization token is missing in metadata"
+    assert ("initial", "metadata") in pairs, "Original metadata is not preserved"
+
+    # The caller's metadata is copied, not mutated.
+    assert "authorization" not in dict(client_call_details.metadata)

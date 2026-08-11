@@ -92,13 +92,13 @@ impl<T> pyo3_stub_gen::PyStubType for Final<T> {
     }
 }
 
-/// Adds module-level `str` to the `qcs_api_client_common.configuration` stub file.
+/// Adds module-level `str` to the `qcs_api_client_common._qcs_api_client_common.configuration` stub file.
 macro_rules! stub_consts {
     ( $($name:ident),* ) => {
         $(
             #[cfg(feature = "stubs")]
             ::pyo3_stub_gen::module_variable!(
-                "qcs_api_client_common.configuration",
+                "qcs_api_client_common._qcs_api_client_common.configuration",
                 stringify!($name),
                 Final<&str>,
                 Final($name)
@@ -298,7 +298,7 @@ impl OAuthSession {
 }
 
 py_function_sync_async! {
-    #[cfg_attr(feature = "stubs", gen_stub_pyfunction(module = "qcs_api_client_common.configuration"))]
+    #[cfg_attr(feature = "stubs", gen_stub_pyfunction(module = "qcs_api_client_common._qcs_api_client_common.configuration"))]
     #[pyfunction]
     async fn get_oauth_session(tokens: Option<TokenDispatcher>) -> PyResult<OAuthSession> {
         Ok(tokens.ok_or(TokenError::NoRefreshToken)?.tokens().await)
@@ -311,7 +311,7 @@ py_function_sync_async! {
     /// # Errors
     ///
     /// Raises a `TokenError` if there's a problem providing the token.
-    #[cfg_attr(feature = "stubs", gen_stub_pyfunction(module = "qcs_api_client_common.configuration"))]
+    #[cfg_attr(feature = "stubs", gen_stub_pyfunction(module = "qcs_api_client_common._qcs_api_client_common.configuration"))]
     #[pyfunction]
     async fn get_bearer_access_token(configuration: ClientConfiguration) -> PyResult<SecretAccessToken> {
         configuration.get_bearer_access_token().await.map_err(PyErr::from)
@@ -324,7 +324,7 @@ py_function_sync_async! {
     /// # Errors
     ///
     /// Raises a `TokenError` if there's a problem providing the token.
-    #[cfg_attr(feature = "stubs", gen_stub_pyfunction(module = "qcs_api_client_common.configuration"))]
+    #[cfg_attr(feature = "stubs", gen_stub_pyfunction(module = "qcs_api_client_common._qcs_api_client_common.configuration"))]
     #[pyfunction]
     async fn request_access_token(session: OAuthSession) -> PyResult<SecretAccessToken> {
         session.clone().request_access_token().await.cloned().map_err(PyErr::from)

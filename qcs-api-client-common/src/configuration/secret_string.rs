@@ -27,7 +27,7 @@ macro_rules! make_secret_string {
         #[cfg_attr(not(feature = "python"), ::optipy::strip_pyo3)]
         #[cfg_attr(feature = "stubs", ::pyo3_stub_gen::derive::gen_stub_pyclass)]
         #[cfg_attr(feature = "python",
-            ::pyo3::pyclass(module = "qcs_api_client_common.configuration", eq, frozen, skip_from_py_object))]
+            ::pyo3::pyclass(module = "qcs_api_client_common._qcs_api_client_common.configuration", eq, frozen, skip_from_py_object))]
         $(#[$attr])*
         pub struct $name(Cow<'static, str>);
 
