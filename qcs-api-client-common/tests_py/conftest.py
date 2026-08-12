@@ -24,7 +24,7 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config: pytest.Config):
-    if not config.option.integration:
+    if not config.option.integration and not config.option.markexpr:
         config.option.markexpr = "not integration"
 
 

@@ -1,7 +1,2 @@
-# Ignore improperly typed generics from the `grpc` package.
-qcs_api_client_common.grpc.Awaitable.__class_getitem__
-qcs_api_client_common.grpc.Callable
-qcs_api_client_common.grpc.Metadata.items
-qcs_api_client_common.grpc.Metadata.keys
-qcs_api_client_common.grpc.Metadata.values
-qcs_api_client_common.grpc.TypeVar.__mro_entries__
+# Entries here suppress specific stubtest errors, e.g. improperly typed generics from
+# third-party packages. It is currently empty; add entries as `module.Class.attribute`.

@@ -12,6 +12,7 @@ from .configuration import ClientConfiguration, SecretAccessToken
 _RequestType = TypeVar("_RequestType")
 _ResponseType = TypeVar("_ResponseType")
 
+
 class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
     """A `RefreshInterceptor` will add your QCS authorization token to all your QCS requests.
 
@@ -32,7 +33,9 @@ class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
 
     async def intercept_unary_unary(
         self,
-        continuation: Callable[[ClientCallDetails, _RequestType], Awaitable[UnaryUnaryCall[_RequestType, _ResponseType]]],
+        continuation: Callable[
+            [ClientCallDetails, _RequestType], Awaitable[UnaryUnaryCall[_RequestType, _ResponseType]]
+        ],
         client_call_details: ClientCallDetails,
         request: _RequestType,
     ) -> UnaryUnaryCall[_RequestType, _ResponseType]:

@@ -16,6 +16,7 @@ trap popd EXIT
 # `griffe` doesn't mind if the path doesn't exist, but if you compare tags across the merge,
 # it won't find the Python package at all, and it'll fail with a obscure error.
 uv run \
+  --active \
   --project qcs-api-client-common \
   --group dev -- \
     griffe check \

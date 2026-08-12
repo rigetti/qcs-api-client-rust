@@ -1,3 +1,11 @@
+## 0.19.1-rc.0 (2026-08-12)
+
+### Fixes
+
+- build the stub generator against the virtual environment's Python
+- run the generated-file checks with bash, as CI's default shell is dash
+- separate assets for 'internal' and 'public' QCS CLI
+
 ## 0.19.0 (2026-08-11)
 
 ### Breaking Changes
