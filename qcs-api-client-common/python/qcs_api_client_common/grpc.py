@@ -41,8 +41,9 @@ class RefreshInterceptor(UnaryUnaryClientInterceptor, metaclass=ABCMeta):
     ) -> UnaryUnaryCall[_RequestType, _ResponseType]:
         """Adds the QCS authorization token to the request metadata, refreshing the token if needed."""
         # Copy any existing headers and set the access token.
-        # `Metadata` iterates as `(key, value)` pairs,
-        # so this accepts either a `Metadata` or the plain sequence of pairs that `ClientCallDetails` also permits.
+        # `Metadata` iterates as `(key, value)` pairs, so this also tolerates the plain sequence of
+        # pairs that `ClientCallDetails` permits, even though `grpc.aio` normalizes the caller's
+        # metadata to `Metadata` before any interceptor runs.
         authorized_metadata = Metadata(*(client_call_details.metadata or ()))
         authorized_metadata["authorization"] = f"Bearer {await self._get_access_token()}"
 

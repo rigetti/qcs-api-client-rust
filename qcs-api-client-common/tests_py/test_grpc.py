@@ -17,11 +17,9 @@ async def interceptor() -> RefreshInterceptor:
 def client_call_details() -> grpc.aio.ClientCallDetails:
     method = "/test.TestService/TestMethod"
     timeout = None
-    # Deliberately a plain sequence of pairs rather than `Metadata`: the stubs only allow
-    # `Metadata`, but an upstream interceptor can put a list or tuple of pairs here at runtime
-    # (`rigetti_service_model.interceptors.client.OpenTelemetryAsyncClientInterceptor` does),
-    # so the interceptor must handle both.
-    metadata = cast(grpc.aio.Metadata, [("initial", "metadata")])
+    # `grpc.aio` normalizes the caller's metadata into `Metadata` before any interceptor sees it,
+    # so that is what the interceptor gets here too.
+    metadata = grpc.aio.Metadata(("initial", "metadata"))
     credentials = None
     wait_for_ready = None
     return grpc.aio.ClientCallDetails(method, timeout, metadata, credentials, wait_for_ready)

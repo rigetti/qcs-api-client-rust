@@ -1,40 +1,32 @@
-extend = [{ path = "../.qcs-infrastructure/configuration/cargo-make/pytasks.toml" }]
-
-[config]
-# Ensures `.qcs-infrastructure` (extended above) exists and is up to date. The repo root is
-# resolved with `git`, because `CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY` is this crate's directory
-# when `cargo make` is invoked with `--cwd`.
-load_script = "\"$(git rev-parse --show-toplevel)\"/scripts/update-qcs-infrastructure"
+extend = [
+    # Including the workspace `Makefile.toml` ensures that `.qcs-infrastructure` is populated.
+    { path = "Makefile.toml", relative = "git" },
+    { path = ".qcs-infrastructure/configuration/cargo-make/pytasks.toml", relative = "git" },
+]
 
 [env]
 PYTHON_PACKAGE_NAME = "qcs_api_client_common"
 PYTHON_VERSION = "3.12"
 PYTHON_TEST_DIR = "tests_py"
 PYTHON_STUBTEST_ALLOWLIST = "python/stubtest-allowlist"
-# The stubs live in the Maturin `python-source` directory rather than alongside `pyproject.toml`,
-# so `stubtest` can only find them if that directory is on the mypy search path.
-MYPYPATH = "python"
 
 [tasks.generate-stubs]
 description = "Generate Python stub files."
 script_runner = "bash"
 dependencies = ["python-install-dependencies"]
 install_crate = false
-# PyO3's build script honors `VIRTUAL_ENV`. Without it, PyO3 links against whichever `python3` is
-# first on the `PATH` — the system interpreter, unless the caller happens to have the virtual
-# environment activated, and CI images don't necessarily ship its development library.
+# `stub_gen` links against, and embeds, the Python interpreter, so it has to be built and run in
+# the virtual environment: otherwise PyO3 picks whichever `python3` is first on the `PATH`, and CI
+# images don't necessarily ship that interpreter's development library.
 #
-# `stub_gen` *embeds* the interpreter, so it cannot locate the standard library on its own: the
-# virtual environment doesn't contain one, and the `uv`-managed interpreters it links against are
-# relocatable, so their compiled-in prefix is not usable either. `PYTHONHOME` points at the real
-# installation so that the embedded interpreter can initialize. Both variables are exported here
-# rather than in `[tasks.generate-stubs.env]`, because `PYTHONHOME` would then leak into the other
-# tasks in a flow and break the (non-embedded) Python tools.
+# Because the interpreter is embedded, it can't locate the standard library on its own: the virtual
+# environment doesn't contain one, and `uv`-managed interpreters are relocatable, so their
+# compiled-in prefix is no help either. `PYTHONHOME` is set for this one command only — exporting it
+# would break the other (non-embedded) Python tools that run later in the same flow.
 script = '''
-export VIRTUAL_ENV="${VENV_PATH}"
-PYTHONHOME="$("${VENV_PATH}"/bin/python -c 'import sys; print(sys.base_prefix)')"
-export PYTHONHOME
-cargo run -p qcs-api-client-common --features stubs --bin stub_gen
+. "$(git rev-parse --show-toplevel)/.qcs-infrastructure/scripts/cli-tools-base-image/ensure-venv"
+PYTHONHOME="$(python -c 'import sys; print(sys.base_prefix)')" \
+    cargo run -p qcs-api-client-common --features stubs --bin stub_gen
 '''
 
 [tasks.check-generated-python-files]
@@ -118,17 +110,13 @@ VIRTUAL_ENV = "${VENV_PATH}"
 dependencies = [
     "check-python-bindings",
     "check-generated-python-files",
+    "check-python-api",
     "python-check",
     "python-unit-test",
 ]
 
-# `check-python-api` needs the full git history and `knope`, so it stays out of
-# `python-check-all` (which CI runs) and is only run locally, via `dev-flow`.
-[tasks.check-python]
-dependencies = ["python-check-all", "check-python-api"]
-
 [tasks.dev-flow]
-dependencies = ["dev-test-flow", "check-python"]
+dependencies = ["dev-test-flow", "python-check-all"]
 
 [tasks.test]
 dependencies = ["test-in-ci"]
