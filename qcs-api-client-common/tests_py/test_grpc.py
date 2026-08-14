@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock
 
 import grpc
@@ -16,7 +17,9 @@ async def interceptor() -> RefreshInterceptor:
 def client_call_details() -> grpc.aio.ClientCallDetails:
     method = "/test.TestService/TestMethod"
     timeout = None
-    metadata = [("initial", "metadata")]
+    # `grpc.aio` normalizes the caller's metadata into `Metadata` before any interceptor sees it,
+    # so that is what the interceptor gets here too.
+    metadata = grpc.aio.Metadata(("initial", "metadata"))
     credentials = None
     wait_for_ready = None
     return grpc.aio.ClientCallDetails(method, timeout, metadata, credentials, wait_for_ready)
@@ -41,9 +44,14 @@ async def test_refresh_interceptor(mock_config, client_call_details, make_reques
     async def continuation(call_details: grpc.aio.ClientCallDetails, request: Any):
         return call_details
 
-    updated_call_details = await RefreshInterceptor().intercept_unary_unary(
-        continuation, client_call_details, make_request
+    # The fake `continuation` returns the call details it was given, rather than a
+    # `UnaryUnaryCall`, so that the test can inspect the metadata the interceptor built.
+    updated_call_details = cast(
+        grpc.aio.ClientCallDetails,
+        await RefreshInterceptor().intercept_unary_unary(continuation, client_call_details, make_request),
     )
+
+    assert updated_call_details.metadata is not None
 
     # `Metadata` membership tests keys, not pairs, so compare the pairs it iterates as.
     pairs = list(updated_call_details.metadata)

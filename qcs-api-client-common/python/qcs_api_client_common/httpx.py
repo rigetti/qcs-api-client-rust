@@ -1,6 +1,5 @@
 """QCS Middleware for requests made with `httpx`."""
 
-
 import httpx
 from httpx import Request
 

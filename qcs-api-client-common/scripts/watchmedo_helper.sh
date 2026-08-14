@@ -12,7 +12,7 @@ run_command() {
 
 if [[ "$FILE" =~ \.rs$ ]]; then
     echo "Rust file changed, rebuilding project and running Python tests..."
-    cargo make install-python-package && run_command
+    cargo make pyo3-develop && run_command
 elif [[ "$FILE" =~ \.py$ ]] || [[ "$FILE" =~ \.pyi$ ]]; then
     echo "Python file changed, running tests..."
     run_command

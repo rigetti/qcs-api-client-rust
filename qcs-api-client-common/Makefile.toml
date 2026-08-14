@@ -1,45 +1,33 @@
-[tasks.check-venv]
-description = "Check if a virtual environment is activated"
-script = [
-    '''
-    if [ -z "$VIRTUAL_ENV" ]; then
-        echo "No virtual environment activated. Please activate one."
-        exit 1
-    else
-        echo "Virtual environment is active."
-    fi
-    '''
+extend = [
+    # Including the workspace `Makefile.toml` ensures that `.qcs-infrastructure` is populated.
+    { path = "Makefile.toml", relative = "git" },
+    { path = ".qcs-infrastructure/configuration/cargo-make/pytasks.toml", relative = "git" },
 ]
 
-[tasks.upgrade-pip]
-dependencies = ["check-venv"]
-description = "Upgrade pip to ensure it supports depency groups"
-command = "pip"
-args = ["install", "--upgrade", "pip"]
-
-[tasks.install-uv]
-dependencies = ["check-venv", "upgrade-pip"]
-description = "Install dependencies using uv"
-command = "pip"
-args = ["install", "uv"]
-
-[tasks.install-deps]
-dependencies = ["install-uv"]
-description = "Install dependencies using uv"
-command = "uv"
-args = ["pip", "install", "--group", "dev", "."]
-
-[tasks.install-python-package]
-dependencies = ["install-deps", "generate-stubs"]
-description = "Build the qcs-api-client-common python package and install it in the current virtual environment."
-command = "maturin"
-args = ["develop"]
+[env]
+PYTHON_PACKAGE_NAME = "qcs_api_client_common"
+PYTHON_VERSION = "3.12"
+PYTHON_TEST_DIR = "tests_py"
+PYTHON_STUBTEST_ALLOWLIST = "python/stubtest-allowlist"
 
 [tasks.generate-stubs]
 description = "Generate Python stub files."
-command = "cargo"
-args = ["run", "-p", "qcs-api-client-common", "--features", "stubs", "--bin", "stub_gen"]
+script_runner = "bash"
+dependencies = ["python-install-dependencies"]
 install_crate = false
+# `stub_gen` links against, and embeds, the Python interpreter, so it has to be built and run in
+# the virtual environment: otherwise PyO3 picks whichever `python3` is first on the `PATH`, and CI
+# images don't necessarily ship that interpreter's development library.
+#
+# Because the interpreter is embedded, it can't locate the standard library on its own: the virtual
+# environment doesn't contain one, and `uv`-managed interpreters are relocatable, so their
+# compiled-in prefix is no help either. `PYTHONHOME` is set for this one command only — exporting it
+# would break the other (non-embedded) Python tools that run later in the same flow.
+script = '''
+. "$(git rev-parse --show-toplevel)/.qcs-infrastructure/scripts/cli-tools-base-image/ensure-venv"
+PYTHONHOME="$(python -c 'import sys; print(sys.base_prefix)')" \
+    cargo run -p qcs-api-client-common --features stubs --bin stub_gen
+'''
 
 [tasks.check-generated-python-files]
 # The generated `__init__.py` files are what expose the compiled
@@ -47,108 +35,88 @@ install_crate = false
 # wheels are built from the committed tree. So if they go stale, a release can silently omit a
 # class with nothing else to catch it.
 description = "Check that the committed stubs and `__init__.py` files are up to date."
+script_runner = "bash"
 dependencies = ["generate-stubs"]
 cwd = "python"
 script = '''
-if [ -n "$(git status --porcelain .)" ]; then
+# Only the stubs and the `__init__.py` files are generated; other files here are hand-written.
+GENERATED=(':(glob)**/*.pyi' ':(glob)**/__init__.py')
+if [ -n "$(git status --porcelain -- "${GENERATED[@]}")" ]; then
     echo "error: the generated Python files are out of date." >&2
     echo "Run 'cargo make --cwd qcs-api-client-common generate-stubs' and commit the result:" >&2
-    git status --porcelain . >&2
-    git --no-pager diff . >&2
+    git status --porcelain -- "${GENERATED[@]}" >&2
+    git --no-pager diff -- "${GENERATED[@]}" >&2
     exit 1
 fi
 echo "Generated Python files are up to date."
 '''
 
-[tasks.stubtest]
-dependencies = ["install-python-package"]
-description = "Validate type stubs using stubtest"
-cwd = "python"
-command = "uv"
-args = [
-    "run", "--group", "dev",
-    "stubtest",
-    "--allowlist", "stubtest-allowlist",
-    "--ignore-unused-allowlist",
-    "--ignore-disjoint-bases",
-    "qcs_api_client_common",
-]
-
-[tasks.pytest]
-dependencies = ["install-python-package"]
-description = "Run the Python unit test suite."
-command = "uv"
-args = [
-    "run", "--group", "dev",
-    "pytest",
-    "tests_py", "-vv"
-]
-
-[tasks.pytest-integration]
-dependencies = ["install-python-package"]
-description = "Run the integration tests in the Python test suite. Requires a valid QCS configuration."
-command = "uv"
-args = [
-    "run", "--group", "dev",
-    "pytest",
-    "tests_py", "--integration"
-]
-
 [tasks.build-python-docs]
-dependencies = ["install-python-package"]
+dependencies = ["pyo3-develop"]
 description = "Build the Sphinx documentation."
 cwd = "docs"
-script = [
-    '''
-    make html
-    '''
-]
-
-[tasks.ruff-check]
-dependencies = ["install-uv"]
+# `uv run` puts the virtual environment's `sphinx-build` on the `PATH` for `make`,
+# whether or not the calling shell has the environment activated.
 command = "uv"
-args = ["run", "--group", "dev", "ruff", "check"]
+args = ["run", "--active", "make", "html"]
+
+[tasks.build-python-docs.env]
+VIRTUAL_ENV = "${VENV_PATH}"
 
 [tasks.check-python-api]
 description = "Check if Python API has breaking changes."
-dependencies = ["install-python-package"]
+dependencies = ["pyo3-develop"]
 script = { file = "./scripts/check-py-api.sh" }
+
+[tasks.check-python-api.env]
+VIRTUAL_ENV = "${VENV_PATH}"
 
 [tasks.check-python-bindings]
 description = "Find errors in the Python-related Rust code."
+dependencies = ["python-install-dependencies"]
 command = "uv"
 args = [
     "run",
-    "--group", "dev",
+    "--active",
     "python",
     "./scripts/lint-bindings.py",
     "--base", "src",
     "--show-mistakes",
 ]
 
+[tasks.check-python-bindings.env]
+VIRTUAL_ENV = "${VENV_PATH}"
+
 [tasks.show-python-layout]
 description = "Print the Python package layout as defined within the Rust code."
+dependencies = ["python-install-dependencies"]
 command = "uv"
 args = [
     "run",
-    "--group", "dev",
+    "--active",
     "python",
     "./scripts/lint-bindings.py",
     "--base", "src",
     "--show-package",
 ]
 
-[tasks.check-python]
+[tasks.show-python-layout.env]
+VIRTUAL_ENV = "${VENV_PATH}"
+
+# Overrides the shared task so that CI (which runs `python-check-all`) also runs the
+# repo-specific checks alongside the shared formatting, linting, type-checking, stub
+# validation, and unit tests.
+[tasks.python-check-all]
 dependencies = [
     "check-python-bindings",
     "check-generated-python-files",
     "check-python-api",
-    "stubtest",
-    "ruff-check",
+    "python-check",
+    "python-unit-test",
 ]
 
 [tasks.dev-flow]
-dependencies = ["dev-test-flow", "check-python", "pytest"]
+dependencies = ["dev-test-flow", "python-check-all"]
 
 [tasks.test]
 dependencies = ["test-in-ci"]
@@ -156,9 +124,7 @@ dependencies = ["test-in-ci"]
 [tasks.test-in-ci]
 description = "Tasks that only run when the CI environment variable is set."
 condition = { env_set = ["CI"] }
-run_task = [
-  { name = "test-credentials" },
-]
+run_task = [{ name = "test-credentials" }]
 
 [tasks.test-credentials]
 command = "cargo"
@@ -166,4 +132,3 @@ args = ["test", "test_client_credentials", "--", "--ignored"]
 
 [tasks.default]
 alias = "dev-flow"
-
