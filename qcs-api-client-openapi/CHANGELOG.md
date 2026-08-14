@@ -1,3 +1,9 @@
+## 0.20.1 (2026-08-14)
+
+### Features
+
+- add tool command reserve-multiple
+
 ## 0.20.0 (2026-08-11)
 
 ### Breaking Changes

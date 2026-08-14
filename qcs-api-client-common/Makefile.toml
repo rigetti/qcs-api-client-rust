@@ -41,6 +41,25 @@ command = "cargo"
 args = ["run", "-p", "qcs-api-client-common", "--features", "stubs", "--bin", "stub_gen"]
 install_crate = false
 
+[tasks.check-generated-python-files]
+# The generated `__init__.py` files are what expose the compiled
+# `qcs_api_client_common._qcs_api_client_common` modules under their public names, and release
+# wheels are built from the committed tree. So if they go stale, a release can silently omit a
+# class with nothing else to catch it.
+description = "Check that the committed stubs and `__init__.py` files are up to date."
+dependencies = ["generate-stubs"]
+cwd = "python"
+script = '''
+if [ -n "$(git status --porcelain .)" ]; then
+    echo "error: the generated Python files are out of date." >&2
+    echo "Run 'cargo make --cwd qcs-api-client-common generate-stubs' and commit the result:" >&2
+    git status --porcelain . >&2
+    git --no-pager diff . >&2
+    exit 1
+fi
+echo "Generated Python files are up to date."
+'''
+
 [tasks.stubtest]
 dependencies = ["install-python-package"]
 description = "Validate type stubs using stubtest"
@@ -122,6 +141,7 @@ args = [
 [tasks.check-python]
 dependencies = [
     "check-python-bindings",
+    "check-generated-python-files",
     "check-python-api",
     "stubtest",
     "ruff-check",
