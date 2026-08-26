@@ -23,6 +23,38 @@
 //! * [`API_URL_VAR`]: Override the URL used for requests to the QCS REST API server.
 //! * [`GRPC_API_URL_VAR`]: Override the URL used for requests to the QCS gRPC API.
 //!
+//! Note that an externally-managed credential cannot be directly
+//! configured by environmental variables - see [`ExternallyManagedCredential`][secrets::ExternallyManagedCredential].
+//!
+//! # Credentials
+//!
+//! A credential in `secrets.toml` works in three ways, by:
+//!
+//! 1. Storing tokens from a PKCE flow directly
+//!
+//! ```toml
+//! [credentials.default.token_payload]
+//! access_token = "..."
+//! refresh_token = "..."
+//! ```
+//!
+//! 2. Delegating completely to an external program which is expected to yield valid tokens
+//!    NOTE: Please read the security notes in [`ExternallyManagedCredential`][secrets::ExternallyManagedCredential].
+//!
+//! ```toml
+//! [credentials.coder.externally_managed]
+//! command = "/usr/bin/coder"
+//! args = ["external-auth", "access-token", "qcs"]
+//! ```
+//!
+//! 3. Using an OAuth client ID + secret to exchange for access tokens, for service-to-service auth
+//!
+//! ```toml
+//! [credentials.service.client_credentials]
+//! client_id = "0oa..."
+//! client_secret = "..."
+//! ```
+//!
 //! The [`ClientConfiguration`] exposes an API for loading and accessing your
 //! configuration.
 
@@ -42,6 +74,7 @@ use self::{
 };
 
 pub(crate) mod error;
+mod external_command;
 pub mod fs;
 mod oidc;
 mod pkce;
@@ -331,20 +364,29 @@ fn credential_to_oauth_session(
     credential: Option<Credential>,
     auth_server: AuthServer,
 ) -> Option<OAuthSession> {
-    match credential {
-        Some(Credential {
-            token_payload:
-                Some(TokenPayload {
-                    access_token,
-                    refresh_token,
-                    ..
-                }),
-        }) => Some(OAuthSession::new(
-            OAuthGrant::RefreshToken(RefreshToken::new(refresh_token.unwrap_or_default())),
+    match credential? {
+        Credential::TokenPayload(token_payload) => {
+            let TokenPayload {
+                access_token,
+                refresh_token,
+                ..
+            } = token_payload;
+
+            Some(OAuthSession::new(
+                OAuthGrant::RefreshToken(RefreshToken::new(refresh_token.unwrap_or_default())),
+                auth_server,
+                access_token,
+            ))
+        }
+        Credential::ExternallyManaged(externally_managed) => Some(OAuthSession::new(
+            OAuthGrant::ExternallyManaged(externally_managed.into()),
             auth_server,
-            access_token,
+            None,
         )),
-        _ => None,
+        Credential::ClientCredentials(client_credentials) => {
+            let grant = OAuthGrant::ClientCredentials(client_credentials);
+            Some(OAuthSession::new(grant, auth_server, None))
+        }
     }
 }
 
@@ -405,21 +447,23 @@ impl ClientConfiguration {
             credentials_name,
         } = ConfigurationContext::from_profile(profile_name)?;
 
-        // If the stored access or refresh tokens are valid, skip the login flow
-        if let Some(Credential {
-            token_payload:
-                Some(TokenPayload {
-                    access_token,
-                    refresh_token,
-                    ..
-                }),
-        }) = credential
-        {
-            // The current access token is valid, use it
-            if let Some(access_token) = access_token {
-                if insecure_validate_token_exp(&access_token).is_ok() {
-                    let refresh_token = refresh_token.unwrap_or_default();
-
+        match credential {
+            // There's no possible logging in here, we expect the credentials to be valid.
+            credential @ Some(
+                Credential::ExternallyManaged(_) | Credential::ClientCredentials(_),
+            ) => {
+                let oauth_session = credential_to_oauth_session(credential, auth_server);
+                return Ok(builder.oauth_session(oauth_session).build()?);
+            }
+            Some(Credential::TokenPayload(TokenPayload {
+                access_token,
+                refresh_token,
+                ..
+            })) => {
+                if let Some(access_token) = access_token
+                    && insecure_validate_token_exp(&access_token).is_ok()
+                {
+                    let refresh_token = refresh_token.clone().unwrap_or_default();
                     let oauth_session = OAuthSession::new(
                         OAuthGrant::RefreshToken(RefreshToken::new(refresh_token)),
                         auth_server,
@@ -427,27 +471,35 @@ impl ClientConfiguration {
                     );
                     return Ok(builder.oauth_session(Some(oauth_session)).build()?);
                 }
-            }
 
-            // The access token is invalid, try to refresh it
-            if let Some(refresh_token) = refresh_token
-                && !refresh_token.is_empty()
-            {
-                let mut refresh_token = RefreshToken::new(refresh_token);
+                // The access token is invalid, try to refresh it
+                if let Some(refresh_token) = refresh_token
+                    && !refresh_token.is_empty()
+                {
+                    let mut refresh_token = RefreshToken::new(refresh_token);
 
-                // If the refresh token is valid, use it
-                if let Ok(access_token) = refresh_token.request_access_token(&auth_server).await {
-                    let oauth_session = OAuthSession::new(
-                        OAuthGrant::RefreshToken(refresh_token),
-                        auth_server,
-                        Some(access_token),
-                    );
+                    // If the refresh token is valid, use it
+                    if let Ok(access_token) = refresh_token.request_access_token(&auth_server).await
+                    {
+                        let oauth_session = OAuthSession::new(
+                            OAuthGrant::RefreshToken(refresh_token),
+                            auth_server,
+                            Some(access_token),
+                        );
 
-                    // Requesting a new access token may have rotated the refresh token.
-                    persist_or_warn(&oauth_session, &source, &credentials_name).await;
+                        // Requesting a new access token may have rotated the refresh token.
+                        persist_or_warn(&oauth_session, &source, &credentials_name).await;
 
-                    return Ok(builder.oauth_session(Some(oauth_session)).build()?);
+                        return Ok(builder.oauth_session(Some(oauth_session)).build()?);
+                    }
                 }
+
+                #[cfg(feature = "tracing")]
+                tracing::debug!("Stored credentials are invalid, falling back to login flow");
+            }
+            None => {
+                #[cfg(feature = "tracing")]
+                tracing::debug!("No stored credentials found, falling back to login flow",);
             }
         }
 
@@ -478,8 +530,7 @@ impl ClientConfiguration {
             mut builder,
             auth_server,
             credential,
-            source: _,
-            credentials_name: _,
+            ..
         } = ConfigurationContext::from_profile(profile_name)?;
         let oauth_session = credential_to_oauth_session(credential, auth_server);
         Ok(builder.oauth_session(oauth_session).build()?)
@@ -665,13 +716,24 @@ mod test {
         expand_path_from_env_or_default, oidc,
         pkce::tests::PkceTestServerHarness,
         secrets::{
-            SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR, SecretAccessToken, SecretRefreshToken, Secrets,
+            Credential, SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR, SecretAccessToken,
+            SecretRefreshToken, Secrets, TokenPayload,
         },
         settings::{SETTINGS_PATH_VAR, Settings},
-        tokens::{RefreshTokenResponse, TokenRefresher},
+        tokens::{ClientCredentialsResponse, RefreshTokenResponse, TokenRefresher},
     };
 
     use super::{settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, tokens::ClientCredentials};
+
+    /// Unwrap a [`Credential`] into its [`TokenPayload`], panicking for any other credential kind.
+    fn expect_token_payload(credential: Credential) -> TokenPayload {
+        match credential {
+            Credential::TokenPayload(payload) => payload,
+            Credential::ExternallyManaged(_) | Credential::ClientCredentials(_) => {
+                panic!("expected a token payload credential")
+            }
+        }
+    }
 
     #[test]
     fn expands_env_var() {
@@ -1144,13 +1206,13 @@ access_token = ""
                     .await
                     .expect("should get oauth session");
 
-                let token_payload = Secrets::load_from_path(&secrets_file_path)
-                    .expect("should load secrets")
-                    .credentials
-                    .remove("default")
-                    .expect("should get default credentials")
-                    .token_payload
-                    .expect("should get token payload");
+                let token_payload = expect_token_payload(
+                    Secrets::load_from_path(&secrets_file_path)
+                        .expect("should load secrets")
+                        .credentials
+                        .remove("default")
+                        .expect("should get default credentials"),
+                );
 
                 assert_eq!(
                     token,
@@ -1268,13 +1330,13 @@ access_token = ""
                     .expect("should get oauth session");
                 let token = oauth_session.validate().expect("token should be valid");
 
-                let token_payload = Secrets::load_from_path(&secrets_file_path)
-                    .expect("should load secrets")
-                    .credentials
-                    .remove("default")
-                    .expect("should get default credentials")
-                    .token_payload
-                    .expect("should get token payload");
+                let token_payload = expect_token_payload(
+                    Secrets::load_from_path(&secrets_file_path)
+                        .expect("should load secrets")
+                        .credentials
+                        .remove("default")
+                        .expect("should get default credentials"),
+                );
 
                 assert_eq!(
                     token_payload.access_token,
@@ -1422,13 +1484,13 @@ refresh_token = "{initial_refresh_token}"
                     other => panic!("expected a RefreshToken grant, got {other:?}"),
                 }
 
-                let token_payload = Secrets::load_from_path(&secrets_file_path)
-                    .expect("should load secrets")
-                    .credentials
-                    .remove("default")
-                    .expect("should get default credentials")
-                    .token_payload
-                    .expect("should get token payload");
+                let token_payload = expect_token_payload(
+                    Secrets::load_from_path(&secrets_file_path)
+                        .expect("should load secrets")
+                        .credentials
+                        .remove("default")
+                        .expect("should get default credentials"),
+                );
 
                 assert_eq!(
                     token_payload.access_token,
@@ -1582,11 +1644,11 @@ refresh_token = "decoy_refresh_token"
                     .expect("should load secrets")
                     .credentials;
 
-                let token_payload = credentials
-                    .remove(credentials_name)
-                    .expect("should get the credential the profile points at")
-                    .token_payload
-                    .expect("should get token payload");
+                let token_payload = expect_token_payload(
+                    credentials
+                        .remove(credentials_name)
+                        .expect("should get the credential the profile points at"),
+                );
 
                 assert_eq!(
                     token_payload.access_token,
@@ -1600,11 +1662,11 @@ refresh_token = "decoy_refresh_token"
                     "the rotated refresh token should be persisted under `credentials_name`"
                 );
 
-                let decoy_payload = credentials
-                    .remove(profile_name)
-                    .expect("decoy credential should still exist")
-                    .token_payload
-                    .expect("decoy credential should still have a token payload");
+                let decoy_payload = expect_token_payload(
+                    credentials
+                        .remove(profile_name)
+                        .expect("decoy credential should still exist"),
+                );
 
                 assert_eq!(
                     decoy_payload.access_token,
@@ -1613,6 +1675,483 @@ refresh_token = "decoy_refresh_token"
                      should be left untouched"
                 );
             });
+
+            Ok(())
+        });
+    }
+
+    /// The `secrets.toml` for a profile whose credential is externally managed. `access_token`
+    /// is printed by the program, so it must be a token the client can actually validate.
+    fn externally_managed_config_files(access_token: &str) -> (&'static str, String) {
+        let settings = r#"
+default_profile_name = "default"
+
+[profiles]
+[profiles.default]
+api_url = ""
+auth_server_name = "default"
+credentials_name = "default"
+
+[auth_servers]
+[auth_servers.default]
+client_id = ""
+issuer = ""
+"#;
+
+        let (program, flag) = super::external_command::shell();
+        let args = format!(r#"["{flag}", "echo {access_token}"]"#);
+
+        let secrets = format!(
+            r"
+[credentials]
+[credentials.default]
+[credentials.default.externally_managed]
+command = {program:?}
+args = {args}
+"
+        );
+
+        (settings, secrets)
+    }
+
+    /// Write `settings.toml` and `secrets.toml` into the jail and point the environment at them.
+    fn jail_config_files(
+        jail: &mut figment::Jail,
+        settings: &str,
+        secrets: &str,
+    ) -> std::path::PathBuf {
+        let directory = jail.directory().to_path_buf();
+        jail.create_file("settings.toml", settings)
+            .expect("should create test settings.toml");
+        jail.create_file("secrets.toml", secrets)
+            .expect("should create test secrets.toml");
+
+        jail.set_env(
+            SETTINGS_PATH_VAR,
+            directory
+                .join("settings.toml")
+                .to_str()
+                .expect("settings path should be a string"),
+        );
+        let secrets_path = directory.join("secrets.toml");
+        jail.set_env(
+            SECRETS_PATH_VAR,
+            secrets_path
+                .to_str()
+                .expect("secrets path should be a string"),
+        );
+
+        secrets_path
+    }
+
+    /// An externally managed credential should get its access token by running the configured
+    /// program, without any authorization server being involved.
+    #[test]
+    fn test_externally_managed_credential_runs_the_configured_program() {
+        let access_token = Claims::new_valid().to_encoded();
+        let (settings, secrets) = externally_managed_config_files(&access_token);
+
+        figment::Jail::expect_with(|jail| {
+            jail_config_files(jail, settings, &secrets);
+
+            let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+            runtime.block_on(async {
+                let config = ClientConfiguration::load_default().expect("should load config");
+
+                assert_eq!(
+                    config
+                        .get_bearer_access_token()
+                        .await
+                        .expect("should get an access token from the external program"),
+                    SecretAccessToken::from(access_token.clone())
+                );
+            });
+
+            Ok(())
+        });
+    }
+
+    /// Tokens from an external program belong to whatever produced them, and must not be copied
+    /// into `secrets.toml`.
+    #[test]
+    fn test_externally_managed_credential_is_never_persisted() {
+        let access_token = Claims::new_valid().to_encoded();
+        let (settings, secrets) = externally_managed_config_files(&access_token);
+
+        figment::Jail::expect_with(|jail| {
+            jail.set_env(SECRETS_READ_ONLY_VAR, "false");
+            let secrets_path = jail_config_files(jail, settings, &secrets);
+            let before =
+                std::fs::read_to_string(&secrets_path).expect("should read the secrets file");
+
+            let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+            runtime.block_on(async {
+                let config = ClientConfiguration::load_default().expect("should load config");
+                config
+                    .refresh()
+                    .await
+                    .expect("should refresh via the external program");
+            });
+
+            let after =
+                std::fs::read_to_string(&secrets_path).expect("should read the secrets file");
+            assert_eq!(
+                before, after,
+                "an externally managed credential's tokens should never be written to disk"
+            );
+
+            Ok(())
+        });
+    }
+
+    /// `load_with_login` must not start an interactive login for a credential that can always
+    /// produce a token on demand. The auth server here points nowhere, so a PKCE flow would
+    /// fail rather than hang.
+    #[test]
+    fn test_externally_managed_credential_skips_the_login_flow() {
+        let access_token = Claims::new_valid().to_encoded();
+        let (settings, secrets) = externally_managed_config_files(&access_token);
+
+        figment::Jail::expect_with(|jail| {
+            jail_config_files(jail, settings, &secrets);
+
+            let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+            runtime.block_on(async {
+                let config = ClientConfiguration::load_with_login(CancellationToken::new(), None)
+                    .await
+                    .expect("should load without an interactive login");
+
+                assert_eq!(
+                    config
+                        .get_bearer_access_token()
+                        .await
+                        .expect("should get an access token from the external program"),
+                    SecretAccessToken::from(access_token.clone())
+                );
+            });
+
+            Ok(())
+        });
+    }
+
+    /// A valid token is reused rather than re-fetched, so the program runs once instead of once
+    /// per request. Without this, every API call would spawn a process.
+    #[cfg(unix)]
+    #[test]
+    fn test_externally_managed_credential_reuses_a_valid_token() {
+        let access_token = Claims::new_valid().to_encoded();
+        let (settings, _) = externally_managed_config_files(&access_token);
+
+        figment::Jail::expect_with(|jail| {
+            let counter = jail.directory().join("invocations");
+            // Appends a line per run, so the file's length is the number of invocations.
+            let secrets = format!(
+                r#"
+[credentials]
+[credentials.default]
+[credentials.default.externally_managed]
+command = "/bin/sh"
+args = ["-c", "echo run >> {counter} && printf '%s' '{access_token}'"]
+"#,
+                counter = counter.display(),
+            );
+            jail_config_files(jail, settings, &secrets);
+
+            let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+            runtime.block_on(async {
+                let config = ClientConfiguration::load_default().expect("should load config");
+                for _ in 0..5_u8 {
+                    config
+                        .get_bearer_access_token()
+                        .await
+                        .expect("should get an access token");
+                }
+            });
+
+            let invocations = std::fs::read_to_string(&counter)
+                .expect("the program should have run at least once")
+                .lines()
+                .count();
+            assert_eq!(
+                invocations, 1,
+                "a valid token should be reused across requests, not re-fetched"
+            );
+
+            Ok(())
+        });
+    }
+
+    /// A program that never produces a token the client can validate must not be re-run in a
+    /// loop. Each token request runs it exactly once and hands back whatever it printed, leaving
+    /// it to the API to reject; the alternative is an unbounded stream of subprocesses whenever a
+    /// credential helper is misconfigured or returns an opaque (non-JWT) token, which the client
+    /// has no way to validate locally.
+    #[cfg(unix)]
+    #[test]
+    fn test_externally_managed_credential_does_not_loop_on_invalid_tokens() {
+        let (settings, _) = externally_managed_config_files("unused");
+        let expired = Claims::new_expired().to_encoded();
+
+        // Both shapes of token that fail local validation: one expired, one not a JWT at all.
+        for (label, token) in [("expired", expired.as_str()), ("opaque", "not-a-jwt")] {
+            figment::Jail::expect_with(|jail| {
+                let counter = jail.directory().join("invocations");
+                // Appends a line per run, so the file's length is the number of invocations.
+                let secrets = format!(
+                    r#"
+[credentials]
+[credentials.default]
+[credentials.default.externally_managed]
+command = "/bin/sh"
+args = ["-c", "echo run >> {counter} && printf '%s' '{token}'"]
+"#,
+                    counter = counter.display(),
+                );
+                jail_config_files(jail, settings, &secrets);
+
+                let requests = 3_usize;
+                let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+                runtime.block_on(async {
+                    let config = ClientConfiguration::load_default().expect("should load config");
+
+                    // A timeout so an actual loop fails the test instead of hanging it.
+                    tokio::time::timeout(std::time::Duration::from_secs(30), async {
+                        for _ in 0..requests {
+                            assert_eq!(
+                                config
+                                    .get_bearer_access_token()
+                                    .await
+                                    .expect(
+                                        "an unvalidatable token is still returned to the caller"
+                                    )
+                                    .secret(),
+                                token,
+                                "the {label} token from the program should be returned as-is"
+                            );
+                        }
+                    })
+                    .await
+                    .expect("requesting a token should not loop on the external program");
+                });
+
+                let invocations = std::fs::read_to_string(&counter)
+                    .expect("the program should have run at least once")
+                    .lines()
+                    .count();
+                assert_eq!(
+                    invocations, requests,
+                    "a program returning {label} tokens should run once per request, not \
+                     repeatedly until it produces a valid one"
+                );
+
+                Ok(())
+            });
+        }
+    }
+
+    /// A credential carrying both kinds of configuration should use the external program, since
+    /// stored tokens can only be a stale copy of what it produces.
+    #[test]
+    fn test_externally_managed_credential_takes_precedence_over_stored_tokens() {
+        let access_token = Claims::new_valid().to_encoded();
+        let (settings, secrets) = externally_managed_config_files(&access_token);
+        let secrets = format!(
+            "{secrets}\n[credentials.default.token_payload]\naccess_token = \"{}\"\n",
+            Claims::new_valid().to_encoded()
+        );
+
+        figment::Jail::expect_with(|jail| {
+            jail_config_files(jail, settings, &secrets);
+
+            let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+            runtime.block_on(async {
+                let config = ClientConfiguration::load_default().expect("should load config");
+
+                assert_eq!(
+                    config
+                        .get_bearer_access_token()
+                        .await
+                        .expect("should get an access token from the external program"),
+                    SecretAccessToken::from(access_token.clone()),
+                    "the external program should win over the stored access token"
+                );
+            });
+
+            Ok(())
+        });
+    }
+
+    /// The client secret used by the client-credentials tests.
+    const TEST_CLIENT_ID: &str = "a-client-id";
+    const TEST_CLIENT_SECRET: &str = "a-client-secret";
+
+    fn expected_basic_auth(client_id: &str, client_secret: &str) -> String {
+        use base64::Engine as _;
+
+        let encoded = base64::engine::general_purpose::STANDARD
+            .encode(format!("{client_id}:{client_secret}"));
+        format!("Basic {encoded}")
+    }
+
+    /// The `settings.toml`/`secrets.toml` pair for a profile where the credential is a client secret.
+    fn client_credentials_fixture_files(issuer: &str) -> (String, String) {
+        let settings = format!(
+            r#"
+default_profile_name = "default"
+
+[profiles]
+[profiles.default]
+api_url = ""
+auth_server_name = "default"
+credentials_name = "default"
+
+[auth_servers]
+[auth_servers.default]
+client_id = "ignored"
+issuer = "{issuer}"
+"#
+        );
+
+        let secrets = format!(
+            r#"
+[credentials]
+[credentials.default.client_credentials]
+client_id = "{TEST_CLIENT_ID}"
+client_secret = "{TEST_CLIENT_SECRET}"
+"#
+        );
+
+        (settings, secrets)
+    }
+
+    fn mock_client_credentials_issuer<'server>(
+        runtime: &tokio::runtime::Runtime,
+        mock_server: &'server MockServer,
+        access_token: &str,
+    ) -> (httpmock::Mock<'server>, httpmock::Mock<'server>) {
+        let oidc_mock = runtime.block_on(mock_server.mock_async(|when, then| {
+            when.method(GET).path("/.well-known/openid-configuration");
+            then.status(200)
+                .json_body_obj(&oidc::Discovery::new_for_test(
+                    mock_server.base_url().parse().unwrap(),
+                ));
+        }));
+
+        let authorization = expected_basic_auth(TEST_CLIENT_ID, TEST_CLIENT_SECRET);
+        let access_token = access_token.to_string();
+        let token_mock = runtime.block_on(mock_server.mock_async(|when, then| {
+            when.method(POST)
+                .path("/v1/token")
+                .header("authorization", authorization)
+                .body_includes("grant_type=client_credentials");
+            then.status(200).json_body_obj(&ClientCredentialsResponse {
+                access_token: SecretAccessToken::from(access_token),
+            });
+        }));
+
+        (oidc_mock, token_mock)
+    }
+
+    /// Make sure the `auth_server`'s client_id is not used
+    #[test]
+    fn test_client_credentials_credential_authenticates_as_its_own_client_id() {
+        let access_token = Claims::new_valid().to_encoded();
+
+        let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+        let mock_server = runtime.block_on(MockServer::start_async());
+        let (oidc_mock, token_mock) =
+            mock_client_credentials_issuer(&runtime, &mock_server, &access_token);
+
+        let (settings, secrets) = client_credentials_fixture_files(&mock_server.base_url());
+
+        figment::Jail::expect_with(|jail| {
+            jail_config_files(jail, &settings, &secrets);
+
+            runtime.block_on(async {
+                let config = ClientConfiguration::load_default().expect("should load config");
+
+                assert_eq!(
+                    config
+                        .get_bearer_access_token()
+                        .await
+                        .expect("should exchange the client secret for an access token"),
+                    SecretAccessToken::from(access_token.clone()),
+                );
+            });
+
+            oidc_mock.assert();
+            token_mock.assert();
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_client_credentials_credential_is_never_persisted() {
+        let access_token = Claims::new_valid().to_encoded();
+
+        let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+        let mock_server = runtime.block_on(MockServer::start_async());
+        let (_oidc_mock, _token_mock) =
+            mock_client_credentials_issuer(&runtime, &mock_server, &access_token);
+
+        let (settings, secrets) = client_credentials_fixture_files(&mock_server.base_url());
+
+        figment::Jail::expect_with(|jail| {
+            jail.set_env(SECRETS_READ_ONLY_VAR, "false");
+            let secrets_path = jail_config_files(jail, &settings, &secrets);
+            let before =
+                std::fs::read_to_string(&secrets_path).expect("should read the secrets file");
+
+            runtime.block_on(async {
+                let config = ClientConfiguration::load_default().expect("should load config");
+                config
+                    .refresh()
+                    .await
+                    .expect("should exchange the client secret for an access token");
+            });
+
+            let after =
+                std::fs::read_to_string(&secrets_path).expect("should read the secrets file");
+            assert_eq!(
+                before, after,
+                "a client credentials grant has nothing to persist: no refresh token, and an \
+                 access token the secret can mint again at any time"
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_client_credentials_credential_skips_the_login_flow() {
+        let access_token = Claims::new_valid().to_encoded();
+
+        let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
+        let mock_server = runtime.block_on(MockServer::start_async());
+        let (_oidc_mock, token_mock) =
+            mock_client_credentials_issuer(&runtime, &mock_server, &access_token);
+
+        let (settings, secrets) = client_credentials_fixture_files(&mock_server.base_url());
+
+        figment::Jail::expect_with(|jail| {
+            jail_config_files(jail, &settings, &secrets);
+
+            runtime.block_on(async {
+                let config = ClientConfiguration::load_with_login(CancellationToken::new(), None)
+                    .await
+                    .expect("should load without an interactive login");
+
+                assert_eq!(
+                    config
+                        .get_bearer_access_token()
+                        .await
+                        .expect("should exchange the client secret for an access token"),
+                    SecretAccessToken::from(access_token.clone()),
+                );
+            });
+
+            token_mock.assert();
 
             Ok(())
         });

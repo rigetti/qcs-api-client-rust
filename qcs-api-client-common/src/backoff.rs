@@ -89,8 +89,7 @@ pub fn duration_from_reqwest_error(
             || error
                 .source()
                 .and_then(|inner| inner.downcast_ref::<hyper::Error>())
-                .map(|hyper_error| hyper_error.is_closed())
-                .unwrap_or_default()
+                .is_some_and(hyper::Error::is_closed)
         {
             backoff.next_backoff()
         } else {

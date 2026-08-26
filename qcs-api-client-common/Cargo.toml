@@ -8,7 +8,7 @@ name = 'qcs-api-client-common'
 publish = true
 readme = 'README.md'
 repository = 'https://github.com/rigetti/qcs-api-client-rust'
-version = '0.19.1'
+version = '0.19.2'
 
 [package.authors]
 workspace = true
@@ -130,7 +130,7 @@ workspace = true
 workspace = true
 
 [dependencies.tokio]
-features = ['rt-multi-thread', 'sync', 'fs', 'signal']
+features = ['rt-multi-thread', 'sync', 'fs', 'io-util', 'process', 'signal']
 workspace = true
 
 [dependencies.tokio-util]
@@ -162,6 +162,9 @@ optional = true
 workspace = true
 
 [dev-dependencies]
+[dev-dependencies.base64]
+workspace = true
+
 [dev-dependencies.figment]
 features = ['test']
 workspace = true

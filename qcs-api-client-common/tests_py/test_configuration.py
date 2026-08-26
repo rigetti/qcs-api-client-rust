@@ -1,3 +1,6 @@
+import json
+import sys
+
 import pytest
 from qcs_api_client_common import QcsApiClientError
 from qcs_api_client_common.configuration import (
@@ -110,6 +113,84 @@ class TestClientConfiguration:
 
         with pytest.raises(QcsApiClientError):
             _ = client_configuration.get_oauth_session()
+
+
+class TestExternallyManagedCredential:
+    """A credential in ``secrets.toml`` can delegate to an external program.
+
+    This is what lets a Python client get its tokens from a credential helper without any
+    Python-side wiring: no ``ExternallyManaged`` callback is constructed here, the
+    configuration file alone is what makes it happen.
+    """
+
+    @staticmethod
+    def _write_config(tmp_path, monkeypatch, python_source: str):
+        """Point QCS at a settings/secrets pair whose credential runs ``sys.executable``.
+
+        ``python_source`` is run with ``-c``; whatever it prints becomes the access token.
+        """
+        settings = tmp_path / "settings.toml"
+        settings.write_text(
+            """
+default_profile_name = "external"
+
+[profiles.external]
+api_url = "http://api.mock"
+grpc_api_url = "http://grpc.mock"
+auth_server_name = "external"
+credentials_name = "external"
+
+[auth_servers.external]
+client_id = "unused"
+issuer = "http://unused.mock"
+"""
+        )
+
+        # `sys.executable` needs no shell to run.
+        secrets = tmp_path / "secrets.toml"
+        secrets.write_text(
+            f"""
+[credentials.external.externally_managed]
+command = {json.dumps(sys.executable)}
+args = {json.dumps(["-c", python_source])}
+"""
+        )
+        secrets.chmod(0o600)
+        tmp_path.chmod(0o700)
+
+        monkeypatch.setenv("QCS_SETTINGS_FILE_PATH", str(settings))
+        monkeypatch.setenv("QCS_SECRETS_FILE_PATH", str(secrets))
+        return secrets
+
+    PRINT_TOKEN = "print('a-token-from-the-helper')"
+
+    def test_runs_the_program(self, tmp_path, monkeypatch):
+        """The access token is whatever the program prints to stdout."""
+        self._write_config(tmp_path, monkeypatch, self.PRINT_TOKEN)
+
+        client_configuration = ClientConfiguration.load_default()
+
+        assert client_configuration.get_bearer_access_token().secret == "a-token-from-the-helper"
+
+    def test_is_not_persisted(self, tmp_path, monkeypatch):
+        """Tokens from an external program are never copied into ``secrets.toml``."""
+        secrets = self._write_config(tmp_path, monkeypatch, self.PRINT_TOKEN)
+        monkeypatch.setenv("QCS_SECRETS_READ_ONLY", "false")
+        before = secrets.read_text()
+
+        client_configuration = ClientConfiguration.load_default()
+        _ = client_configuration.get_bearer_access_token()
+
+        assert secrets.read_text() == before
+
+    def test_reports_a_failing_program(self, tmp_path, monkeypatch):
+        """A program that fails surfaces as an error rather than an empty token."""
+        self._write_config(tmp_path, monkeypatch, "import sys; sys.exit(1)")
+
+        client_configuration = ClientConfiguration.load_default()
+
+        with pytest.raises(QcsApiClientError):
+            _ = client_configuration.get_bearer_access_token()
 
 
 class TestClientConfigurationBuilder:

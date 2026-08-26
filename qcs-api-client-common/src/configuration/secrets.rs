@@ -13,9 +13,12 @@ use toml_edit::{DocumentMut, Item};
 use crate::configuration::LoadError;
 
 use super::error::{IoErrorWithPath, IoOperation, WriteError};
+use super::settings::AuthServer;
+use super::tokens::ClientCredentials;
 use super::{DEFAULT_PROFILE_NAME, expand_path_from_env_or_default};
 
-pub use super::secret_string::{SecretAccessToken, SecretRefreshToken};
+pub use super::external_command::{ExternalCommandError, ExternallyManagedCredential};
+pub use super::secret_string::{ClientSecret, SecretAccessToken, SecretRefreshToken};
 
 /// Setting the `QCS_SECRETS_FILE_PATH` environment variable will change which file is used for loading secrets
 pub const SECRETS_PATH_VAR: &str = "QCS_SECRETS_FILE_PATH";
@@ -194,16 +197,27 @@ impl Secrets {
                     .get_mut("token_payload")
             })
             .ok_or_else(|| {
-                WriteError::MissingTable(format!("credentials.{credentials_name}.token_payload",))
+                WriteError::MissingTable(format!("credentials.{credentials_name}.token_payload"))
             })
     }
 }
 
-/// A QCS credential, containing sensitive authentication secrets.
-#[derive(Deserialize, Debug, Default, PartialEq, Eq, Serialize)]
-pub struct Credential {
+/// A QCS credential, containing or providing access to sensitive authentication secrets.
+#[derive(Deserialize, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Credential {
     /// The [`TokenPayload`] for this credential.
-    pub token_payload: Option<TokenPayload>,
+    TokenPayload(TokenPayload),
+    /// Defer to a subcommand to manage access tokens.
+    ExternallyManaged(ExternallyManagedCredential),
+    /// Exchange a client secret for access tokens.
+    ClientCredentials(ClientCredentials),
+}
+
+impl Default for Credential {
+    fn default() -> Self {
+        Self::TokenPayload(TokenPayload::default())
+    }
 }
 
 /// A QCS token payload, containing sensitive authentication secrets.
@@ -336,12 +350,10 @@ token_type = "Bearer"
 
                 // Verify the final state
                 let mut secrets = Secrets::load_from_path(&"secrets.toml".into()).unwrap();
-                let payload = secrets
-                    .credentials
-                    .remove("test")
-                    .unwrap()
-                    .token_payload
-                    .unwrap();
+                let Credential::TokenPayload(payload) = secrets.credentials.remove("test").unwrap()
+                else {
+                    panic!("expected a token payload credential");
+                };
 
                 assert_eq!(
                     payload.access_token.unwrap(),

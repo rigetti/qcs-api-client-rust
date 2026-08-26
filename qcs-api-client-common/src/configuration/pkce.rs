@@ -331,10 +331,14 @@ pub(in crate::configuration) mod tests {
 
     /// A test harness for the PKCE flow, containing the OAuth test server, client, and discovery document.
     ///
-    /// IMPORTANT: for now, mark your tests with `#[serial_test::serial(oauth2_test_server)]` (and
-    /// for `nextest`, use the `oauth2_test_server` test-group) to ensure that they run serially, as
+    /// IMPORTANT: for now, any test that reaches the `pkce_login` listener must run serially, as
     /// the OAuth test server does not (yet) support wildcarding the redirect URI, so we cannot yet
-    /// allow the `pkce_login` listener to bind to any port.
+    /// allow the listener to bind to any port. Make sure to keep both in sync:
+    ///
+    /// 1. Mark the test with `#[serial_test::serial(oauth2_test_server)]` to make the test serial
+    ///    against other tests in the same process.
+    /// 2. Add it to the `oauth2_test_server` test-group filter in `.config/nextest.toml`,
+    ///    so that `cargo nextest` does not spawn concurrent processes for the test group.
     pub(in crate::configuration) struct PkceTestServerHarness {
         pub server: OAuthTestServer,
         pub client: Client,

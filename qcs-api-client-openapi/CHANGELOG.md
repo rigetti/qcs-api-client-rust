@@ -1,3 +1,9 @@
+## 0.20.2 (2026-08-26)
+
+### Features
+
+- enable configuring ExternallyManaged and ClientCredentials from secrets.toml
+
 ## 0.20.1 (2026-08-14)
 
 ### Features

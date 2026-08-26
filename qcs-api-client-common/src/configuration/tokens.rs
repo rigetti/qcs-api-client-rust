@@ -110,7 +110,7 @@ pub(super) struct ClientCredentialsResponse {
 }
 
 /// A pair of Client ID and Client Secret, used to request an OAuth Client Credentials Grant
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "stubs", gen_stub_pyclass)]
 #[cfg_attr(
     feature = "python",
@@ -168,7 +168,7 @@ impl ClientCredentials {
             .token_endpoint;
         let ready_to_send = client
             .post(url)
-            .basic_auth(&auth_server.client_id, Some(&self.client_secret.secret()))
+            .basic_auth(&self.client_id, Some(&self.client_secret.secret()))
             .form(&request);
         let response = ready_to_send.send().await?;
 
@@ -276,9 +276,7 @@ impl From<PkceFlow> for Credential {
         token_payload.access_token = Some(value.access_token);
         token_payload.refresh_token = value.refresh_token.map(|rt| rt.refresh_token);
 
-        Self {
-            token_payload: Some(token_payload),
-        }
+        Self::TokenPayload(token_payload)
     }
 }
 
@@ -568,18 +566,23 @@ pub(crate) async fn persist_oauth_session(
         return Ok(());
     };
 
-    if Secrets::is_read_only(secrets_path).await? {
-        return Ok(());
-    }
-
     // Persist the fresh refresh token if the grant carries one, so that a rotated
     // refresh token isn't lost on the next load. Both the PKCE and refresh-token
     // grants can hold a refresh token that the auth server may have rotated.
     let refresh_token = match &oauth_session.payload {
         OAuthGrant::PkceFlow(payload) => payload.refresh_token.as_ref().map(|rt| &rt.refresh_token),
         OAuthGrant::RefreshToken(payload) => Some(&payload.refresh_token),
-        OAuthGrant::ExternallyManaged(_) | OAuthGrant::ClientCredentials(_) => None,
+        OAuthGrant::ExternallyManaged(_) | OAuthGrant::ClientCredentials(_) => return Ok(()),
     };
+
+    if Secrets::is_read_only(secrets_path).await? {
+        #[cfg(feature = "tracing")]
+        tracing::debug!(
+            "Skipping write of refreshed tokens to read-only secrets file: {:?}",
+            secrets_path
+        );
+        return Ok(());
+    }
 
     // Nothing to persist without an access token; this shouldn't happen for a session that was
     // just successfully refreshed or logged in, but there's nothing useful to write otherwise.
@@ -995,14 +998,13 @@ impl TokenRefresher for ClientConfiguration {
         match self.refresh().await {
             Ok(session) => Ok(session.access_token()?.clone()),
             Err(TokenError::Write {
-                error,
+                error: _error,
                 oauth_session,
             }) => {
                 // Token refresh succeeded but persistence failed. Extract and return the access token from the error.
                 #[cfg(feature = "tracing")]
                 tracing::warn!(
-                    "Token refresh succeeded but failed to persist: {}. Returning access token from error.",
-                    error
+                    "Token refresh succeeded but failed to persist: {_error}. Returning access token from error.",
                 );
                 Ok(oauth_session.access_token()?.clone())
             }
@@ -1413,13 +1415,14 @@ updated_at = "2024-01-01T00:00:00Z"
             });
 
             // The rotated refresh token (and the new access token) should be persisted.
-            let payload = Secrets::load_from_path(&secrets_path.into())
+            let Credential::TokenPayload(payload) = Secrets::load_from_path(&secrets_path.into())
                 .expect("should load secrets")
                 .credentials
                 .remove("test")
                 .expect("should have test credentials")
-                .token_payload
-                .expect("should have token payload");
+            else {
+                panic!("expected a token payload credential");
+            };
             assert_eq!(
                 payload.refresh_token.unwrap(),
                 SecretRefreshToken::from(rotated_refresh_token),
