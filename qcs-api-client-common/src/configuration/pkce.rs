@@ -1,4 +1,4 @@
-use std::{collections::HashSet, convert::Infallible};
+use std::convert::Infallible;
 
 use http_body_util::Full;
 use hyper::body::Bytes;
@@ -17,15 +17,15 @@ use tokio::net::TcpListener;
 use tokio_util::sync::CancellationToken;
 use url::form_urlencoded;
 
-use crate::configuration::oidc::{DISCOVERY_REQUIRED_SCOPE, Discovery};
+use crate::configuration::{login::resolve_scopes, oidc::Discovery};
 
 /// The scheme for the redirect URL.
 const PKCE_REDIRECT_URL_SCHEME: &str = "http";
 
 /// The origin for the redirect server hosted locally.
 ///
-/// IMPORTANT: The oauth2 client must allow sign-in redirects to `{PKCE_REDIRECT_URL_SCHEME}://{PKCE_REDIRECT_URL_ORIGIN}:{redirect_port}`,
-/// where the `redirect_port` is the port specified in the [`PkceLoginRequest`].
+/// IMPORTANT: The oauth2 client must allow sign-in redirects to `{PKCE_REDIRECT_URL_SCHEME}://{PKCE_REDIRECT_URL_ORIGIN}:{port}`,
+/// where `port` is whichever port the [`PkceLoginRequest`]'s [`RedirectBinding`] resolves to.
 const PKCE_REDIRECT_URL_ORIGIN: &str = "127.0.0.1";
 
 /// The default port for the redirect server hosted locally.
@@ -69,15 +69,15 @@ pub(crate) type PkceLoginResponse = StandardTokenResponse<EmptyExtraTokenFields,
 pub(crate) struct PkceLoginRequest {
     /// The oauth2 client ID to use for the PKCE login.
     pub(crate) client_id: String,
-    /// The port to use for the redirect server.
-    /// If `None`, the default port [`PKCE_REDIRECT_URL_DEFAULT_PORT`] will be used.
+    /// Where the local redirect server's listener comes from.
     ///
-    /// IMPORTANT: The oauth2 client must allow sign-in redirects to `http://{PKCE_REDIRECT_ORIGIN}:{redirect_port}`.
-    pub(crate) redirect_port: Option<u16>,
+    /// IMPORTANT: The oauth2 client must allow sign-in redirects to
+    /// `http://{PKCE_REDIRECT_ORIGIN}:{port}`, for whichever port this binding resolves to.
+    pub(crate) redirect: RedirectBinding,
     /// The discovery document to use for the PKCE login.
     pub(crate) discovery: Discovery,
     /// The scopes to request in the token authorization to request.
-    /// If `None`, all scopes from [`Discovery::scopes_supported`] will be requested.
+    /// If `None`, [`DEFAULT_LOGIN_SCOPES`](crate::configuration::settings::DEFAULT_LOGIN_SCOPES) will be requested.
     pub(crate) scopes: Option<Vec<String>>,
 }
 
@@ -86,29 +86,17 @@ pub(crate) async fn pkce_login(
     cancel_token: CancellationToken,
     request: PkceLoginRequest,
 ) -> Result<PkceLoginResponse, PkceLoginError> {
-    let redirect_port = request
-        .redirect_port
-        .unwrap_or(PKCE_REDIRECT_URL_DEFAULT_PORT);
-
     let RedirectListener {
         redirect_url,
         join_handle,
-    } = RedirectListener::spawn(cancel_token, redirect_port).await?;
+    } = RedirectListener::spawn(cancel_token, request.redirect).await?;
 
     let client = BasicClient::new(ClientId::new(request.client_id))
         .set_auth_uri(AuthUrl::from_url(request.discovery.authorization_endpoint))
         .set_token_uri(TokenUrl::from_url(request.discovery.token_endpoint))
         .set_redirect_uri(redirect_url);
 
-    let scopes = {
-        let mut unique_scopes = request
-            .scopes
-            .unwrap_or(request.discovery.scopes_supported)
-            .into_iter()
-            .collect::<HashSet<_>>();
-        unique_scopes.insert(DISCOVERY_REQUIRED_SCOPE.to_string());
-        unique_scopes
-    };
+    let scopes = resolve_scopes(request.scopes);
 
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
@@ -187,6 +175,35 @@ impl CodeStatePair {
     }
 }
 
+/// How the callback listener port is configured.
+#[derive(Debug)]
+pub(crate) enum RedirectBinding {
+    /// Bind a listener on this port when the login starts.
+    Port(u16),
+    /// Use a listener with a pre-bound port - tests use this to select a random port.
+    #[cfg(test)]
+    Bound(TcpListener),
+}
+
+impl Default for RedirectBinding {
+    fn default() -> Self {
+        Self::Port(PKCE_REDIRECT_URL_DEFAULT_PORT)
+    }
+}
+
+impl RedirectBinding {
+    /// Resolve the binding to a listener, binding the port if the caller didn't supply one.
+    async fn into_listener(self) -> std::io::Result<TcpListener> {
+        match self {
+            Self::Port(port) => {
+                TcpListener::bind(format!("{PKCE_REDIRECT_URL_ORIGIN}:{port}")).await
+            }
+            #[cfg(test)]
+            Self::Bound(listener) => Ok(listener),
+        }
+    }
+}
+
 /// Errors that can occur while trying to spawn a [`RedirectListener`].
 #[derive(Debug, thiserror::Error)]
 #[error("Failed to spawn redirect listener: {0}")]
@@ -217,10 +234,9 @@ impl RedirectListener {
     /// on a background thread that can be joined to via [`RedirectListener::join_handle`].
     async fn spawn(
         cancel: CancellationToken,
-        port: u16,
+        redirect: RedirectBinding,
     ) -> Result<Self, RedirectListenerSpawnError> {
-        let bind_addr = format!("127.0.0.1:{port}");
-        let listener = TcpListener::bind(&bind_addr).await?;
+        let listener = redirect.into_listener().await?;
         let bind_port = listener.local_addr()?.port();
 
         let redirect_url = format_redirect_url(bind_port);
@@ -322,28 +338,24 @@ pub(in crate::configuration) mod tests {
     use oauth2_test_server::{Client, IssuerConfig, OAuthTestServer};
 
     use crate::configuration::{
-        oidc::{DISCOVERY_REQUIRED_SCOPE, fetch_discovery},
-        secrets::SecretAccessToken,
+        login::tests::default_scope_string, oidc::fetch_discovery, secrets::SecretAccessToken,
         tokens::insecure_validate_token_exp,
     };
 
     use super::*;
 
-    /// A test harness for the PKCE flow, containing the OAuth test server, client, and discovery document.
+    /// A test harness for the interactive login flows, containing the OAuth test server, a
+    /// registered client, and the server's discovery document.
     ///
-    /// IMPORTANT: for now, any test that reaches the `pkce_login` listener must run serially, as
-    /// the OAuth test server does not (yet) support wildcarding the redirect URI, so we cannot yet
-    /// allow the listener to bind to any port. Make sure to keep both in sync:
-    ///
-    /// 1. Mark the test with `#[serial_test::serial(oauth2_test_server)]` to make the test serial
-    ///    against other tests in the same process.
-    /// 2. Add it to the `oauth2_test_server` test-group filter in `.config/nextest.toml`,
-    ///    so that `cargo nextest` does not spawn concurrent processes for the test group.
+    /// The OAuth test server matches redirect URIs exactly, with no wildcarding, so the client has
+    /// to be registered with the redirect listener's exact port. The harness has to reserve a port
+    /// first so it can tell the server which port to send the redirect to before it attempts the
+    /// redict - see [`RedirectBinding`].
     pub(in crate::configuration) struct PkceTestServerHarness {
         pub server: OAuthTestServer,
         pub client: Client,
         pub discovery: Discovery,
-        pub redirect_port: u16,
+        pub redirect_listener: TcpListener,
     }
 
     impl PkceTestServerHarness {
@@ -355,6 +367,8 @@ pub(in crate::configuration) mod tests {
             })
             .await;
 
+            let (redirect_listener, redirect_port) = Self::reserve_redirect_listener().await;
+
             let discovery = fetch_discovery(
                 &qcs_dependencies_client::reqwest::Client::new(),
                 server.issuer(),
@@ -362,35 +376,59 @@ pub(in crate::configuration) mod tests {
             .await
             .unwrap();
 
-            let redirect_url = format_redirect_url(PKCE_REDIRECT_URL_DEFAULT_PORT);
-            let client = server.register_client(serde_json::json!({
-                "scope": DISCOVERY_REQUIRED_SCOPE,
-                "redirect_uris": [redirect_url],
-                "client_name": "PkceTestServerHarness"
-            }));
+            let client = Self::register_client(&server, redirect_port).await;
 
             Self {
                 server,
                 client,
                 discovery,
-                redirect_port: PKCE_REDIRECT_URL_DEFAULT_PORT,
+                redirect_listener,
             }
+        }
+
+        /// Bind a redirect listener to a random available port.
+        ///
+        /// # Panics
+        ///
+        /// If the OS won't hand out a loopback port (the machine is out of ports or file
+        /// descriptors), or if a bound listener reports no local address.
+        pub(in crate::configuration) async fn reserve_redirect_listener() -> (TcpListener, u16) {
+            let listener = TcpListener::bind(format!("{PKCE_REDIRECT_URL_ORIGIN}:0"))
+                .await
+                .expect("should bind a redirect listener on a free port");
+            let port = listener
+                .local_addr()
+                .expect("bound listener should have a local address")
+                .port();
+            (listener, port)
+        }
+
+        pub(in crate::configuration) async fn register_client(
+            server: &OAuthTestServer,
+            redirect_port: u16,
+        ) -> Client {
+            server
+                .register_client(serde_json::json!({
+                    "scope": default_scope_string(),
+                    "redirect_uris": [format_redirect_url(redirect_port)],
+                    "client_name": "PkceTestServerHarness"
+                }))
+                .await
         }
     }
 
     #[tokio::test]
-    #[serial_test::serial(oauth2_test_server)]
     async fn test_pkce_login() {
         let PkceTestServerHarness {
             server,
             client,
             discovery,
-            redirect_port,
+            redirect_listener,
         } = PkceTestServerHarness::new().await;
 
         let request = PkceLoginRequest {
             client_id: client.client_id,
-            redirect_port: Some(redirect_port),
+            redirect: RedirectBinding::Bound(redirect_listener),
             discovery,
             scopes: None,
         };

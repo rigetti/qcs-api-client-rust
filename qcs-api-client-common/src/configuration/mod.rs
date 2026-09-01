@@ -76,6 +76,7 @@ use self::{
 pub(crate) mod error;
 mod external_command;
 pub mod fs;
+mod login;
 mod oidc;
 mod pkce;
 mod secret_string;
@@ -87,6 +88,7 @@ pub use error::{LoadError, TokenError};
 #[cfg(feature = "python")]
 pub(crate) mod py;
 
+use pkce::RedirectBinding;
 use settings::AuthServer;
 use tokens::{
     OAuthGrant, OAuthSession, PkceFlow, RefreshToken, TokenDispatcher, persist_oauth_session,
@@ -439,6 +441,16 @@ impl ClientConfiguration {
         cancel_token: CancellationToken,
         profile_name: Option<String>,
     ) -> Result<Self, LoadError> {
+        Self::load_with_login_with_redirect(cancel_token, profile_name, RedirectBinding::default())
+            .await
+    }
+
+    /// See [`Self::load_with_login`].
+    pub(crate) async fn load_with_login_with_redirect(
+        cancel_token: CancellationToken,
+        profile_name: Option<String>,
+        redirect: RedirectBinding,
+    ) -> Result<Self, LoadError> {
         let ConfigurationContext {
             mut builder,
             auth_server,
@@ -504,7 +516,8 @@ impl ClientConfiguration {
         }
 
         // At this point the stored credentials are known to be invalid, so a login is required
-        let pkce_flow = PkceFlow::new_login_flow(cancel_token, &auth_server).await?;
+        let pkce_flow =
+            PkceFlow::new_login_flow_with_redirect(cancel_token, &auth_server, redirect).await?;
         let access_token = pkce_flow.access_token.clone();
         let oauth_session =
             OAuthSession::from_pkce_flow(pkce_flow, auth_server, Some(access_token));
@@ -714,7 +727,7 @@ mod test {
         API_URL_VAR, AuthServer, ClientConfiguration, DEFAULT_QUILC_URL, GRPC_API_URL_VAR,
         OAuthGrant, OAuthSession, QUILC_URL_VAR, QVM_URL_VAR, RefreshToken,
         expand_path_from_env_or_default, oidc,
-        pkce::tests::PkceTestServerHarness,
+        pkce::{RedirectBinding, tests::PkceTestServerHarness},
         secrets::{
             Credential, SECRETS_PATH_VAR, SECRETS_READ_ONLY_VAR, SecretAccessToken,
             SecretRefreshToken, Secrets, TokenPayload,
@@ -1115,7 +1128,6 @@ token_type = "Bearer"
 
     /// Exercises the PKCE login flow end-to-end, ensuring that the token is persisted to the secrets file.
     #[test]
-    #[serial_test::serial(oauth2_test_server)]
     fn test_pkce_flow_persists_token() {
         // Because we need to block on the runtime inside the jail function,
         // we have to create one manually here instead of relying on #[tokio::test].
@@ -1125,13 +1137,13 @@ token_type = "Bearer"
             server,
             client,
             discovery: _,
-            redirect_port: _,
+            redirect_listener,
         } = runtime.block_on(PkceTestServerHarness::new());
 
         let client_id = client.client_id;
         let issuer = server.issuer().to_string();
 
-        figment::Jail::expect_with(|jail| {
+        figment::Jail::expect_with(move |jail| {
             // In CI, the secrets file is mounted as read-only,
             // but these tmp testing files should be writable.
             jail.set_env(SECRETS_READ_ONLY_VAR, "false");
@@ -1191,9 +1203,13 @@ access_token = ""
             runtime.block_on(async {
                 let cancel_token = CancellationToken::new();
                 // should load the configuration and perform a login flow
-                let configuration = ClientConfiguration::load_with_login(cancel_token, None)
-                    .await
-                    .expect("should load configuration");
+                let configuration = ClientConfiguration::load_with_login_with_redirect(
+                    cancel_token,
+                    None,
+                    RedirectBinding::Bound(redirect_listener),
+                )
+                .await
+                .expect("should load configuration");
                 let oauth_session = configuration.refresh().await.expect("should refresh");
                 let token = oauth_session.validate().expect("token should be valid");
 
@@ -1243,7 +1259,6 @@ access_token = ""
     /// that exits before anything else triggers a dispatcher-managed refresh would lose the login
     /// entirely, forcing the next process back through an interactive login too.
     #[test]
-    #[serial_test::serial(oauth2_test_server)]
     fn test_load_with_login_persists_login_flow_token_without_explicit_refresh() {
         // Because we need to block on the runtime inside the jail function,
         // we have to create one manually here instead of relying on #[tokio::test].
@@ -1253,13 +1268,13 @@ access_token = ""
             server,
             client,
             discovery: _,
-            redirect_port: _,
+            redirect_listener,
         } = runtime.block_on(PkceTestServerHarness::new());
 
         let client_id = client.client_id;
         let issuer = server.issuer().to_string();
 
-        figment::Jail::expect_with(|jail| {
+        figment::Jail::expect_with(move |jail| {
             // In CI, the secrets file is mounted as read-only,
             // but these tmp testing files should be writable.
             jail.set_env(SECRETS_READ_ONLY_VAR, "false");
@@ -1320,9 +1335,13 @@ access_token = ""
 
                 // Deliberately do NOT call `.refresh()` afterward: `load_with_login` itself
                 // should persist the freshly logged-in tokens.
-                let configuration = ClientConfiguration::load_with_login(cancel_token, None)
-                    .await
-                    .expect("should perform a login flow");
+                let configuration = ClientConfiguration::load_with_login_with_redirect(
+                    cancel_token,
+                    None,
+                    RedirectBinding::Bound(redirect_listener),
+                )
+                .await
+                .expect("should perform a login flow");
 
                 let oauth_session = configuration
                     .oauth_session()
@@ -1365,7 +1384,6 @@ access_token = ""
     /// token is not persisted, the next process to load this profile will retry the stale, already-consumed
     /// refresh token, fail, and be forced into an interactive login flow every time.
     #[test]
-    #[serial_test::serial(oauth2_test_server)]
     fn test_load_with_login_persists_rotated_refresh_token_on_refresh() {
         let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
 
@@ -1522,7 +1540,6 @@ refresh_token = "{initial_refresh_token}"
     /// ([`ClientConfiguration::get_bearer_access_token`] -> [`TokenDispatcher::refresh`]), not just
     /// the login path.
     #[test]
-    #[serial_test::serial(oauth2_test_server)]
     fn test_refresh_persists_to_credentials_name_not_profile_name() {
         let runtime = tokio::runtime::Runtime::new().expect("should create runtime");
 

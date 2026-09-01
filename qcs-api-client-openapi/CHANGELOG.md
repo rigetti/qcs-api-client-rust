@@ -1,3 +1,9 @@
+## 0.21.0 (2026-09-01)
+
+### Breaking Changes
+
+- request a fixed default scope set instead of scopes_supported
+
 ## 0.20.2 (2026-08-26)
 
 ### Features

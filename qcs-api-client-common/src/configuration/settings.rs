@@ -19,6 +19,21 @@ use super::{
     expand_path_from_env_or_default,
 };
 
+/// The scopes requested during an interactive login when an [`AuthServer`] does not configure any.
+///
+/// This is deliberately a fixed list of the minimal set of scopes needed to make auth convenient,
+/// particularly allowing for sessions to automatically refresh via refresh token (`offline_access`).
+///
+/// Blanketly requesting every `scopes_supported` field of the issuer's discovery document would
+/// cause errors, as not all clients/methods support all scopes. Anything beyond this should
+/// be requested explicitly via [`AuthServer::scopes`].
+pub const DEFAULT_LOGIN_SCOPES: [&str; 4] = [
+    DISCOVERY_REQUIRED_SCOPE,
+    "profile",
+    "email",
+    "offline_access",
+];
+
 /// Setting the `QCS_SETTINGS_FILE_PATH` environment variable will change which file is used for loading [`Settings`].
 pub const SETTINGS_PATH_VAR: &str = "QCS_SETTINGS_FILE_PATH";
 /// The default path that [`Settings`] will be loaded from;
@@ -168,7 +183,7 @@ pub struct AuthServer {
     pub issuer: String,
 
     /// OAuth 2.0 scopes to request during authorization requests.
-    /// If not specified, `supported_scopes` from the discovery document hosted at `issuer` will be used.
+    /// If not specified, [`DEFAULT_LOGIN_SCOPES`] will be used.
     /// The scope `openid` is always requested, even if not present in this list.
     pub scopes: Option<Vec<String>>,
 }
@@ -178,7 +193,7 @@ impl Default for AuthServer {
         Self {
             client_id: QCS_DEFAULT_CLIENT_ID_PRODUCTION.to_string(),
             issuer: QCS_DEFAULT_AUTH_ISSUER_PRODUCTION.to_string(),
-            scopes: Some(vec![DISCOVERY_REQUIRED_SCOPE.to_string()]),
+            scopes: None,
         }
     }
 }
@@ -186,7 +201,7 @@ impl Default for AuthServer {
 impl AuthServer {
     /// Create a new [`AuthServer`] with a `client_id` and `issuer` and an optional list of scopes.
     ///
-    /// If `scopes` is [`None`], all `scopes_supported` from the issuer's discovery document will be used when requesting authorization tokens.
+    /// If `scopes` is [`None`], [`DEFAULT_LOGIN_SCOPES`] will be used when requesting authorization tokens.
     /// Note that the required scope `openid` is always requested, even if `scopes` is provided but does not contain it.
     #[must_use]
     pub const fn new(client_id: String, issuer: String, scopes: Option<Vec<String>>) -> Self {
@@ -197,7 +212,11 @@ impl AuthServer {
         }
     }
 
-    /// Create a new [`AuthServer`] with the specified `client_id` and `issuer`, populating `scopes` with all `scopes_supported` fetched from the issuer's discovery document.
+    /// Create a new [`AuthServer`] with the specified `client_id` and `issuer`,
+    /// populating `scopes` with all `scopes_supported` fetched from the issuer's discovery document.
+    ///
+    /// Note that the advertised set is generally broader than a login requires, and some providers
+    /// reject a request for all of them. See the comment on [`DEFAULT_LOGIN_SCOPES`].
     ///
     /// # Errors
     /// Returns an error if the discovery document cannot be fetched or parsed.

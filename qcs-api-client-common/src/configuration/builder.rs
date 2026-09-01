@@ -6,8 +6,8 @@ use tokio::sync::Mutex;
 use crate::ClientConfiguration;
 
 use super::{
-    settings::AuthServer, Tokens, DEFAULT_API_URL, DEFAULT_GRPC_API_URL, DEFAULT_QUILC_URL,
-    DEFAULT_QVM_URL, GRPC_API_URL_VAR, QUILC_URL_VAR, QVM_URL_VAR,
+    DEFAULT_API_URL, DEFAULT_GRPC_API_URL, DEFAULT_QUILC_URL, DEFAULT_QVM_URL, GRPC_API_URL_VAR,
+    QUILC_URL_VAR, QVM_URL_VAR, Tokens, settings::AuthServer,
 };
 
 #[cfg(feature = "tracing-config")]

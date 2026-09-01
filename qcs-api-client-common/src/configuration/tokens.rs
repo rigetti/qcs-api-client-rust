@@ -17,7 +17,7 @@ use super::{
 };
 use crate::configuration::{
     error::{DiscoveryError, WriteError},
-    pkce::{PkceLoginError, PkceLoginRequest, pkce_login},
+    pkce::{PkceLoginError, PkceLoginRequest, RedirectBinding, pkce_login},
     secrets::{Credential, SecretAccessToken, SecretRefreshToken, TokenPayload},
 };
 #[cfg(feature = "tracing-config")]
@@ -223,6 +223,16 @@ impl PkceFlow {
         cancel_token: CancellationToken,
         auth_server: &AuthServer,
     ) -> Result<Self, PkceFlowError> {
+        Self::new_login_flow_with_redirect(cancel_token, auth_server, RedirectBinding::default())
+            .await
+    }
+
+    /// See [`Self::new_login_flow`].
+    pub(crate) async fn new_login_flow_with_redirect(
+        cancel_token: CancellationToken,
+        auth_server: &AuthServer,
+        redirect: RedirectBinding,
+    ) -> Result<Self, PkceFlowError> {
         let issuer = auth_server.issuer.clone();
 
         let client = default_http_client()?;
@@ -232,7 +242,7 @@ impl PkceFlow {
             cancel_token,
             PkceLoginRequest {
                 client_id: auth_server.client_id.clone(),
-                redirect_port: None,
+                redirect,
                 discovery,
                 scopes: auth_server.scopes.clone(),
             },

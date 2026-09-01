@@ -105,14 +105,14 @@ class AuthServer:
     def scopes(self) -> typing.Optional[builtins.list[builtins.str]]:
         r"""
         OAuth 2.0 scopes to request during authorization requests.
-        If not specified, `supported_scopes` from the discovery document hosted at `issuer` will be used.
+        If not specified, [`DEFAULT_LOGIN_SCOPES`] will be used.
         The scope `openid` is always requested, even if not present in this list.
         """
     @scopes.setter
     def scopes(self, value: typing.Optional[typing.Sequence[builtins.str]]) -> None:
         r"""
         OAuth 2.0 scopes to request during authorization requests.
-        If not specified, `supported_scopes` from the discovery document hosted at `issuer` will be used.
+        If not specified, [`DEFAULT_LOGIN_SCOPES`] will be used.
         The scope `openid` is always requested, even if not present in this list.
         """
     def __eq__(self, other: builtins.object, /) -> builtins.bool: ...
