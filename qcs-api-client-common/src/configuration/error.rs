@@ -1,6 +1,6 @@
 use std::{error::Error, path::PathBuf};
 
-use crate::configuration::{oidc::DISCOVERY_REQUIRED_SCOPE, tokens::PkceFlowError};
+use crate::configuration::{oidc::DISCOVERY_REQUIRED_SCOPE, tokens::LoginError};
 
 use super::ClientConfigurationBuilderError;
 use super::secrets::SECRETS_READ_ONLY_VAR;
@@ -40,9 +40,9 @@ pub enum LoadError {
     /// Provided authorization server not found.
     #[error("Expected auth server {0} in settings.auth_servers but it does not exist")]
     AuthServerNotFound(String),
-    /// Failed to complete a PKCE login flow.
-    #[error("Failed to complete PKCE login: {0}")]
-    PkceFlow(#[from] PkceFlowError),
+    /// Failed to complete an interactive login.
+    #[error("Failed to complete login: {0}")]
+    Login(#[from] LoginError),
     #[cfg(feature = "tracing-config")]
     /// Failed to parse tracing filter. These should be a comma separated list of URL patterns. See
     /// <https://wicg.github.io/urlpattern> for reference.

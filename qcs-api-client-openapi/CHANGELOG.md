@@ -1,3 +1,9 @@
+## 0.22.0 (2026-09-01)
+
+### Breaking Changes
+
+- rename PkceFlow to InteractiveLogin in OAuthGrant
+
 ## 0.21.0 (2026-09-01)
 
 ### Breaking Changes

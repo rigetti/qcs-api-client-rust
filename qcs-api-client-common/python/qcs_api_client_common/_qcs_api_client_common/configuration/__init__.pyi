@@ -8,6 +8,7 @@ import typing
 __all__ = [
     "API_URL_VAR",
     "AuthServer",
+    "AuthTokens",
     "ClientConfiguration",
     "ClientConfigurationBuilder",
     "ClientConfigurationBuilderError",
@@ -26,7 +27,6 @@ __all__ = [
     "LoadError",
     "OAuthSession",
     "PROFILE_NAME_VAR",
-    "PkceFlow",
     "QUILC_URL_VAR",
     "QVM_URL_VAR",
     "RefreshToken",
@@ -124,6 +124,32 @@ class AuthServer:
         """
     @staticmethod
     def default() -> AuthServer: ...
+
+@typing.final
+class AuthTokens:
+    r"""
+    The access (Bearer) and refresh (if available) tokens issued by an auth server.
+    
+    These could be issued through one of multiple kinds of OAuth flows,
+    see [`OAuthGrant::InteractiveLogin`] for implementation details.
+    """
+    @property
+    def access_token(self) -> SecretAccessToken:
+        r"""
+        The access token.
+        """
+    @property
+    def refresh_token(self) -> typing.Optional[RefreshToken]:
+        r"""
+        The refresh token, if available.
+        """
+    def __eq__(self, other: builtins.object, /) -> builtins.bool: ...
+    def __new__(cls, auth_server: AuthServer) -> AuthTokens: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Implements `__repr__` for Python in terms of the Rust
+        [`Debug`](std::fmt::Debug) implementation.
+        """
 
 @typing.final
 class ClientConfiguration:
@@ -363,11 +389,11 @@ class OAuthSession:
         The [`AuthServer`] that issues the tokens.
         """
     @property
-    def payload(self) -> RefreshToken  |  ClientConfiguration  |  ExternallyManaged  |  PkceFlow:
+    def payload(self) -> RefreshToken  |  ClientConfiguration  |  ExternallyManaged  |  AuthTokens:
         r"""
         The grant type to use to request an access token.
         """
-    def __new__(cls, payload: RefreshToken  |  ClientConfiguration  |  ExternallyManaged  |  PkceFlow, auth_server: AuthServer, access_token: typing.Optional[SecretAccessToken] = None) -> OAuthSession: ...
+    def __new__(cls, payload: RefreshToken  |  ClientConfiguration  |  ExternallyManaged  |  AuthTokens, auth_server: AuthServer, access_token: typing.Optional[SecretAccessToken] = None) -> OAuthSession: ...
     def __repr__(self) -> builtins.str:
         r"""
         Implements `__repr__` for Python in terms of the Rust
@@ -376,29 +402,6 @@ class OAuthSession:
     def request_access_token(self) -> SecretAccessToken: ...
     def request_access_token_async(self) -> collections.abc.Awaitable[SecretAccessToken]: ...
     def validate(self) -> SecretAccessToken: ...
-
-@typing.final
-class PkceFlow:
-    r"""
-    The Access (Bearer) and refresh (if available) tokens from a PKCE login.
-    """
-    @property
-    def access_token(self) -> SecretAccessToken:
-        r"""
-        The access token.
-        """
-    @property
-    def refresh_token(self) -> typing.Optional[RefreshToken]:
-        r"""
-        The refresh token, if available.
-        """
-    def __eq__(self, other: builtins.object, /) -> builtins.bool: ...
-    def __new__(cls, auth_server: AuthServer) -> PkceFlow: ...
-    def __repr__(self) -> builtins.str:
-        r"""
-        Implements `__repr__` for Python in terms of the Rust
-        [`Debug`](std::fmt::Debug) implementation.
-        """
 
 @typing.final
 class RefreshToken:

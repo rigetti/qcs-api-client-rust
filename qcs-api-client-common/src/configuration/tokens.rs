@@ -191,20 +191,23 @@ impl ClientCredentials {
         from_py_object
     )
 )]
-/// The Access (Bearer) and refresh (if available) tokens from a PKCE login.
-pub struct PkceFlow {
+/// The access (Bearer) and refresh (if available) tokens issued by an auth server.
+///
+/// These could be issued through one of multiple kinds of OAuth flows,
+/// see [`OAuthGrant::InteractiveLogin`] for implementation details.
+pub struct AuthTokens {
     /// The access token.
     pub access_token: SecretAccessToken,
     /// The refresh token, if available.
     pub refresh_token: Option<RefreshToken>,
 }
 
-/// Errors that can occur when attempting to perform a PKCE login flow.
+/// Errors that can occur when attempting to perform an interactive login.
 #[derive(Debug, thiserror::Error)]
-pub enum PkceFlowError {
-    /// Error that occurred while performing the PKCE login flow.
+pub enum LoginError {
+    /// Error that occurred while performing the Authorization Code (PKCE) flow.
     #[error(transparent)]
-    PkceLogin(#[from] PkceLoginError),
+    Pkce(#[from] PkceLoginError),
     /// Error that occurred while fetching the discovery document from the `OAuth2` issuer.
     #[error(transparent)]
     Discovery(#[from] DiscoveryError),
@@ -213,26 +216,26 @@ pub enum PkceFlowError {
     Request(#[from] qcs_dependencies_client::reqwest::Error),
 }
 
-impl PkceFlow {
-    /// Starts a new PKCE login flow to acquire a new set of tokens.
+impl AuthTokens {
+    /// Performs an interactive login, returning the tokens the auth server issues.
     ///
     /// # Errors
     ///
-    /// See [`PkceFlowError`]
-    pub async fn new_login_flow(
+    /// See [`LoginError`]
+    pub async fn interactive_login(
         cancel_token: CancellationToken,
         auth_server: &AuthServer,
-    ) -> Result<Self, PkceFlowError> {
-        Self::new_login_flow_with_redirect(cancel_token, auth_server, RedirectBinding::default())
+    ) -> Result<Self, LoginError> {
+        Self::interactive_login_with_redirect(cancel_token, auth_server, RedirectBinding::default())
             .await
     }
 
-    /// See [`Self::new_login_flow`].
-    pub(crate) async fn new_login_flow_with_redirect(
+    /// See [`Self::interactive_login`].
+    pub(crate) async fn interactive_login_with_redirect(
         cancel_token: CancellationToken,
         auth_server: &AuthServer,
         redirect: RedirectBinding,
-    ) -> Result<Self, PkceFlowError> {
+    ) -> Result<Self, LoginError> {
         let issuer = auth_server.issuer.clone();
 
         let client = default_http_client()?;
@@ -280,8 +283,8 @@ impl PkceFlow {
     }
 }
 
-impl From<PkceFlow> for Credential {
-    fn from(value: PkceFlow) -> Self {
+impl From<AuthTokens> for Credential {
+    fn from(value: AuthTokens) -> Self {
         let mut token_payload = TokenPayload::default();
         token_payload.access_token = Some(value.access_token);
         token_payload.refresh_token = value.refresh_token.map(|rt| rt.refresh_token);
@@ -301,8 +304,10 @@ pub enum OAuthGrant {
     ClientCredentials(ClientCredentials),
     /// Defers to a user provided function for access token requests.
     ExternallyManaged(ExternallyManaged),
-    /// The tokens returned by the PKCE login that are an [Authorization Code grant type](https://oauth.net/2/pkce/).
-    PkceFlow(PkceFlow),
+    /// The tokens returned by an interactive login, i.e. one with a human in the loop.
+    ///
+    /// Currently that means the [Authorization Code grant with PKCE](https://oauth.net/2/pkce/).
+    InteractiveLogin(AuthTokens),
 }
 
 impl From<ExternallyManaged> for OAuthGrant {
@@ -323,9 +328,9 @@ impl From<RefreshToken> for OAuthGrant {
     }
 }
 
-impl From<PkceFlow> for OAuthGrant {
-    fn from(v: PkceFlow) -> Self {
-        Self::PkceFlow(v)
+impl From<AuthTokens> for OAuthGrant {
+    fn from(v: AuthTokens) -> Self {
+        Self::InteractiveLogin(v)
     }
 }
 
@@ -342,7 +347,7 @@ impl OAuthGrant {
                 .request_access_token(auth_server)
                 .await
                 .map_err(|e| TokenError::ExternallyManaged(e.to_string())),
-            Self::PkceFlow(tokens) => tokens.request_access_token(auth_server).await,
+            Self::InteractiveLogin(tokens) => tokens.request_access_token(auth_server).await,
         }
     }
 }
@@ -353,7 +358,7 @@ impl std::fmt::Debug for OAuthGrant {
             Self::RefreshToken(_) => f.write_str("RefreshToken"),
             Self::ClientCredentials(_) => f.write_str("ClientCredentials"),
             Self::ExternallyManaged(_) => f.write_str("ExternallyManaged"),
-            Self::PkceFlow(_) => f.write_str("PkceTokens"),
+            Self::InteractiveLogin(_) => f.write_str("InteractiveLogin"),
         }
     }
 }
@@ -454,17 +459,21 @@ impl OAuthSession {
         )
     }
 
-    /// Initialize a new set of [`Credentials`] using [`PkceFlow`].
+    /// Initialize a new set of [`Credentials`] using [`AuthTokens`].
     ///
     /// Optionally include an `access_token`, if not included, then one can be requested
     /// with [`Self::request_access_token`].
     #[must_use]
-    pub const fn from_pkce_flow(
-        flow: PkceFlow,
+    pub const fn from_interactive_login(
+        tokens: AuthTokens,
         auth_server: AuthServer,
         access_token: Option<SecretAccessToken>,
     ) -> Self {
-        Self::new(OAuthGrant::PkceFlow(flow), auth_server, access_token)
+        Self::new(
+            OAuthGrant::InteractiveLogin(tokens),
+            auth_server,
+            access_token,
+        )
     }
 
     /// Get the current access token.
@@ -556,7 +565,8 @@ impl std::fmt::Debug for OAuthSession {
 ///
 /// Every code path that obtains a new or refreshed [`OAuthSession`] (whether through the
 /// [`TokenDispatcher`], or through [`ClientConfiguration::load_with_login`]'s manual refresh and
-/// PKCE login branches) should call this so that a rotated refresh token isn't silently dropped.
+/// interactive login branches) should call this so that a rotated refresh token isn't silently
+/// dropped.
 /// Otherwise, the next process to load the profile will retry a stale, already-consumed refresh
 /// token and be forced back into an interactive login.
 ///
@@ -577,10 +587,12 @@ pub(crate) async fn persist_oauth_session(
     };
 
     // Persist the fresh refresh token if the grant carries one, so that a rotated
-    // refresh token isn't lost on the next load. Both the PKCE and refresh-token
-    // grants can hold a refresh token that the auth server may have rotated.
+    // refresh token isn't lost on the next load. Both the interactive-login and
+    // refresh-token grants can hold a refresh token that the auth server may have rotated.
     let refresh_token = match &oauth_session.payload {
-        OAuthGrant::PkceFlow(payload) => payload.refresh_token.as_ref().map(|rt| &rt.refresh_token),
+        OAuthGrant::InteractiveLogin(payload) => {
+            payload.refresh_token.as_ref().map(|rt| &rt.refresh_token)
+        }
         OAuthGrant::RefreshToken(payload) => Some(&payload.refresh_token),
         OAuthGrant::ExternallyManaged(_) | OAuthGrant::ClientCredentials(_) => return Ok(()),
     };

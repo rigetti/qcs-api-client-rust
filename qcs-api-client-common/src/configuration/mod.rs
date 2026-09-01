@@ -91,7 +91,7 @@ pub(crate) mod py;
 use pkce::RedirectBinding;
 use settings::AuthServer;
 use tokens::{
-    OAuthGrant, OAuthSession, PkceFlow, RefreshToken, TokenDispatcher, persist_oauth_session,
+    AuthTokens, OAuthGrant, OAuthSession, RefreshToken, TokenDispatcher, persist_oauth_session,
 };
 
 /// Default profile name.
@@ -516,11 +516,12 @@ impl ClientConfiguration {
         }
 
         // At this point the stored credentials are known to be invalid, so a login is required
-        let pkce_flow =
-            PkceFlow::new_login_flow_with_redirect(cancel_token, &auth_server, redirect).await?;
-        let access_token = pkce_flow.access_token.clone();
+        let login_tokens =
+            AuthTokens::interactive_login_with_redirect(cancel_token, &auth_server, redirect)
+                .await?;
+        let access_token = login_tokens.access_token.clone();
         let oauth_session =
-            OAuthSession::from_pkce_flow(pkce_flow, auth_server, Some(access_token));
+            OAuthSession::from_interactive_login(login_tokens, auth_server, Some(access_token));
 
         // Persist eagerly: without this, the freshly logged-in tokens are only saved once
         // something later triggers a dispatcher-managed refresh (e.g. the access token expiring

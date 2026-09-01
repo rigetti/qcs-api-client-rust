@@ -27,7 +27,7 @@ use super::{
     error::TokenError,
     secrets::{SecretAccessToken, SecretRefreshToken},
     settings::AuthServer,
-    tokens::{ClientCredentials, ClientSecret, ExternallyManaged, PkceFlow},
+    tokens::{AuthTokens, ClientCredentials, ClientSecret, ExternallyManaged},
 };
 
 create_init_submodule! {
@@ -40,7 +40,7 @@ create_init_submodule! {
         ClientCredentials,
         ClientSecret,
         ExternallyManaged,
-        PkceFlow,
+        AuthTokens,
         SecretAccessToken,
         SecretRefreshToken,
         TokenDispatcher
@@ -242,16 +242,16 @@ impl ExternallyManaged {
     }
 }
 
-impl_repr!(PkceFlow);
+impl_repr!(AuthTokens);
 
 #[cfg_attr(feature = "stubs", gen_stub_pymethods)]
 #[pymethods]
-impl PkceFlow {
+impl AuthTokens {
     #[new]
     fn __new__(py: Python<'_>, auth_server: AuthServer) -> PyResult<Self> {
         pyo3_async_runtimes::tokio::run(py, async move {
             let cancel_token = cancel_token_with_ctrl_c();
-            Self::new_login_flow(cancel_token, &auth_server)
+            Self::interactive_login(cancel_token, &auth_server)
                 .await
                 .map_err(|err| LoadError::from(err).into())
         })
@@ -260,7 +260,7 @@ impl PkceFlow {
 
 #[cfg(feature = "stubs")]
 pyo3_stub_gen::impl_stub_type!(
-    OAuthGrant = RefreshToken | ClientConfiguration | ExternallyManaged | PkceFlow
+    OAuthGrant = RefreshToken | ClientConfiguration | ExternallyManaged | AuthTokens
 );
 
 impl_repr!(OAuthSession);
