@@ -93,7 +93,7 @@ version = '0.29.0'
 
 [workspace.dependencies.qcs-api-client-common]
 path = 'qcs-api-client-common'
-version = '0.21.0'
+version = '0.21.1'
 
 [workspace.dependencies.qcs-api-client-grpc]
 path = 'qcs-api-client-grpc'
