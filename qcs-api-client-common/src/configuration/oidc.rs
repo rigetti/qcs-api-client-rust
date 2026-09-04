@@ -14,7 +14,7 @@ type Result<T> = std::result::Result<T, DiscoveryError>;
 ///
 /// For more information, see: <https://openid.net/specs/openid-connect-discovery-1_0.html>.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
-pub(crate) struct Discovery {
+pub struct Discovery {
     /// The issuer URL from the discovery document.
     ///
     /// This is the canonical URI that the identity provider uses to sign and validate tokens.
@@ -74,7 +74,7 @@ impl Discovery {
 ///
 /// [openid-impersonation]: https://openid.net/specs/openid-connect-discovery-1_0.html#impersonation
 /// [openid-discovery-section-4]: https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig
-pub(crate) async fn fetch_discovery(
+pub async fn fetch_discovery(
     http: &qcs_dependencies_client::reqwest::Client,
     issuer: impl AsRef<str>,
 ) -> Result<Discovery> {

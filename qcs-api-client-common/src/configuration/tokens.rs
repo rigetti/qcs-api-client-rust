@@ -1050,7 +1050,11 @@ impl TokenRefresher for ClientConfiguration {
 }
 
 /// Get a default http client.
-pub(super) fn default_http_client()
+///
+/// # Errors
+///
+/// Returns an error if the underlying `reqwest` client fails to build.
+pub fn default_http_client()
 -> Result<qcs_dependencies_client::reqwest::Client, qcs_dependencies_client::reqwest::Error> {
     qcs_dependencies_client::reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(10))

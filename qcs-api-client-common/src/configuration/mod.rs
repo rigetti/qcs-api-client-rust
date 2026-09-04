@@ -77,14 +77,15 @@ pub(crate) mod error;
 mod external_command;
 pub mod fs;
 mod login;
-mod oidc;
+pub mod oidc;
 mod pkce;
 mod secret_string;
 pub mod secrets;
 pub mod settings;
 pub mod tokens;
 
-pub use error::{LoadError, TokenError};
+pub use error::{DiscoveryError, LoadError, TokenError};
+pub use tokens::default_http_client;
 #[cfg(feature = "python")]
 pub(crate) mod py;
 

@@ -1,3 +1,9 @@
+## 0.21.1-rc.0 (2026-09-04)
+
+### Features
+
+- make OIDC discovery public, for use in servers
+
 ## 0.21.0 (2026-09-01)
 
 ### Breaking Changes
