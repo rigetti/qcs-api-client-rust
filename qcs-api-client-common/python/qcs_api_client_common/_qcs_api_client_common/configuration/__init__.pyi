@@ -102,21 +102,21 @@ class AuthServer:
         and that they match the `iss` claim in Tokens issued by this identity provider.
         """
     @property
-    def scopes(self) -> typing.Optional[builtins.list[builtins.str]]:
+    def scopes(self) -> typing.Optional[builtins.set[builtins.str]]:
         r"""
         OAuth 2.0 scopes to request during authorization requests.
         If not specified, [`DEFAULT_LOGIN_SCOPES`] will be used.
         The scope `openid` is always requested, even if not present in this list.
         """
     @scopes.setter
-    def scopes(self, value: typing.Optional[typing.Sequence[builtins.str]]) -> None:
+    def scopes(self, value: typing.Optional[builtins.set[builtins.str]]) -> None:
         r"""
         OAuth 2.0 scopes to request during authorization requests.
         If not specified, [`DEFAULT_LOGIN_SCOPES`] will be used.
         The scope `openid` is always requested, even if not present in this list.
         """
     def __eq__(self, other: builtins.object, /) -> builtins.bool: ...
-    def __new__(cls, client_id: builtins.str, issuer: builtins.str, scopes: typing.Optional[typing.Sequence[builtins.str]] = None) -> AuthServer: ...
+    def __new__(cls, client_id: builtins.str, issuer: builtins.str, scopes: typing.Optional[builtins.set[builtins.str]] = None) -> AuthServer: ...
     def __repr__(self) -> builtins.str:
         r"""
         Implements `__repr__` for Python in terms of the Rust

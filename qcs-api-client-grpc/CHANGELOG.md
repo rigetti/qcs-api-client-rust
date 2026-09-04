@@ -1,3 +1,9 @@
+## 0.22.0 (2026-09-04)
+
+### Breaking Changes
+
+- scope resolution for login sessions should respect discovery document limits
+
 ## 0.21.0 (2026-09-01)
 
 ### Breaking Changes

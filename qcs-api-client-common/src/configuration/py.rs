@@ -1,5 +1,6 @@
 #![allow(unused_qualifications)]
 #![allow(non_local_definitions, reason = "necessary for pyo3::pymethods")]
+use std::collections::BTreeSet;
 
 use pyo3::{
     exceptions::PyValueError,
@@ -467,7 +468,7 @@ impl_repr!(AuthServer);
 impl AuthServer {
     #[new]
     #[pyo3(signature = (client_id, issuer, scopes = None))]
-    const fn __new__(client_id: String, issuer: String, scopes: Option<Vec<String>>) -> Self {
+    const fn __new__(client_id: String, issuer: String, scopes: Option<BTreeSet<String>>) -> Self {
         Self::new(client_id, issuer, scopes)
     }
 

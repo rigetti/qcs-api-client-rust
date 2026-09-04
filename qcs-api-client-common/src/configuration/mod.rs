@@ -85,7 +85,9 @@ pub mod settings;
 pub mod tokens;
 
 pub use error::{DiscoveryError, LoadError, TokenError};
+pub use login::resolve_scopes;
 pub use tokens::default_http_client;
+
 #[cfg(feature = "python")]
 pub(crate) mod py;
 

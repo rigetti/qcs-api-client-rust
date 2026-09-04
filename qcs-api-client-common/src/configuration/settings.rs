@@ -1,5 +1,5 @@
 //! Models and utilities for managing QCS settings.
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::path::PathBuf;
 
 use figment::providers::Format;
@@ -19,15 +19,13 @@ use super::{
     expand_path_from_env_or_default,
 };
 
-/// The scopes requested during an interactive login when an [`AuthServer`] does not configure any.
+/// The scopes that we prefer to request during an interactive login.
 ///
-/// This is deliberately a fixed list of the minimal set of scopes needed to make auth convenient,
-/// particularly allowing for sessions to automatically refresh via refresh token (`offline_access`).
-///
-/// Blanketly requesting every `scopes_supported` field of the issuer's discovery document would
-/// cause errors, as not all clients/methods support all scopes. Anything beyond this should
-/// be requested explicitly via [`AuthServer::scopes`].
-pub const DEFAULT_LOGIN_SCOPES: [&str; 4] = [
+/// Using `offline_access` allows automatic token refresh, reducing the need for repeated logins.
+/// Actual scopes used depends on what the [`Discovery`][crate::configuration::oidc::Discovery]
+/// document says the provider supports, see [`resolve_scopes`][`super::login::resolve_scopes`]
+/// for how these preferences are coalesced with other scope configuration sources.
+pub const PREFERRED_LOGIN_SCOPES: [&str; 4] = [
     DISCOVERY_REQUIRED_SCOPE,
     "profile",
     "email",
@@ -185,7 +183,7 @@ pub struct AuthServer {
     /// OAuth 2.0 scopes to request during authorization requests.
     /// If not specified, [`DEFAULT_LOGIN_SCOPES`] will be used.
     /// The scope `openid` is always requested, even if not present in this list.
-    pub scopes: Option<Vec<String>>,
+    pub scopes: Option<BTreeSet<String>>,
 }
 
 impl Default for AuthServer {
@@ -204,7 +202,7 @@ impl AuthServer {
     /// If `scopes` is [`None`], [`DEFAULT_LOGIN_SCOPES`] will be used when requesting authorization tokens.
     /// Note that the required scope `openid` is always requested, even if `scopes` is provided but does not contain it.
     #[must_use]
-    pub const fn new(client_id: String, issuer: String, scopes: Option<Vec<String>>) -> Self {
+    pub const fn new(client_id: String, issuer: String, scopes: Option<BTreeSet<String>>) -> Self {
         Self {
             client_id,
             issuer,
@@ -215,10 +213,11 @@ impl AuthServer {
     /// Create a new [`AuthServer`] with the specified `client_id` and `issuer`,
     /// populating `scopes` with all `scopes_supported` fetched from the issuer's discovery document.
     ///
-    /// Note that the advertised set is generally broader than a login requires, and some providers
-    /// reject a request for all of them. See the comment on [`DEFAULT_LOGIN_SCOPES`].
+    /// Note that the advertised set is generally broader than a login requires, and requesting
+    /// all scopes will sometimes cause errors. See [`PREFERRED_LOGIN_SCOPES`].
     ///
     /// # Errors
+    ///
     /// Returns an error if the discovery document cannot be fetched or parsed.
     pub async fn new_with_discovery_supported_scopes(
         client_id: String,
@@ -229,7 +228,7 @@ impl AuthServer {
         Ok(Self {
             client_id,
             issuer,
-            scopes: Some(discovery.scopes_supported),
+            scopes: discovery.scopes_supported,
         })
     }
 }

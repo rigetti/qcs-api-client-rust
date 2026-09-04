@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::{error::Error, path::PathBuf};
 
 use crate::configuration::{oidc::DISCOVERY_REQUIRED_SCOPE, tokens::LoginError};
@@ -122,7 +123,7 @@ pub enum DiscoveryError {
     #[error("discovery document issuer ({document}) does not match the queried issuer ({query})")]
     IssuerMismatch { document: String, query: String },
     #[error("discovery document `supported_scopes` does not include the required minimum scope \"{expected}\", received: {0:?}", expected = DISCOVERY_REQUIRED_SCOPE)]
-    InvalidScopes(Vec<String>),
+    InvalidScopes(BTreeSet<String>),
 }
 
 /// Errors that can occur when trying to write or update a configuration file.

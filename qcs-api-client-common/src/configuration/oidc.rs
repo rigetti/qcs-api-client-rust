@@ -3,10 +3,14 @@
 //! This module provides utilities for OpenID Connect,
 //! including the [`fetch_discovery`] function for fetching OIDC Discovery documents.
 
+use std::collections::BTreeSet;
+
 use serde::{Deserialize, Serialize};
 use url::Url;
 
 use super::error::DiscoveryError;
+#[cfg(test)]
+use super::settings::PREFERRED_LOGIN_SCOPES;
 
 type Result<T> = std::result::Result<T, DiscoveryError>;
 
@@ -30,8 +34,14 @@ pub struct Discovery {
     /// This URL should have the signing keys the Relying Party (RP) uses to validate signatures.
     pub jwks_uri: Url,
     /// The list of supported scopes.
-    #[serde(default = "discovery_default_scopes")]
-    pub scopes_supported: Vec<String>,
+    ///
+    /// From [RFC 8414][https://datatracker.ietf.org/doc/html/rfc8414]:
+    /// > RECOMMENDED.  JSON array containing a list of the OAuth 2.0
+    /// > [RFC6749] "scope" values that this authorization server supports.
+    /// > Servers MAY choose not to advertise some supported scope values
+    /// > even when this parameter is used.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scopes_supported: Option<BTreeSet<String>>,
     // Note: There are several other useful values the spec requires
     // or recommends, which we might consider adding in the future.
 }
@@ -40,10 +50,6 @@ pub struct Discovery {
 /// the `scopes_supported` value must include at least the `openid` scope.
 pub(crate) const DISCOVERY_REQUIRED_SCOPE: &str = "openid";
 
-fn discovery_default_scopes() -> Vec<String> {
-    vec![DISCOVERY_REQUIRED_SCOPE.to_string()]
-}
-
 impl Discovery {
     #[cfg(test)]
     pub(crate) fn new_for_test(issuer: Url) -> Self {
@@ -51,7 +57,12 @@ impl Discovery {
             authorization_endpoint: issuer.join("/v1/authorize").unwrap(),
             token_endpoint: issuer.join("/v1/token").unwrap(),
             jwks_uri: issuer.join("/.well-known/jwks.json").unwrap(),
-            scopes_supported: discovery_default_scopes(),
+            scopes_supported: Some(
+                PREFERRED_LOGIN_SCOPES
+                    .into_iter()
+                    .map(String::from)
+                    .collect(),
+            ),
             issuer,
         }
     }
@@ -146,12 +157,12 @@ async fn fetch_discovery_impl(
         });
     }
 
-    if discovery
-        .scopes_supported
-        .iter()
-        .all(|scope| scope != DISCOVERY_REQUIRED_SCOPE)
+    // Scopes are RECOMMENDED by the discovery spec, but not required.
+    // However, if they are present, they must include the required `openid`.
+    if let Some(scopes) = &discovery.scopes_supported
+        && !scopes.contains(DISCOVERY_REQUIRED_SCOPE)
     {
-        return Err(DiscoveryError::InvalidScopes(discovery.scopes_supported));
+        return Err(DiscoveryError::InvalidScopes(scopes.clone()));
     }
 
     Ok(discovery)

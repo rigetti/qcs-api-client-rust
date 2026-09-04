@@ -13,7 +13,6 @@ use toml_edit::{DocumentMut, Item};
 use crate::configuration::LoadError;
 
 use super::error::{IoErrorWithPath, IoOperation, WriteError};
-use super::settings::AuthServer;
 use super::tokens::ClientCredentials;
 use super::{DEFAULT_PROFILE_NAME, expand_path_from_env_or_default};
 

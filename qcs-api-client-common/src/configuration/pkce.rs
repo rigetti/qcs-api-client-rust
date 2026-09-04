@@ -1,4 +1,4 @@
-use std::convert::Infallible;
+use std::{collections::BTreeSet, convert::Infallible};
 
 use http_body_util::Full;
 use hyper::body::Bytes;
@@ -77,8 +77,9 @@ pub(crate) struct PkceLoginRequest {
     /// The discovery document to use for the PKCE login.
     pub(crate) discovery: Discovery,
     /// The scopes to request in the token authorization to request.
-    /// If `None`, [`DEFAULT_LOGIN_SCOPES`](crate::configuration::settings::DEFAULT_LOGIN_SCOPES) will be requested.
-    pub(crate) scopes: Option<Vec<String>>,
+    ///
+    /// See [`PREFERRED_LOGIN_SCOPES`](super::settings::PREFERRED_LOGIN_SCOPES) for more info.
+    pub(crate) scopes: Option<BTreeSet<String>>,
 }
 
 /// Launch a PKCE login, requiring the user to authenticate via browser.
@@ -91,12 +92,12 @@ pub(crate) async fn pkce_login(
         join_handle,
     } = RedirectListener::spawn(cancel_token, request.redirect).await?;
 
+    let scopes = resolve_scopes(request.scopes, request.discovery.scopes_supported);
+
     let client = BasicClient::new(ClientId::new(request.client_id))
         .set_auth_uri(AuthUrl::from_url(request.discovery.authorization_endpoint))
         .set_token_uri(TokenUrl::from_url(request.discovery.token_endpoint))
         .set_redirect_uri(redirect_url);
-
-    let scopes = resolve_scopes(request.scopes);
 
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
@@ -338,7 +339,8 @@ pub(in crate::configuration) mod tests {
     use oauth2_test_server::{Client, IssuerConfig, OAuthTestServer};
 
     use crate::configuration::{
-        login::tests::default_scope_string, oidc::fetch_discovery, secrets::SecretAccessToken,
+        oidc::{DISCOVERY_REQUIRED_SCOPE, fetch_discovery},
+        secrets::SecretAccessToken,
         tokens::insecure_validate_token_exp,
     };
 
@@ -409,7 +411,7 @@ pub(in crate::configuration) mod tests {
         ) -> Client {
             server
                 .register_client(serde_json::json!({
-                    "scope": default_scope_string(),
+                    "scope": DISCOVERY_REQUIRED_SCOPE,
                     "redirect_uris": [format_redirect_url(redirect_port)],
                     "client_name": "PkceTestServerHarness"
                 }))
