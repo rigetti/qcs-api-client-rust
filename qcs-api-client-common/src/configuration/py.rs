@@ -403,6 +403,17 @@ impl ClientConfiguration {
         Self::load_profile(profile_name)
     }
 
+    #[staticmethod]
+    #[pyo3(name = "load_profile_with_login")]
+    fn py_load_profile_with_login(py: Python<'_>, profile_name: String) -> PyResult<Self> {
+        pyo3_async_runtimes::tokio::run(py, async move {
+            let cancel_token = cancel_token_with_ctrl_c();
+            Self::load_with_login(cancel_token, Some(profile_name))
+                .await
+                .map_err(Into::into)
+        })
+    }
+
     /// Gets the `Bearer` access token, refreshing it if it is expired.
     ///
     /// # Errors

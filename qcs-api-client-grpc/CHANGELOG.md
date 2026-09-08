@@ -1,3 +1,9 @@
+## 0.22.1 (2026-09-08)
+
+### Fixes
+
+- add missing load_profile_with_login method
+
 ## 0.22.0 (2026-09-04)
 
 ### Breaking Changes
