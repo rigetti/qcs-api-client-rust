@@ -1,3 +1,9 @@
+## 0.24.0 (2026-09-09)
+
+### Breaking Changes
+
+- support the Device Authorization flow
+
 ## 0.23.1 (2026-09-08)
 
 ### Fixes

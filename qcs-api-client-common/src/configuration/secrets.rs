@@ -101,6 +101,7 @@ impl Secrets {
         for (i, ancestor) in secrets_path.as_ref().ancestors().enumerate() {
             match tokio::fs::metadata(ancestor).await {
                 Ok(metadata) => return Ok(metadata.permissions().readonly()),
+                #[expect(clippy::needless_continue, reason = "more readable than empty braces")]
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => continue,
                 Err(error) if i == 0 => {
                     return Err(IoErrorWithPath {

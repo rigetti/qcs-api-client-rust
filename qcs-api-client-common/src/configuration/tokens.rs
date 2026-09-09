@@ -16,7 +16,9 @@ use super::{
     ClientConfiguration, ConfigSource, TokenError, oidc, secrets::Secrets, settings::AuthServer,
 };
 use crate::configuration::{
+    device::{DeviceLoginError, DeviceLoginRequest, DevicePrompt, device_login},
     error::{DiscoveryError, WriteError},
+    login::LoginResponse,
     pkce::{PkceLoginError, PkceLoginRequest, RedirectBinding, pkce_login},
     secrets::{Credential, SecretAccessToken, SecretRefreshToken, TokenPayload},
 };
@@ -204,10 +206,14 @@ pub struct AuthTokens {
 
 /// Errors that can occur when attempting to perform an interactive login.
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum LoginError {
     /// Error that occurred while performing the Authorization Code (PKCE) flow.
     #[error(transparent)]
     Pkce(#[from] PkceLoginError),
+    /// Error that occurred while performing the Device Authorization flow.
+    #[error(transparent)]
+    Device(#[from] DeviceLoginError),
     /// Error that occurred while fetching the discovery document from the `OAuth2` issuer.
     #[error(transparent)]
     Discovery(#[from] DiscoveryError),
@@ -216,8 +222,131 @@ pub enum LoginError {
     Request(#[from] qcs_dependencies_client::reqwest::Error),
 }
 
+/// Setting the `QCS_LOGIN_FLOW` environment variable overrides which interactive `OAuth2` flow is
+/// used when logging in. See [`LoginFlowPreference`] for the accepted values.
+pub const LOGIN_FLOW_VAR: &str = "QCS_LOGIN_FLOW";
+
+/// Which interactive `OAuth2` flow to use when a login is required.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
+#[cfg_attr(feature = "clap", clap(rename_all = "lower"))]
+pub enum LoginFlowPreference {
+    /// Use the device authorization flow if the issuer's discovery document advertises support for
+    /// it, and the PKCE flow otherwise. Falls back to the PKCE flow if a device authorization
+    /// login fails for a reason that another attempt might get past.
+    #[default]
+    Auto,
+    /// Always use the device authorization flow, with no fallback.
+    Device,
+    /// Always use the PKCE flow.
+    Pkce,
+}
+
+/// The error returned when a string cannot be parsed as a [`LoginFlowPreference`].
+#[derive(Debug, thiserror::Error)]
+#[error("`{0}` is not a recognized login flow, expected one of `auto`, `device`, or `pkce`")]
+pub struct InvalidLoginFlow(String);
+
+impl std::str::FromStr for LoginFlowPreference {
+    type Err = InvalidLoginFlow;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.trim().to_lowercase().as_str() {
+            "" | "auto" => Ok(Self::Auto),
+            "device" => Ok(Self::Device),
+            "pkce" => Ok(Self::Pkce),
+            _ => Err(InvalidLoginFlow(s.to_string())),
+        }
+    }
+}
+
+impl LoginFlowPreference {
+    /// Read the preference from the [`LOGIN_FLOW_VAR`] environment variable.
+    ///
+    /// An unset or unrecognized value returns [`LoginFlowPreference::Auto`].
+    #[must_use]
+    pub fn from_env() -> Self {
+        let Ok(value) = std::env::var(LOGIN_FLOW_VAR) else {
+            return Self::Auto;
+        };
+
+        match value.parse() {
+            Ok(preference) => preference,
+            Err(_error) => {
+                #[cfg(feature = "tracing")]
+                tracing::warn!("Ignoring {LOGIN_FLOW_VAR}: {_error}");
+                Self::Auto
+            }
+        }
+    }
+}
+
+/// Which interactive flow a login will actually run.
+///
+/// Resolved from the [`LoginFlowPreference`] and whether the issuer advertises a device
+/// authorization endpoint.
+#[derive(Debug, PartialEq, Eq)]
+enum LoginFlow {
+    /// Run the PKCE flow.
+    Pkce,
+    /// Run the device authorization flow, with no fallback.
+    Device(url::Url),
+    /// Run the device authorization flow, falling back to PKCE where the failure allows it.
+    DeviceThenPkce(url::Url),
+}
+
+impl LoginFlow {
+    /// Resolve the flow to run.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DeviceLoginError::NotSupported`] if the device flow is required but the issuer
+    /// does not advertise it.
+    fn select(
+        preference: LoginFlowPreference,
+        device_authorization_endpoint: Option<url::Url>,
+    ) -> Result<Self, DeviceLoginError> {
+        match (preference, device_authorization_endpoint) {
+            // Inactionable.
+            (LoginFlowPreference::Device, None) => Err(DeviceLoginError::NotSupported),
+            // PKCE-only support and/or preference.
+            (LoginFlowPreference::Pkce, _) | (LoginFlowPreference::Auto, None) => Ok(Self::Pkce),
+            // Device-only preference, so don't fall through to PKCE.
+            (LoginFlowPreference::Device, Some(endpoint)) => Ok(Self::Device(endpoint)),
+            (LoginFlowPreference::Auto, Some(endpoint)) => Ok(Self::DeviceThenPkce(endpoint)),
+        }
+    }
+}
+
+/// The inputs an interactive login takes beyond the auth server itself.
+pub(crate) struct LoginFlowOptions {
+    /// Which interactive flow to use.
+    pub(crate) preference: LoginFlowPreference,
+    /// Where the PKCE flow's local redirect listener comes from.
+    pub(crate) redirect: RedirectBinding,
+}
+
+impl LoginFlowOptions {
+    /// The options a plain login uses: the flow named by [`LOGIN_FLOW_VAR`], with the PKCE flow
+    /// binding its own redirect listener on the default port.
+    pub(crate) fn from_env() -> Self {
+        Self::with_preference(LoginFlowPreference::from_env())
+    }
+
+    /// As [`LoginFlowOptions::from_env`], but with the flow chosen programmatically.
+    pub(crate) fn with_preference(preference: LoginFlowPreference) -> Self {
+        Self {
+            preference,
+            redirect: RedirectBinding::default(),
+        }
+    }
+}
+
 impl AuthTokens {
     /// Performs an interactive login, returning the tokens the auth server issues.
+    ///
+    /// The flow is selected from the issuer's discovery document, but can be overridden with the
+    /// [`LOGIN_FLOW_VAR`] environment variable, see [`Self::interactive_login_with_flow`] for info.
     ///
     /// # Errors
     ///
@@ -226,31 +355,76 @@ impl AuthTokens {
         cancel_token: CancellationToken,
         auth_server: &AuthServer,
     ) -> Result<Self, LoginError> {
-        Self::interactive_login_with_redirect(cancel_token, auth_server, RedirectBinding::default())
-            .await
+        Self::interactive_login_with_options(
+            cancel_token,
+            auth_server,
+            LoginFlowOptions::from_env(),
+        )
+        .await
     }
 
-    /// See [`Self::interactive_login`].
-    pub(crate) async fn interactive_login_with_redirect(
+    /// Performs an interactive login to acquire a new set of tokens, using the given
+    /// [`LoginFlowPreference`] rather than reading [`LOGIN_FLOW_VAR`].
+    ///
+    /// # Errors
+    ///
+    /// See [`LoginError`]
+    pub async fn interactive_login_with_flow(
         cancel_token: CancellationToken,
         auth_server: &AuthServer,
-        redirect: RedirectBinding,
+        preference: LoginFlowPreference,
     ) -> Result<Self, LoginError> {
-        let issuer = auth_server.issuer.clone();
+        Self::interactive_login_with_options(
+            cancel_token,
+            auth_server,
+            LoginFlowOptions::with_preference(preference),
+        )
+        .await
+    }
+
+    /// Performs an interactive login to acquire a new set of tokens,
+    /// with [`LoginFlowOptions`] given explicitly instead of using [`LoginFlowOptions::from_env`].
+    ///
+    /// # Errors
+    ///
+    /// See [`LoginError`]
+    pub(crate) async fn interactive_login_with_options(
+        cancel_token: CancellationToken,
+        auth_server: &AuthServer,
+        options: LoginFlowOptions,
+    ) -> Result<Self, LoginError> {
+        let LoginFlowOptions {
+            preference,
+            redirect,
+        } = options;
 
         let client = default_http_client()?;
-        let discovery = oidc::fetch_discovery(&client, &issuer).await?;
+        let discovery = oidc::fetch_discovery(&client, &auth_server.issuer).await?;
 
-        let response = pkce_login(
-            cancel_token,
-            PkceLoginRequest {
-                client_id: auth_server.client_id.clone(),
-                redirect,
-                discovery,
-                scopes: auth_server.scopes.clone(),
-            },
-        )
-        .await?;
+        let flow = LoginFlow::select(preference, discovery.device_authorization_endpoint.clone())?;
+
+        let response = match flow {
+            LoginFlow::Pkce => {
+                run_pkce_login(cancel_token, auth_server, discovery, redirect).await?
+            }
+            LoginFlow::Device(endpoint) => {
+                run_device_login(cancel_token, auth_server, &discovery, endpoint).await?
+            }
+            LoginFlow::DeviceThenPkce(endpoint) => {
+                match run_device_login(cancel_token.clone(), auth_server, &discovery, endpoint)
+                    .await
+                {
+                    Ok(response) => response,
+                    Err(error) if !error.allows_pkce_fallback() => return Err(error.into()),
+                    Err(error) => {
+                        eprintln!(
+                            "Device authorization login failed, falling back to a PKCE browser login: {error}"
+                        );
+                        run_pkce_login(cancel_token, auth_server, discovery, redirect).await?
+                    }
+                }
+            }
+        };
 
         Ok(Self {
             access_token: SecretAccessToken::from(response.access_token().secret().clone()),
@@ -281,6 +455,47 @@ impl AuthTokens {
 
         Err(TokenError::NoRefreshToken)
     }
+}
+
+/// Run a PKCE login against the given issuer.
+async fn run_pkce_login(
+    cancel_token: CancellationToken,
+    auth_server: &AuthServer,
+    discovery: oidc::Discovery,
+    redirect: RedirectBinding,
+) -> Result<LoginResponse, LoginError> {
+    pkce_login(
+        cancel_token,
+        PkceLoginRequest {
+            client_id: auth_server.client_id.clone(),
+            redirect,
+            discovery,
+            scopes: auth_server.scopes.clone(),
+        },
+    )
+    .await
+    .map_err(LoginError::Pkce)
+}
+
+/// Run a device authorization login against the given issuer.
+async fn run_device_login(
+    cancel_token: CancellationToken,
+    auth_server: &AuthServer,
+    discovery: &oidc::Discovery,
+    device_authorization_endpoint: url::Url,
+) -> Result<LoginResponse, DeviceLoginError> {
+    device_login(
+        cancel_token,
+        DeviceLoginRequest {
+            client_id: auth_server.client_id.clone(),
+            token_endpoint: discovery.token_endpoint.clone(),
+            device_authorization_endpoint,
+            scopes: auth_server.scopes.clone(),
+            advertised_scopes: discovery.scopes_supported.clone(),
+            prompt: DevicePrompt::User,
+        },
+    )
+    .await
 }
 
 impl From<AuthTokens> for Credential {
@@ -1068,7 +1283,9 @@ mod test {
     use std::time::Duration;
 
     use super::*;
+    use crate::configuration::pkce::tests::PkceTestServerHarness;
     use httpmock::prelude::*;
+    use oauth2_test_server::{IssuerConfig, OAuthTestServer};
     use rstest::rstest;
     use time::format_description::well_known::Rfc3339;
     use tokio::time::Instant;
@@ -1483,5 +1700,111 @@ updated_at = "2024-01-01T00:00:00Z"
             "OAuthSession { payload: ClientCredentials, access_token: Some(()), auth_server: AuthServer { client_id: \"some_id\", issuer: \"some_url\", scopes: None } }",
             &format!("{session:?}")
         );
+    }
+
+    /// Which flow each preference resolves to, given whether the issuer advertises device support.
+    #[test]
+    fn test_login_flow_selection() {
+        let endpoint: url::Url = "https://example.com/device/authorize".parse().unwrap();
+        let select = |preference, advertised: bool| {
+            LoginFlow::select(preference, advertised.then(|| endpoint.clone()))
+        };
+
+        assert_eq!(
+            select(LoginFlowPreference::Auto, true).unwrap(),
+            LoginFlow::DeviceThenPkce(endpoint.clone())
+        );
+        assert_eq!(
+            select(LoginFlowPreference::Auto, false).unwrap(),
+            LoginFlow::Pkce
+        );
+        assert_eq!(
+            select(LoginFlowPreference::Device, true).unwrap(),
+            LoginFlow::Device(endpoint.clone())
+        );
+        // `--flow pkce` must not touch the device endpoint, even where it is advertised.
+        assert_eq!(
+            select(LoginFlowPreference::Pkce, true).unwrap(),
+            LoginFlow::Pkce
+        );
+        assert_eq!(
+            select(LoginFlowPreference::Pkce, false).unwrap(),
+            LoginFlow::Pkce
+        );
+        // Forcing the device flow where it isn't advertised should fail rather than use a browser.
+        assert!(matches!(
+            select(LoginFlowPreference::Device, false),
+            Err(DeviceLoginError::NotSupported)
+        ));
+    }
+
+    /// A `device_authorization_endpoint` is authorization-server metadata, so an issuer can
+    /// publish it while rejecting the grant for this particular client. That should not be fatal:
+    /// the PKCE flow is still worth trying.
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_device_flow_falls_back_to_pkce_when_rejected() {
+        // The fallback needs a working PKCE flow, so reserve the redirect listener and register
+        // the client against it exactly as the PKCE tests do.
+        let oauth_server = OAuthTestServer::start_with_config(IssuerConfig {
+            scheme: "http".to_string(),
+            host: "127.0.0.1".to_string(),
+            ..Default::default()
+        })
+        .await;
+        let (redirect_listener, redirect_port) =
+            PkceTestServerHarness::reserve_redirect_listener().await;
+        let client = PkceTestServerHarness::register_client(&oauth_server, redirect_port).await;
+
+        // The test server doesn't publish a `device_authorization_endpoint`, so the document is
+        // served from a mock server that advertises one the client will be turned away from.
+        // Everything the PKCE fallback needs still points at the real server.
+        let mock_server = MockServer::start_async().await;
+        let mut discovery = oidc::Discovery::new_for_test(mock_server.base_url().parse().unwrap());
+        discovery.device_authorization_endpoint =
+            Some(discovery.issuer.join("/v1/device/authorize").unwrap());
+        discovery.authorization_endpoint = format!("{}/authorize", oauth_server.issuer())
+            .parse()
+            .unwrap();
+        discovery.token_endpoint = format!("{}/token", oauth_server.issuer()).parse().unwrap();
+
+        let discovery_mock = mock_server
+            .mock_async(|when, then| {
+                when.method(GET).path("/.well-known/openid-configuration");
+                then.status(200).json_body_obj(&discovery);
+            })
+            .await;
+
+        let device_authorize_mock = mock_server
+            .mock_async(|when, then| {
+                when.method(POST).path("/v1/device/authorize");
+                then.status(400).json_body(serde_json::json!({
+                    "error": "unauthorized_client",
+                    "error_description": "The client is not allowed to use the device grant.",
+                }));
+            })
+            .await;
+
+        let auth_server = AuthServer {
+            client_id: client.client_id,
+            issuer: mock_server.base_url(),
+            scopes: None,
+        };
+
+        let flow = AuthTokens::interactive_login_with_options(
+            CancellationToken::new(),
+            &auth_server,
+            LoginFlowOptions {
+                preference: LoginFlowPreference::Auto,
+                redirect: RedirectBinding::Bound(redirect_listener),
+            },
+        )
+        .await
+        .expect("login should fall back to PKCE and succeed");
+
+        discovery_mock.assert_async().await;
+        device_authorize_mock.assert_async().await;
+
+        insecure_validate_token_exp(&flow.access_token)
+            .expect("the PKCE fallback should produce a valid access token");
     }
 }

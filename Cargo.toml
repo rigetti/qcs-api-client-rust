@@ -45,7 +45,7 @@ serde_path_to_error = '0.1.20'
 serde_repr = '0.1'
 serde_yaml = '0.9'
 syn = '3.0'
-tabled = '0.21'
+tabled = '0.22'
 tempfile = '3.3.0'
 thiserror = '2.0'
 toml_edit = '0.23.7'
@@ -93,25 +93,25 @@ version = '0.29.0'
 
 [workspace.dependencies.qcs-api-client-common]
 path = 'qcs-api-client-common'
-version = '0.22.1'
+version = '0.23.0'
 
 [workspace.dependencies.qcs-api-client-grpc]
 path = 'qcs-api-client-grpc'
-version = '0.22.1'
+version = '0.23.0'
 
 [workspace.dependencies.qcs-api-client-grpc-internal]
 path = 'qcs-api-client-grpc-internal'
 registry = 'rigetti-cargo'
-version = '0.23.1'
+version = '0.24.0'
 
 [workspace.dependencies.qcs-api-client-openapi]
 path = 'qcs-api-client-openapi/public'
-version = '0.23.1'
+version = '0.24.0'
 
 [workspace.dependencies.qcs-api-client-openapi-internal]
 path = 'qcs-api-client-openapi/internal'
 registry = 'rigetti-cargo'
-version = '0.23.1'
+version = '0.24.0'
 
 [workspace.dependencies.qcs-dependencies-client]
 version = '0.5'

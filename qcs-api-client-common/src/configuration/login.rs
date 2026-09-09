@@ -1,8 +1,30 @@
 //! Shared plumbing for the interactive `OAuth2` login flows.
+//!
+//! Two interactive flows are supported:
+//! - [Authorization Code flow with PKCE][super::pkce] which requires a browser redirect back to
+//!   a `localhost` port. That's not always available (e.g. from a cloud-based environment).
+//! - [Device Authorization flow][super::device] which does not require a browser redirect, but
+//!   doesn't have broad support among identity providers (e.g. Cognito doesn't provide it easily).
 
 use std::collections::BTreeSet;
 
+use oauth2::{EmptyExtraTokenFields, StandardTokenResponse, basic::BasicTokenType};
+
 use crate::configuration::{oidc::DISCOVERY_REQUIRED_SCOPE, settings::PREFERRED_LOGIN_SCOPES};
+
+/// The tokens an interactive login ends with.
+///
+/// Both flows finish by exchanging a code at the token endpoint, so both get this back.
+pub(crate) type LoginResponse = StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>;
+
+/// An HTTP client, used during interactive login, for making `OAuth2` requests.
+///
+/// Redirects are not followed, as that opens the client up to SSRF vulnerabilities.
+pub(crate) fn oauth_http_client() -> Result<oauth2::reqwest::Client, oauth2::reqwest::Error> {
+    oauth2::reqwest::ClientBuilder::new()
+        .redirect(oauth2::reqwest::redirect::Policy::none())
+        .build()
+}
 
 /// Resolve the set of scopes to request during an interactive login.
 ///
@@ -44,6 +66,15 @@ pub(crate) mod tests {
                 .map(|s| s.to_string())
                 .collect::<BTreeSet<_>>()
         };
+    }
+
+    /// The space-delimited `scope` parameter a login sends when the auth server configures no
+    /// scopes and the issuer advertises none.
+    pub(crate) fn default_scope_string() -> String {
+        resolve_scopes(None, None)
+            .into_iter()
+            .collect::<Vec<_>>()
+            .join(" ")
     }
 
     /// Configured scopes are used verbatim, with [`DISCOVERY_REQUIRED_SCOPE`] added if missing.

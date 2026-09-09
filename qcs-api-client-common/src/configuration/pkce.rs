@@ -6,10 +6,9 @@ use hyper::server::conn::http1;
 use hyper::service::service_fn;
 use hyper_util::rt::TokioIo;
 use oauth2::{
-    AuthUrl, AuthorizationCode, ClientId, CsrfToken, EmptyExtraTokenFields, HttpClientError,
-    PkceCodeChallenge, RedirectUrl, RequestTokenError, Scope, StandardErrorResponse,
-    StandardTokenResponse, TokenUrl,
-    basic::{BasicClient, BasicErrorResponseType, BasicTokenType},
+    AuthUrl, AuthorizationCode, ClientId, CsrfToken, HttpClientError, PkceCodeChallenge,
+    RedirectUrl, RequestTokenError, Scope, StandardErrorResponse, TokenUrl,
+    basic::{BasicClient, BasicErrorResponseType},
 };
 use qcs_dependencies_client::http::{Response, StatusCode};
 
@@ -17,7 +16,10 @@ use tokio::net::TcpListener;
 use tokio_util::sync::CancellationToken;
 use url::form_urlencoded;
 
-use crate::configuration::{login::resolve_scopes, oidc::Discovery};
+use crate::configuration::{
+    login::{LoginResponse, oauth_http_client, resolve_scopes},
+    oidc::Discovery,
+};
 
 /// The scheme for the redirect URL.
 const PKCE_REDIRECT_URL_SCHEME: &str = "http";
@@ -62,9 +64,6 @@ pub enum PkceLoginError {
     ),
 }
 
-/// The response returned by a Authorization Code Exchange following a successful PKCE login.
-pub(crate) type PkceLoginResponse = StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>;
-
 /// The request parameters for a PKCE login.
 pub(crate) struct PkceLoginRequest {
     /// The oauth2 client ID to use for the PKCE login.
@@ -86,7 +85,7 @@ pub(crate) struct PkceLoginRequest {
 pub(crate) async fn pkce_login(
     cancel_token: CancellationToken,
     request: PkceLoginRequest,
-) -> Result<PkceLoginResponse, PkceLoginError> {
+) -> Result<LoginResponse, PkceLoginError> {
     let RedirectListener {
         redirect_url,
         join_handle,
@@ -129,10 +128,7 @@ pub(crate) async fn pkce_login(
         return Err(PkceLoginError::CodeChallengeMismatch);
     }
 
-    let http_client = oauth2::reqwest::ClientBuilder::new()
-        // Following redirects opens the client up to SSRF vulnerabilities.
-        .redirect(oauth2::reqwest::redirect::Policy::none())
-        .build()?;
+    let http_client = oauth_http_client()?;
 
     let token_result = client
         .exchange_code(code)
@@ -176,12 +172,13 @@ impl CodeStatePair {
     }
 }
 
-/// How the callback listener port is configured.
+/// Where a PKCE login's local redirect listener comes from.
 #[derive(Debug)]
 pub(crate) enum RedirectBinding {
     /// Bind a listener on this port when the login starts.
     Port(u16),
-    /// Use a listener with a pre-bound port - tests use this to select a random port.
+    /// Adopt a listener the caller has already bound.
+    /// Used for tests which randomly select listener ports.
     #[cfg(test)]
     Bound(TcpListener),
 }
@@ -339,20 +336,20 @@ pub(in crate::configuration) mod tests {
     use oauth2_test_server::{Client, IssuerConfig, OAuthTestServer};
 
     use crate::configuration::{
-        oidc::{DISCOVERY_REQUIRED_SCOPE, fetch_discovery},
+        oidc::{DEVICE_CODE_GRANT_TYPE, DISCOVERY_REQUIRED_SCOPE, fetch_discovery},
         secrets::SecretAccessToken,
         tokens::insecure_validate_token_exp,
     };
 
     use super::*;
 
-    /// A test harness for the interactive login flows, containing the OAuth test server, a
-    /// registered client, and the server's discovery document.
+    /// A test harness for the interactive login flows.
     ///
     /// The OAuth test server matches redirect URIs exactly, with no wildcarding, so the client has
-    /// to be registered with the redirect listener's exact port. The harness has to reserve a port
-    /// first so it can tell the server which port to send the redirect to before it attempts the
-    /// redict - see [`RedirectBinding`].
+    /// to be registered with the redirect listener's exact port. So, the harness has to reserve a
+    /// port first so it can know what to accept as a redirect before listening at that port.
+    ///
+    /// See [`RedirectBinding`].
     pub(in crate::configuration) struct PkceTestServerHarness {
         pub server: OAuthTestServer,
         pub client: Client,
@@ -413,6 +410,7 @@ pub(in crate::configuration) mod tests {
                 .register_client(serde_json::json!({
                     "scope": DISCOVERY_REQUIRED_SCOPE,
                     "redirect_uris": [format_redirect_url(redirect_port)],
+                    "grant_types": ["authorization_code", DEVICE_CODE_GRANT_TYPE],
                     "client_name": "PkceTestServerHarness"
                 }))
                 .await

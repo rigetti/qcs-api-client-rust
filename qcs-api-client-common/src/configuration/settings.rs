@@ -181,8 +181,7 @@ pub struct AuthServer {
     pub issuer: String,
 
     /// OAuth 2.0 scopes to request during authorization requests.
-    /// If not specified, [`DEFAULT_LOGIN_SCOPES`] will be used.
-    /// The scope `openid` is always requested, even if not present in this list.
+    /// See [`resolve_scopes`][super::login::resolve_scopes] for more defails.
     pub scopes: Option<BTreeSet<String>>,
 }
 
@@ -199,8 +198,8 @@ impl Default for AuthServer {
 impl AuthServer {
     /// Create a new [`AuthServer`] with a `client_id` and `issuer` and an optional list of scopes.
     ///
-    /// If `scopes` is [`None`], [`DEFAULT_LOGIN_SCOPES`] will be used when requesting authorization tokens.
-    /// Note that the required scope `openid` is always requested, even if `scopes` is provided but does not contain it.
+    /// If `scopes` is [`None`], [`resolve_scopes`][super::login::resolve_scopes] will be used to
+    /// determine the scopes to request during authorization.
     #[must_use]
     pub const fn new(client_id: String, issuer: String, scopes: Option<BTreeSet<String>>) -> Self {
         Self {

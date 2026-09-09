@@ -105,15 +105,13 @@ class AuthServer:
     def scopes(self) -> typing.Optional[builtins.set[builtins.str]]:
         r"""
         OAuth 2.0 scopes to request during authorization requests.
-        If not specified, [`DEFAULT_LOGIN_SCOPES`] will be used.
-        The scope `openid` is always requested, even if not present in this list.
+        See [`resolve_scopes`][super::login::resolve_scopes] for more defails.
         """
     @scopes.setter
     def scopes(self, value: typing.Optional[builtins.set[builtins.str]]) -> None:
         r"""
         OAuth 2.0 scopes to request during authorization requests.
-        If not specified, [`DEFAULT_LOGIN_SCOPES`] will be used.
-        The scope `openid` is always requested, even if not present in this list.
+        See [`resolve_scopes`][super::login::resolve_scopes] for more defails.
         """
     def __eq__(self, other: builtins.object, /) -> builtins.bool: ...
     def __new__(cls, client_id: builtins.str, issuer: builtins.str, scopes: typing.Optional[builtins.set[builtins.str]] = None) -> AuthServer: ...

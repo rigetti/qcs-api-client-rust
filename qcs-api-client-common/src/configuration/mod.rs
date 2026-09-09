@@ -73,6 +73,7 @@ use self::{
     settings::Settings,
 };
 
+mod device;
 pub(crate) mod error;
 mod external_command;
 pub mod fs;
@@ -91,11 +92,12 @@ pub use tokens::default_http_client;
 #[cfg(feature = "python")]
 pub(crate) mod py;
 
-use pkce::RedirectBinding;
 use settings::AuthServer;
 use tokens::{
-    AuthTokens, OAuthGrant, OAuthSession, RefreshToken, TokenDispatcher, persist_oauth_session,
+    AuthTokens, LoginFlowOptions, OAuthGrant, OAuthSession, RefreshToken, TokenDispatcher,
+    persist_oauth_session,
 };
+pub use tokens::{LOGIN_FLOW_VAR, LoginFlowPreference};
 
 /// Default profile name.
 pub const DEFAULT_PROFILE_NAME: &str = "default";
@@ -444,15 +446,20 @@ impl ClientConfiguration {
         cancel_token: CancellationToken,
         profile_name: Option<String>,
     ) -> Result<Self, LoadError> {
-        Self::load_with_login_with_redirect(cancel_token, profile_name, RedirectBinding::default())
+        Self::load_with_login_options(cancel_token, profile_name, LoginFlowOptions::from_env())
             .await
     }
 
-    /// See [`Self::load_with_login`].
-    pub(crate) async fn load_with_login_with_redirect(
+    /// As [`ClientConfiguration::load_with_login`], but with the login flow's inputs given
+    /// explicitly rather than read from the environment.
+    ///
+    /// # Errors
+    ///
+    /// See [`LoadError`]
+    pub(crate) async fn load_with_login_options(
         cancel_token: CancellationToken,
         profile_name: Option<String>,
-        redirect: RedirectBinding,
+        login_options: LoginFlowOptions,
     ) -> Result<Self, LoadError> {
         let ConfigurationContext {
             mut builder,
@@ -520,7 +527,7 @@ impl ClientConfiguration {
 
         // At this point the stored credentials are known to be invalid, so a login is required
         let login_tokens =
-            AuthTokens::interactive_login_with_redirect(cancel_token, &auth_server, redirect)
+            AuthTokens::interactive_login_with_options(cancel_token, &auth_server, login_options)
                 .await?;
         let access_token = login_tokens.access_token.clone();
         let oauth_session =
@@ -737,7 +744,9 @@ mod test {
             SecretRefreshToken, Secrets, TokenPayload,
         },
         settings::{SETTINGS_PATH_VAR, Settings},
-        tokens::{ClientCredentialsResponse, RefreshTokenResponse, TokenRefresher},
+        tokens::{
+            ClientCredentialsResponse, LoginFlowOptions, RefreshTokenResponse, TokenRefresher,
+        },
     };
 
     use super::{settings::QCS_DEFAULT_AUTH_ISSUER_PRODUCTION, tokens::ClientCredentials};
@@ -1130,6 +1139,16 @@ token_type = "Bearer"
         );
     }
 
+    /// The login options for a test that reserved its own redirect listener via
+    /// [`PkceTestServerHarness`]: the login serves its redirect on that listener rather than
+    /// binding the default port, which is what lets these tests run concurrently.
+    fn login_options(redirect_listener: tokio::net::TcpListener) -> LoginFlowOptions {
+        LoginFlowOptions {
+            redirect: RedirectBinding::Bound(redirect_listener),
+            ..LoginFlowOptions::from_env()
+        }
+    }
+
     /// Exercises the PKCE login flow end-to-end, ensuring that the token is persisted to the secrets file.
     #[test]
     fn test_pkce_flow_persists_token() {
@@ -1207,10 +1226,10 @@ access_token = ""
             runtime.block_on(async {
                 let cancel_token = CancellationToken::new();
                 // should load the configuration and perform a login flow
-                let configuration = ClientConfiguration::load_with_login_with_redirect(
+                let configuration = ClientConfiguration::load_with_login_options(
                     cancel_token,
                     None,
-                    RedirectBinding::Bound(redirect_listener),
+                    login_options(redirect_listener),
                 )
                 .await
                 .expect("should load configuration");
@@ -1339,10 +1358,10 @@ access_token = ""
 
                 // Deliberately do NOT call `.refresh()` afterward: `load_with_login` itself
                 // should persist the freshly logged-in tokens.
-                let configuration = ClientConfiguration::load_with_login_with_redirect(
+                let configuration = ClientConfiguration::load_with_login_options(
                     cancel_token,
                     None,
-                    RedirectBinding::Bound(redirect_listener),
+                    login_options(redirect_listener),
                 )
                 .await
                 .expect("should perform a login flow");

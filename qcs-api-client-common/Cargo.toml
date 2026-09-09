@@ -8,7 +8,7 @@ name = 'qcs-api-client-common'
 publish = true
 readme = 'README.md'
 repository = 'https://github.com/rigetti/qcs-api-client-rust'
-version = '0.22.1'
+version = '0.23.0'
 
 [package.authors]
 workspace = true
@@ -30,7 +30,7 @@ name = 'qcs_api_client_common'
 
 [features]
 _insecure-issuer-validation = []
-clap = ['dep:clap-stdin', 'dep:miette', 'dep:serde_path_to_error']
+clap = ['dep:clap', 'clap/derive', 'dep:clap-stdin', 'dep:miette', 'dep:serde_path_to_error']
 python = ['dep:pyo3', 'dep:pyo3-async-runtimes', 'dep:pyo3-build-config', 'dep:rigetti-pyo3', 'tokio/macros']
 stubs = ['python', 'dep:pyo3-stub-gen', 'rigetti-pyo3/stubs']
 test = ['_insecure-issuer-validation']
@@ -45,6 +45,10 @@ workspace = true
 workspace = true
 
 [dependencies.backoff]
+workspace = true
+
+[dependencies.clap]
+optional = true
 workspace = true
 
 [dependencies.clap-stdin]

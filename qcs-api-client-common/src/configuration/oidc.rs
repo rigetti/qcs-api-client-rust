@@ -33,8 +33,33 @@ pub struct Discovery {
     ///
     /// This URL should have the signing keys the Relying Party (RP) uses to validate signatures.
     pub jwks_uri: Url,
-    /// The list of supported scopes.
+    /// The device authorization endpoint, per [RFC 8628][rfc8628].
     ///
+    /// [RFC 8628 Section 4][rfc8628-discovery] says support is indicated by the discovery document:
+    /// - `grant_types_supported` contains `urn:ietf:params:oauth:grant-type:device_code`
+    /// - `device_authorization_endpoint` is present and the value is a valid URL
+    ///
+    /// Note that the language is not very clear... the `device_authorization_endpoint` field is
+    /// marked as "OPTIONAL" but the spec does not say what might be used instead if it is missing.
+    /// For example, there is no indication we can reuse the `authorization_endpoint` here.
+    ///
+    /// Also note that the discovery document is not client-specific, and any particular `client_id`
+    /// may not have the feature even if another one does. There's no way to pre-determine that
+    /// from metadata alone; we'll just attempt a device authorization request for any client.
+    ///
+    /// [rfc8628]: https://datatracker.ietf.org/doc/html/rfc8628#section-3.1
+    /// [rfc8628-discovery]: https://datatracker.ietf.org/doc/html/rfc8628#section-4
+    #[serde(default)]
+    pub device_authorization_endpoint: Option<Url>,
+    /// From [OpenID Connect Discovery 1.0][https://openid.net/specs/openid-connect-discovery-1_0.html]:
+    ///
+    /// > OPTIONAL.
+    /// > JSON array containing a list of the OAuth 2.0 Grant Type values that this OP supports.
+    /// > Dynamic OpenID Providers MUST support the authorization_code
+    /// > and implicit Grant Type values and MAY support other Grant Types.
+    /// > If omitted, the default value is [authorization_code, implicit].
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grant_types_supported: Option<Vec<String>>,
     /// From [RFC 8414][https://datatracker.ietf.org/doc/html/rfc8414]:
     /// > RECOMMENDED.  JSON array containing a list of the OAuth 2.0
     /// > [RFC6749] "scope" values that this authorization server supports.
@@ -45,6 +70,15 @@ pub struct Discovery {
     // Note: There are several other useful values the spec requires
     // or recommends, which we might consider adding in the future.
 }
+
+/// The `grant_type` identifying the Device Authorization Grant, per
+/// [RFC 8628 Section 3.4](https://datatracker.ietf.org/doc/html/rfc8628#section-3.4).
+///
+/// Though the spec requires this (see note on [`Discovery::device_authorization_endpoint`]),
+/// it may still be worth attempting the flow even if the grant type is not listed just to
+/// tolerate a slightly misconfigured discovery document.
+#[cfg(test)]
+pub(crate) const DEVICE_CODE_GRANT_TYPE: &str = "urn:ietf:params:oauth:grant-type:device_code";
 
 /// Per [Provider Metadata][https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata],
 /// the `scopes_supported` value must include at least the `openid` scope.
@@ -57,6 +91,8 @@ impl Discovery {
             authorization_endpoint: issuer.join("/v1/authorize").unwrap(),
             token_endpoint: issuer.join("/v1/token").unwrap(),
             jwks_uri: issuer.join("/.well-known/jwks.json").unwrap(),
+            device_authorization_endpoint: None,
+            grant_types_supported: None,
             scopes_supported: Some(
                 PREFERRED_LOGIN_SCOPES
                     .into_iter()
