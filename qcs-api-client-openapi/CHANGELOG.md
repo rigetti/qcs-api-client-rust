@@ -1,3 +1,9 @@
+## 0.25.0 (2026-09-10)
+
+### Breaking Changes
+
+- regenerate after openapi updates
+
 ## 0.24.0 (2026-09-09)
 
 ### Breaking Changes
