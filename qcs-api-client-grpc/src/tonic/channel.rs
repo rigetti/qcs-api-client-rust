@@ -3,7 +3,6 @@
 //! The [`ChannelBuilder`] is the primary entry point for configuring a gRPC channel.
 use std::time::Duration;
 
-use backoff::ExponentialBackoff;
 use hyper_socks2::{Auth, SocksConnector};
 use hyper_util::client::legacy::connect::HttpConnector;
 use qcs_dependencies_client::http::{Uri, uri::InvalidUri};
@@ -16,7 +15,7 @@ use qcs_dependencies_client::tower::{Layer, ServiceBuilder};
 use url::Url;
 
 use qcs_api_client_common::{
-    backoff::{self, default_backoff},
+    backoff::{ExponentialBuilder, default_backoff},
     configuration::{ClientConfiguration, LoadError, TokenError, tokens::TokenRefresher},
 };
 
@@ -118,8 +117,8 @@ pub struct RetryOptions<O = ()> {
     other: O,
 }
 
-impl From<ExponentialBackoff> for RetryOptions<()> {
-    fn from(backoff: ExponentialBackoff) -> Self {
+impl From<ExponentialBuilder> for RetryOptions<()> {
+    fn from(backoff: ExponentialBuilder) -> Self {
         Self {
             layer: RetryLayer { backoff },
             other: (),
@@ -299,10 +298,10 @@ where
         };
     }
 
-    /// Wrap the channel with the given [`ExponentialBackoff`] configuration.
+    /// Wrap the channel with the given [`ExponentialBuilder`] configuration.
     pub fn with_retry_backoff(
         self,
-        backoff: ExponentialBackoff,
+        backoff: ExponentialBuilder,
     ) -> ChannelBuilder<RetryOptions<O>> {
         self.with_retry_layer(RetryLayer { backoff })
     }

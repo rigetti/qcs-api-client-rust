@@ -8,7 +8,7 @@ name = 'qcs-api-client-common'
 publish = true
 readme = 'README.md'
 repository = 'https://github.com/rigetti/qcs-api-client-rust'
-version = '0.24.0'
+version = '0.25.0-rc.0'
 
 [package.authors]
 workspace = true
@@ -44,7 +44,7 @@ workspace = true
 [dependencies.async-trait]
 workspace = true
 
-[dependencies.backoff]
+[dependencies.backon]
 workspace = true
 
 [dependencies.clap]

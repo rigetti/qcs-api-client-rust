@@ -1,26 +1,31 @@
 //! Exponential backoff for use with QCS.
 //!
-//! This re-exports types from [`backoff`](::backoff) and provides a [`default_backoff`] function
-//! to create a more useful default [`ExpontentialBackoff`].
+//! This re-exports types from [`backon`](::backon) and provides a [`default_backoff`] function
+//! to create a more useful default [`ExponentialBuilder`].
+//!
+//! [`ExponentialBuilder`] is cheaply `Clone`/`Copy`, so it can be stored and reused to
+//! [`BackoffBuilder::build`] a fresh [`ExponentialBackoff`] iterator for each retry sequence.
 
 use std::{error::Error as _, time::Duration};
 
 use qcs_dependencies_client::http::StatusCode;
 
-use ::backoff::backoff::Backoff;
-pub use ::backoff::*;
+pub use ::backon::*;
 
-/// Create a default [`ExponentialBackoff`] for use with QCS.
+/// Create a default [`ExponentialBuilder`] for use with QCS.
 ///
-/// This backoff will retry for up to 5 minutes, with a maximum interval of 30 seconds and some
-/// randomized jitter.
+/// The built backoff will retry for up to 5 minutes, with a maximum interval of 30 seconds and
+/// some randomized jitter.
 #[allow(clippy::module_name_repetitions)]
 #[must_use]
-pub fn default_backoff() -> ExponentialBackoff {
-    ExponentialBackoffBuilder::new()
-        .with_max_elapsed_time(Some(Duration::from_secs(300)))
-        .with_max_interval(Duration::from_secs(30))
-        .build()
+pub fn default_backoff() -> ExponentialBuilder {
+    ExponentialBuilder::new()
+        .with_jitter()
+        .with_min_delay(Duration::from_millis(500))
+        .with_factor(1.5)
+        .with_max_delay(Duration::from_secs(30))
+        .with_total_delay(Some(Duration::from_secs(300)))
+        .without_max_times()
 }
 
 /// Return `true` if the status code is one that could be retried.
@@ -57,7 +62,7 @@ pub fn duration_from_response(
             }
         }
 
-        backoff.next_backoff()
+        backoff.next()
     } else {
         None
     }
@@ -91,7 +96,7 @@ pub fn duration_from_reqwest_error(
                 .and_then(|inner| inner.downcast_ref::<hyper::Error>())
                 .is_some_and(hyper::Error::is_closed)
         {
-            backoff.next_backoff()
+            backoff.next()
         } else {
             None
         }
@@ -114,7 +119,7 @@ pub fn duration_from_io_error(
             error.kind(),
             ErrorKind::ConnectionReset | ErrorKind::ConnectionAborted
         ) {
-            backoff.next_backoff()
+            backoff.next()
         } else {
             None
         }

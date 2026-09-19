@@ -25,7 +25,8 @@
 use super::{ContentType, Error, configuration};
 use crate::{apis::ResponseContent, models};
 use ::qcs_api_client_common::backoff::{
-    ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error, duration_from_response,
+    BackoffBuilder, ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error,
+    duration_from_response,
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
@@ -452,7 +453,7 @@ pub async fn create_reservation(
     x_qcs_account_id: Option<&str>,
     x_qcs_account_type: Option<models::AccountType>,
 ) -> Result<models::Reservation, Error<CreateReservationError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::POST;
     loop {
@@ -641,7 +642,7 @@ pub async fn delete_reservation(
     configuration: &configuration::Configuration,
     reservation_id: i64,
 ) -> Result<models::Reservation, Error<DeleteReservationError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::DELETE;
     loop {
@@ -852,7 +853,7 @@ pub async fn find_available_reservations(
     page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<models::FindAvailableReservationsResponse, Error<FindAvailableReservationsError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -1043,7 +1044,7 @@ pub async fn get_quantum_processor_calendar(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
 ) -> Result<models::QuantumProcessorCalendar, Error<GetQuantumProcessorCalendarError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -1230,7 +1231,7 @@ pub async fn get_reservation(
     configuration: &configuration::Configuration,
     reservation_id: i64,
 ) -> Result<models::Reservation, Error<GetReservationError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -1449,7 +1450,7 @@ pub async fn list_group_reservations(
     page_token: Option<&str>,
     show_deleted: Option<&str>,
 ) -> Result<models::ListReservationsResponse, Error<ListGroupReservationsError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -1687,7 +1688,7 @@ pub async fn list_reservations(
     x_qcs_account_id: Option<&str>,
     x_qcs_account_type: Option<models::AccountType>,
 ) -> Result<models::ListReservationsResponse, Error<ListReservationsError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {

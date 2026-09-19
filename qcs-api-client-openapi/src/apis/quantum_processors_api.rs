@@ -25,7 +25,8 @@
 use super::{ContentType, Error, configuration};
 use crate::{apis::ResponseContent, models};
 use ::qcs_api_client_common::backoff::{
-    ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error, duration_from_response,
+    BackoffBuilder, ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error,
+    duration_from_response,
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
@@ -306,7 +307,7 @@ pub async fn get_instruction_set_architecture(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
 ) -> Result<models::InstructionSetArchitecture, Error<GetInstructionSetArchitectureError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -493,7 +494,7 @@ pub async fn get_quantum_processor(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
 ) -> Result<models::QuantumProcessor, Error<GetQuantumProcessorError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -679,7 +680,7 @@ pub async fn get_quantum_processor_accessors(
     quantum_processor_id: &str,
 ) -> Result<models::ListQuantumProcessorAccessorsResponse, Error<GetQuantumProcessorAccessorsError>>
 {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -882,7 +883,7 @@ pub async fn list_instruction_set_architectures(
     models::ListInstructionSetArchitectureResponse,
     Error<ListInstructionSetArchitecturesError>,
 > {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -1081,7 +1082,7 @@ pub async fn list_quantum_processors(
     page_size: Option<u64>,
     page_token: Option<&str>,
 ) -> Result<models::ListQuantumProcessorsResponse, Error<ListQuantumProcessorsError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {

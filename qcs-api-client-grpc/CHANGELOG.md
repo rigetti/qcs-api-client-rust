@@ -1,3 +1,9 @@
+## 0.25.0-rc.0 (2026-09-19)
+
+### Breaking Changes
+
+- migrate from backoff (unmaintatined) to backon
+
 ## 0.24.0 (2026-09-10)
 
 ### Breaking Changes

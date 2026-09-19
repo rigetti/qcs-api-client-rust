@@ -25,7 +25,8 @@
 use super::{ContentType, Error, configuration};
 use crate::{apis::ResponseContent, models};
 use ::qcs_api_client_common::backoff::{
-    ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error, duration_from_response,
+    BackoffBuilder, ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error,
+    duration_from_response,
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
@@ -347,7 +348,7 @@ pub async fn create_endpoint(
     configuration: &configuration::Configuration,
     create_endpoint_parameters: crate::models::CreateEndpointParameters,
 ) -> Result<models::Endpoint, Error<CreateEndpointError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::POST;
     loop {
@@ -513,7 +514,7 @@ pub async fn delete_endpoint(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
 ) -> Result<(), Error<DeleteEndpointError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::DELETE;
     loop {
@@ -695,7 +696,7 @@ pub async fn get_default_endpoint(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
 ) -> Result<models::Endpoint, Error<GetDefaultEndpointError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -879,7 +880,7 @@ pub async fn get_endpoint(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
 ) -> Result<models::Endpoint, Error<GetEndpointError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -1079,7 +1080,7 @@ pub async fn list_endpoints(
     page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<models::ListEndpointsResponse, Error<ListEndpointsError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -1252,7 +1253,7 @@ pub async fn restart_endpoint(
     endpoint_id: &str,
     restart_endpoint_request: Option<crate::models::RestartEndpointRequest>,
 ) -> Result<(), Error<RestartEndpointError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::POST;
     loop {

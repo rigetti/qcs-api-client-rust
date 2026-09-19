@@ -538,6 +538,46 @@ paths:
       summary: Get Default Endpoint
       tags:
         - endpoints
+  "/v1/endpoints/{endpoint_id}/accessors":
+    get:
+      tags:
+        - deployments
+      parameters:
+        - name: endpoint_id
+          schema:
+            type: string
+            title: EndpointId
+            externalDocs:
+              url: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-label-names
+            maxLength: 63
+            minLength: 1
+            pattern: ^[a-z](([a-z0-9-]{0,61})[a-z0-9])?$
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ListQuantumProcessorAccessorsResponse"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearerOptional: []
+      operationId: GetEndpointAccessors
   "/v1/quantumProcessors/{quantum_processor_id}":
     get:
       tags:
