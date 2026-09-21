@@ -28,7 +28,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Group {
     #[serde(rename = "createdTime")]
-    pub created_time: String,
+    pub created_time: chrono::DateTime<chrono::FixedOffset>,
 
     #[serde(rename = "description")]
     pub description: String,
@@ -37,23 +37,23 @@ pub struct Group {
     pub id: String,
 
     #[serde(rename = "lastMembershipUpdatedTime")]
-    pub last_membership_updated_time: String,
+    pub last_membership_updated_time: chrono::DateTime<chrono::FixedOffset>,
 
     #[serde(rename = "name")]
     pub name: String,
 
     #[serde(rename = "updatedTime")]
-    pub updated_time: String,
+    pub updated_time: chrono::DateTime<chrono::FixedOffset>,
 }
 
 impl Group {
     pub fn new(
-        created_time: String,
+        created_time: chrono::DateTime<chrono::FixedOffset>,
         description: String,
         id: String,
-        last_membership_updated_time: String,
+        last_membership_updated_time: chrono::DateTime<chrono::FixedOffset>,
         name: String,
-        updated_time: String,
+        updated_time: chrono::DateTime<chrono::FixedOffset>,
     ) -> Group {
         Group {
             created_time,

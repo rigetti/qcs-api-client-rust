@@ -7,7 +7,7 @@ license = 'Apache-2.0'
 name = 'qcs-api-client-openapi'
 publish = true
 repository = 'https://github.com/rigetti/qcs-api-client-rust'
-version = '0.25.0'
+version = '0.26.0'
 
 [package.authors]
 workspace = true
@@ -27,6 +27,9 @@ tracing-opentelemetry = ['dep:anyhow', 'dep:tracing', 'tracing-config']
 [dependencies]
 [dependencies.anyhow]
 optional = true
+workspace = true
+
+[dependencies.chrono]
 workspace = true
 
 [dependencies.clap]

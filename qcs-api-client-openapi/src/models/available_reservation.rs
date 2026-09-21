@@ -31,7 +31,7 @@ pub struct AvailableReservation {
     pub duration: String,
 
     #[serde(rename = "endTime")]
-    pub end_time: String,
+    pub end_time: chrono::DateTime<chrono::FixedOffset>,
 
     #[serde(rename = "price")]
     pub price: i64,
@@ -40,16 +40,16 @@ pub struct AvailableReservation {
     pub quantum_processor_id: String,
 
     #[serde(rename = "startTime")]
-    pub start_time: String,
+    pub start_time: chrono::DateTime<chrono::FixedOffset>,
 }
 
 impl AvailableReservation {
     pub fn new(
         duration: String,
-        end_time: String,
+        end_time: chrono::DateTime<chrono::FixedOffset>,
         price: i64,
         quantum_processor_id: String,
-        start_time: String,
+        start_time: chrono::DateTime<chrono::FixedOffset>,
     ) -> AvailableReservation {
         AvailableReservation {
             duration,

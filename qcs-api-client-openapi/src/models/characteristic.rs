@@ -43,7 +43,7 @@ pub struct Characteristic {
     pub parameter_values: Option<Vec<f64>>,
     /// The date and time at which the characteristic was measured.
     #[serde(rename = "timestamp")]
-    pub timestamp: String,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
     /// The characteristic value measured.
     #[serde(rename = "value")]
     pub value: f64,
@@ -51,7 +51,11 @@ pub struct Characteristic {
 
 impl Characteristic {
     /// A measured characteristic of an operation.
-    pub fn new(name: String, timestamp: String, value: f64) -> Characteristic {
+    pub fn new(
+        name: String,
+        timestamp: chrono::DateTime<chrono::FixedOffset>,
+        value: f64,
+    ) -> Characteristic {
         Characteristic {
             error: None,
             name,

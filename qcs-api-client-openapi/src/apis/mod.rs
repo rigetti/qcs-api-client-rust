@@ -187,6 +187,7 @@ pub mod account_api;
 pub mod authentication_api;
 pub mod client_applications_api;
 pub mod default_api;
+pub mod deployments_api;
 pub mod endpoints_api;
 pub mod engagements_api;
 pub mod quantum_processors_api;

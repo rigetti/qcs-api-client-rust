@@ -35,7 +35,7 @@ pub struct CreateReservationRequest {
     pub account_type: Option<models::AccountType>,
 
     #[serde(rename = "endTime")]
-    pub end_time: String,
+    pub end_time: chrono::DateTime<chrono::FixedOffset>,
 
     #[serde(rename = "notes", skip_serializing_if = "Option::is_none")]
     pub notes: Option<String>,
@@ -44,14 +44,14 @@ pub struct CreateReservationRequest {
     pub quantum_processor_id: String,
 
     #[serde(rename = "startTime")]
-    pub start_time: String,
+    pub start_time: chrono::DateTime<chrono::FixedOffset>,
 }
 
 impl CreateReservationRequest {
     pub fn new(
-        end_time: String,
+        end_time: chrono::DateTime<chrono::FixedOffset>,
         quantum_processor_id: String,
-        start_time: String,
+        start_time: chrono::DateTime<chrono::FixedOffset>,
     ) -> CreateReservationRequest {
         CreateReservationRequest {
             account_id: None,

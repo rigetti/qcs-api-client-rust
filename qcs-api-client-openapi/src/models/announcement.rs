@@ -37,7 +37,7 @@ pub struct Announcement {
     pub content_html: String,
     /// The RFC3339-format time the announcement was created.
     #[serde(rename = "createdAt")]
-    pub created_at: String,
+    pub created_at: chrono::DateTime<chrono::FixedOffset>,
 
     #[serde(rename = "id")]
     pub id: i64,
@@ -45,7 +45,12 @@ pub struct Announcement {
 
 impl Announcement {
     /// An announcement to be displayed to users.
-    pub fn new(active: bool, content_html: String, created_at: String, id: i64) -> Announcement {
+    pub fn new(
+        active: bool,
+        content_html: String,
+        created_at: chrono::DateTime<chrono::FixedOffset>,
+        id: i64,
+    ) -> Announcement {
         Announcement {
             active,
             content_html,

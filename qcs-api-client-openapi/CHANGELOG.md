@@ -1,3 +1,9 @@
+## 0.26.0 (2026-09-21)
+
+### Breaking Changes
+
+- fix client generation with custom query types
+
 ## 0.25.0 (2026-09-10)
 
 ### Breaking Changes
