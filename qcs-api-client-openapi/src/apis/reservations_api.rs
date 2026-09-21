@@ -96,7 +96,7 @@ pub struct FindAvailableReservationsClapParams {
     #[arg(long)]
     pub quantum_processor_id: String,
     #[arg(long)]
-    pub start_time_from: String,
+    pub start_time_from: chrono::DateTime<chrono::FixedOffset>,
     #[arg(long)]
     pub duration: String,
     #[arg(long)]
@@ -711,7 +711,7 @@ async fn find_available_reservations_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,
     quantum_processor_id: &str,
-    start_time_from: String,
+    start_time_from: chrono::DateTime<chrono::FixedOffset>,
     duration: &str,
     page_size: Option<i64>,
     page_token: Option<&str>,
@@ -848,7 +848,7 @@ async fn find_available_reservations_inner(
 pub async fn find_available_reservations(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
-    start_time_from: String,
+    start_time_from: chrono::DateTime<chrono::FixedOffset>,
     duration: &str,
     page_size: Option<i64>,
     page_token: Option<&str>,

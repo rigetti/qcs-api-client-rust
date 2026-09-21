@@ -37,6 +37,7 @@
 
 pub use qcs_dependencies_client::reqwest;
 
+pub use chrono;
 pub use serde;
 pub use serde_json;
 pub use serde_repr;

@@ -28,7 +28,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct User {
     #[serde(rename = "createdTime")]
-    pub created_time: String,
+    pub created_time: chrono::DateTime<chrono::FixedOffset>,
 
     #[serde(rename = "id")]
     pub id: i64,
@@ -41,7 +41,11 @@ pub struct User {
 }
 
 impl User {
-    pub fn new(created_time: String, id: i64, idp_id: String) -> User {
+    pub fn new(
+        created_time: chrono::DateTime<chrono::FixedOffset>,
+        id: i64,
+        idp_id: String,
+    ) -> User {
         User {
             created_time,
             id,

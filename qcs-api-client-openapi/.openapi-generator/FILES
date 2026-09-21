@@ -4,6 +4,7 @@ src/apis/authentication_api.rs
 src/apis/client_applications_api.rs
 src/apis/configuration.rs
 src/apis/default_api.rs
+src/apis/deployments_api.rs
 src/apis/endpoints_api.rs
 src/apis/engagements_api.rs
 src/apis/mod.rs

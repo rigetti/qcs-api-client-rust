@@ -30,10 +30,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct BillingInvoice {
     #[serde(rename = "periodEnd")]
-    pub period_end: String,
+    pub period_end: chrono::DateTime<chrono::FixedOffset>,
 
     #[serde(rename = "periodStart")]
-    pub period_start: String,
+    pub period_start: chrono::DateTime<chrono::FixedOffset>,
 
     #[serde(rename = "startingBalance")]
     pub starting_balance: i64,
@@ -57,8 +57,8 @@ pub struct BillingInvoice {
 impl BillingInvoice {
     /// A finalized billing invoice.
     pub fn new(
-        period_end: String,
-        period_start: String,
+        period_end: chrono::DateTime<chrono::FixedOffset>,
+        period_start: chrono::DateTime<chrono::FixedOffset>,
         starting_balance: i64,
         status: models::BillingInvoiceStatus,
         subtotal: i64,

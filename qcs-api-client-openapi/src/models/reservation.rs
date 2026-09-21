@@ -53,7 +53,7 @@ pub struct Reservation {
     pub created_by_account_type: Option<models::AccountType>,
 
     #[serde(rename = "createdTime")]
-    pub created_time: String,
+    pub created_time: chrono::DateTime<chrono::FixedOffset>,
 
     #[serde(
         rename = "creationBillingInvoiceItemId",
@@ -62,7 +62,7 @@ pub struct Reservation {
     pub creation_billing_invoice_item_id: Option<String>,
 
     #[serde(rename = "endTime")]
-    pub end_time: String,
+    pub end_time: chrono::DateTime<chrono::FixedOffset>,
 
     #[serde(rename = "id")]
     pub id: i64,
@@ -77,10 +77,10 @@ pub struct Reservation {
     pub quantum_processor_id: String,
 
     #[serde(rename = "startTime")]
-    pub start_time: String,
+    pub start_time: chrono::DateTime<chrono::FixedOffset>,
 
     #[serde(rename = "updatedTime", skip_serializing_if = "Option::is_none")]
-    pub updated_time: Option<String>,
+    pub updated_time: Option<chrono::DateTime<chrono::FixedOffset>>,
     /// Deprecated in favor of `accountId`.
     #[serde(rename = "userId")]
     pub user_id: String,
@@ -90,12 +90,12 @@ impl Reservation {
     pub fn new(
         account_id: String,
         account_type: models::AccountType,
-        created_time: String,
-        end_time: String,
+        created_time: chrono::DateTime<chrono::FixedOffset>,
+        end_time: chrono::DateTime<chrono::FixedOffset>,
         id: i64,
         price: i64,
         quantum_processor_id: String,
-        start_time: String,
+        start_time: chrono::DateTime<chrono::FixedOffset>,
         user_id: String,
     ) -> Reservation {
         Reservation {
