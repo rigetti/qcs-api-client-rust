@@ -25,7 +25,8 @@
 use super::{ContentType, Error, configuration};
 use crate::{apis::ResponseContent, models};
 use ::qcs_api_client_common::backoff::{
-    ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error, duration_from_response,
+    BackoffBuilder, ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error,
+    duration_from_response,
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
@@ -241,7 +242,7 @@ pub async fn check_client_application(
     configuration: &configuration::Configuration,
     check_client_application_request: crate::models::CheckClientApplicationRequest,
 ) -> Result<models::CheckClientApplicationResponse, Error<CheckClientApplicationError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::POST;
     loop {
@@ -428,7 +429,7 @@ pub async fn get_client_application(
     configuration: &configuration::Configuration,
     client_application_name: &str,
 ) -> Result<models::ClientApplication, Error<GetClientApplicationError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -610,7 +611,7 @@ async fn list_client_applications_inner(
 pub async fn list_client_applications(
     configuration: &configuration::Configuration,
 ) -> Result<models::ListClientApplicationsResponse, Error<ListClientApplicationsError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {

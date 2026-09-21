@@ -1,6 +1,6 @@
 use super::Body;
 use qcs_api_client_common::{
-    backoff::{self, ExponentialBackoff, backoff::Backoff},
+    backoff::{self, BackoffBuilder, ExponentialBackoff, ExponentialBuilder},
     configuration::TokenError,
 };
 use qcs_dependencies_client::http::{HeaderValue, Request, Response};
@@ -20,7 +20,7 @@ use qcs_dependencies_client::tower::Layer;
 /// The [`Layer`] used to apply exponential backoff retry logic to requests.
 #[derive(Debug, Clone)]
 pub struct RetryLayer {
-    pub(crate) backoff: ExponentialBackoff,
+    pub(crate) backoff: ExponentialBuilder,
 }
 
 impl Default for RetryLayer {
@@ -52,7 +52,7 @@ impl<S: GrpcService<Body>> Layer<S> for RetryLayer {
 /// See also: [`RetryLayer`].
 #[derive(Clone, Debug)]
 pub struct RetryService<S: GrpcService<Body>> {
-    backoff: ExponentialBackoff,
+    backoff: ExponentialBuilder,
     service: S,
 }
 
@@ -67,7 +67,7 @@ fn duration_from_response<T>(
     if let Some(grpc_status) = Status::from_header_map(response.headers()) {
         match grpc_status.code() {
             // gRPC has no equivalent to RETRY-AFTER, so just use the backoff
-            qcs_dependencies_client::tonic::Code::Unavailable => backoff.next_backoff(),
+            qcs_dependencies_client::tonic::Code::Unavailable => backoff.next(),
             // No other gRPC statuses are retried.
             _ => None,
         }
@@ -99,9 +99,9 @@ where
             req.headers_mut().insert(KEY_X_REQUEST_ID, request_id);
         }
 
-        // Clone the `backoff` so that new requests don't reuse it
+        // Build a fresh `backoff` so that new requests don't reuse state
         // and so that the `backoff` can be moved into the async closure.
-        let mut backoff = self.backoff.clone();
+        let mut backoff = self.backoff.build();
         let mut service = self.service.clone();
         // It is necessary to replace self.service with the above clone
         // because the cloned version may not be "ready".
@@ -166,7 +166,6 @@ mod tests {
     use crate::tonic::wrap_channel_with_retry;
 
     use super::*;
-    use ::backoff::ExponentialBackoffBuilder;
     use qcs_dependencies_client::tonic::Request;
     use qcs_dependencies_client::tonic::server::NamedService;
     use qcs_dependencies_client::tonic_health::pb::health_check_response::ServingStatus;
@@ -269,10 +268,10 @@ mod tests {
         uds_grpc_stream::serve(health_server, |channel| async {
             let status = HealthClient::new(
                 RetryLayer {
-                    backoff: ExponentialBackoffBuilder::new()
-                        .with_max_interval(Duration::from_millis(100))
-                        .with_max_elapsed_time(Some(Duration::from_secs(1)))
-                        .build(),
+                    backoff: ExponentialBuilder::new()
+                        .with_max_delay(Duration::from_millis(100))
+                        .with_total_delay(Some(Duration::from_secs(1)))
+                        .without_max_times(),
                 }
                 .layer(channel),
             )

@@ -25,7 +25,8 @@
 use super::{ContentType, Error, configuration};
 use crate::{apis::ResponseContent, models};
 use ::qcs_api_client_common::backoff::{
-    ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error, duration_from_response,
+    BackoffBuilder, ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error,
+    duration_from_response,
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
@@ -259,7 +260,7 @@ pub async fn auth_email_password_reset_token(
         crate::models::AuthEmailPasswordResetTokenRequest,
     >,
 ) -> Result<(), Error<AuthEmailPasswordResetTokenError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::POST;
     loop {
@@ -441,7 +442,7 @@ async fn auth_get_user_inner(
 pub async fn auth_get_user(
     configuration: &configuration::Configuration,
 ) -> Result<models::User, Error<AuthGetUserError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -603,7 +604,7 @@ pub async fn auth_reset_password(
     configuration: &configuration::Configuration,
     auth_reset_password_request: crate::models::AuthResetPasswordRequest,
 ) -> Result<(), Error<AuthResetPasswordError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::POST;
     loop {
@@ -771,7 +772,7 @@ pub async fn auth_reset_password_with_token(
     configuration: &configuration::Configuration,
     auth_reset_password_with_token_request: crate::models::AuthResetPasswordWithTokenRequest,
 ) -> Result<(), Error<AuthResetPasswordWithTokenError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::POST;
     loop {

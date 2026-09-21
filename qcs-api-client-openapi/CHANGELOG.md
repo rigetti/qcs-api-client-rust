@@ -1,3 +1,15 @@
+## 0.27.0 (2026-09-21)
+
+### Breaking Changes
+
+- migrate from backoff (unmaintatined) to backon
+
+## 0.27.0-rc.0 (2026-09-21)
+
+### Breaking Changes
+
+- migrate from backoff (unmaintatined) to backon
+
 ## 0.26.0 (2026-09-21)
 
 ### Breaking Changes

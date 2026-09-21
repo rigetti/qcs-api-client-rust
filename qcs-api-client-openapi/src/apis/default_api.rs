@@ -25,7 +25,8 @@
 use super::{ContentType, Error, configuration};
 use crate::{apis::ResponseContent, models};
 use ::qcs_api_client_common::backoff::{
-    ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error, duration_from_response,
+    BackoffBuilder, ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error,
+    duration_from_response,
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
@@ -215,7 +216,7 @@ async fn get_health_inner(
 pub async fn get_health(
     configuration: &configuration::Configuration,
 ) -> Result<models::Health, Error<GetHealthError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -371,7 +372,7 @@ async fn health_check_inner(
 pub async fn health_check(
     configuration: &configuration::Configuration,
 ) -> Result<(), Error<HealthCheckError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -546,7 +547,7 @@ async fn health_check_deprecated_inner(
 pub async fn health_check_deprecated(
     configuration: &configuration::Configuration,
 ) -> Result<serde_json::Value, Error<HealthCheckDeprecatedError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {

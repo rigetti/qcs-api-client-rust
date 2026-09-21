@@ -43,7 +43,7 @@ pub struct Configuration {
     #[cfg(feature = "tracing-opentelemetry")]
     pub client: reqwest_middleware::ClientWithMiddleware,
     pub qcs_config: crate::common::ClientConfiguration,
-    pub backoff: backoff::ExponentialBackoff,
+    pub backoff: backoff::ExponentialBuilder,
 }
 
 pub type BasicAuth = (String, Option<String>);

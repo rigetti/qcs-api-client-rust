@@ -25,7 +25,8 @@
 use super::{ContentType, Error, configuration};
 use crate::{apis::ResponseContent, models};
 use ::qcs_api_client_common::backoff::{
-    ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error, duration_from_response,
+    BackoffBuilder, ExponentialBackoff, duration_from_io_error, duration_from_reqwest_error,
+    duration_from_response,
 };
 #[cfg(feature = "tracing")]
 use qcs_api_client_common::configuration::tokens::TokenRefresher;
@@ -955,7 +956,7 @@ pub async fn activate_user(
     configuration: &configuration::Configuration,
     activate_user_request: Option<crate::models::ActivateUserRequest>,
 ) -> Result<models::User, Error<ActivateUserError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::POST;
     loop {
@@ -1118,7 +1119,7 @@ pub async fn add_group_user(
     configuration: &configuration::Configuration,
     add_group_user_request: crate::models::AddGroupUserRequest,
 ) -> Result<(), Error<AddGroupUserError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::POST;
     loop {
@@ -1280,7 +1281,7 @@ pub async fn dismiss_viewer_announcement(
     configuration: &configuration::Configuration,
     announcement_id: i64,
 ) -> Result<(), Error<DismissViewerAnnouncementError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::DELETE;
     loop {
@@ -1464,7 +1465,7 @@ pub async fn get_group_balance(
     configuration: &configuration::Configuration,
     group_name: &str,
 ) -> Result<models::AccountBalance, Error<GetGroupBalanceError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -1646,7 +1647,7 @@ pub async fn get_group_billing_customer(
     configuration: &configuration::Configuration,
     group_name: &str,
 ) -> Result<models::BillingCustomer, Error<GetGroupBillingCustomerError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -1829,7 +1830,7 @@ pub async fn get_group_upcoming_billing_invoice(
     configuration: &configuration::Configuration,
     group_name: &str,
 ) -> Result<models::BillingUpcomingInvoice, Error<GetGroupUpcomingBillingInvoiceError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -2016,7 +2017,7 @@ pub async fn get_user_balance(
     configuration: &configuration::Configuration,
     user_id: &str,
 ) -> Result<models::AccountBalance, Error<GetUserBalanceError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -2198,7 +2199,7 @@ pub async fn get_user_billing_customer(
     configuration: &configuration::Configuration,
     user_id: &str,
 ) -> Result<models::BillingCustomer, Error<GetUserBillingCustomerError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -2387,7 +2388,7 @@ pub async fn get_user_event_billing_price(
     user_id: &str,
     get_account_event_billing_price_request: crate::models::GetAccountEventBillingPriceRequest,
 ) -> Result<models::EventBillingPriceRate, Error<GetUserEventBillingPriceError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::POST;
     loop {
@@ -2575,7 +2576,7 @@ pub async fn get_user_upcoming_billing_invoice(
     configuration: &configuration::Configuration,
     user_id: &str,
 ) -> Result<models::BillingUpcomingInvoice, Error<GetUserUpcomingBillingInvoiceError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -2754,7 +2755,7 @@ async fn get_viewer_user_onboarding_completed_inner(
 pub async fn get_viewer_user_onboarding_completed(
     configuration: &configuration::Configuration,
 ) -> Result<models::ViewerUserOnboardingCompleted, Error<GetViewerUserOnboardingCompletedError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -2957,7 +2958,7 @@ pub async fn list_group_billing_invoice_lines(
     page_size: Option<i64>,
 ) -> Result<models::ListAccountBillingInvoiceLinesResponse, Error<ListGroupBillingInvoiceLinesError>>
 {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -3162,7 +3163,7 @@ pub async fn list_group_billing_invoices(
     page_token: Option<&str>,
     page_size: Option<i64>,
 ) -> Result<models::ListAccountBillingInvoicesResponse, Error<ListGroupBillingInvoicesError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -3372,7 +3373,7 @@ pub async fn list_group_upcoming_billing_invoice_lines(
     models::ListAccountBillingInvoiceLinesResponse,
     Error<ListGroupUpcomingBillingInvoiceLinesError>,
 > {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -3576,7 +3577,7 @@ pub async fn list_group_users(
     page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<models::ListGroupUsersResponse, Error<ListGroupUsersError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -3786,7 +3787,7 @@ pub async fn list_user_billing_invoice_lines(
     page_size: Option<i64>,
 ) -> Result<models::ListAccountBillingInvoiceLinesResponse, Error<ListUserBillingInvoiceLinesError>>
 {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -3991,7 +3992,7 @@ pub async fn list_user_billing_invoices(
     page_token: Option<&str>,
     page_size: Option<i64>,
 ) -> Result<models::ListAccountBillingInvoicesResponse, Error<ListUserBillingInvoicesError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -4195,7 +4196,7 @@ pub async fn list_user_groups(
     page_size: Option<i64>,
     page_token: Option<&str>,
 ) -> Result<models::ListGroupsResponse, Error<ListUserGroupsError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -4405,7 +4406,7 @@ pub async fn list_user_upcoming_billing_invoice_lines(
     models::ListAccountBillingInvoiceLinesResponse,
     Error<ListUserUpcomingBillingInvoiceLinesError>,
 > {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -4612,7 +4613,7 @@ pub async fn list_viewer_announcements(
     page_token: Option<&str>,
     include_dismissed: Option<bool>,
 ) -> Result<models::AnnouncementsResponse, Error<ListViewerAnnouncementsError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::GET;
     loop {
@@ -4802,7 +4803,7 @@ pub async fn put_viewer_user_onboarding_completed(
     configuration: &configuration::Configuration,
     viewer_user_onboarding_completed: Option<crate::models::ViewerUserOnboardingCompleted>,
 ) -> Result<models::ViewerUserOnboardingCompleted, Error<PutViewerUserOnboardingCompletedError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::PUT;
     loop {
@@ -4969,7 +4970,7 @@ pub async fn remove_group_user(
     configuration: &configuration::Configuration,
     remove_group_user_request: crate::models::RemoveGroupUserRequest,
 ) -> Result<(), Error<RemoveGroupUserError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::POST;
     loop {
@@ -5157,7 +5158,7 @@ pub async fn update_viewer_user_profile(
     configuration: &configuration::Configuration,
     update_viewer_user_profile_request: crate::models::UpdateViewerUserProfileRequest,
 ) -> Result<models::User, Error<UpdateViewerUserProfileError>> {
-    let mut backoff = configuration.backoff.clone();
+    let mut backoff = configuration.backoff.build();
     let mut refreshed_credentials = false;
     let method = reqwest::Method::PUT;
     loop {

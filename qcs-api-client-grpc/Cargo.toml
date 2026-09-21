@@ -8,7 +8,7 @@ name = 'qcs-api-client-grpc'
 publish = true
 readme = 'README.md'
 repository = 'https://github.com/rigetti/qcs-api-client-rust'
-version = '0.25.0'
+version = '0.26.0'
 
 [package.authors]
 workspace = true
@@ -28,8 +28,7 @@ tracing-config = ['qcs-api-client-common/tracing-config', 'tracing']
 tracing-opentelemetry = ['qcs-api-client-common/tracing-config', 'tracing-config', 'tracing']
 
 [dependencies]
-[dependencies.backoff]
-features = ['tokio']
+[dependencies.backon]
 workspace = true
 
 [dependencies.futures-util]
