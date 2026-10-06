@@ -65,7 +65,7 @@ pub(super) fn should_trace_request<B>(
     let parsed = full_request_url.parse::<::url::Url>();
     let url = parsed.ok();
     filter
-        .and_then(|filter| url.map(|url| (filter, url)))
+        .zip(url)
         .is_none_or(|(filter, url)| filter.is_enabled(&UrlPatternMatchInput::Url(url)))
 }
 

@@ -36,7 +36,7 @@ impl<S: GrpcService<Body>> Layer<S> for RetryLayer {
 
     fn layer(&self, service: S) -> Self::Service {
         Self::Service {
-            backoff: self.backoff.clone(),
+            backoff: self.backoff,
             service,
         }
     }

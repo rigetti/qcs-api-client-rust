@@ -127,11 +127,10 @@ impl HeaderAttributesFilter for IncludeExclude<String> {
             Self::Exclude(set) => {
                 let mut header_attributes = Vec::new();
                 for (header_name, header_value) in headers {
-                    if !set.contains(header_name.as_str()) {
-                        if let Ok(header_value) = header_value.to_str() {
-                            header_attributes
-                                .push((header_name.to_string(), header_value.to_string()));
-                        }
+                    if !set.contains(header_name.as_str())
+                        && let Ok(header_value) = header_value.to_str()
+                    {
+                        header_attributes.push((header_name.to_string(), header_value.to_string()));
                     }
                 }
                 header_attributes

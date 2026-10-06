@@ -1,3 +1,9 @@
+## 0.27.0-rc.0 (2026-10-06)
+
+### Breaking Changes
+
+- update qcs-dependencies-client to 0.6 (OpenTelemetry 0.32)
+
 ## 0.26.0 (2026-09-21)
 
 ### Breaking Changes

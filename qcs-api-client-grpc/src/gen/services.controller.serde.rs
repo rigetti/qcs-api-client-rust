@@ -66,7 +66,7 @@ impl<'de> serde::Deserialize<'de> for BatchExecuteControllerJobsRequest {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -166,7 +166,7 @@ impl<'de> serde::Deserialize<'de> for BatchExecuteControllerJobsResponse {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -277,7 +277,7 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsRequest {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -376,7 +376,7 @@ impl<'de> serde::Deserialize<'de> for CancelControllerJobsResponse {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -471,7 +471,7 @@ impl<'de> serde::Deserialize<'de> for EstimatedDelay {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -629,7 +629,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobRequest {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -765,7 +765,7 @@ impl<'de> serde::Deserialize<'de> for ExecuteControllerJobResponse {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -865,7 +865,7 @@ impl<'de> serde::Deserialize<'de> for ExecutionOptions {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -985,7 +985,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobResultsRequest {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -1092,7 +1092,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobResultsResponse {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -1203,7 +1203,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusRequest {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -1321,7 +1321,7 @@ impl<'de> serde::Deserialize<'de> for GetControllerJobStatusResponse {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -1418,7 +1418,7 @@ impl<'de> serde::Deserialize<'de> for get_controller_job_status_response::Status
             type Value = get_controller_job_status_response::Status;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(formatter, "expected one of: {:?}", &FIELDS)
+                write!(formatter, "expected one of: {:?}", FIELDS)
             }
 
             fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
@@ -1519,7 +1519,7 @@ impl<'de> serde::Deserialize<'de> for Uuid {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]

@@ -200,7 +200,7 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Health"
           description: Critical services are healthy.
@@ -212,12 +212,12 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema: {}
           description: Successful Response
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ValidationError"
           description: Unprocessable Entity
@@ -255,13 +255,13 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListEndpointsResponse"
           description: Successful Response
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ValidationError"
           description: Unprocessable Entity
@@ -275,110 +275,38 @@ paths:
       operationId: CreateEndpoint
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/CreateEndpointParameters"
         required: true
       responses:
         "201":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Endpoint"
           description: Successful Response
         "400":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Bad Request
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Not Found
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ValidationError"
           description: Unprocessable Entity
       security:
         - JWTBearer: []
       summary: Create Endpoint
-      tags:
-        - endpoints
-  "/v1/endpoints/{endpointId}":
-    delete:
-      description: Delete an endpoint, releasing its resources. This operation is not
-        reversible.
-      operationId: DeleteEndpoint
-      parameters:
-        - in: path
-          name: endpointId
-          required: true
-          schema:
-            title: Endpoint ID
-            type: string
-      responses:
-        "204":
-          description: Successful Response
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Delete Endpoint
-      tags:
-        - endpoints
-    get:
-      description: Retrieve a specific endpoint by its ID.
-      operationId: GetEndpoint
-      parameters:
-        - in: path
-          name: endpointId
-          required: true
-          schema:
-            title: Endpoint ID
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Endpoint"
-          description: Successful Response
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Get Endpoint
       tags:
         - endpoints
   "/v1/endpoints/{endpointId}:restart":
@@ -394,7 +322,7 @@ paths:
             type: string
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/RestartEndpointRequest"
       responses:
@@ -402,13 +330,13 @@ paths:
           description: Successful Response
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Forbidden
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ValidationError"
           description: Unprocessable Entity
@@ -457,32 +385,32 @@ paths:
               in body.
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/CreateEngagementRequest"
         required: true
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/EngagementWithCredentials"
           description: Successful Response
         "400":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Bad Request
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Not Found
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Validation error
@@ -498,46 +426,6 @@ paths:
       summary: Create Engagement
       tags:
         - engagements
-  "/v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault":
-    get:
-      description: |-
-        Retrieve the endpoint set as "default" for the given Quantum Processor.
-
-        If no endpoint is set as the default, return "not found."
-      operationId: GetDefaultEndpoint
-      parameters:
-        - description: "Public identifier for a quantum processor [example: Aspen-1]"
-          in: path
-          name: quantumProcessorId
-          required: true
-          schema:
-            description: "Public identifier for a quantum processor [example: Aspen-1]"
-            title: Quantum Processor ID
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Endpoint"
-          description: Successful Response
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-          description: Unprocessable Entity
-      security:
-        - JWTBearer: []
-      summary: Get Default Endpoint
-      tags:
-        - endpoints
   "/v1/endpoints/{endpoint_id}/accessors":
     get:
       tags:
@@ -546,7 +434,7 @@ paths:
         - name: endpoint_id
           schema:
             type: string
-            title: EndpointId
+            title: EndpointIdCaseInsensitive
             externalDocs:
               url: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-label-names
             maxLength: 63
@@ -578,6 +466,40 @@ paths:
       security:
         - JWTBearerOptional: []
       operationId: GetEndpointAccessors
+  "/v1/endpoints/{endpointId}":
+    get:
+      tags:
+        - deployments
+      parameters:
+        - name: endpointId
+          schema:
+            type: string
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Endpoint"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearer: []
+      operationId: GetEndpoint
   "/v1/quantumProcessors/{quantum_processor_id}":
     get:
       tags:
@@ -786,6 +708,43 @@ paths:
       security:
         - JWTBearerOptional: []
       operationId: ListInstructionSetArchitectures
+  "/v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault":
+    get:
+      tags:
+        - deployments
+        - quantumProcessors
+      summary: Retrieve the endpoint set as "default" for the given Quantum Processor.
+      description: If no endpoint is set as the default, return "not found."
+      parameters:
+        - name: quantumProcessorId
+          schema:
+            type: string
+          in: path
+          required: true
+          deprecated: false
+          explode: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Endpoint"
+        "422":
+          description: User-provided data failed validation
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        default:
+          description: Some other error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - JWTBearer: []
+      operationId: GetDefaultEndpoint
   /v1/healthcheck:
     get:
       summary: Health Check
@@ -801,7 +760,7 @@ paths:
       operationId: AuthEmailPasswordResetToken
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/AuthEmailPasswordResetTokenRequest"
       responses:
@@ -809,7 +768,7 @@ paths:
           description: Request completed successfully.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -824,19 +783,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/User"
           description: Request completed successfully.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: The authenticated user could not be located within our records.
@@ -854,7 +813,7 @@ paths:
       operationId: AuthResetPassword
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/AuthResetPasswordRequest"
         required: true
@@ -863,13 +822,13 @@ paths:
           description: Password successfully reset.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -886,7 +845,7 @@ paths:
       operationId: AuthResetPasswordWithToken
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/AuthResetPasswordWithTokenRequest"
         required: true
@@ -895,13 +854,13 @@ paths:
           description: Password successfully reset.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: No account exists for the requested email.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -921,19 +880,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/QuantumProcessorCalendar"
           description: Request completed successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client not authorized to complete request.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: The requested quantum processor does not exist.
@@ -950,7 +909,7 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListClientApplicationsResponse"
           description: Request completed successfully.
@@ -972,13 +931,13 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ClientApplication"
           description: Request completed successfully.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: The requested client application does not exist.
@@ -992,26 +951,26 @@ paths:
       operationId: CheckClientApplication
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/CheckClientApplicationRequest"
         required: true
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/CheckClientApplicationResponse"
           description: Successfully checked Forest versions.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Requested component does not exist.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -1032,25 +991,25 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/AccountBalance"
           description: Request completed successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client not authorized to complete request.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: QCS group account does not exist.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -1073,19 +1032,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/BillingCustomer"
           description: Billing customer retrieved successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client is not authorized to view account billing customer.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Group billing customer does not exist.
@@ -1109,19 +1068,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListAccountBillingInvoicesResponse"
           description: Billing invoices retrieved successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client is not authorized to view group billing invoices.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Group billing customer does not exist.
@@ -1151,19 +1110,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListAccountBillingInvoiceLinesResponse"
           description: Billing invoice lines retrieved successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client is not authorized to view group billing invoice lines.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Group billing customer or invoice does not exist.
@@ -1185,19 +1144,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/BillingUpcomingInvoice"
           description: Billing invoice retrieved successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client is not authorized to view group billing invoice.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Group billing customer or invoice does not exist.
@@ -1221,19 +1180,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListAccountBillingInvoiceLinesResponse"
           description: Billing invoice lines retrieved successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client is not authorized to view group billing invoice lines.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Group billing customer or invoice does not exist.
@@ -1276,19 +1235,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListReservationsResponse"
           description: Request completed successfully.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -1316,19 +1275,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListGroupUsersResponse"
           description: Group users successfully retrieved.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: The requested group does not exist.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -1345,7 +1304,7 @@ paths:
       operationId: AddGroupUser
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/AddGroupUserRequest"
         required: true
@@ -1354,13 +1313,13 @@ paths:
           description: User successfully added to group.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Group or user does not exist.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -1377,7 +1336,7 @@ paths:
       operationId: RemoveGroupUser
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/RemoveGroupUserRequest"
         required: true
@@ -1386,13 +1345,13 @@ paths:
           description: User successfully removed from group.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Group does not exist.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed, possibly because the user does not
@@ -1460,19 +1419,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListReservationsResponse"
           description: Request completed successfully.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -1504,44 +1463,44 @@ paths:
         - $ref: "#/components/parameters/accountTypeHeader"
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/CreateReservationRequest"
         required: true
       responses:
         "201":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Reservation"
           description: Reservation successfully created.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
         "402":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Insufficient payment to book reservation.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: User not authorized to make the requested reservation.
         "409":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: The requested reservation is unavailable.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -1557,25 +1516,25 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Reservation"
           description: Request completed successfully.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: User not authorized to retrieve reservation.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Requested reservation does not exist.
@@ -1590,25 +1549,25 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Reservation"
           description: Reservation successfully cancelled.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: User not authorized to delete reservation.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Requested reservation does not exist.
@@ -1652,19 +1611,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/FindAvailableReservationsResponse"
           description: Request completed successfully.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -1698,25 +1657,25 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/AccountBalance"
           description: Request completed successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client not authorized to complete request.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: QCS user account does not exist.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -1740,19 +1699,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/BillingCustomer"
           description: Billing customer retrieved successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client is not authorized to view user billing customer.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: User billing customer does not exist.
@@ -1777,19 +1736,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListAccountBillingInvoicesResponse"
           description: Billing invoices retrieved successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client is not authorized to view user billing invoices.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: User billing customer does not exist.
@@ -1820,19 +1779,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListAccountBillingInvoiceLinesResponse"
           description: Billing invoice lines retrieved successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client is not authorized to view user billing invoice lines.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: User billing customer or invoice does not exist.
@@ -1855,19 +1814,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/BillingUpcomingInvoice"
           description: Upcoming billing invoice retrieved successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client is not authorized to view user billing invoice.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: User billing customer or invoice does not exist.
@@ -1892,19 +1851,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListAccountBillingInvoiceLinesResponse"
           description: Billing invoice lines retrieved successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client is not authorized to view user's billing invoice lines.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Group billing customer or invoice does not exist.
@@ -1928,26 +1887,26 @@ paths:
             type: string
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/GetAccountEventBillingPriceRequest"
         required: true
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/EventBillingPriceRate"
           description: Retrieved `EventBillingPrice` successfully.
         "403":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Client is not authorized to retrieve the `EventBillingPrice`.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: The `EventBillingPrice` does not exist for the specified event.
@@ -1955,7 +1914,7 @@ paths:
             trigger alerts whenever returning this response.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request parameter validation error.
@@ -1980,13 +1939,13 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ListGroupsResponse"
           description: Successfully retrieved groups.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -2002,19 +1961,19 @@ paths:
       summary: Activate User
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/ActivateUserRequest"
       responses:
         "204":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/User"
           description: Request completed successfully.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -2037,19 +1996,19 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/AnnouncementsResponse"
           description: Request completed successfully.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request validation failed.
@@ -2074,13 +2033,13 @@ paths:
           description: Request completed successfully.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Unknown announcement ID.
@@ -2095,33 +2054,33 @@ paths:
       parameters: []
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/UpdateViewerUserProfileRequest"
         required: true
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/User"
           description: Request completed successfully.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
         "404":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: The authenticated user could not be located within our records.
             Please contact support@rigetti.com if you reach this error.
         "422":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: The request could not be validated.
@@ -2136,13 +2095,13 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
           description: Request completed successfully.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
@@ -2155,19 +2114,19 @@ paths:
       operationId: PutViewerUserOnboardingCompleted
       requestBody:
         content:
-          application/json:
+          application/json; charset=utf-8:
             schema:
               $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
       responses:
         "200":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/ViewerUserOnboardingCompleted"
           description: Request completed successfully.
         "401":
           content:
-            application/json:
+            application/json; charset=utf-8:
               schema:
                 $ref: "#/components/schemas/Error"
           description: Request authentication failed.
@@ -2278,60 +2237,6 @@ components:
           title: Tags
           type: array
       title: CreateEngagementRequest
-      type: object
-    Endpoint:
-      description: An Endpoint is the entry point for remote access to a QuantumProcessor.
-      properties:
-        address:
-          description: Network address at which the endpoint is locally reachable
-          nullable: true
-          title: Address
-          type: string
-        addresses:
-          allOf:
-            - $ref: "#/components/schemas/EndpointAddresses"
-          description: Addresses at which this endpoint is reachable over the network
-          title: Endpoint Addresses
-        datacenter:
-          description: Datacenter within which the endpoint is deployed
-          title: Datacenter
-          type: string
-        healthy:
-          description: Whether the endpoint is operating as intended
-          title: Healthy
-          type: boolean
-        id:
-          description: Unique, opaque identifier for the endpoint
-          title: Endpoint ID
-          type: string
-        mock:
-          description: Whether the endpoint serves simulated or substituted data for
-            testing purposes
-          title: Mock
-          type: boolean
-        quantumProcessorIds:
-          description: Public identifiers for quantum processors served by this endpoint.
-          items:
-            type: string
-          title: Quantum Processor IDs
-          type: array
-      required:
-        - id
-        - addresses
-        - healthy
-        - mock
-      title: Endpoint
-      type: object
-    EndpointAddresses:
-      description: Addresses at which an endpoint is reachable over the network.
-      properties:
-        grpc:
-          title: Grpc
-          type: string
-        rpcq:
-          title: Rpcq
-          type: string
-      title: EndpointAddresses
       type: object
     EngagementCredentials:
       description: >-
@@ -2608,6 +2513,43 @@ components:
             title: A node integer identifier; must be greater than or equal to zero.
           maxItems: 2
           minItems: 2
+    Endpoint:
+      type: object
+      title: Endpoint
+      description: An Endpoint is the v1 entry point for remote access to a
+        QuantumProcessor.
+      required:
+        - addresses
+        - healthy
+        - id
+        - mock
+        - quantumProcessorIds
+      properties:
+        address:
+          type: string
+        addresses:
+          $ref: "#/components/schemas/EndpointAddresses"
+        datacenter:
+          type: string
+        healthy:
+          type: boolean
+        id:
+          type: string
+        mock:
+          type: boolean
+        quantumProcessorIds:
+          type: array
+          items:
+            type: string
+    EndpointAddresses:
+      type: object
+      title: EndpointAddresses
+      description: Addresses at which an endpoint is reachable over the network.
+      properties:
+        grpc:
+          type: string
+        rpcq:
+          type: string
     Family:
       type: string
       description: >-

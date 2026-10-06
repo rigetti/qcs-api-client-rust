@@ -18,7 +18,7 @@ pub use ::backon::*;
 /// some randomized jitter.
 #[allow(clippy::module_name_repetitions)]
 #[must_use]
-pub fn default_backoff() -> ExponentialBuilder {
+pub const fn default_backoff() -> ExponentialBuilder {
     ExponentialBuilder::new()
         .with_jitter()
         .with_min_delay(Duration::from_millis(500))
@@ -48,17 +48,17 @@ pub fn duration_from_response(
     use time::{OffsetDateTime, format_description::well_known::Rfc2822};
 
     if status_code_is_retry(status) {
-        if let Some(value) = headers.get(qcs_dependencies_client::http::header::RETRY_AFTER) {
-            if let Ok(value) = value.to_str() {
-                if let Ok(value) = value.parse::<u64>() {
-                    return Some(Duration::from_secs(value));
-                } else if let Ok(date) = OffsetDateTime::parse(value, &Rfc2822) {
-                    let duration = date - OffsetDateTime::now_utc();
-                    // Convert from time::Duration to std::time::Duration
-                    // This will fail if the number is too large or negative
-                    let std_duration: Duration = duration.try_into().ok()?;
-                    return Some(std_duration);
-                }
+        if let Some(value) = headers.get(qcs_dependencies_client::http::header::RETRY_AFTER)
+            && let Ok(value) = value.to_str()
+        {
+            if let Ok(value) = value.parse::<u64>() {
+                return Some(Duration::from_secs(value));
+            } else if let Ok(date) = OffsetDateTime::parse(value, &Rfc2822) {
+                let duration = date - OffsetDateTime::now_utc();
+                // Convert from time::Duration to std::time::Duration
+                // This will fail if the number is too large or negative
+                let std_duration: Duration = duration.try_into().ok()?;
+                return Some(std_duration);
             }
         }
 

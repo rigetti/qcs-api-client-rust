@@ -36,6 +36,7 @@ pub(crate) fn oauth_http_client() -> Result<oauth2::reqwest::Client, oauth2::req
 ///   advertise `offline_access` even though it supports refresh tokens, so we don't ask for it
 ///   even though we prefer it (and get the refresh token anyway!).
 /// - If neither is provided, only request the minimum necessary [`DISCOVERY_REQUIRED_SCOPE`].
+#[must_use]
 pub fn resolve_scopes(
     configured_scopes: Option<BTreeSet<String>>,
     advertised_scopes: Option<BTreeSet<String>>,
@@ -108,7 +109,7 @@ pub(crate) mod tests {
         ];
 
         let expected = set![DISCOVERY_REQUIRED_SCOPE, "email", "profile"];
-        let actual = resolve_scopes(None, Some(cognito_scopes.clone()));
+        let actual = resolve_scopes(None, Some(cognito_scopes));
 
         assert_eq!(expected, actual);
     }

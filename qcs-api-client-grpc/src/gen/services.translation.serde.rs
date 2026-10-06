@@ -49,7 +49,7 @@ impl<'de> serde::Deserialize<'de> for BackendV1Options {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -165,7 +165,7 @@ impl<'de> serde::Deserialize<'de> for BackendV2Options {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -295,7 +295,7 @@ impl<'de> serde::Deserialize<'de> for GetQuantumProcessorQuilCalibrationProgramR
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -387,7 +387,7 @@ impl<'de> serde::Deserialize<'de> for QuantumProcessorQuilCalibrationProgram {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -509,7 +509,7 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobReque
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -635,7 +635,7 @@ impl<'de> serde::Deserialize<'de> for TranslateQuilToEncryptedControllerJobRespo
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -761,7 +761,7 @@ impl<'de> serde::Deserialize<'de> for TranslationOptions {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -880,7 +880,7 @@ impl<'de> serde::Deserialize<'de> for translation_options::QCtrl {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
@@ -985,7 +985,7 @@ impl<'de> serde::Deserialize<'de> for translation_options::Riverlane {
                     type Value = GeneratedField;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                        write!(formatter, "expected one of: {:?}", FIELDS)
                     }
 
                     #[allow(unused_variables)]
