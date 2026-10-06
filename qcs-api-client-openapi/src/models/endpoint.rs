@@ -25,48 +25,40 @@
 use crate::models;
 use serde::{Deserialize, Serialize};
 
-/// Endpoint: An Endpoint is the entry point for remote access to a QuantumProcessor.
+/// Endpoint: An Endpoint is the v1 entry point for remote access to a QuantumProcessor.
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Endpoint {
-    /// Network address at which the endpoint is locally reachable
-    #[serde(
-        rename = "address",
-        default,
-        with = "::serde_with::rust::double_option",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub address: Option<Option<String>>,
-    /// Addresses at which this endpoint is reachable over the network
+    #[serde(rename = "address", skip_serializing_if = "Option::is_none")]
+    pub address: Option<String>,
+
     #[serde(rename = "addresses")]
     pub addresses: models::EndpointAddresses,
-    /// Datacenter within which the endpoint is deployed
+
     #[serde(rename = "datacenter", skip_serializing_if = "Option::is_none")]
     pub datacenter: Option<String>,
-    /// Whether the endpoint is operating as intended
+
     #[serde(rename = "healthy")]
     pub healthy: bool,
-    /// Unique, opaque identifier for the endpoint
+
     #[serde(rename = "id")]
     pub id: String,
-    /// Whether the endpoint serves simulated or substituted data for testing purposes
+
     #[serde(rename = "mock")]
     pub mock: bool,
-    /// Public identifiers for quantum processors served by this endpoint.
-    #[serde(
-        rename = "quantumProcessorIds",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub quantum_processor_ids: Option<Vec<String>>,
+
+    #[serde(rename = "quantumProcessorIds")]
+    pub quantum_processor_ids: Vec<String>,
 }
 
 impl Endpoint {
-    /// An Endpoint is the entry point for remote access to a QuantumProcessor.
+    /// An Endpoint is the v1 entry point for remote access to a QuantumProcessor.
     pub fn new(
         addresses: models::EndpointAddresses,
         healthy: bool,
         id: String,
         mock: bool,
+        quantum_processor_ids: Vec<String>,
     ) -> Endpoint {
         Endpoint {
             address: None,
@@ -75,7 +67,7 @@ impl Endpoint {
             healthy,
             id,
             mock,
-            quantum_processor_ids: None,
+            quantum_processor_ids,
         }
     }
 }

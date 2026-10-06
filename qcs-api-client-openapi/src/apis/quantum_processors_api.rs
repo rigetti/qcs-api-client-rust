@@ -37,6 +37,26 @@ use serde::{Deserialize, Serialize};
 #[allow(unused, reason = "not used in all templates, but required in some")]
 use ::{miette::IntoDiagnostic as _, qcs_api_client_common::clap_utils::JsonMaybeStdin};
 
+/// Serialize command-line arguments for [`get_default_endpoint`]
+#[cfg(feature = "clap")]
+#[derive(Debug, clap::Args)]
+pub struct GetDefaultEndpointClapParams {
+    #[arg(long)]
+    pub quantum_processor_id: String,
+}
+
+#[cfg(feature = "clap")]
+impl GetDefaultEndpointClapParams {
+    pub async fn execute(
+        self,
+        configuration: &configuration::Configuration,
+    ) -> Result<models::Endpoint, miette::Error> {
+        get_default_endpoint(configuration, self.quantum_processor_id.as_str())
+            .await
+            .into_diagnostic()
+    }
+}
+
 /// Serialize command-line arguments for [`get_instruction_set_architecture`]
 #[cfg(feature = "clap")]
 #[derive(Debug, clap::Args)]
@@ -145,6 +165,15 @@ impl ListQuantumProcessorsClapParams {
     }
 }
 
+/// struct for typed errors of method [`get_default_endpoint`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GetDefaultEndpointError {
+    Status422(models::ValidationError),
+    DefaultResponse(models::Error),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`get_instruction_set_architecture`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -190,6 +219,190 @@ pub enum ListQuantumProcessorsError {
     UnknownValue(serde_json::Value),
 }
 
+async fn get_default_endpoint_inner(
+    configuration: &configuration::Configuration,
+    backoff: &mut ExponentialBackoff,
+    quantum_processor_id: &str,
+) -> Result<models::Endpoint, Error<GetDefaultEndpointError>> {
+    let local_var_configuration = configuration;
+    // add a prefix to parameters to efficiently prevent name collisions
+    let p_path_quantum_processor_id = quantum_processor_id;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault",
+        local_var_configuration.qcs_config.api_url(),
+        quantumProcessorId = crate::apis::urlencode(p_path_quantum_processor_id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    #[cfg(feature = "tracing")]
+    {
+        // Ignore parsing errors if the URL is invalid for some reason.
+        // If it is invalid, it will turn up as an error later when actually making the request.
+        let local_var_do_tracing = local_var_uri_str
+            .parse::<::url::Url>()
+            .ok()
+            .is_none_or(|url| {
+                configuration
+                    .qcs_config
+                    .should_trace(&::urlpattern::UrlPatternMatchInput::Url(url))
+            });
+
+        if local_var_do_tracing {
+            ::tracing::debug!(
+                url=%local_var_uri_str,
+                method="GET",
+                "making get_default_endpoint request",
+            );
+        }
+    }
+
+    // Use the QCS Bearer token if a client OAuthSession is present,
+    // but do not require one when the security schema says it is optional.
+    {
+        use qcs_api_client_common::configuration::TokenError;
+
+        #[allow(
+            clippy::nonminimal_bool,
+            clippy::eq_op,
+            reason = "Logic must be done at runtime since it cannot be handled by the mustache template engine."
+        )]
+        let is_jwt_bearer_optional: bool = false || "JWTBearer" == "JWTBearerOptional";
+
+        let token = local_var_configuration
+            .qcs_config
+            .get_bearer_access_token()
+            .await;
+
+        if is_jwt_bearer_optional && matches!(token, Err(TokenError::NoCredentials)) {
+            // the client is configured without any OAuthSession, but this call does not require one.
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                "No client credentials found, but this call does not require authentication."
+            );
+        } else {
+            local_var_req_builder = local_var_req_builder.bearer_auth(token?.secret());
+        }
+    }
+
+    let local_var_req = local_var_req_builder.build()?;
+    let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+    let local_var_status = local_var_resp.status();
+    let local_var_raw_content_type = local_var_resp
+        .headers()
+        .get("content-type")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("application/octet-stream")
+        .to_string();
+    let local_var_content_type = super::ContentType::from(local_var_raw_content_type.as_str());
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        let local_var_content = local_var_resp.text().await?;
+        match local_var_content_type {
+            ContentType::Json => serde_path_to_error::deserialize(
+                &mut serde_json::Deserializer::from_str(&local_var_content),
+            )
+            .map_err(Error::from),
+            ContentType::Text => Err(Error::InvalidContentType {
+                content_type: local_var_raw_content_type,
+                return_type: "models::Endpoint",
+            }),
+            ContentType::Unsupported(unknown_type) => Err(Error::InvalidContentType {
+                content_type: unknown_type,
+                return_type: "models::Endpoint",
+            }),
+        }
+    } else {
+        let local_var_retry_delay =
+            duration_from_response(local_var_resp.status(), local_var_resp.headers(), backoff);
+        let local_var_content = local_var_resp.text().await?;
+        let local_var_entity: Option<GetDefaultEndpointError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+            retry_delay: local_var_retry_delay,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// If no endpoint is set as the default, return \"not found.\"
+pub async fn get_default_endpoint(
+    configuration: &configuration::Configuration,
+    quantum_processor_id: &str,
+) -> Result<models::Endpoint, Error<GetDefaultEndpointError>> {
+    let mut backoff = configuration.backoff.build();
+    let mut refreshed_credentials = false;
+    let method = reqwest::Method::GET;
+    loop {
+        let result =
+            get_default_endpoint_inner(configuration, &mut backoff, quantum_processor_id.clone())
+                .await;
+
+        match result {
+            Ok(result) => return Ok(result),
+            Err(Error::ResponseError(response)) => {
+                if !refreshed_credentials
+                    && matches!(
+                        response.status,
+                        StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED
+                    )
+                {
+                    // Attempt to refresh credentials
+                    match configuration.qcs_config.refresh().await {
+                        Ok(_) => {
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(::qcs_api_client_common::configuration::TokenError::Write {
+                            error,
+                            oauth_session: _,
+                        }) => {
+                            // Token refresh succeeded but persistence failed
+                            // The token is already in memory and will be used for this request
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(
+                                "Token refresh succeeded but failed to persist: {}. Continuing with in-memory token.",
+                                error
+                            );
+                            refreshed_credentials = true;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
+                } else if let Some(duration) = response.retry_delay {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::ResponseError(response));
+            }
+            Err(Error::Reqwest(error)) => {
+                if let Some(duration) = duration_from_reqwest_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Reqwest(error));
+            }
+            Err(Error::Io(error)) => {
+                if let Some(duration) = duration_from_io_error(&method, &error, &mut backoff) {
+                    tokio::time::sleep(duration).await;
+                    continue;
+                }
+
+                return Err(Error::Io(error));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
 async fn get_instruction_set_architecture_inner(
     configuration: &configuration::Configuration,
     backoff: &mut ExponentialBackoff,

@@ -106,14 +106,14 @@ Class | Method | HTTP request | Description
 *DefaultApi* | [**get_health**](docs/DefaultApi.md#get_health) | **GET** / | 
 *DefaultApi* | [**health_check**](docs/DefaultApi.md#health_check) | **GET** /v1/healthcheck | Health Check
 *DefaultApi* | [**health_check_deprecated**](docs/DefaultApi.md#health_check_deprecated) | **GET** /v1/ | Health Check
+*DeploymentsApi* | [**get_default_endpoint**](docs/DeploymentsApi.md#get_default_endpoint) | **GET** /v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault | Retrieve the endpoint set as \"default\" for the given Quantum Processor.
+*DeploymentsApi* | [**get_endpoint**](docs/DeploymentsApi.md#get_endpoint) | **GET** /v1/endpoints/{endpointId} | 
 *DeploymentsApi* | [**get_endpoint_accessors**](docs/DeploymentsApi.md#get_endpoint_accessors) | **GET** /v1/endpoints/{endpoint_id}/accessors | 
 *EndpointsApi* | [**create_endpoint**](docs/EndpointsApi.md#create_endpoint) | **POST** /v1/endpoints | Create Endpoint
-*EndpointsApi* | [**delete_endpoint**](docs/EndpointsApi.md#delete_endpoint) | **DELETE** /v1/endpoints/{endpointId} | Delete Endpoint
-*EndpointsApi* | [**get_default_endpoint**](docs/EndpointsApi.md#get_default_endpoint) | **GET** /v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault | Get Default Endpoint
-*EndpointsApi* | [**get_endpoint**](docs/EndpointsApi.md#get_endpoint) | **GET** /v1/endpoints/{endpointId} | Get Endpoint
 *EndpointsApi* | [**list_endpoints**](docs/EndpointsApi.md#list_endpoints) | **GET** /v1/endpoints | List Endpoints
 *EndpointsApi* | [**restart_endpoint**](docs/EndpointsApi.md#restart_endpoint) | **POST** /v1/endpoints/{endpointId}:restart | Restart Endpoint
 *EngagementsApi* | [**create_engagement**](docs/EngagementsApi.md#create_engagement) | **POST** /v1/engagements | Create Engagement
+*QuantumProcessorsApi* | [**get_default_endpoint**](docs/QuantumProcessorsApi.md#get_default_endpoint) | **GET** /v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault | Retrieve the endpoint set as \"default\" for the given Quantum Processor.
 *QuantumProcessorsApi* | [**get_instruction_set_architecture**](docs/QuantumProcessorsApi.md#get_instruction_set_architecture) | **GET** /v1/quantumProcessors/{quantum_processor_id}/instructionSetArchitecture | Get Instruction Set Architecture
 *QuantumProcessorsApi* | [**get_quantum_processor**](docs/QuantumProcessorsApi.md#get_quantum_processor) | **GET** /v1/quantumProcessors/{quantum_processor_id} | Get Quantum Processor
 *QuantumProcessorsApi* | [**get_quantum_processor_accessors**](docs/QuantumProcessorsApi.md#get_quantum_processor_accessors) | **GET** /v1/quantumProcessors/{quantum_processor_id}/accessors | Get Quantum Processor Accessors

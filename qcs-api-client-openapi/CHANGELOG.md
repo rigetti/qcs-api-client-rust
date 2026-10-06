@@ -1,8 +1,9 @@
-## 0.28.0-rc.0 (2026-10-06)
+## 0.28.0-rc.1 (2026-10-06)
 
 ### Breaking Changes
 
 - update qcs-dependencies-client to 0.6 (OpenTelemetry 0.32)
+- regenerate openapi clients after schema update
 
 ## 0.27.0 (2026-09-21)
 
