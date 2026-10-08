@@ -1,3 +1,20 @@
+## 0.28.0 (2026-10-08)
+
+### Breaking Changes
+
+- OpenAPI client updates
+
+## 0.28.0-a.0 (2026-10-08)
+
+### Breaking Changes
+
+- empty commit: ensure this MR is a breaking change (see MR description)
+- regenerate OpenAPI code
+
+### Fixes
+
+- strip internal tag from operations in patch_schema
+
 ## 0.27.1 (2026-10-08)
 
 ### Features

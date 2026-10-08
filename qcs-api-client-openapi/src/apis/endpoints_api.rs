@@ -82,7 +82,6 @@ impl DeleteEndpointClapParams {
 #[cfg(feature = "clap")]
 #[derive(Debug, clap::Args)]
 pub struct GetDefaultEndpointClapParams {
-    /// Public identifier for a quantum processor [example: Aspen-1]
     #[arg(long)]
     pub quantum_processor_id: String,
 }
@@ -191,6 +190,7 @@ pub enum DeleteEndpointError {
     Status403(models::Error),
     Status404(models::Error),
     Status422(models::ValidationError),
+    DefaultResponse(models::Error),
     UnknownValue(serde_json::Value),
 }
 
@@ -198,8 +198,8 @@ pub enum DeleteEndpointError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetDefaultEndpointError {
-    Status404(models::Error),
     Status422(models::ValidationError),
+    DefaultResponse(models::Error),
     UnknownValue(serde_json::Value),
 }
 
@@ -207,8 +207,8 @@ pub enum GetDefaultEndpointError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetEndpointError {
-    Status404(models::Error),
     Status422(models::ValidationError),
+    DefaultResponse(models::Error),
     UnknownValue(serde_json::Value),
 }
 
@@ -509,7 +509,7 @@ async fn delete_endpoint_inner(
     }
 }
 
-/// Delete an endpoint, releasing its resources. This operation is not reversible.
+/// Delete a v1 endpoint, releasing its resources. This operation is not reversible. Forwarded to Compute v1.
 pub async fn delete_endpoint(
     configuration: &configuration::Configuration,
     endpoint_id: &str,
@@ -691,7 +691,7 @@ async fn get_default_endpoint_inner(
     }
 }
 
-/// Retrieve the endpoint set as \"default\" for the given Quantum Processor.  If no endpoint is set as the default, return \"not found.\"
+/// If no endpoint is set as the default, return \"not found.\"
 pub async fn get_default_endpoint(
     configuration: &configuration::Configuration,
     quantum_processor_id: &str,
@@ -875,7 +875,6 @@ async fn get_endpoint_inner(
     }
 }
 
-/// Retrieve a specific endpoint by its ID.
 pub async fn get_endpoint(
     configuration: &configuration::Configuration,
     endpoint_id: &str,

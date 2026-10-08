@@ -109,8 +109,8 @@ Class | Method | HTTP request | Description
 *DeploymentsApi* | [**get_endpoint_accessors**](docs/DeploymentsApi.md#get_endpoint_accessors) | **GET** /v1/endpoints/{endpoint_id}/accessors | 
 *EndpointsApi* | [**create_endpoint**](docs/EndpointsApi.md#create_endpoint) | **POST** /v1/endpoints | Create Endpoint
 *EndpointsApi* | [**delete_endpoint**](docs/EndpointsApi.md#delete_endpoint) | **DELETE** /v1/endpoints/{endpointId} | Delete Endpoint
-*EndpointsApi* | [**get_default_endpoint**](docs/EndpointsApi.md#get_default_endpoint) | **GET** /v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault | Get Default Endpoint
-*EndpointsApi* | [**get_endpoint**](docs/EndpointsApi.md#get_endpoint) | **GET** /v1/endpoints/{endpointId} | Get Endpoint
+*EndpointsApi* | [**get_default_endpoint**](docs/EndpointsApi.md#get_default_endpoint) | **GET** /v1/quantumProcessors/{quantumProcessorId}/endpoints:getDefault | Retrieve the endpoint set as \"default\" for the given Quantum Processor.
+*EndpointsApi* | [**get_endpoint**](docs/EndpointsApi.md#get_endpoint) | **GET** /v1/endpoints/{endpointId} | 
 *EndpointsApi* | [**list_endpoints**](docs/EndpointsApi.md#list_endpoints) | **GET** /v1/endpoints | List Endpoints
 *EndpointsApi* | [**restart_endpoint**](docs/EndpointsApi.md#restart_endpoint) | **POST** /v1/endpoints/{endpointId}:restart | Restart Endpoint
 *EngagementsApi* | [**create_engagement**](docs/EngagementsApi.md#create_engagement) | **POST** /v1/engagements | Create Engagement
