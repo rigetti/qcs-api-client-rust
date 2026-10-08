@@ -1,3 +1,9 @@
+## 0.26.1 (2026-10-08)
+
+### Features
+
+- update core-deps
+
 ## 0.26.0 (2026-09-21)
 
 ### Breaking Changes

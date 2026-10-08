@@ -41,11 +41,11 @@ async fn test_token_refresh() {
         secrets_path,
     } = configuration.source()
     {
-        if let Ok(ro_env) = std::env::var(SECRETS_READ_ONLY_VAR) {
-            if matches!(ro_env.to_lowercase().as_str(), "true" | "yes" | "1") {
-                // In this case, the file will *not* be updated.
-                return;
-            }
+        if let Ok(ro_env) = std::env::var(SECRETS_READ_ONLY_VAR)
+            && matches!(ro_env.to_lowercase().as_str(), "true" | "yes" | "1")
+        {
+            // In this case, the file will *not* be updated.
+            return;
         }
         let toml = std::fs::read_to_string(secrets_path)
             .unwrap()

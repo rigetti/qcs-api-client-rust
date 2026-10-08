@@ -8,7 +8,7 @@ name = 'qcs-api-client-common'
 publish = true
 readme = 'README.md'
 repository = 'https://github.com/rigetti/qcs-api-client-rust'
-version = '0.26.0'
+version = '0.26.1'
 
 [package.authors]
 workspace = true
@@ -213,7 +213,6 @@ meta_variable_misuse = 'warn'
 missing_abi = 'warn'
 missing_debug_implementations = 'warn'
 missing_docs = 'warn'
-no_mangle_generic_items = 'warn'
 non_shorthand_field_patterns = 'warn'
 noop_method_call = 'warn'
 overflowing_literals = 'warn'

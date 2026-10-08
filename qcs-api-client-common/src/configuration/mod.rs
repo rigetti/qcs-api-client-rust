@@ -269,7 +269,7 @@ impl ConfigurationContext {
         match profile_name.as_ref() {
             None => tracing::debug!("loading default QCS profile"),
             Some(profile) => {
-                tracing::debug!("loading QCS profile {profile}")
+                tracing::debug!("loading QCS profile {profile}");
             }
         }
         let settings = Settings::load()?;
@@ -2092,7 +2092,7 @@ client_secret = "{TEST_CLIENT_SECRET}"
         (oidc_mock, token_mock)
     }
 
-    /// Make sure the `auth_server`'s client_id is not used
+    /// Make sure the `auth_server`'s `client_id` is not used
     #[test]
     fn test_client_credentials_credential_authenticates_as_its_own_client_id() {
         let access_token = Claims::new_valid().to_encoded();
