@@ -1,3 +1,9 @@
+## 0.28.1 (2026-10-27)
+
+### Fixes
+
+- serialize timestamps as RFC-3339 strings; resolve cargo-deny issues
+
 ## 0.28.0 (2026-10-08)
 
 ### Breaking Changes

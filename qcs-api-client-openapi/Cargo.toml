@@ -7,7 +7,7 @@ license = 'Apache-2.0'
 name = 'qcs-api-client-openapi'
 publish = true
 repository = 'https://github.com/rigetti/qcs-api-client-rust'
-version = '0.28.0'
+version = '0.28.1'
 
 [package.authors]
 workspace = true
@@ -91,5 +91,5 @@ workspace = true
 workspace = true
 
 [dev-dependencies.tokio]
-features = ['rt-multi-thread', 'rt', 'macros']
+features = ['rt-multi-thread', 'rt', 'macros', 'net', 'io-util']
 workspace = true

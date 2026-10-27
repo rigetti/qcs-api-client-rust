@@ -768,7 +768,7 @@ async fn find_available_reservations_inner(
         &p_query_quantum_processor_id.to_string(),
     )]);
     local_var_req_builder =
-        local_var_req_builder.query(&[("startTimeFrom", &p_query_start_time_from.to_string())]);
+        local_var_req_builder.query(&[("startTimeFrom", &p_query_start_time_from.to_rfc3339())]);
     local_var_req_builder =
         local_var_req_builder.query(&[("duration", &p_query_duration.to_string())]);
 

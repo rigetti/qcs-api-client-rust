@@ -599,7 +599,6 @@ paths:
             format: uint64
             title: How many items to return in a single page.
             default: 10
-            nullable: true
             minimum: 0
             exclusiveMinimum: true
           in: query
@@ -610,7 +609,6 @@ paths:
           schema:
             type: string
             title: A page token to continue pagination across requests.
-            nullable: true
           in: query
           required: false
           deprecated: false
@@ -720,7 +718,6 @@ paths:
             format: uint64
             title: How many items to return in a single page.
             default: 5
-            nullable: true
             maximum: 5
             minimum: 0
             exclusiveMinimum: true
@@ -732,7 +729,6 @@ paths:
           schema:
             type: string
             title: A page token to continue pagination across requests.
-            nullable: true
           in: query
           required: false
           deprecated: false
@@ -2483,7 +2479,6 @@ components:
           type: number
           format: double
           description: The error in the characteristic value, or None otherwise.
-          nullable: true
         node_ids:
           type: array
           description: >-
@@ -2499,7 +2494,6 @@ components:
             type: integer
             format: uint64
             title: A node integer identifier; must be greater than or equal to zero.
-          nullable: true
           minItems: 1
           uniqueItems: true
         timestamp:
@@ -2517,7 +2511,6 @@ components:
           items:
             type: number
             format: double
-          nullable: true
     Code:
       type: string
       description: API error codes to indicate what kind of error occurred beyond what
@@ -2580,12 +2573,10 @@ components:
       properties:
         address:
           type: string
-          nullable: true
         addresses:
           $ref: "#/components/schemas/EndpointAddresses"
         datacenter:
           type: string
-          nullable: true
         healthy:
           type: boolean
         id:
@@ -2603,10 +2594,8 @@ components:
       properties:
         grpc:
           type: string
-          nullable: true
         rpcq:
           type: string
-          nullable: true
     Family:
       type: string
       description: >-
@@ -2675,7 +2664,6 @@ components:
         nextPageToken:
           type: string
           description: Send an opaque page token returned from a prior request
-          nullable: true
         instructionSetArchitectures:
           type: array
           items:
@@ -2688,7 +2676,6 @@ components:
         nextPageToken:
           type: string
           description: Send an opaque page token returned from a prior request
-          nullable: true
         accessors:
           type: array
           items:
@@ -2701,7 +2688,6 @@ components:
         nextPageToken:
           type: string
           description: Send an opaque page token returned from a prior request
-          nullable: true
         quantumProcessors:
           type: array
           items:
@@ -2749,7 +2735,6 @@ components:
           format: uint64
           description: The number of nodes that this operation applies to. None if
             unspecified.
-          nullable: true
           minimum: 0
           exclusiveMinimum: true
         parameters:
@@ -2843,7 +2828,6 @@ components:
             Automatically-available accessors, including direct accessors and
             discovered kubernetes Controller Gateway instances, have no ID.
           deprecated: true
-          nullable: true
         url:
           type: string
           description: The gRPC endpoint for this accessor.
@@ -2856,7 +2840,6 @@ components:
 
             purposes, that with the lower rank value should be used for access.
           deprecated: true
-          nullable: true
     QuantumProcessorAccessorType:
       type: string
       description: Type of the accessor. Each accessor type is a different mechanism
