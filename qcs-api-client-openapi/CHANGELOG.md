@@ -1,3 +1,9 @@
+## 0.29.0 (2026-10-27)
+
+### Breaking Changes
+
+- strip `nullable` annotations
+
 ## 0.28.1 (2026-10-27)
 
 ### Fixes
